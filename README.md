@@ -8,9 +8,9 @@ A prototype VS Code extension for tracing a value used inside a `ranges::fold_le
 - Default shortcut: `Ctrl+Alt+Shift+M` (`Cmd+Alt+Shift+M` on macOS).
 - Uses Clang's JSON AST rather than identifier-text search.
 - Recognizes direct variable/member paths such as `state.a.b`.
-- Traces direct calls and a bounded chain of ordinary function calls within the same translation unit.
+- Traces supported direct calls between the current function and a fold lambda within the same translation unit; deeper call-chain coverage is incomplete.
 - Follows mutations through reference/pointer parameters when the callee's AST shows a write, e.g. `void mutate(A& a) { a.b++; }`.
-- If a function has multiple call paths back to a `fold_left` lambda, shows a picker.
+- If multiple candidate call paths are discovered, shows a picker.
 - Uses source order as an approximation for “last mutation”.
 
 ## Important semantic detail
@@ -37,12 +37,12 @@ The extension saves a dirty active file only after asking before running analysi
 This is an intentionally conservative prototype, not a complete C++ static analyzer:
 
 - Analysis is limited to the active translation unit; cross-translation-unit call sites are not indexed.
-- It follows direct free-function calls; overloaded operators, virtual dispatch, function pointers, callbacks, and indirect calls are not fully modeled.
+- Call-chain analysis is intentionally limited; overloaded operators, virtual dispatch, function pointers, callbacks, indirect calls, and multi-hop call paths are not fully modeled.
 - It recognizes direct member paths and simple address/dereference wrappers. Local aliases, arbitrary pointer provenance, containers/indices, `std::move`, and aliasing through complex expressions are not fully modeled.
 - The “previous” choice is source-order based. It does not prove path feasibility across `if`/`switch`, loops, exceptions, concurrency, or early returns.
 - Effects from code outside the workspace are not recursively analyzed.
 - The AST dump may be expensive on large translation units; output is capped by `foldStateJump.maxAstBytes` (128 MiB by default).
-- The initial implementation targets the `fold_left` name in source text. Other fold APIs are not recognized yet.
+- Fold recognition is heuristic and currently targets `fold_left`; other fold APIs are not recognized yet.
 
 When the result is uncertain or unsupported, the extension reports that instead of inventing a jump target.
 
