@@ -5,14 +5,19 @@
   "version": "0.2.0",
   "publisher": "0xuniko",
   "license": "MIT",
-  "engines": { "vscode": "^1.85.0" },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
   "categories": ["Programming Languages", "Other"],
   "keywords": ["C++", "ranges", "fold_left", "data flow", "clang", "effect-ts", "bun"],
   "main": "./dist/extension.js",
   "activationEvents": ["onLanguage:cpp", "onLanguage:c", "onCommand:foldStateJump.jumpToPreviousMutation"],
   "contributes": {
     "commands": [
-      { "command": "foldStateJump.jumpToPreviousMutation", "title": "Fold State Jump: Go to Previous State Mutation" }
+      {
+        "command": "foldStateJump.jumpToPreviousMutation",
+        "title": "Fold State Jump: Go to Previous State Mutation"
+      }
     ],
     "keybindings": [
       {
@@ -25,8 +30,18 @@
     "configuration": {
       "title": "Fold State Jump",
       "properties": {
-        "foldStateJump.clangPath": { "type": "string", "default": "clang++", "description": "Path to clang++." },
-        "foldStateJump.maxAstBytes": { "type": "number", "default": 134217728, "minimum": 1048576, "maximum": 536870912, "description": "Maximum Clang JSON AST output size in bytes." }
+        "foldStateJump.clangPath": {
+          "type": "string",
+          "default": "clang++",
+          "description": "Path to clang++."
+        },
+        "foldStateJump.maxAstBytes": {
+          "type": "number",
+          "default": 134217728,
+          "minimum": 1048576,
+          "maximum": 536870912,
+          "description": "Maximum Clang JSON AST output size in bytes."
+        }
       }
     }
   },
@@ -37,12 +52,12 @@
     "package": "bun run build && bunx @vscode/vsce package"
   },
   "devDependencies": {
-    "@types/node": "^22.15.0",
-    "@types/vscode": "^1.85.0",
-    "typescript": "^5.8.3",
-    "@vscode/vsce": "^3.3.2"
+    "@types/node": "^26.6.5",
+    "@types/vscode": "^1.140.0",
+    "typescript": "^7.0.2",
+    "@vscode/vsce": "^4.0.0"
   },
   "dependencies": {
-    "effect": "^3.14.21"
+    "effect": "^4.0.5"
   }
 }
