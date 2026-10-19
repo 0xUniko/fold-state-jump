@@ -73,14 +73,13 @@ const runAnalysis = (document: vscode.TextDocument, token: vscode.CancellationTo
       roots,
       config.get('clangPath', 'clang++')
     );
+    const controller = new AbortController();
+    const cancellation = token.onCancellationRequested(() => controller.abort());
     const astText = yield* runClangAst(
       command,
       config.get('maxAstBytes', 134217728),
-      AbortSignal.any([
-        new AbortController().signal,
-        ...(token.isCancellationRequested ? [AbortSignal.abort()] : [])
-      ])
-    );
+      controller.signal
+    ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
     const ast = JSON.parse(astText) as ClangNode;
     const result = analyzeAst(ast, {
       file: document.uri.fsPath,
