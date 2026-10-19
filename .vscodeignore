@@ -1,4 +1,9 @@
 .gitignore
 .vscode/**
+src/**
 test/**
 examples/**
+AGENTS.md
+tsconfig.json
+bunfig.toml
+bun.lock

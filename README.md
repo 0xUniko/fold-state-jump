@@ -1,68 +1,66 @@
 # Fold State Jump
 
-A prototype VS Code extension for tracing a value used inside a `ranges::fold_left` lambda back to the most recent earlier mutation of that fold state.
+A VS Code extension prototype for tracing a value used inside C++ `ranges::fold_left` back to a previous mutation along supported direct call paths.
 
-## What it does in v0.1
+## Toolchain
 
-- Provides **Fold State Jump: Go to Previous State Mutation** in the command palette.
-- Default shortcut: `Ctrl+Alt+Shift+M` (`Cmd+Alt+Shift+M` on macOS).
-- Uses Clang's JSON AST rather than identifier-text search.
-- Recognizes direct variable/member paths such as `state.a.b`.
-- Traces supported direct calls between the current function and a fold lambda within the same translation unit; deeper call-chain coverage is incomplete.
-- Follows mutations through reference/pointer parameters when the callee's AST shows a write, e.g. `void mutate(A& a) { a.b++; }`.
-- If multiple candidate call paths are discovered, shows a picker.
-- Uses source order as an approximation for “last mutation”.
-
-## Important semantic detail
-
-A helper taking `A` **by value** cannot mutate `state.a` in the caller:
-
-```cpp
-void fun1(A a) { a.b++; }   // changes only the local copy
-void fun1(A& a) { a.b++; }  // can change the fold lambda's state
-```
-
-The analyzer intentionally does not report the first version as a mutation of the fold state.
-
-## Requirements
-
-- VS Code 1.85+
-- `clang++` available on `PATH`, or set `foldStateJump.clangPath`
-- For projects requiring non-default include paths/defines, a `compile_commands.json` in the project tree is strongly recommended.
-
-The extension saves a dirty active file only after asking before running analysis, because the Clang AST must match the visible source.
-
-## Current limitations
-
-This is an intentionally conservative prototype, not a complete C++ static analyzer:
-
-- Analysis is limited to the active translation unit; cross-translation-unit call sites are not indexed.
-- Call-chain analysis is intentionally limited; overloaded operators, virtual dispatch, function pointers, callbacks, indirect calls, and multi-hop call paths are not fully modeled.
-- It recognizes direct member paths and simple address/dereference wrappers. Local aliases, arbitrary pointer provenance, containers/indices, `std::move`, and aliasing through complex expressions are not fully modeled.
-- The “previous” choice is source-order based. It does not prove path feasibility across `if`/`switch`, loops, exceptions, concurrency, or early returns.
-- Effects from code outside the workspace are not recursively analyzed.
-- The AST dump may be expensive on large translation units; output is capped by `foldStateJump.maxAstBytes` (128 MiB by default).
-- Fold recognition is heuristic and currently targets `fold_left`; other fold APIs are not recognized yet.
-
-When the result is uncertain or unsupported, the extension reports that instead of inventing a jump target.
+- **Bun** manages dependencies, runs tests, and bundles the extension.
+- **TypeScript** makes AST nodes, analysis results, and effect boundaries explicit.
+- **Effect-TS** models compiler invocation, file reads, cancellation, and recoverable failures.
+- **Clang** supplies the JSON AST for the active translation unit.
+- VS Code's extension host runs the bundled CommonJS output on its Node-compatible runtime. Bun itself is not required at extension runtime.
 
 ## Development
 
-Open this folder in VS Code and press **F5** to launch an Extension Development Host.
+Install Bun, then run:
 
 ```sh
-npm test
-npm run check
+bun install
+bun run check
+bun test
+bun run build
 ```
 
-No npm runtime dependencies are required; the extension uses VS Code's built-in API and Node.js modules.
+Press **F5** in VS Code to launch the Extension Development Host after building.
 
-## Design direction
+To package a VSIX:
 
-The prototype separates three concerns:
+```sh
+bun run package
+```
 
-1. **Clang AST acquisition** using the active translation unit's compile command.
-2. **Call-path and mutation-effect analysis** in `src/analysis.js`.
-3. **VS Code interaction** (command, call-path picker, and navigation) in `src/extension.js`.
+The command palette entry is **Fold State Jump: Go to Previous State Mutation**. The default shortcut is `Ctrl+Alt+Shift+M` (macOS: `Cmd+Alt+Shift+M`).
 
-A production version should replace the whole-translation-unit JSON dump with a smaller incremental Clang tooling service and add CFG/path-sensitive analysis before claiming exact `last write` semantics.
+The extension uses the project's `compile_commands.json` when found; otherwise it invokes `clang++ -std=c++20` with the active source file. Set `foldStateJump.clangPath` if Clang is not on `PATH`.
+
+## Design constraints
+
+The implementation follows the repository's `AGENTS.md`:
+
+- Pure AST/data-flow analysis is separated from effects and editor interaction.
+- Result alternatives use tagged unions and are handled with explicit case analysis.
+- AST traversal and collection construction use recursion and functional combinators rather than explicit loops.
+- State used to construct trees, collect candidates, and choose the latest candidate is threaded through `reduce` calls instead of mutated through shared variables.
+- External effects are concentrated in the service and VS Code integration modules.
+- Values retain stable names across boundaries.
+
+## Important semantic detail
+
+A helper taking `A` by value cannot mutate the caller's fold state:
+
+```cpp
+void mutate(A a)  { a.b++; } // local copy only
+void mutate(A& a) { a.b++; } // may mutate the caller's object
+```
+
+## Current limitations
+
+This is still a prototype, not a complete C++ static analyzer:
+
+- The analyzer supports a subset of direct calls and reference/pointer parameter paths. Overloaded operators, virtual dispatch, callbacks, function pointers, complex aliases, and arbitrary pointer provenance are incomplete.
+- “Previous” mutation selection is based on source order, not full control-flow reachability. Branch feasibility, loops, exceptions, concurrency, and early returns are not proven.
+- Cross-translation-unit callers and effects inside external library implementations are not analyzed.
+- AST acquisition dumps the whole translation unit and may be expensive on large projects.
+- Fold detection is heuristic and currently targets `fold_left`.
+
+Unsupported or ambiguous cases should be treated as analysis limitations, not proof that no mutation exists.

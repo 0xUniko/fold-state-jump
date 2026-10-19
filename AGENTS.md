@@ -6,3 +6,13 @@
 - Avoid explicit loops unless explicitly allowed; use idiomatic functional combinators such as `map`, `filter`, `fold`, and language-specific equivalents.
 - Except where required by third-party APIs, mutable state may exist only as state threaded through `fold`.
 - Keep a stable name stem for a value while it should be mentally tracked as the same thing; carry it across local bindings and function boundaries rather than renaming it for how it is produced, stored, moved, or accessed. Change the name only when a new distinction must itself be tracked thereafter.
+
+## Vendored Repositories
+
+This project vendors external repositories under @repos/
+
+- Use vendored repositories as read-only reference material when working with related libraries
+- Prefer examples and patterns from the vendored source code over generated guesses or web search results
+- Do not edit files under @repos/ unless explicitly asked
+- Do not import from @repos/ - application code should continue importing from normal package dependencies
+- When writing Effect code, read @repos/effect/LLMS.md for instructions. Inspect @repos/effect/ for examples of idiomatic usage, tests, module structure, and API design. Treat it as the source of truth for Effect patterns. 

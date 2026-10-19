@@ -1,14 +1,16 @@
 {
   "name": "fold-state-jump",
   "displayName": "Fold State Jump",
-  "description": "Jump from a value used inside ranges::fold_left to its previous mutation along a statically traced call path.",
-  "version": "0.1.0",
+  "description": "Trace fold-state values back to previous mutations through supported C++ call paths.",
+  "version": "0.2.0",
   "publisher": "0xuniko",
   "license": "MIT",
-  "engines": { "vscode": "^1.85.0" },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
   "categories": ["Programming Languages", "Other"],
-  "keywords": ["C++", "ranges", "fold_left", "data flow", "clang"],
-  "main": "./src/extension.js",
+  "keywords": ["C++", "ranges", "fold_left", "data flow", "clang", "effect-ts", "bun"],
+  "main": "./dist/extension.js",
   "activationEvents": ["onLanguage:cpp", "onLanguage:c", "onCommand:foldStateJump.jumpToPreviousMutation"],
   "contributes": {
     "commands": [
@@ -31,20 +33,31 @@
         "foldStateJump.clangPath": {
           "type": "string",
           "default": "clang++",
-          "description": "Path to clang++. The extension uses this compiler to dump a JSON AST."
+          "description": "Path to clang++."
         },
         "foldStateJump.maxAstBytes": {
           "type": "number",
           "default": 134217728,
           "minimum": 1048576,
           "maximum": 536870912,
-          "description": "Maximum JSON AST output size in bytes (default 128 MiB)."
+          "description": "Maximum Clang JSON AST output size in bytes."
         }
       }
     }
   },
   "scripts": {
-    "test": "node --test test/*.test.js",
-    "check": "node --check src/extension.js && node --check src/analysis.js"
+    "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --outfile ./dist/extension.js",
+    "check": "tsc --noEmit",
+    "test": "bun test",
+    "package": "bun run build && bunx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/vscode": "^1.140.0",
+    "typescript": "^7.0.2",
+    "@vscode/vsce": "^4.0.0"
+  },
+  "dependencies": {
+    "effect": "^4.0.5"
   }
 }
