@@ -1,0 +1,50 @@
+{
+  "name": "fold-state-jump",
+  "displayName": "Fold State Jump",
+  "description": "Jump from a value used inside ranges::fold_left to its previous mutation along a statically traced call path.",
+  "version": "0.1.0",
+  "publisher": "0xuniko",
+  "license": "MIT",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Other"],
+  "keywords": ["C++", "ranges", "fold_left", "data flow", "clang"],
+  "main": "./src/extension.js",
+  "activationEvents": ["onLanguage:cpp", "onLanguage:c", "onCommand:foldStateJump.jumpToPreviousMutation"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "foldStateJump.jumpToPreviousMutation",
+        "title": "Fold State Jump: Go to Previous State Mutation"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "foldStateJump.jumpToPreviousMutation",
+        "key": "ctrl+alt+shift+m",
+        "mac": "cmd+alt+shift+m",
+        "when": "editorTextFocus && (editorLangId == cpp || editorLangId == c || editorLangId == cuda-cpp || editorLangId == objective-cpp)"
+      }
+    ],
+    "configuration": {
+      "title": "Fold State Jump",
+      "properties": {
+        "foldStateJump.clangPath": {
+          "type": "string",
+          "default": "clang++",
+          "description": "Path to clang++. The extension uses this compiler to dump a JSON AST."
+        },
+        "foldStateJump.maxAstBytes": {
+          "type": "number",
+          "default": 134217728,
+          "minimum": 1048576,
+          "maximum": 536870912,
+          "description": "Maximum JSON AST output size in bytes (default 128 MiB)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/extension.js && node --check src/analysis.js"
+  }
+}
