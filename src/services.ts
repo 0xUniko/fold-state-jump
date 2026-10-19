@@ -1,5 +1,5 @@
-import { Effect } from 'effect';
-import { spawn } from 'node:child_process';
+import { Effect, Schema } from 'effect';
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -29,24 +29,30 @@ export const readUtf8 = (file: string): Effect.Effect<string, FileFailure> =>
   });
 
 const tokenizeCommand = (command: string): readonly string[] =>
-  [...command.matchAll(/"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'|(\S+)/g)].map((match) =>
-    (match[1] ?? match[2] ?? match[3] ?? '').replace(/\\(["'\\])/g, '$1')
+  [...command.matchAll(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"\\])*"|'[^']*')+/g)].map(([argument]) =>
+    argument.replace(/"((?:\\.|[^"\\])*)"|'([^']*)'|\\(.)/g, (_match, doubleQuoted, singleQuoted, escaped) =>
+      doubleQuoted !== undefined
+        ? doubleQuoted.replace(/\\(["\\$`])/g, '$1')
+        : singleQuoted ?? escaped
+    )
   );
 
-const findCompileDatabase = (source: string, roots: readonly string[]): string | undefined => {
-  const ascend = (directory: string): string | undefined => {
-    const candidate = path.join(directory, 'compile_commands.json');
+const compileDatabase = Schema.Array(Schema.Struct({
+  directory: Schema.String,
+  file: Schema.String,
+  arguments: Schema.optional(Schema.Array(Schema.String)),
+  command: Schema.optional(Schema.String)
+}));
+
+const compileDatabases = (source: string, roots: readonly string[]): readonly string[] => {
+  const ascend = (directory: string): readonly string[] => {
     const parent = path.dirname(directory);
-    return directory === parent ? undefined : candidate;
+    return [path.join(directory, 'compile_commands.json'), ...(directory === parent ? [] : ascend(parent))];
   };
-  const candidates = [
-    ...roots.map((root) => path.join(root, 'compile_commands.json')),
-    ...[path.dirname(source)].flatMap((directory) => {
-      const first = ascend(directory);
-      return first ? [first] : [];
-    })
-  ];
-  return candidates.find((candidate) => candidate.length > 0);
+  return [...new Set([
+    ...ascend(path.dirname(path.resolve(source))),
+    ...roots.map((root) => path.join(root, 'compile_commands.json'))
+  ])];
 };
 
 export const makeCompileCommand = (
@@ -55,15 +61,11 @@ export const makeCompileCommand = (
   clangPath: string,
   databaseText?: string
 ): CompileCommand => {
-  const entries = databaseText ? JSON.parse(databaseText) as readonly {
-    readonly directory: string;
-    readonly file: string;
-    readonly arguments?: readonly string[];
-    readonly command?: string;
-  }[] : [];
+  const entries = databaseText
+    ? Schema.decodeUnknownSync(Schema.fromJsonString(compileDatabase))(databaseText)
+    : [];
   const entry = entries.find((candidate) =>
-    path.resolve(candidate.directory, candidate.file) === path.resolve(source) ||
-    path.resolve(candidate.file) === path.resolve(source)
+    path.resolve(candidate.directory, candidate.file) === path.resolve(source)
   );
   if (!entry) {
     return {
@@ -87,70 +89,52 @@ export const makeCompileCommand = (
   };
 };
 
-export const resolveCompileCommand = (
+export const resolveCompileCommand = Effect.fnUntraced(function* (
   source: string,
   roots: readonly string[],
   clangPath: string
-): Effect.Effect<CompileCommand, FileFailure> =>
-  Effect.gen(function* () {
-    const database = findCompileDatabase(source, roots);
-    if (!database) return makeCompileCommand(source, roots, clangPath);
-    const databaseText = yield* readUtf8(database).pipe(
-      Effect.catchTag('FileFailure', () => Effect.succeed(''))
-    );
-    return makeCompileCommand(source, roots, clangPath, databaseText);
+): Effect.fn.Return<CompileCommand, FileFailure> {
+  const readDatabase = (databases: readonly string[]): Effect.Effect<string | undefined> => {
+    const database = databases[0];
+    return database === undefined
+      ? Effect.succeed(undefined)
+      : readUtf8(database).pipe(Effect.catchTag('FileFailure', () => readDatabase(databases.slice(1))));
+  };
+  const databaseText = yield* readDatabase(compileDatabases(source, roots));
+  return yield* Effect.try({
+    try: () => makeCompileCommand(source, roots, clangPath, databaseText),
+    catch: (error) => fileFailure('Invalid compile_commands.json: ' + String(error))
   });
+});
 
 export const runClangAst = (
   command: CompileCommand,
   maxBytes: number,
   signal: AbortSignal
 ): Effect.Effect<string, ProcessFailure> =>
-  Effect.async<string, ProcessFailure>((resume) => {
-    const child = spawn(command.compiler, [...command.args], {
+  Effect.callback<string, ProcessFailure>((resume) => {
+    if (signal.aborted) {
+      resume(Effect.fail(processFailure('Clang AST process was interrupted.')));
+      return;
+    }
+    const child = execFile(command.compiler, [...command.args], {
       cwd: command.cwd,
       windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-    const chunks: Buffer[] = [];
-    let totalBytes = 0;
-    let stderr = '';
-    let settled = false;
-    const finish = (effect: Effect.Effect<string, ProcessFailure>) => {
-      if (settled) return;
-      settled = true;
-      resume(effect);
-    };
-    const cancel = () => {
-      child.kill();
-      finish(Effect.fail(processFailure('Clang AST process was interrupted.')));
-    };
-    signal.addEventListener('abort', cancel, { once: true });
-    child.stdout.on('data', (chunk: Buffer) => {
-      totalBytes += chunk.length;
-      if (totalBytes > maxBytes) {
-        child.kill();
-        finish(Effect.fail(processFailure('Clang AST exceeds configured byte limit.')));
+      encoding: 'utf8',
+      maxBuffer: maxBytes,
+      signal
+    }, (error, output, stderr) => {
+      if (error) {
+        resume(Effect.fail(processFailure(
+          signal.aborted
+            ? 'Clang AST process was interrupted.'
+            : 'Clang failed: ' + error.message + '\n' + stderr.slice(-12000)
+        )));
+      } else if (output.trim().startsWith('{')) {
+        resume(Effect.succeed(output));
       } else {
-        chunks.push(chunk);
+        resume(Effect.fail(processFailure('Clang did not produce a JSON AST. ' + stderr.slice(-12000))));
       }
     });
-    child.stderr.on('data', (chunk: Buffer) => {
-      stderr = (stderr + chunk.toString('utf8')).slice(-12000);
-    });
-    child.on('error', (error) => finish(Effect.fail(processFailure('Could not start ' + command.compiler + ': ' + error.message))));
-    child.on('close', (code) => {
-      signal.removeEventListener('abort', cancel);
-      if (settled) return;
-      const output = Buffer.concat(chunks).toString('utf8');
-      if (output.trim().startsWith('{')) {
-        finish(Effect.succeed(output));
-      } else {
-        finish(Effect.fail(processFailure('Clang failed (exit ' + code + '): ' + stderr)));
-      }
-    });
-    return Effect.sync(() => {
-      signal.removeEventListener('abort', cancel);
-      if (!settled) child.kill();
-    });
+    return Effect.sync(() => { child.kill(); });
   });

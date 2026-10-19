@@ -115,7 +115,8 @@ const explicitFile = (node: ClangNode): string => {
         )
       : []
   );
-  return normalized(locations.find((location) => location.file)?.file ?? '');
+  const file = locations.find((location) => location.file)?.file;
+  return file ? normalized(file) : '';
 };
 
 export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonly all: readonly WrappedNode[] } => {
@@ -239,11 +240,13 @@ const findNodeAt = (
       const range = identifierRange(wrapped, sourceTextByFile);
       return range && offset >= range.start && offset < range.end ? [{ wrapped, range }] : [];
     })
-    .toSorted((left, right) => {
-      const leftWidth = left.range.end - left.range.start;
-      const rightWidth = right.range.end - right.range.start;
-      return leftWidth - rightWidth;
-    })[0]?.wrapped;
+    .reduce<{ readonly wrapped: WrappedNode; readonly range: { readonly start: number; readonly end: number } } | undefined>(
+      (selected, candidate) =>
+        !selected || candidate.range.end - candidate.range.start < selected.range.end - selected.range.start
+          ? candidate
+          : selected,
+      undefined
+    )?.wrapped;
 
 const unwrap = (wrapped: WrappedNode | undefined): WrappedNode | undefined => {
   if (!wrapped || !(TRANSPARENT_EXPRESSIONS as readonly string[]).includes(wrapped.node.kind)) return wrapped;
@@ -347,11 +350,13 @@ const foldContext = (wrapped: WrappedNode, index: AstIndex): FoldContext | undef
       if (!lambda) return [];
       const lambdaPosition = wrapped.ancestors.indexOf(lambdaNode);
       const hasFoldParent = wrapped.ancestors
-        .slice(lambdaPosition + 1)
+        .slice(0, lambdaPosition)
         .map((node) => index.all.find((candidate) => candidate.node === node))
         .some((candidate) => candidate !== undefined && isCall(candidate.node) && isFoldCall(candidate));
       if (!hasFoldParent) return [];
-      const stateParam = descendants(lambda).find((candidate) => candidate.node.kind === 'ParmVarDecl');
+      const stateParam = descendants(lambda)
+        .find((candidate) => candidate.node.kind === 'CXXMethodDecl' && candidate.node.name === 'operator()')
+        ?.children.find((candidate) => candidate.node.kind === 'ParmVarDecl');
       return stateParam ? [{ lambda, stateParam }] : [];
     })[0];
 
@@ -366,23 +371,24 @@ const findPreviousMutation = (
 ): MutationCandidate | undefined => {
   if (visitedFunctionIds.includes(fn.id)) return undefined;
   const nextVisited = [...visitedFunctionIds, fn.id];
-  const directCandidates = descendants(fn.body).flatMap((wrapped) => {
+  const body = descendants(fn.body).filter((wrapped) => enclosingFunction(wrapped, index)?.id === fn.id);
+  const directCandidates = body.flatMap((wrapped) => {
     const target = writeTarget(wrapped);
     const range = nodeRange(wrapped, sourceTextByFile);
     const targetPath = expressionPath(target);
     return range &&
-      range.start < beforeOffset &&
+      range.end <= beforeOffset &&
       targetPath?.rootId === rootId &&
       affects(targetPath.members, targetMembers)
       ? [{ mutation: wrapped, orderOffset: range.start, frames: [] as readonly TraceFrame[] }]
       : [];
   });
-  const callCandidates = descendants(fn.body)
+  const callCandidates = body
     .filter((wrapped) => isCall(wrapped.node))
     .flatMap((call) => {
       const callRange = nodeRange(call, sourceTextByFile);
       const callee = resolveFunction(call, index);
-      if (!callRange || callRange.start >= beforeOffset || !callee) return [];
+      if (!callRange || callRange.end > beforeOffset || !callee) return [];
       return callee.params.flatMap((parameter, parameterIndex) => {
         if (!isReferenceOrPointer(parameter)) return [];
         const argumentPath = expressionPath(argsOf(call)[parameterIndex]);
@@ -503,8 +509,10 @@ export const analyzeAst = (
   ast: ClangNode,
   options: AnalysisOptions
 ): AnalysisResult => {
-  const sourceTextByFile = new Map(options.sourceTextByFile ?? []);
-  sourceTextByFile.set(normalized(options.file), options.sourceText);
+  const sourceTextByFile = new Map([
+    ...(options.sourceTextByFile ?? []),
+    [normalized(options.file), options.sourceText] as const
+  ]);
   const index = buildIndex(buildTree(ast).all);
   const selected = findNodeAt(index.all, options.file, options.cursorByteOffset, sourceTextByFile);
   if (!selected) {

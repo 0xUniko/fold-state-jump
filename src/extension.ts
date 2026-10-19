@@ -27,9 +27,6 @@ const saveIfDirty = (document: vscode.TextDocument): Effect.Effect<boolean> =>
 const readWorkspaceText = (document: vscode.TextDocument): ReadonlyMap<string, string> =>
   new Map([[path.resolve(document.uri.fsPath), document.getText()]]);
 
-const sourceFor = (document: vscode.TextDocument, wrapped: WrappedNode): string =>
-  path.resolve(wrapped.file) === path.resolve(document.uri.fsPath) ? document.getText() : '';
-
 const sourceRange = (document: vscode.TextDocument, wrapped: WrappedNode): { readonly start: number; readonly end: number } | null =>
   nodeRange(wrapped, readWorkspaceText(document));
 
@@ -54,7 +51,7 @@ const navigateTo = (document: vscode.TextDocument, mutation: WrappedNode): Effec
       const target = path.resolve(mutation.file) === path.resolve(document.uri.fsPath)
         ? document
         : await vscode.workspace.openTextDocument(vscode.Uri.file(mutation.file));
-      const range = sourceRange(document, mutation);
+      const range = sourceRange(target, mutation);
       if (!range) throw new Error('Found a mutation but could not map its source range.');
       const position = target.positionAt(utf16OffsetFromByte(target.getText(), range.start));
       const targetEditor = await vscode.window.showTextDocument(target, { preview: true });
@@ -64,48 +61,60 @@ const navigateTo = (document: vscode.TextDocument, mutation: WrappedNode): Effec
     catch: (error) => new Error(String(error))
   });
 
-const runAnalysis = (document: vscode.TextDocument, token: vscode.CancellationToken): Effect.Effect<void, Error> =>
-  Effect.gen(function* () {
-    const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
-    const config = vscode.workspace.getConfiguration('foldStateJump');
-    const command = yield* resolveCompileCommand(
-      document.uri.fsPath,
-      roots,
-      config.get('clangPath', 'clang++')
-    );
-    const controller = new AbortController();
-    const cancellation = token.onCancellationRequested(() => controller.abort());
-    const astText = yield* runClangAst(
-      command,
-      config.get('maxAstBytes', 134217728),
-      controller.signal
-    ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
-    const ast = JSON.parse(astText) as ClangNode;
-    const result = analyzeAst(ast, {
-      file: document.uri.fsPath,
-      sourceText: document.getText(),
-      cursorByteOffset: byteOffsetFromUtf16(
-        document.getText(),
-        vscode.window.activeTextEditor?.document === document
-          ? document.offsetAt(vscode.window.activeTextEditor.selection.active)
-          : 0
-      ),
-      sourceTextByFile: readWorkspaceText(document)
-    });
-    if (result._tag === 'AnalysisFailure') {
-      yield* showFailure(result.reason);
-      return;
-    }
-    if (result._tag === 'MutationFound') {
-      yield* navigateTo(document, result.mutation);
-      return;
-    }
-    const candidate = yield* chooseCandidate(result.candidates);
-    if (candidate) yield* navigateTo(document, candidate.mutation);
+const runAnalysis = Effect.fnUntraced(function* (
+  document: vscode.TextDocument,
+  token: vscode.CancellationToken
+) {
+  const sourceText = document.getText();
+  const cursorByteOffset = byteOffsetFromUtf16(
+    sourceText,
+    vscode.window.activeTextEditor?.document === document
+      ? document.offsetAt(vscode.window.activeTextEditor.selection.active)
+      : 0
+  );
+  const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  const config = vscode.workspace.getConfiguration('foldStateJump');
+  const command = yield* resolveCompileCommand(
+    document.uri.fsPath,
+    roots,
+    config.get('clangPath', 'clang++')
+  );
+  const controller = new AbortController();
+  const cancellation = token.onCancellationRequested(() => controller.abort());
+  if (token.isCancellationRequested) controller.abort();
+  const astText = yield* runClangAst(
+    command,
+    config.get('maxAstBytes', 134217728),
+    controller.signal
+  ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
+  const ast = yield* Effect.try({
+    try: () => JSON.parse(astText) as ClangNode,
+    catch: (error) => new Error('Could not parse Clang AST: ' + String(error))
   });
+  if (document.getText() !== sourceText) {
+    yield* showFailure('The document changed during analysis. Run the command again.');
+    return;
+  }
+  const result = analyzeAst(ast, {
+    file: document.uri.fsPath,
+    sourceText,
+    cursorByteOffset,
+    sourceTextByFile: readWorkspaceText(document)
+  });
+  if (result._tag === 'AnalysisFailure') {
+    yield* showFailure(result.reason);
+    return;
+  }
+  if (result._tag === 'MutationFound') {
+    yield* navigateTo(document, result.mutation);
+    return;
+  }
+  const candidate = yield* chooseCandidate(result.candidates);
+  if (candidate) yield* navigateTo(document, candidate.mutation);
+}, Effect.mapError((error) => new Error(error.message)));
 
 export const activate = (context: vscode.ExtensionContext): void => {
-  context.subscriptions.add(
+  context.subscriptions.push(
     vscode.commands.registerCommand('foldStateJump.jumpToPreviousMutation', () =>
       Effect.gen(function* () {
         const document = activeDocument();
@@ -124,7 +133,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
           catch: (error) => new Error(String(error))
         });
       }).pipe(
-        Effect.catchAll((error) =>
+        Effect.catch((error) =>
           Effect.promise(() => vscode.window.showErrorMessage('Fold State Jump: ' + error.message)).pipe(Effect.asVoid)
         ),
         Effect.runPromise
