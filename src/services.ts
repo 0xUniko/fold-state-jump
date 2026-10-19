@@ -70,7 +70,7 @@ export const makeCompileCommand = (
   if (!entry) {
     return {
       compiler: clangPath,
-      args: ['-std=c++20', '-Xclang', '-ast-dump=json', '-fsyntax-only', source],
+      args: ['-std=c++17', '-Xclang', '-ast-dump=json', '-fsyntax-only', source],
       cwd: path.dirname(source)
     };
   }
