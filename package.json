@@ -73,7 +73,7 @@
     "dev": "bun run build --watch",
     "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --sourcemap=external --outdir ./dist",
     "package": "bun run build && bunx @vscode/vsce package",
-    "build:native": "cmake -S native -B native/build && cmake --build native/build -j 2"
+    "build:native": "cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang && cmake --build native/build -j 2"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
