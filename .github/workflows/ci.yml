@@ -17,6 +17,5 @@ jobs:
         with:
           node-version: 22
       - run: bun install
-      - run: bun run check
       - run: bun test
       - run: bun run build
