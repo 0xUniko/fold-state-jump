@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(fold_state_jump_ast LANGUAGES CXX)
 find_package(LLVM REQUIRED CONFIG)
-find_package(Clang REQUIRED CONFIG)
+find_package(Clang REQUIRED CONFIG HINTS "${LLVM_DIR}/../clang" NO_DEFAULT_PATH)
 add_executable(fold-state-jump-ast ast-extractor.cpp)
 target_compile_features(fold-state-jump-ast PRIVATE cxx_std_17)
 target_include_directories(fold-state-jump-ast PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
