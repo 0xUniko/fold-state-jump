@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { analyzeAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type ClangNode, type WrappedNode, type TraceCandidate } from './analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type ClangNode, type WrappedNode, type TraceCandidate } from './analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from './services';
 
 const isCpp = (languageId: string): boolean =>
@@ -63,7 +63,7 @@ const navigateTo = (document: vscode.TextDocument, mutation: WrappedNode): Effec
     catch: (error) => new Error(String(error))
   });
 
-const runAnalysis = Effect.fnUntraced(function* (
+const extractAst = Effect.fnUntraced(function* (
   document: vscode.TextDocument,
   token: vscode.CancellationToken,
   extensionPath: string
@@ -108,13 +108,39 @@ const runAnalysis = Effect.fnUntraced(function* (
   if (document.getText() !== sourceText) {
     return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.' };
   }
-  return analyzeAst(ast, {
-    file: document.uri.fsPath,
-    sourceText,
-    cursorByteOffset,
-    sourceTextByFile: readWorkspaceText(document)
-  });
+  return {
+    _tag: 'ExtractionReady' as const,
+    ast,
+    options: {
+      file: document.uri.fsPath,
+      sourceText,
+      cursorByteOffset,
+      sourceTextByFile: readWorkspaceText(document)
+    }
+  };
 }, Effect.mapError((error) => new Error(error.message)));
+
+const runMutationAnalysis = Effect.fnUntraced(function* (
+  document: vscode.TextDocument,
+  token: vscode.CancellationToken,
+  extensionPath: string
+) {
+  const extraction = yield* extractAst(document, token, extensionPath);
+  return extraction._tag === 'AnalysisFailure'
+    ? extraction
+    : analyzeAst(extraction.ast, extraction.options);
+});
+
+const runOriginAnalysis = Effect.fnUntraced(function* (
+  document: vscode.TextDocument,
+  token: vscode.CancellationToken,
+  extensionPath: string
+) {
+  const extraction = yield* extractAst(document, token, extensionPath);
+  return extraction._tag === 'AnalysisFailure'
+    ? extraction
+    : analyzeOriginAst(extraction.ast, extraction.options);
+});
 
 // User interaction happens after the progress promise has settled. VS Code
 // message and QuickPick promises may remain pending until the user acts.
@@ -129,13 +155,18 @@ const presentAnalysis = (
         return;
       case 'MutationFound':
         yield* navigateTo(document, result.mutation);
+        if (result.wrapped) {
+          yield* Effect.sync(() => {
+            vscode.window.setStatusBarMessage('Fold State Jump: wrapped to the last mutation in this fold.', 5000);
+          });
+        }
         return;
       case 'OriginFound':
         yield* navigateTo(document, result.origin);
         yield* Effect.sync(() => {
           void vscode.window.showInformationMessage(result.kind === 'initialization'
-            ? 'Fold State Jump: no earlier mutation found; showing the initialization source.'
-            : 'Fold State Jump: no earlier mutation found; showing the parameter source.');
+            ? 'Fold State Jump: showing the initialization source.'
+            : 'Fold State Jump: showing the parameter source.');
         });
         return;
       case 'CandidatesFound': {
@@ -161,7 +192,32 @@ export const activate = (context: vscode.ExtensionContext): void => {
               title: 'Tracing fold state mutations…',
               cancellable: true
             },
-            async (_progress, token) => Effect.runPromise(runAnalysis(document, token, context.extensionPath))
+            async (_progress, token) => Effect.runPromise(runMutationAnalysis(document, token, context.extensionPath))
+          ),
+          catch: (error) => new Error(String(error))
+        });
+        yield* presentAnalysis(document, result);
+      }).pipe(
+        Effect.catch((error) =>
+          Effect.promise(() => vscode.window.showErrorMessage('Fold State Jump: ' + error.message)).pipe(Effect.asVoid)
+        ),
+        Effect.runPromise
+      )
+    ),
+    vscode.commands.registerCommand('foldStateJump.jumpToOrigin', () =>
+      Effect.gen(function* () {
+        const document = activeDocument();
+        if (!document || !isCpp(document.languageId)) return;
+        const saved = yield* saveIfDirty(document);
+        if (!saved) return;
+        const result = yield* Effect.tryPromise({
+          try: () => vscode.window.withProgress(
+            {
+              location: vscode.ProgressLocation.Notification,
+              title: 'Tracing fold state origin…',
+              cancellable: true
+            },
+            async (_progress, token) => Effect.runPromise(runOriginAnalysis(document, token, context.extensionPath))
           ),
           catch: (error) => new Error(String(error))
         });
