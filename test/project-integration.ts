@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { analyzeAst, byteOffsetFromUtf16, type ClangNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, type ClangNode } from '../src/analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
 
 // Optional real-project checks: bun test/project-integration.ts /path/to/nano-infer
@@ -49,11 +49,13 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
   const astText = await Effect.runPromise(runClangAst(makeExtractionCommand(command, executable), 67108864, AbortSignal.timeout(120000)));
   assert.equal(await readFile(file, 'utf8'), sourceText, 'Source changed during extraction');
   const ast = JSON.parse(astText) as ClangNode;
-  const analyze = (offset: number) => analyzeAst(ast, { file, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset) });
+  const optionsAt = (offset: number) => ({ file, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset) });
+  const analyze = (offset: number) => analyzeAst(ast, optionsAt(offset));
+  const origin = (offset: number) => analyzeOriginAst(ast, optionsAt(offset));
   const bankChecks = [...sourceText.matchAll(/bank_state\.bank(?:\.records)?/g)].flatMap((match) =>
     ['bank', ...(match[0].endsWith('.records') ? ['records'] : [])].map((member) => {
       const offset = match.index + match[0].lastIndexOf('.' + member) + 1;
-      const result = analyze(offset);
+      const result = origin(offset);
       assert.equal(result._tag, 'OriginFound', name + ':' + sourceText.slice(0, offset).split('\n').length + ' ' + member);
       if (result._tag === 'OriginFound') {
         assert.equal(result.kind, 'parameter');
@@ -65,7 +67,7 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
     const start = sourceText.indexOf(projectCase.snippet);
     assert.ok(start >= 0, 'Missing snippet: ' + projectCase.snippet);
     const offset = sourceText.indexOf(projectCase.expression, start) + projectCase.expression.lastIndexOf('.') + 1;
-    const result = analyze(offset);
+    const result = projectCase.expected._tag === 'Origin' ? origin(offset) : analyze(offset);
     switch (projectCase.expected._tag) {
       case 'Origin':
         assert.equal(result._tag, 'OriginFound', projectCase.snippet);
