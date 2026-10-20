@@ -13,6 +13,7 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/ADT/StringExtras.h>
+#include <llvm/ADT/DenseSet.h>
 #include <cstdint>
 #include <numeric>
 #include <memory>
@@ -241,13 +242,14 @@ public:
     functions.TraverseDecl(context.getTranslationUnitDecl());
     // Avoid dumping the complete translation unit: serialize active-file
     // functions and only their transitively called non-system definitions.
+    llvm::DenseSet<const FunctionDecl *> seen;
     const auto include = [&](const auto &self, const FunctionDecl *function,
                              std::vector<const FunctionDecl *> &selected) -> void {
       const auto *definition = function->getDefinition();
       if (!definition || !serializer.inUserCode(definition)) return;
-      const auto *canonical = definition->getCanonicalDecl();
-      for (const auto *existing : selected)
-        if (existing->getCanonicalDecl() == canonical) return;
+      // Canonical declarations give stable deduplication across redeclarations
+      // and specializations without an O(F) scan for every reached function.
+      if (!seen.insert(definition->getCanonicalDecl()).second) return;
       selected.push_back(definition);
       CalledFunctions calls;
       calls.TraverseStmt(definition->getBody());
