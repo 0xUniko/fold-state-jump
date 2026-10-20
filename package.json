@@ -8,10 +8,24 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Programming Languages", "Other"],
-  "keywords": ["C++", "ranges", "fold_left", "data flow", "clang", "effect-ts", "bun"],
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "C++",
+    "ranges",
+    "fold_left",
+    "data flow",
+    "clang",
+    "effect-ts",
+    "bun"
+  ],
   "main": "./dist/extension.js",
-  "activationEvents": ["onLanguage:cpp", "onLanguage:c", "onCommand:foldStateJump.jumpToPreviousMutation"],
+  "activationEvents": [
+    "onLanguage:cpp",
+    "onLanguage:c"
+  ],
   "contributes": {
     "commands": [
       {
@@ -46,15 +60,13 @@
     }
   },
   "scripts": {
-    "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --outfile ./dist/extension.js",
-    "check": "tsc --noEmit",
-    "test": "bun test",
+    "dev": "bun run build --watch",
+    "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --sourcemap=external --outfile ./dist/extension.js",
     "package": "bun run build && bunx @vscode/vsce package"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "@types/vscode": "^1.140.0",
-    "typescript": "^7.0.2",
     "@vscode/vsce": "^4.0.0"
   },
   "dependencies": {
