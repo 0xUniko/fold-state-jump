@@ -31,7 +31,9 @@ bun run package
 
 The command palette entry is **Fold State Jump: Go to Previous State Mutation**. The default shortcut is `Ctrl+Alt+Shift+M` (macOS: `Cmd+Alt+Shift+M`).
 
-The extension uses the project's `compile_commands.json` when found; otherwise it invokes `clang++ -std=c++20` with the active source file. Set `foldStateJump.clangPath` if Clang is not on `PATH`.
+The extension searches for `compile_commands.json` in source ancestors, workspace roots, and common CMake build folders. For headers, it inherits flags from a nearby C++ source entry (preferably with the same basename) and explicitly uses `-x c++-header`. Set `foldStateJump.compileCommandsPath` if the build database lives elsewhere, or `foldStateJump.clangPath` if Clang is not on `PATH`. When no compile command is found it warns and uses a minimal `-std=c++17` fallback; project includes such as `gguf.h` may then be missing.
+
+Clang JSON AST output is streamed instead of using Node's `execFile` maxBuffer, but is subject to the `foldStateJump.maxAstBytes` safety limit (default 512 MiB). Whole-translation-unit AST generation and `JSON.parse` can still be expensive on large template-heavy projects.
 
 ## Design constraints
 
