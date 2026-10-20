@@ -1,6 +1,6 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeAst, analyzeOriginAst, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, type ClangNode, type WrappedNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, prepareAst, type ClangNode, type WrappedNode } from '../src/analysis';
 
 const wrapped = (node: WrappedNode['node'], children: readonly WrappedNode[] = []): WrappedNode => ({
   node,
@@ -195,4 +195,63 @@ describe('fold mutation analysis', () => {
       assert.equal(result.via, 'call');
     }
   }));
+});
+
+describe('prepared AST reuse', () => {
+  test('preserves mutation and origin results across repeated cursor queries', () => {
+    const ast = foldAst([
+      member('state', 'state', 10),
+      increment('state', 'state', 30),
+      increment('state', 'state', 70),
+      member('state', 'state', 100)
+    ]);
+    const prepared = prepareAst(ast);
+    const optionsAt = (cursorByteOffset: number) => ({
+      file: '/fixture.cpp',
+      sourceText: ' '.repeat(200),
+      cursorByteOffset
+    });
+
+    [16, 36, 75, 106].map((offset) => {
+      const fresh = analyzeAst(ast, optionsAt(offset));
+      const reused = analyzeAst(ast, optionsAt(offset), prepared);
+      assert.equal(reused._tag, fresh._tag);
+      if (fresh._tag === 'MutationFound' && reused._tag === 'MutationFound') {
+        assert.equal(reused.mutation.node, fresh.mutation.node);
+        assert.equal(reused.wrapped, fresh.wrapped);
+      }
+      const freshOrigin = analyzeOriginAst(ast, optionsAt(offset));
+      const reusedOrigin = analyzeOriginAst(ast, optionsAt(offset), prepared);
+      assert.equal(reusedOrigin._tag, freshOrigin._tag);
+      if (freshOrigin._tag === 'OriginFound' && reusedOrigin._tag === 'OriginFound') {
+        assert.equal(reusedOrigin.origin.node, freshOrigin.origin.node);
+      }
+    });
+  });
+
+  test('preserves call-mediated mutation results with cached callee indexes', () => {
+    const mutation = increment('parameter', 'value', 10);
+    const helper: ClangNode = {
+      kind: 'FunctionDecl', id: 'mutate', name: 'mutate', loc: { file: '/fixture.cpp' },
+      inner: [
+        { kind: 'ParmVarDecl', id: 'parameter', name: 'value', type: { qualType: 'State &' } },
+        { kind: 'CompoundStmt', inner: [mutation] }
+      ]
+    };
+    const call: ClangNode = {
+      kind: 'CallExpr', range: { begin: { offset: 50 }, end: { offset: 65, tokLen: 1 } },
+      inner: [reference('mutate', 'mutate', 50), reference('state', 'state', 57)]
+    };
+    const ast = foldAst([call, member('state', 'state', 100)], [helper]);
+    const prepared = prepareAst(ast);
+    const options = { file: '/fixture.cpp', sourceText: ' '.repeat(200), cursorByteOffset: 106 };
+    const fresh = analyzeAst(ast, options);
+    const cached = analyzeAst(ast, options, prepared);
+    assert.equal(fresh._tag, 'MutationFound');
+    assert.equal(cached._tag, 'MutationFound');
+    if (fresh._tag === 'MutationFound' && cached._tag === 'MutationFound') {
+      assert.equal(cached.mutation.node, fresh.mutation.node);
+      assert.equal(cached.mutation.node, mutation);
+    }
+  });
 });

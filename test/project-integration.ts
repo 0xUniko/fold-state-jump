@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, type ClangNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, prepareAst, type ClangNode } from '../src/analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
 
 // Optional real-project checks: bun test/project-integration.ts /path/to/nano-infer
@@ -49,9 +49,10 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
   const astText = await Effect.runPromise(runClangAst(makeExtractionCommand(command, executable), 67108864, AbortSignal.timeout(120000)));
   assert.equal(await readFile(file, 'utf8'), sourceText, 'Source changed during extraction');
   const ast = JSON.parse(astText) as ClangNode;
+  const prepared = prepareAst(ast);
   const optionsAt = (offset: number) => ({ file, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset) });
-  const analyze = (offset: number) => analyzeAst(ast, optionsAt(offset));
-  const origin = (offset: number) => analyzeOriginAst(ast, optionsAt(offset));
+  const analyze = (offset: number) => analyzeAst(ast, optionsAt(offset), prepared);
+  const origin = (offset: number) => analyzeOriginAst(ast, optionsAt(offset), prepared);
   const bankChecks = [...sourceText.matchAll(/bank_state\.bank(?:\.records)?/g)].flatMap((match) =>
     ['bank', ...(match[0].endsWith('.records') ? ['records'] : [])].map((member) => {
       const offset = match.index + match[0].lastIndexOf('.' + member) + 1;

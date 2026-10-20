@@ -1,13 +1,32 @@
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type ClangNode, type WrappedNode, type TraceCandidate } from './analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, prepareAst, type ClangNode, type PreparedAst, type WrappedNode, type TraceCandidate } from './analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from './services';
 
 const isCpp = (languageId: string): boolean =>
   ['cpp', 'c', 'cuda-cpp', 'objective-cpp'].includes(languageId);
 
 const activeDocument = (): vscode.TextDocument | undefined => vscode.window.activeTextEditor?.document;
+
+type CachedAst = {
+  readonly documentVersion: number;
+  readonly generation: number;
+  readonly createdAt: number;
+  readonly sourceText: string;
+  readonly prepared: PreparedAst;
+};
+
+// One entry bounds the cost of retaining both the native JSON representation
+// and the indexed AST. File watchers invalidate it; the age limit also covers
+// headers located outside the workspace, which VS Code cannot watch here.
+const astCache = new Map<string, CachedAst>();
+const cacheMaxAgeMs = 60_000;
+let cacheGeneration = 0;
+const invalidateAstCache = (): void => {
+  cacheGeneration += 1;
+  astCache.clear();
+};
 
 const saveIfDirty = (document: vscode.TextDocument): Effect.Effect<boolean> =>
   document.isDirty
@@ -69,12 +88,27 @@ const extractAst = Effect.fnUntraced(function* (
   extensionPath: string
 ) {
   const sourceText = document.getText();
+  const documentVersion = document.version;
+  const generation = cacheGeneration;
+  const source = path.resolve(document.uri.fsPath);
   const cursorByteOffset = byteOffsetFromUtf16(
     sourceText,
     vscode.window.activeTextEditor?.document === document
       ? document.offsetAt(vscode.window.activeTextEditor.selection.active)
       : 0
   );
+  const options = {
+    file: document.uri.fsPath,
+    sourceText,
+    cursorByteOffset,
+    sourceTextByFile: readWorkspaceText(document)
+  };
+  const cached = astCache.get(source);
+  if (cached?.documentVersion === documentVersion &&
+      cached.generation === generation &&
+      Date.now() - cached.createdAt < cacheMaxAgeMs) {
+    return { _tag: 'ExtractionReady' as const, prepared: cached.prepared, options };
+  }
   const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
   const config = vscode.workspace.getConfiguration('foldStateJump');
   const command = yield* resolveCompileCommand(
@@ -101,23 +135,16 @@ const extractAst = Effect.fnUntraced(function* (
     config.get('maxAstBytes', 67108864),
     controller.signal
   ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
-  const ast = yield* Effect.try({
-    try: () => JSON.parse(astText) as ClangNode,
-    catch: (error) => new Error('Could not parse Clang AST: ' + String(error))
+  const prepared = yield* Effect.try({
+    try: () => prepareAst(JSON.parse(astText) as ClangNode),
+    catch: (error) => new Error('Could not prepare Clang AST: ' + String(error))
   });
-  if (document.getText() !== sourceText) {
-    return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.' };
+  if (document.version !== documentVersion || document.getText() !== sourceText || generation !== cacheGeneration) {
+    return { _tag: 'AnalysisFailure' as const, reason: 'A source file changed during analysis. Run the command again.' };
   }
-  return {
-    _tag: 'ExtractionReady' as const,
-    ast,
-    options: {
-      file: document.uri.fsPath,
-      sourceText,
-      cursorByteOffset,
-      sourceTextByFile: readWorkspaceText(document)
-    }
-  };
+  astCache.clear();
+  astCache.set(source, { documentVersion, generation, createdAt: Date.now(), sourceText, prepared });
+  return { _tag: 'ExtractionReady' as const, prepared, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
 const runMutationAnalysis = Effect.fnUntraced(function* (
@@ -128,7 +155,7 @@ const runMutationAnalysis = Effect.fnUntraced(function* (
   const extraction = yield* extractAst(document, token, extensionPath);
   return extraction._tag === 'AnalysisFailure'
     ? extraction
-    : analyzeAst(extraction.ast, extraction.options);
+    : analyzeAst(extraction.prepared.ast, extraction.options, extraction.prepared);
 });
 
 const runOriginAnalysis = Effect.fnUntraced(function* (
@@ -139,7 +166,7 @@ const runOriginAnalysis = Effect.fnUntraced(function* (
   const extraction = yield* extractAst(document, token, extensionPath);
   return extraction._tag === 'AnalysisFailure'
     ? extraction
-    : analyzeOriginAst(extraction.ast, extraction.options);
+    : analyzeOriginAst(extraction.prepared.ast, extraction.options, extraction.prepared);
 });
 
 // User interaction happens after the progress promise has settled. VS Code
@@ -178,7 +205,27 @@ const presentAnalysis = (
   });
 
 export const activate = (context: vscode.ExtensionContext): void => {
+  const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{c,cc,cpp,cxx,h,hh,hpp,hxx,ipp,inc,mm}');
+  const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
   context.subscriptions.push(
+    sourceWatcher,
+    databaseWatcher,
+    sourceWatcher.onDidChange(invalidateAstCache),
+    sourceWatcher.onDidCreate(invalidateAstCache),
+    sourceWatcher.onDidDelete(invalidateAstCache),
+    databaseWatcher.onDidChange(invalidateAstCache),
+    databaseWatcher.onDidCreate(invalidateAstCache),
+    databaseWatcher.onDidDelete(invalidateAstCache),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (isCpp(event.document.languageId) ||
+          /\.(?:h|hh|hpp|hxx|ipp|inc)$/i.test(event.document.uri.fsPath) ||
+          path.basename(event.document.uri.fsPath) === 'compile_commands.json') invalidateAstCache();
+    }),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('foldStateJump')) invalidateAstCache();
+    }),
+    vscode.workspace.onDidChangeWorkspaceFolders(invalidateAstCache),
+
     vscode.commands.registerCommand('foldStateJump.jumpToPreviousMutation', () =>
       Effect.gen(function* () {
         const document = activeDocument();
