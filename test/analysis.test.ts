@@ -1,6 +1,6 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeAst, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, type ClangNode, type WrappedNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, type ClangNode, type WrappedNode } from '../src/analysis';
 
 const wrapped = (node: WrappedNode['node'], children: readonly WrappedNode[] = []): WrappedNode => ({
   node,
@@ -59,6 +59,8 @@ const foldAst = (statements: readonly ClangNode[], helpers: readonly ClangNode[]
       inner: [{ kind: 'CompoundStmt', inner: [{
         kind: 'CallExpr',
         inner: [reference('fold', 'fold_left', 0), {
+          kind: 'CXXConstructExpr', range: { begin: { offset: 1 }, end: { offset: 1, tokLen: 1 } }
+        }, {
           kind: 'LambdaExpr', inner: [{
             kind: 'CXXRecordDecl', inner: [{
               kind: 'CXXMethodDecl', id: 'lambda', name: 'operator()',
@@ -75,6 +77,9 @@ const foldAst = (statements: readonly ClangNode[], helpers: readonly ClangNode[]
 });
 
 const analyze = (ast: ClangNode, cursorByteOffset = 106) => analyzeAst(ast, {
+  file: '/fixture.cpp', sourceText: ' '.repeat(200), cursorByteOffset
+});
+const origin = (ast: ClangNode, cursorByteOffset = 106) => analyzeOriginAst(ast, {
   file: '/fixture.cpp', sourceText: ' '.repeat(200), cursorByteOffset
 });
 
@@ -116,8 +121,58 @@ describe('fold mutation analysis', () => {
         inner: [{ kind: 'CompoundStmt', inner: [increment('state', 'state', 30)] }]
       }]
     }, member('state', 'state', 100)]));
+    assert.equal(result._tag, 'AnalysisFailure');
+  });
+
+  test('wraps from the beginning of a fold to its last relevant mutation', () => {
+    const last = increment('state', 'state', 70);
+    const result = analyze(foldAst([
+      member('state', 'state', 10),
+      increment('state', 'state', 30),
+      last
+    ]), 16);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.equal(result.mutation.node, last);
+      assert.equal(result.wrapped, true);
+    }
+  });
+
+  test('reports no mutation instead of navigating to an origin', () => {
+    const result = analyze(foldAst([member('state', 'state', 100)]));
+    assert.equal(result._tag, 'AnalysisFailure');
+  });
+
+  test('goes directly to the fold seed even when there is an earlier mutation', () => {
+    const ast = foldAst([increment('state', 'state', 30), member('state', 'state', 100)]);
+    const result = origin(ast);
     assert.equal(result._tag, 'OriginFound');
-    if (result._tag === 'OriginFound') assert.equal(result.kind, 'parameter');
+    if (result._tag === 'OriginFound') {
+      assert.equal(result.kind, 'initialization');
+      assert.equal(result.origin.node.kind, 'CXXConstructExpr');
+    }
+  });
+
+  test('wraps to an invoked reference helper mutation inside the fold', () => {
+    const mutation = increment('parameter', 'value', 10);
+    const helper: ClangNode = {
+      kind: 'FunctionDecl', id: 'mutate', name: 'mutate', loc: { file: '/fixture.cpp' },
+      inner: [
+        { kind: 'ParmVarDecl', id: 'parameter', name: 'value', type: { qualType: 'State &' } },
+        { kind: 'CompoundStmt', inner: [mutation] }
+      ]
+    };
+    const call: ClangNode = {
+      kind: 'CallExpr', range: { begin: { offset: 50 }, end: { offset: 65, tokLen: 1 } },
+      inner: [reference('mutate', 'mutate', 50), reference('state', 'state', 57)]
+    };
+    const result = analyze(foldAst([member('state', 'state', 10), call], [helper]), 16);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.equal(result.mutation.node, mutation);
+      assert.equal(result.via, 'call');
+      assert.equal(result.wrapped, true);
+    }
   });
 
   ['State &', 'State'].map((qualType) => test('handles helper parameter ' + qualType, () => {
@@ -134,7 +189,7 @@ describe('fold mutation analysis', () => {
       inner: [reference('mutate', 'mutate', 50), reference('state', 'state', 57)]
     };
     const result = analyze(foldAst([call, member('state', 'state', 100)], [helper]));
-    assert.equal(result._tag, qualType === 'State &' ? 'MutationFound' : 'OriginFound');
+    assert.equal(result._tag, qualType === 'State &' ? 'MutationFound' : 'AnalysisFailure');
     if (result._tag === 'MutationFound') {
       assert.equal(result.mutation.node, mutation);
       assert.equal(result.via, 'call');
