@@ -77,14 +77,20 @@ const runAnalysis = Effect.fnUntraced(function* (
   const command = yield* resolveCompileCommand(
     document.uri.fsPath,
     roots,
-    config.get('clangPath', 'clang++')
+    config.get('clangPath', 'clang++'),
+    config.get('compileCommandsPath', '') || undefined
   );
+  if (command.context === 'fallback') {
+    yield* Effect.sync(() => {
+      void vscode.window.showWarningMessage('Fold State Jump: no matching compile command found; Clang may lack project include paths. Set foldStateJump.compileCommandsPath if analysis fails.');
+    });
+  }
   const controller = new AbortController();
   const cancellation = token.onCancellationRequested(() => controller.abort());
   if (token.isCancellationRequested) controller.abort();
   const astText = yield* runClangAst(
     command,
-    config.get('maxAstBytes', 134217728),
+    config.get('maxAstBytes', 536870912),
     controller.signal
   ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
   const ast = yield* Effect.try({
