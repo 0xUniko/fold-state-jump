@@ -3,4 +3,5 @@ dist/
 *.vsix
 .DS_Store
 bun.lock
-.vscode/launch.jsonnative/build/
+.vscode/launch.json
+native/build/
