@@ -32,6 +32,12 @@ bun run package
 
 The command palette entry is **Fold State Jump: Go to Previous State Mutation**. The default shortcut is `Ctrl+Alt+Shift+M` (macOS: `Cmd+Alt+Shift+M`).
 
+Place the cursor on the identifier whose value you want to trace. For example, clicking `bank`, `records`, or `session_state` selects that member or whole object. The analyzer follows simple reference aliases, direct function/member calls, assignment operators, and reference captures in called lambdas, including generic lambdas. Multiple supported caller paths are offered separately.
+
+When no earlier mutation can be found, the command navigates to a supported local initialization, fold seed, or parameter declaration and explicitly reports that it is showing a source rather than a mutation. A reference capture reads its source at a known invocation; a value capture uses the snapshot at lambda construction. Mutations in an uncalled lambda or a by-value copy do not count as changes to the original object.
+
+`bun test` includes native AST regression tests when the extractor has been built. To check the actual `nano-infer` member paths and cross-header targets, run `bun test/project-integration.ts /path/to/nano-infer` after building the native tool.
+
 The extension searches for `compile_commands.json` in source ancestors, workspace roots, and common CMake build folders. For headers, it inherits flags from a nearby C++ source entry (preferably with the same basename) and explicitly uses `-x c++-header`. Set `foldStateJump.compileCommandsPath` if the build database lives elsewhere, or build the native LibTooling extractor against the desired Clang version. When no compile command is found it warns and uses a minimal `-std=c++17` fallback; project includes such as `gguf.h` may then be missing.
 
 By default the plugin invokes the bundled build location `native/build/fold-state-jump-ast` (override with `foldStateJump.extractorPath`). The native extractor uses Clang LibTooling to parse the translation unit but emits a compact JSON tree only for functions declared in the active file and directly reachable user-code callees. It does not dump the entire standard-library AST. The JSON output is capped at 64 MiB via `foldStateJump.maxAstBytes`. Parsing C++ templates still has its intrinsic cost, and complex unresolved/indirect calls remain a limitation. Native LLVM/Clang development libraries must match the chosen extractor build version; the native executable uses its linked Clang version, while the compilation database supplies the project's `-std`, `-I`, and `-D` arguments. `foldStateJump.clangPath` is retained for compatibility but does not choose the LibTooling version.
@@ -60,7 +66,7 @@ void mutate(A& a) { a.b++; } // may mutate the caller's object
 
 This is still a prototype, not a complete C++ static analyzer:
 
-- The analyzer supports a subset of direct calls and reference/pointer parameter paths. Overloaded operators, virtual dispatch, callbacks, function pointers, complex aliases, and arbitrary pointer provenance are incomplete.
+- The analyzer supports a subset of direct calls, simple reference aliases, reference/pointer parameter paths, assignments, and lambda captures. Other overloaded operators, virtual dispatch, general callbacks, function pointers, complex aliases, and arbitrary pointer provenance are incomplete.
 - “Previous” mutation selection is based on source order, not full control-flow reachability. Branch feasibility, loops, exceptions, concurrency, and early returns are not proven.
 - Cross-translation-unit callers and effects inside external library implementations are not analyzed.
 - Clang still parses the entire translation unit, but the native extractor serializes only selected functions and their direct helper-call closure. Functions in unrelated translation units and indirect calls cannot be recovered from this AST alone.

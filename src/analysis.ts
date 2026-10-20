@@ -15,6 +15,12 @@ export type ClangNode = {
   readonly kind: string;
   readonly name?: string;
   readonly opcode?: string;
+  readonly memberOperator?: boolean;
+  readonly dependent?: boolean;
+  readonly referencedMemberDecl?: string;
+  readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string };
+  readonly captures?: readonly { readonly id: string; readonly kind: 'reference' | 'copy' }[];
+  readonly captureDefault?: 'reference' | 'copy' | 'none';
   readonly type?: { readonly qualType?: string };
   readonly referencedDecl?: {
     readonly id?: string;
@@ -57,6 +63,7 @@ export type TraceCandidate = {
 export type AnalysisResult =
   | { readonly _tag: 'MutationFound'; readonly mutation: WrappedNode; readonly via: 'direct' | 'call' }
   | { readonly _tag: 'CandidatesFound'; readonly candidates: readonly TraceCandidate[] }
+  | { readonly _tag: 'OriginFound'; readonly origin: WrappedNode; readonly kind: 'initialization' | 'parameter' }
   | { readonly _tag: 'AnalysisFailure'; readonly reason: string };
 
 export type AnalysisOptions = {
@@ -70,17 +77,15 @@ type AstIndex = {
   readonly all: readonly WrappedNode[];
   readonly functions: readonly FunctionInfo[];
   readonly calls: readonly WrappedNode[];
+  readonly functionsByNode: ReadonlyMap<ClangNode, FunctionInfo>;
+  readonly functionsById: ReadonlyMap<string, FunctionInfo>;
+  readonly declarations: ReadonlyMap<string, WrappedNode>;
 };
 
 type MutationCandidate = {
   readonly mutation: WrappedNode;
   readonly orderOffset: number;
   readonly frames: readonly TraceFrame[];
-};
-
-type FoldContext = {
-  readonly lambda: WrappedNode;
-  readonly stateParam: WrappedNode;
 };
 
 const CALLS = ['CallExpr', 'CXXMemberCallExpr', 'CXXOperatorCallExpr'] as const;
@@ -142,13 +147,14 @@ export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonl
       lastFile: children.file
     };
   };
-  // A generator avoids quadratic flattening work in heavily templated ASTs.
-  function* flatten(wrapped: WrappedNode): Generator<WrappedNode> {
-    yield wrapped;
-    for (const child of wrapped.children) yield* flatten(child);
-  }
+  // Thread the flat collection through the traversal without copying descendants.
+  const appendChildren = (wrapped: WrappedNode, all: WrappedNode[]): WrappedNode[] =>
+    wrapped.children.reduce((all, child) => {
+      all.push(child);
+      return appendChildren(child, all);
+    }, all);
   const result = visit(ast, [], '');
-  return { root: result.root, all: Array.from(flatten(result.root)) };
+  return { root: result.root, all: appendChildren(result.root, [result.root]) };
 };
 
 const descendants = (wrapped: WrappedNode): readonly WrappedNode[] =>
@@ -177,7 +183,17 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     const info = functionInfo(wrapped);
     return info ? [info] : [];
   });
-  return { all, functions, calls: all.filter((wrapped) => isCall(wrapped.node)) };
+  return {
+    all, functions, calls: all.filter((wrapped) => isCall(wrapped.node)),
+    functionsByNode: new Map(functions.map((fn) => [fn.wrapped.node, fn])),
+    functionsById: functions.reduce((functionsById, fn) => {
+      const previous = functionsById.get(fn.id);
+      if (!previous || fn.wrapped.ancestors.length > previous.wrapped.ancestors.length) functionsById.set(fn.id, fn);
+      return functionsById;
+    }, new Map<string, FunctionInfo>()),
+    declarations: new Map(all.filter((wrapped) => ['VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind))
+      .map((wrapped) => [wrapped.node.id ?? '', wrapped]))
+  };
 };
 
 const sourceFor = (sourceTextByFile: ReadonlyMap<string, string>, file: string): string =>
@@ -218,10 +234,12 @@ const identifierRange = (
 ): { readonly start: number; readonly end: number } | null => {
   const range = wrapped.node.range;
   if (!range?.begin || !range.end) return null;
-  const member = wrapped.node.kind === 'MemberExpr';
-  const location = member ? range.end : range.begin;
+  const member = ['MemberExpr', 'CXXDependentScopeMemberExpr'].includes(wrapped.node.kind);
+  const declaration = ['VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind);
+  const location = declaration ? wrapped.node.loc : member ? range.end : range.begin;
+  if (!location) return null;
   if (location.offset === undefined) return null;
-  const name = member ? wrapped.node.name : wrapped.node.referencedDecl?.name;
+  const name = member || declaration ? wrapped.node.name : wrapped.node.referencedDecl?.name;
   const end =
     location.tokLen !== undefined
       ? location.offset + location.tokLen
@@ -241,7 +259,7 @@ const findNodeAt = (
     .filter(
       (wrapped) =>
         normalized(wrapped.file) === normalized(file) &&
-        (wrapped.node.kind === 'DeclRefExpr' || wrapped.node.kind === 'MemberExpr')
+        ['DeclRefExpr', 'MemberExpr', 'CXXDependentScopeMemberExpr', 'VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind)
     )
     .flatMap((wrapped) => {
       const range = identifierRange(wrapped, sourceTextByFile);
@@ -249,11 +267,18 @@ const findNodeAt = (
     })
     .reduce<{ readonly wrapped: WrappedNode; readonly range: { readonly start: number; readonly end: number } } | undefined>(
       (selected, candidate) =>
-        !selected || candidate.range.end - candidate.range.start < selected.range.end - selected.range.start
+        !selected || candidate.range.end - candidate.range.start < selected.range.end - selected.range.start ||
+          (candidate.range.end - candidate.range.start === selected.range.end - selected.range.start &&
+            (Number(isDependent(candidate.wrapped)) < Number(isDependent(selected.wrapped)) ||
+              (isDependent(candidate.wrapped) === isDependent(selected.wrapped) &&
+                candidate.wrapped.ancestors.length > selected.wrapped.ancestors.length)))
           ? candidate
           : selected,
       undefined
     )?.wrapped;
+
+const isDependent = (wrapped: WrappedNode): boolean =>
+  !!wrapped.node.dependent || wrapped.ancestors.some((node) => isFunction(node) && node.dependent);
 
 const unwrap = (wrapped: WrappedNode | undefined): WrappedNode | undefined => {
   if (!wrapped || !(TRANSPARENT_EXPRESSIONS as readonly string[]).includes(wrapped.node.kind)) return wrapped;
@@ -270,6 +295,9 @@ export const expressionPath = (input: WrappedNode | undefined): ExpressionPath |
   const wrapped = unwrap(input);
   if (!wrapped) return null;
   const node = wrapped.node;
+  if (['VarDecl', 'ParmVarDecl'].includes(node.kind) && node.id) {
+    return { rootId: node.id, rootName: node.name ?? '', members: [] };
+  }
   if (node.kind === 'DeclRefExpr' && node.referencedDecl?.id) {
     return {
       rootId: node.referencedDecl.id,
@@ -277,9 +305,13 @@ export const expressionPath = (input: WrappedNode | undefined): ExpressionPath |
       members: []
     };
   }
-  if (node.kind === 'MemberExpr' && wrapped.children[0]) {
+  if (['MemberExpr', 'CXXDependentScopeMemberExpr'].includes(node.kind) && wrapped.children[0]) {
     const base = expressionPath(wrapped.children[0]);
     return base ? { ...base, members: [...base.members, node.name ?? '?'] } : null;
+  }
+  if (node.kind === 'CXXThisExpr') return { rootId: '$this', rootName: 'this', members: [] };
+  if (node.kind === 'CallExpr' && ['std::move', 'std::forward'].includes(node.callee?.qualifiedName ?? '')) {
+    return expressionPath(wrapped.children[1]);
   }
   if (node.kind === 'ArraySubscriptExpr' && wrapped.children[0]) {
     const base = expressionPath(wrapped.children[0]);
@@ -296,20 +328,29 @@ export const expressionPath = (input: WrappedNode | undefined): ExpressionPath |
 };
 
 const resolveFunction = (call: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
+  if (call.node.callee) return index.functionsById.get(call.node.callee.id);
   if (!call.children[0]) return undefined;
+  const callee = unwrap(call.children[0]);
+  const declaration = callee?.node.referencedDecl?.id ? index.declarations.get(callee.node.referencedDecl.id) : undefined;
+  const callable = callee?.node.kind === 'LambdaExpr' ? callee : declaration ? unwrap(declaration.children[0]) : undefined;
+  if (callable?.node.kind === 'LambdaExpr') {
+    const method = callable.children.flatMap((record) => record.children)
+      .find((method) => method.node.kind === 'CXXMethodDecl' && method.node.name === 'operator()');
+    if (method) return index.functionsByNode.get(method.node);
+  }
+  if (callee?.node.referencedMemberDecl) return index.functionsById.get(callee.node.referencedMemberDecl);
   const reference = descendants(call.children[0]).find(
     (wrapped) => wrapped.node.kind === 'DeclRefExpr' && wrapped.node.referencedDecl
   )?.node.referencedDecl;
-  if (!reference) return undefined;
-  return (
-    index.functions.find((fn) => fn.id === reference.id) ??
-    index.functions.find(
-      (fn) => fn.name === reference.name && fn.type === (reference.type?.qualType ?? '')
-    )
-  );
+  const exact = reference?.id && index.functionsById.get(reference.id);
+  if (exact) return exact;
+  const name = reference?.name ?? callee?.node.name;
+  const functions = [...new Map(index.functions.filter((fn) => fn.name === name &&
+    (!reference?.type?.qualType || fn.type === reference.type.qualType)).map((fn) => [fn.id, fn])).values()];
+  return functions.length === 1 ? functions[0] : undefined;
 };
 
-const argsOf = (call: WrappedNode): readonly WrappedNode[] => call.children.slice(1);
+const argsOf = (call: WrappedNode): readonly WrappedNode[] => call.children.slice(call.node.memberOperator ? 2 : 1);
 
 const writeTarget = (wrapped: WrappedNode): WrappedNode | undefined => {
   const node = wrapped.node;
@@ -321,6 +362,9 @@ const writeTarget = (wrapped: WrappedNode): WrappedNode | undefined => {
     (ASSIGNMENTS as readonly string[]).includes(node.opcode ?? '')
   ) {
     return wrapped.children[0];
+  }
+  if (node.kind === 'CXXOperatorCallExpr' && (ASSIGNMENTS as readonly string[]).includes(node.opcode ?? '')) {
+    return wrapped.children[1];
   }
   return undefined;
 };
@@ -338,39 +382,59 @@ const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo 
   [...wrapped.ancestors]
     .reverse()
     .filter(isFunction)
-    .flatMap((node) => index.functions.filter((fn) => fn.wrapped.node === node))
+    .flatMap((node) => {
+      const fn = index.functionsByNode.get(node);
+      return fn ? [fn] : [];
+    })
     .at(0);
 
-const isFoldCall = (call: WrappedNode): boolean =>
-  descendants(call.children[0] ?? call).some(
-    (wrapped) =>
-      wrapped.node.kind === 'DeclRefExpr' &&
-      (wrapped.node.referencedDecl?.name ?? '').includes('fold_left')
-  );
+const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined => {
+  const lambdaNode = [...fn.wrapped.ancestors].reverse().find((node) => node.kind === 'LambdaExpr');
+  return lambdaNode && index.all.find((wrapped) => wrapped.node === lambdaNode);
+};
 
-const foldContext = (wrapped: WrappedNode, index: AstIndex): FoldContext | undefined =>
-  [...wrapped.ancestors]
-    .reverse()
-    .filter((node) => node.kind === 'LambdaExpr')
-    .flatMap((lambdaNode) => {
-      const lambda = index.all.find((candidate) => candidate.node === lambdaNode);
-      if (!lambda) return [];
-      const lambdaPosition = wrapped.ancestors.indexOf(lambdaNode);
-      const hasFoldParent = wrapped.ancestors
-        .slice(0, lambdaPosition)
-        .map((node) => index.all.find((candidate) => candidate.node === node))
-        .some((candidate) => candidate !== undefined && isCall(candidate.node) && isFoldCall(candidate));
-      if (!hasFoldParent) return [];
-      const stateParam = descendants(lambda)
-        .find((candidate) => candidate.node.kind === 'CXXMethodDecl' && candidate.node.name === 'operator()')
-        ?.children.find((candidate) => candidate.node.kind === 'ParmVarDecl');
-      return stateParam ? [{ lambda, stateParam }] : [];
-    })[0];
+const isFoldCall = (call: WrappedNode): boolean =>
+  (call.node.callee?.name ?? '').includes('fold_left') ||
+  call.children.slice(0, call.node.memberOperator ? 2 : 1).flatMap(descendants).some((wrapped) =>
+    (wrapped.node.referencedDecl?.name ?? wrapped.node.name ?? '').includes('fold_left'));
+
+const foldFor = (fn: FunctionInfo, index: AstIndex): { readonly call: WrappedNode; readonly initial: WrappedNode } | undefined => {
+  const lambda = lambdaFor(fn, index);
+  if (!lambda || fn.params.length === 0) return undefined;
+  const callNode = [...lambda.ancestors].reverse().find(isCall);
+  const call = callNode && index.calls.find((call) => call.node === callNode);
+  const initial = call && argsOf(call).at(-2);
+  return call && initial && isFoldCall(call) ? { call, initial } : undefined;
+};
+
+const normalizePath = (target: ExpressionPath, index: AstIndex, visited: readonly string[] = []): ExpressionPath => {
+  if (visited.includes(target.rootId)) return target;
+  const declaration = index.declarations.get(target.rootId);
+  if (declaration?.node.kind !== 'VarDecl' || !/&/.test(declaration.node.type?.qualType ?? '')) return target;
+  const initial = expressionPath(declaration.children[0]);
+  return initial ? normalizePath({ ...initial, members: [...initial.members, ...target.members] }, index, [...visited, target.rootId]) : target;
+};
+
+const pathAt = (wrapped: WrappedNode | undefined, index: AstIndex): ExpressionPath | null => {
+  const target = expressionPath(wrapped);
+  return target && normalizePath(target, index);
+};
+
+const receiverOf = (call: WrappedNode): WrappedNode | undefined =>
+  call.node.memberOperator ? call.children[1] : unwrap(call.children[0])?.children[0];
+
+const captureMatches = (capture: { readonly id: string }, target: ExpressionPath, index: AstIndex): boolean =>
+  normalizePath({ rootId: capture.id, rootName: '', members: [] }, index).rootId === target.rootId;
+
+const standardMutationTarget = (call: WrappedNode): WrappedNode | undefined =>
+  /^std::/.test(call.node.callee?.qualifiedName ?? '') &&
+  ['push_back', 'emplace_back', 'emplace', 'insert', 'erase', 'clear', 'reset', 'resize', 'assign', 'swap', 'pop_back'].includes(call.node.callee?.name ?? '')
+    ? receiverOf(call)
+    : undefined;
 
 const findPreviousMutation = (
   fn: FunctionInfo,
-  rootId: string,
-  targetMembers: readonly string[],
+  target: ExpressionPath,
   beforeOffset: number,
   index: AstIndex,
   sourceTextByFile: ReadonlyMap<string, string>,
@@ -378,107 +442,106 @@ const findPreviousMutation = (
 ): MutationCandidate | undefined => {
   if (visitedFunctionIds.includes(fn.id)) return undefined;
   const nextVisited = [...visitedFunctionIds, fn.id];
-  const body = descendants(fn.body).filter((wrapped) => enclosingFunction(wrapped, index)?.id === fn.id);
+  const body = descendants(fn.body).filter((wrapped) => enclosingFunction(wrapped, index)?.wrapped.node === fn.wrapped.node);
   const directCandidates = body.flatMap((wrapped) => {
-    const target = writeTarget(wrapped);
+    const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
     const range = nodeRange(wrapped, sourceTextByFile);
-    const targetPath = expressionPath(target);
-    return range &&
-      range.end <= beforeOffset &&
-      targetPath?.rootId === rootId &&
-      affects(targetPath.members, targetMembers)
+    const writePath = pathAt(write, index);
+    return range && range.end <= beforeOffset && writePath?.rootId === target.rootId && affects(writePath.members, target.members)
       ? [{ mutation: wrapped, orderOffset: range.start, frames: [] as readonly TraceFrame[] }]
       : [];
   });
-  const callCandidates = body
-    .filter((wrapped) => isCall(wrapped.node))
-    .flatMap((call) => {
-      const callRange = nodeRange(call, sourceTextByFile);
-      const callee = resolveFunction(call, index);
-      if (!callRange || callRange.end > beforeOffset || !callee) return [];
-      return callee.params.flatMap((parameter, parameterIndex) => {
-        if (!isReferenceOrPointer(parameter)) return [];
-        const argumentPath = expressionPath(argsOf(call)[parameterIndex]);
-        if (
-          argumentPath?.rootId !== rootId ||
-          !sameOrParent(argumentPath.members, targetMembers)
-        ) {
-          return [];
-        }
-        const nested = findPreviousMutation(
-          callee,
-          parameter.node.id ?? '',
-          targetMembers.slice(argumentPath.members.length),
-          Number.POSITIVE_INFINITY,
-          index,
-          sourceTextByFile,
-          nextVisited
-        );
-        return nested
-          ? [{
-              mutation: nested.mutation,
-              orderOffset: callRange.start,
-              frames: [{ callsite: call, caller: fn }, ...nested.frames]
-            }]
-          : [];
-      });
+  const callCandidates = body.filter((wrapped) => isCall(wrapped.node)).flatMap((call) => {
+    const callRange = nodeRange(call, sourceTextByFile);
+    const callee = resolveFunction(call, index);
+    if (!callRange || callRange.end > beforeOffset || !callee) return [];
+    const parameterTargets = callee.params.flatMap((parameter, parameterIndex) => {
+      if (!isReferenceOrPointer(parameter)) return [];
+      const argument = pathAt(argsOf(call)[parameterIndex], index);
+      if (!argument || argument.rootId !== target.rootId || !affects(argument.members, target.members)) return [];
+      return [{ rootId: parameter.node.id ?? '', rootName: parameter.node.name ?? '', members: target.members.slice(argument.members.length) }];
     });
-  return [...directCandidates, ...callCandidates].reduce(
-    (latest: MutationCandidate | undefined, candidate) =>
-      !latest || candidate.orderOffset > latest.orderOffset ? candidate : latest,
+    const receiver = pathAt(receiverOf(call), index);
+    const receiverTargets = receiver?.rootId === target.rootId && affects(receiver.members, target.members)
+      ? [{ rootId: '$this', rootName: 'this', members: target.members.slice(receiver.members.length) }]
+      : [];
+    const lambda = lambdaFor(callee, index);
+    const capture = lambda?.node.captures?.find((capture) => captureMatches(capture, target, index));
+    const declaration = index.declarations.get(target.rootId);
+    const owner = declaration && enclosingFunction(declaration, index);
+    const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
+      callee.wrapped.ancestors.some((node) => node.id === owner.id);
+    const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [target] : [];
+    return [...parameterTargets, ...receiverTargets, ...capturedTargets].flatMap((target) => {
+      const nested = findPreviousMutation(callee, target, Number.POSITIVE_INFINITY, index, sourceTextByFile, nextVisited);
+      return nested ? [{ ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] }] : [];
+    });
+  });
+  return [...directCandidates, ...callCandidates].reduce<MutationCandidate | undefined>(
+    (latest, candidate) => !latest || candidate.orderOffset > latest.orderOffset ? candidate : latest,
     undefined
   );
 };
 
-const traceParameterToFold = (
+// Backward tracing preserves the value passed by copy, while forward call effects
+// above only follow parameters that can change the caller's object.
+const traceMutations = (
   fn: FunctionInfo,
-  parameterIndex: number,
-  targetMembers: readonly string[],
+  target: ExpressionPath,
+  beforeOffset: number,
   index: AstIndex,
   sourceTextByFile: ReadonlyMap<string, string>,
-  visitedFunctionIds: readonly string[] = []
+  visited: readonly string[] = []
 ): readonly TraceCandidate[] => {
-  if (visitedFunctionIds.includes(fn.id)) return [];
-  const nextVisited = [...visitedFunctionIds, fn.id];
-  return index.calls
-    .filter((call) => resolveFunction(call, index)?.id === fn.id)
-    .flatMap((call) => {
-      const callRange = nodeRange(call, sourceTextByFile);
+  const key = fn.id + ':' + target.rootId + ':' + target.members.join('.');
+  if (visited.includes(key)) return [];
+  const nextVisited = [...visited, key];
+  const local = findPreviousMutation(fn, target, beforeOffset, index, sourceTextByFile);
+  if (local) return [local];
+  const parameterIndex = fn.params.findIndex((parameter) => parameter.node.id === target.rootId);
+  if (parameterIndex >= 0) {
+    return index.calls.filter((call) => resolveFunction(call, index)?.id === fn.id).flatMap((call) => {
       const caller = enclosingFunction(call, index);
-      const argumentPath = expressionPath(argsOf(call)[parameterIndex]);
-      if (!callRange || !caller || !argumentPath) return [];
-      const fold = foldContext(call, index);
-      if (fold && argumentPath.rootId === (fold.stateParam.node.id ?? '')) {
-        const previous = findPreviousMutation(
-          caller,
-          fold.stateParam.node.id ?? '',
-          [...argumentPath.members, ...targetMembers],
-          callRange.start,
-          index,
-          sourceTextByFile
-        );
-        return previous
-          ? [{
-              mutation: previous.mutation,
-              orderOffset: callRange.start,
-              frames: [{ callsite: call, caller }, ...previous.frames]
-            }]
-          : [];
-      }
-      const callerParameterIndex = caller.params.findIndex(
-        (parameter) => parameter.node.id === argumentPath.rootId
-      );
-      return callerParameterIndex < 0
-        ? []
-        : traceParameterToFold(
-            caller,
-            callerParameterIndex,
-            [...argumentPath.members, ...targetMembers],
-            index,
-            sourceTextByFile,
-            nextVisited
-          );
+      const range = nodeRange(call, sourceTextByFile);
+      const argument = pathAt(argsOf(call)[parameterIndex], index);
+      if (!caller || !range || !argument || caller.id === fn.id) return [];
+      return traceMutations(caller, { ...argument, members: [...argument.members, ...target.members] }, range.start, index, sourceTextByFile, nextVisited)
+        .map((candidate) => ({ ...candidate, frames: [{ callsite: call, caller }, ...candidate.frames] }));
     });
+  }
+  const parent = enclosingFunction(fn.wrapped, index);
+  const lambda = lambdaFor(fn, index);
+  const range = lambda && nodeRange(lambda, sourceTextByFile);
+  const declaration = index.declarations.get(target.rootId);
+  if (parent && lambda && range && enclosingFunction(declaration ?? fn.wrapped, index)?.id !== fn.id) {
+    const capture = lambda.node.captures?.find((capture) => captureMatches(capture, target, index));
+    const reference = capture?.kind === 'reference' || (!capture && lambda.node.captureDefault === 'reference');
+    const invocations = reference ? index.calls.filter((call) =>
+      resolveFunction(call, index)?.id === fn.id && enclosingFunction(call, index)?.id === parent.id) : [];
+    if (invocations.length > 0) return invocations.flatMap((call) => {
+      const range = nodeRange(call, sourceTextByFile);
+      return range ? traceMutations(parent, target, range.start, index, sourceTextByFile, nextVisited)
+        .map((candidate) => ({ ...candidate, frames: [{ callsite: call, caller: parent }, ...candidate.frames] })) : [];
+    });
+    return traceMutations(parent, target, range.start, index, sourceTextByFile, nextVisited);
+  }
+  return [];
+};
+
+const originFor = (
+  fn: FunctionInfo,
+  target: ExpressionPath,
+  index: AstIndex
+): Extract<AnalysisResult, { readonly _tag: 'OriginFound' }> | undefined => {
+  const declaration = index.declarations.get(target.rootId);
+  if (!declaration) return undefined;
+  if (declaration.node.kind === 'VarDecl') return declaration.children.length > 0
+    ? { _tag: 'OriginFound', origin: declaration, kind: 'initialization' }
+    : undefined;
+  const owner = enclosingFunction(declaration, index) ?? fn;
+  const fold = owner.params[0]?.node.id === target.rootId ? foldFor(owner, index) : undefined;
+  if (fold) return { _tag: 'OriginFound', origin: fold.initial, kind: 'initialization' };
+  return { _tag: 'OriginFound', origin: declaration, kind: 'parameter' };
 };
 
 const uniqueCandidates = (candidates: readonly TraceCandidate[]): readonly TraceCandidate[] =>
@@ -525,48 +588,19 @@ export const analyzeAst = (
   if (!selected) {
     return { _tag: 'AnalysisFailure', reason: 'No supported variable or member expression found at the cursor.' };
   }
-  const target = expressionPath(selected);
+  const target = pathAt(selected, index);
   const current = enclosingFunction(selected, index);
   if (!target || !current) {
     return { _tag: 'AnalysisFailure', reason: 'Could not resolve the expression path or enclosing function.' };
   }
-  const fold = foldContext(selected, index);
-  if (fold && target.rootId === (fold.stateParam.node.id ?? '')) {
-    const range = nodeRange(selected, sourceTextByFile);
-    const previous = findPreviousMutation(
-      current,
-      target.rootId,
-      target.members,
-      range?.start ?? options.cursorByteOffset,
-      index,
-      sourceTextByFile
-    );
-    return previous
-      ? { _tag: 'MutationFound', mutation: previous.mutation, via: previous.frames.length > 0 ? 'call' : 'direct' }
-      : { _tag: 'AnalysisFailure', reason: 'No earlier mutation found for this fold-state path.' };
+  const candidates = uniqueCandidates(traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile));
+  if (candidates.length > 0) {
+    return candidates.length === 1
+      ? { _tag: 'MutationFound', mutation: candidates[0].mutation, via: candidates[0].frames.length > 0 ? 'call' : 'direct' }
+      : { _tag: 'CandidatesFound', candidates };
   }
-  const parameterIndex = current.params.findIndex((parameter) => parameter.node.id === target.rootId);
-  if (parameterIndex < 0) {
-    return { _tag: 'AnalysisFailure', reason: 'The expression is not rooted at the fold state or a supported function parameter; local aliases are not supported yet.' };
-  }
-  const local = findPreviousMutation(
-    current,
-    target.rootId,
-    target.members,
-    options.cursorByteOffset,
-    index,
-    sourceTextByFile
-  );
-  if (local) {
-    return { _tag: 'MutationFound', mutation: local.mutation, via: local.frames.length > 0 ? 'call' : 'direct' };
-  }
-  const candidates = uniqueCandidates(
-    traceParameterToFold(current, parameterIndex, target.members, index, sourceTextByFile)
-  );
-  if (candidates.length === 0) {
-    return { _tag: 'AnalysisFailure', reason: 'No fold_left call path with an earlier mutation was found in this translation unit.' };
-  }
-  return candidates.length === 1
-    ? { _tag: 'MutationFound', mutation: candidates[0].mutation, via: 'call' }
-    : { _tag: 'CandidatesFound', candidates };
+  return originFor(current, target, index) ?? {
+    _tag: 'AnalysisFailure',
+    reason: 'No earlier mutation or supported initialization/parameter source was found for this expression.'
+  };
 };

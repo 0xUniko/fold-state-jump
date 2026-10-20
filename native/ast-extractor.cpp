@@ -14,6 +14,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/ADT/StringExtras.h>
 #include <cstdint>
+#include <numeric>
 #include <memory>
 #include <string>
 #include <vector>
@@ -76,10 +77,37 @@ public:
         {"range", range(parameter->getSourceRange())}};
   }
 
+  json::Object variable(const VarDecl *variable, unsigned depth) const {
+    json::Array inner;
+    if (const auto *initializer = variable->getInit())
+      inner.push_back(statement(initializer, depth + 1));
+    return json::Object{
+        {"kind", "VarDecl"}, {"id", identity(variable)},
+        {"name", variable->getNameAsString()},
+        {"type", json::Object{{"qualType", variable->getType().getAsString()}}},
+        {"loc", location(variable->getLocation())},
+        {"range", range(variable->getSourceRange())}, {"inner", std::move(inner)}};
+  }
+
   json::Object statement(const Stmt *stmt, unsigned depth = 0) const {
     if (depth > 256) return json::Object{{"kind", "UnsupportedDepth"}};
     json::Object node{{"kind", stmt->getStmtClassName()},
                       {"range", range(stmt->getSourceRange())}};
+    if (const auto *expression = llvm::dyn_cast<Expr>(stmt)) {
+      node["type"] = json::Object{{"qualType", expression->getType().getAsString()}};
+      node["dependent"] = expression->isTypeDependent();
+    }
+    if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
+      if (const auto *callee = call->getDirectCallee())
+        node["callee"] = json::Object{
+            {"id", identity(callee)}, {"name", callee->getNameAsString()},
+            {"qualifiedName", callee->getQualifiedNameAsString()}};
+    }
+    if (const auto *call = llvm::dyn_cast<CXXOperatorCallExpr>(stmt)) {
+      node["opcode"] = getOperatorSpelling(call->getOperator());
+      node["memberOperator"] = call->getDirectCallee() &&
+          llvm::isa<CXXMethodDecl>(call->getDirectCallee());
+    }
     if (const auto *reference = llvm::dyn_cast<DeclRefExpr>(stmt)) {
       const auto *declaration = reference->getDecl();
       node["referencedDecl"] = json::Object{
@@ -88,25 +116,48 @@ public:
           {"type", json::Object{{"qualType", declaration->getType().getAsString()}}}};
     } else if (const auto *member = llvm::dyn_cast<MemberExpr>(stmt)) {
       node["name"] = member->getMemberNameInfo().getAsString();
+      node["referencedMemberDecl"] = identity(member->getMemberDecl());
+    } else if (const auto *member = llvm::dyn_cast<CXXDependentScopeMemberExpr>(stmt)) {
+      node["name"] = member->getMember().getAsString();
+    } else if (const auto *lookup = llvm::dyn_cast<UnresolvedLookupExpr>(stmt)) {
+      node["name"] = lookup->getName().getAsString();
     } else if (const auto *unary = llvm::dyn_cast<UnaryOperator>(stmt)) {
       node["opcode"] = UnaryOperator::getOpcodeStr(unary->getOpcode()).str();
     } else if (const auto *binary = llvm::dyn_cast<BinaryOperator>(stmt)) {
       node["opcode"] = BinaryOperator::getOpcodeStr(binary->getOpcode()).str();
     }
     json::Array inner;
-    if (const auto *lambda = llvm::dyn_cast<LambdaExpr>(stmt)) {
+    if (const auto *declarations = llvm::dyn_cast<DeclStmt>(stmt)) {
+      const auto declarationRange = declarations->decls();
+      inner = std::accumulate(declarationRange.begin(), declarationRange.end(), json::Array{},
+          [&](json::Array inner, const Decl *declaration) {
+            if (const auto *local = llvm::dyn_cast<VarDecl>(declaration))
+              inner.push_back(variable(local, depth));
+            return inner;
+          });
+    } else if (const auto *lambda = llvm::dyn_cast<LambdaExpr>(stmt)) {
+      node["captureDefault"] = lambda->getCaptureDefault() == LCD_ByRef ? "reference" :
+          lambda->getCaptureDefault() == LCD_ByCopy ? "copy" : "none";
+      const auto captureRange = lambda->captures();
+      node["captures"] = std::accumulate(captureRange.begin(), captureRange.end(), json::Array{},
+          [&](json::Array captures, const LambdaCapture &capture) {
+            if (capture.capturesVariable())
+              captures.push_back(json::Object{
+                  {"id", identity(capture.getCapturedVar())},
+                  {"kind", capture.getCaptureKind() == LCK_ByRef ? "reference" : "copy"}});
+            return captures;
+          });
       if (const auto *method = lambda->getCallOperator()) {
-        json::Array methodInner;
-        for (const auto *param : method->parameters()) methodInner.push_back(parameter(param));
-        if (method->hasBody()) methodInner.push_back(statement(method->getBody(), depth + 1));
         json::Array members;
-        members.push_back(json::Object{
-            {"kind", "CXXMethodDecl"}, {"id", identity(method)},
-            {"name", "operator()"},
-            {"type", json::Object{{"qualType", method->getType().getAsString()}}},
-            {"loc", location(method->getLocation())},
-            {"range", range(method->getSourceRange())},
-            {"inner", std::move(methodInner)}});
+        members.push_back(function(method, depth + 1));
+        if (const auto *methodTemplate = method->getDescribedFunctionTemplate()) {
+          const auto specializations = methodTemplate->specializations();
+          members = std::accumulate(specializations.begin(), specializations.end(), std::move(members),
+              [&](json::Array members, const FunctionDecl *specialization) {
+                if (specialization->hasBody()) members.push_back(function(specialization, depth + 1));
+                return members;
+              });
+        }
         inner.push_back(json::Object{{"kind", "CXXRecordDecl"},
                                      {"inner", std::move(members)}});
       }
@@ -118,16 +169,17 @@ public:
     return node;
   }
 
-  json::Object function(const FunctionDecl *function) const {
+  json::Object function(const FunctionDecl *function, unsigned depth = 0) const {
     json::Array inner;
     for (const auto *param : function->parameters()) inner.push_back(parameter(param));
-    if (const auto *body = function->getBody()) inner.push_back(statement(body));
+    if (const auto *body = function->getBody()) inner.push_back(statement(body, depth));
     return json::Object{
         {"kind", llvm::isa<CXXConstructorDecl>(function) ? "CXXConstructorDecl" :
                  llvm::isa<CXXDestructorDecl>(function) ? "CXXDestructorDecl" :
                  llvm::isa<CXXConversionDecl>(function) ? "CXXConversionDecl" :
                  llvm::isa<CXXMethodDecl>(function) ? "CXXMethodDecl" : "FunctionDecl"},
         {"id", identity(function)}, {"name", function->getNameAsString()},
+        {"dependent", function->isDependentContext()},
         {"type", json::Object{{"qualType", function->getType().getAsString()}}},
         {"loc", location(function->getLocation())},
         {"range", range(function->getSourceRange())}, {"inner", std::move(inner)}};
@@ -150,6 +202,15 @@ private:
 
 class CalledFunctions : public RecursiveASTVisitor<CalledFunctions> {
 public:
+  bool VisitLambdaExpr(LambdaExpr *lambda) {
+    const auto *methodTemplate = lambda->getCallOperator()->getDescribedFunctionTemplate();
+    if (!methodTemplate) return true;
+    const auto specializations = methodTemplate->specializations();
+    return std::accumulate(specializations.begin(), specializations.end(), true,
+        [&](bool traversed, FunctionDecl *specialization) {
+          return traversed && (!specialization->hasBody() || TraverseStmt(specialization->getBody()));
+        });
+  }
   bool VisitCallExpr(CallExpr *call) {
     if (const auto *callee = call->getDirectCallee())
       if (const auto *definition = callee->getDefinition()) called.push_back(definition);

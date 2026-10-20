@@ -130,6 +130,14 @@ const presentAnalysis = (
       case 'MutationFound':
         yield* navigateTo(document, result.mutation);
         return;
+      case 'OriginFound':
+        yield* navigateTo(document, result.origin);
+        yield* Effect.sync(() => {
+          void vscode.window.showInformationMessage(result.kind === 'initialization'
+            ? 'Fold State Jump: no earlier mutation found; showing the initialization source.'
+            : 'Fold State Jump: no earlier mutation found; showing the parameter source.');
+        });
+        return;
       case 'CandidatesFound': {
         const candidate = yield* chooseCandidate(result.candidates);
         if (candidate) yield* navigateTo(document, candidate.mutation);

@@ -116,7 +116,8 @@ describe('fold mutation analysis', () => {
         inner: [{ kind: 'CompoundStmt', inner: [increment('state', 'state', 30)] }]
       }]
     }, member('state', 'state', 100)]));
-    assert.equal(result._tag, 'AnalysisFailure');
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.equal(result.kind, 'parameter');
   });
 
   ['State &', 'State'].map((qualType) => test('handles helper parameter ' + qualType, () => {
@@ -133,7 +134,7 @@ describe('fold mutation analysis', () => {
       inner: [reference('mutate', 'mutate', 50), reference('state', 'state', 57)]
     };
     const result = analyze(foldAst([call, member('state', 'state', 100)], [helper]));
-    assert.equal(result._tag, qualType === 'State &' ? 'MutationFound' : 'AnalysisFailure');
+    assert.equal(result._tag, qualType === 'State &' ? 'MutationFound' : 'OriginFound');
     if (result._tag === 'MutationFound') {
       assert.equal(result.mutation.node, mutation);
       assert.equal(result.via, 'call');
