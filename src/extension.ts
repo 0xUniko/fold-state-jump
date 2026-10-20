@@ -31,7 +31,9 @@ const sourceRange = (document: vscode.TextDocument, wrapped: WrappedNode): { rea
   nodeRange(wrapped, readWorkspaceText(document));
 
 const showFailure = (reason: string): Effect.Effect<void> =>
-  Effect.promise(() => vscode.window.showInformationMessage(reason)).pipe(Effect.asVoid);
+  Effect.sync(() => {
+    void vscode.window.showInformationMessage(reason);
+  });
 
 const chooseCandidate = (
   candidates: readonly TraceCandidate[]
@@ -104,26 +106,37 @@ const runAnalysis = Effect.fnUntraced(function* (
     catch: (error) => new Error('Could not parse Clang AST: ' + String(error))
   });
   if (document.getText() !== sourceText) {
-    yield* showFailure('The document changed during analysis. Run the command again.');
-    return;
+    return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.' };
   }
-  const result = analyzeAst(ast, {
+  return analyzeAst(ast, {
     file: document.uri.fsPath,
     sourceText,
     cursorByteOffset,
     sourceTextByFile: readWorkspaceText(document)
   });
-  if (result._tag === 'AnalysisFailure') {
-    yield* showFailure(result.reason);
-    return;
-  }
-  if (result._tag === 'MutationFound') {
-    yield* navigateTo(document, result.mutation);
-    return;
-  }
-  const candidate = yield* chooseCandidate(result.candidates);
-  if (candidate) yield* navigateTo(document, candidate.mutation);
 }, Effect.mapError((error) => new Error(error.message)));
+
+// User interaction happens after the progress promise has settled. VS Code
+// message and QuickPick promises may remain pending until the user acts.
+const presentAnalysis = (
+  document: vscode.TextDocument,
+  result: ReturnType<typeof analyzeAst>
+): Effect.Effect<void, Error> =>
+  Effect.gen(function* () {
+    switch (result._tag) {
+      case 'AnalysisFailure':
+        yield* showFailure(result.reason);
+        return;
+      case 'MutationFound':
+        yield* navigateTo(document, result.mutation);
+        return;
+      case 'CandidatesFound': {
+        const candidate = yield* chooseCandidate(result.candidates);
+        if (candidate) yield* navigateTo(document, candidate.mutation);
+        return;
+      }
+    }
+  });
 
 export const activate = (context: vscode.ExtensionContext): void => {
   context.subscriptions.push(
@@ -133,7 +146,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         if (!document || !isCpp(document.languageId)) return;
         const saved = yield* saveIfDirty(document);
         if (!saved) return;
-        yield* Effect.tryPromise({
+        const result = yield* Effect.tryPromise({
           try: () => vscode.window.withProgress(
             {
               location: vscode.ProgressLocation.Notification,
@@ -144,6 +157,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
           ),
           catch: (error) => new Error(String(error))
         });
+        yield* presentAnalysis(document, result);
       }).pipe(
         Effect.catch((error) =>
           Effect.promise(() => vscode.window.showErrorMessage('Fold State Jump: ' + error.message)).pipe(Effect.asVoid)
