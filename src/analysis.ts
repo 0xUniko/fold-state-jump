@@ -79,9 +79,10 @@ type AstIndex = {
   readonly calls: readonly WrappedNode[];
   readonly functionsByNode: ReadonlyMap<ClangNode, FunctionInfo>;
   readonly functionsById: ReadonlyMap<string, FunctionInfo>;
+  readonly functionsByName: ReadonlyMap<string, readonly FunctionInfo[]>;
   readonly declarations: ReadonlyMap<string, WrappedNode>;
   readonly wrappedByNode: ReadonlyMap<ClangNode, WrappedNode>;
-  readonly nodesByFunctionId: ReadonlyMap<string, readonly WrappedNode[]>;
+  readonly writesByFunctionId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly callsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly callsByCalleeId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly resolvedCalls: Map<ClangNode, FunctionInfo | undefined>;
@@ -203,10 +204,16 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
       if (!previous || fn.wrapped.ancestors.length > previous.wrapped.ancestors.length) functionsById.set(fn.id, fn);
       return functionsById;
     }, new Map<string, FunctionInfo>()),
+    functionsByName: functions.reduce((byName, fn) => {
+      const matching = byName.get(fn.name) ?? [];
+      matching.push(fn);
+      byName.set(fn.name, matching);
+      return byName;
+    }, new Map<string, FunctionInfo[]>()),
     declarations: new Map(all.filter((wrapped) => ['VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind))
       .map((wrapped) => [wrapped.node.id ?? '', wrapped])),
     wrappedByNode: new Map(all.map((wrapped) => [wrapped.node, wrapped])),
-    nodesByFunctionId: new Map<string, WrappedNode[]>(),
+    writesByFunctionId: new Map<string, WrappedNode[]>(),
     callsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
     resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>()
@@ -221,6 +228,16 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     const body = nodes.get(owner.id) ?? [];
     body.push(wrapped);
     nodes.set(owner.id, body);
+    // The backward trace only needs potential writes, not every expression
+    // in the function. Classify these once per extracted AST.
+    const isWrite = writeTarget(wrapped) !== undefined ||
+      (isCall(wrapped.node) && standardMutationTarget(wrapped) !== undefined);
+    if (isWrite) {
+      const byFunction = index.writesByFunctionId as Map<string, WrappedNode[]>;
+      const writes = byFunction.get(owner.id) ?? [];
+      writes.push(wrapped);
+      byFunction.set(owner.id, writes);
+    }
     if (isCall(wrapped.node)) {
       const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
       const calls = callers.get(owner.id) ?? [];
@@ -399,8 +416,10 @@ const resolveFunction = (call: WrappedNode, index: AstIndex): FunctionInfo | und
   const exact = reference?.id && index.functionsById.get(reference.id);
   if (exact) return exact;
   const name = reference?.name ?? callee?.node.name;
-  const functions = [...new Map(index.functions.filter((fn) => fn.name === name &&
-    (!reference?.type?.qualType || fn.type === reference.type.qualType)).map((fn) => [fn.id, fn])).values()];
+  const matching = name === undefined ? [] : (index.functionsByName.get(name) ?? []);
+  const functions = [...new Map(matching.filter((fn) =>
+    !reference?.type?.qualType || fn.type === reference.type.qualType
+  ).map((fn) => [fn.id, fn])).values()];
   return functions.length === 1 ? functions[0] : undefined;
 };
 
@@ -496,8 +515,8 @@ const findPreviousMutation = (
 ): MutationCandidate | undefined => {
   if (visitedFunctionIds.includes(fn.id)) return undefined;
   const nextVisited = [...visitedFunctionIds, fn.id];
-  const body = index.nodesByFunctionId.get(fn.id) ?? [];
-  const directCandidates = body.flatMap((wrapped) => {
+  const writes = index.writesByFunctionId.get(fn.id) ?? [];
+  const directCandidates = writes.flatMap((wrapped) => {
     const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
     const range = nodeRange(wrapped, sourceTextByFile);
     const writePath = pathAt(write, index);
