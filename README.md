@@ -18,7 +18,7 @@ Install Bun, then run:
 bun install
 bun test
 bun run build
-sudo apt install llvm-23-dev libclang-23-dev
+sudo apt install clang-23 llvm-23-dev libclang-23-dev
 bun run build:native
 ```
 
