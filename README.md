@@ -63,10 +63,14 @@ For an end-to-end timing comparison (after `bun run build:native`):
 
 ```sh
 bun run bench /path/to/source.cpp 'state.member' 10
+# For the native fixture, select a known successful trace:
+bun run bench test/fixtures/native-paths.cpp bank_state.bank.records 10 helper-records
 ```
 
 This prints native extraction, JSON decoding, index construction, and average cold
-vs warmed state-query times. Use the same file and selection for comparisons.
+vs warmed state-query times. The optional fourth argument selects a `// @case`
+marker for an unambiguous fixture position. Use the same file and selection
+for comparisons.
 
 ## Design constraints
 
