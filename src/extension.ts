@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect } from 'effect';
 import { analyzeAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type ClangNode, type WrappedNode, type TraceCandidate } from './analysis';
-import { resolveCompileCommand, runClangAst } from './services';
+import { makeExtractionCommand, resolveCompileCommand, runClangAst } from './services';
 
 const isCpp = (languageId: string): boolean =>
   ['cpp', 'c', 'cuda-cpp', 'objective-cpp'].includes(languageId);
@@ -63,7 +63,8 @@ const navigateTo = (document: vscode.TextDocument, mutation: WrappedNode): Effec
 
 const runAnalysis = Effect.fnUntraced(function* (
   document: vscode.TextDocument,
-  token: vscode.CancellationToken
+  token: vscode.CancellationToken,
+  extensionPath: string
 ) {
   const sourceText = document.getText();
   const cursorByteOffset = byteOffsetFromUtf16(
@@ -88,9 +89,14 @@ const runAnalysis = Effect.fnUntraced(function* (
   const controller = new AbortController();
   const cancellation = token.onCancellationRequested(() => controller.abort());
   if (token.isCancellationRequested) controller.abort();
+  const configuredExtractor = config.get('extractorPath', '');
+  const executable = configuredExtractor
+    ? (path.isAbsolute(configuredExtractor) ? configuredExtractor : path.resolve(extensionPath, configuredExtractor))
+    : path.join(extensionPath, 'native', 'build', 'fold-state-jump-ast');
+  const extractionCommand = makeExtractionCommand(command, executable);
   const astText = yield* runClangAst(
-    command,
-    config.get('maxAstBytes', 536870912),
+    extractionCommand,
+    config.get('maxAstBytes', 67108864),
     controller.signal
   ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
   const ast = yield* Effect.try({
@@ -134,7 +140,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
               title: 'Tracing fold state mutations…',
               cancellable: true
             },
-            async (_progress, token) => Effect.runPromise(runAnalysis(document, token))
+            async (_progress, token) => Effect.runPromise(runAnalysis(document, token, context.extensionPath))
           ),
           catch: (error) => new Error(String(error))
         });
