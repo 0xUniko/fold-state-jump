@@ -47,7 +47,7 @@
         "foldStateJump.clangPath": {
           "type": "string",
           "default": "clang++",
-          "description": "Path to clang++."
+          "description": "Legacy fallback compiler setting; native AST extraction uses the version of Clang LibTooling linked into fold-state-jump-ast."
         },
         "foldStateJump.maxAstBytes": {
           "type": "number",
