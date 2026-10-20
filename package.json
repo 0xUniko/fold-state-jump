@@ -31,6 +31,10 @@
       {
         "command": "foldStateJump.jumpToPreviousMutation",
         "title": "Fold State Jump: Go to Previous State Mutation"
+      },
+      {
+        "command": "foldStateJump.jumpToOrigin",
+        "title": "Fold State Jump: Go to State Origin"
       }
     ],
     "keybindings": [
@@ -38,6 +42,12 @@
         "command": "foldStateJump.jumpToPreviousMutation",
         "key": "ctrl+alt+shift+m",
         "mac": "cmd+alt+shift+m",
+        "when": "editorTextFocus && (editorLangId == cpp || editorLangId == c || editorLangId == cuda-cpp || editorLangId == objective-cpp)"
+      },
+      {
+        "command": "foldStateJump.jumpToOrigin",
+        "key": "ctrl+alt+shift+o",
+        "mac": "cmd+alt+shift+o",
         "when": "editorTextFocus && (editorLangId == cpp || editorLangId == c || editorLangId == cuda-cpp || editorLangId == objective-cpp)"
       }
     ],
