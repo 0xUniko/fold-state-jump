@@ -224,10 +224,6 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   all.reduce((index, wrapped) => {
     const owner = enclosingFunction(wrapped, index);
     if (!owner || !(wrapped.node === owner.body.node || wrapped.ancestors.includes(owner.body.node))) return index;
-    const nodes = index.nodesByFunctionId as Map<string, WrappedNode[]>;
-    const body = nodes.get(owner.id) ?? [];
-    body.push(wrapped);
-    nodes.set(owner.id, body);
     // The backward trace only needs potential writes, not every expression
     // in the function. Classify these once per extracted AST.
     const isWrite = writeTarget(wrapped) !== undefined ||
