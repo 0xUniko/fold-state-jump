@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { analyzeAst, byteOffsetFromUtf16, type ClangNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, type ClangNode } from '../src/analysis';
 
 const executable = path.resolve('native/build/fold-state-jump-ast');
 const source = path.resolve('test/fixtures/native-paths.cpp');
@@ -54,11 +54,12 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
   const extraction = spawnSync(executable, ['--source', source, '--', '-std=c++17'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
   assert.equal(extraction.status, 0, extraction.stderr);
   const ast = JSON.parse(extraction.stdout) as ClangNode;
-  const analyzeCase = (name: string, expression: string) => {
+  const analyzeCase = (name: string, expression: string, target: 'mutation' | 'origin' = 'mutation') => {
     const start = lineOffset('// @case ' + name + '\n');
     const offset = sourceText.indexOf(expression, start);
     assert.ok(offset >= start && offset < sourceText.indexOf('// @case', start), 'Missing expression: ' + expression);
-    return analyzeAst(ast, { file: source, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset + expression.lastIndexOf('.') + 1) });
+    const options = { file: source, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset + expression.lastIndexOf('.') + 1) };
+    return target === 'origin' ? analyzeOriginAst(ast, options) : analyzeAst(ast, options);
   };
   cases.map(([name, expression, mutation]) => test(name, () => {
     const result = analyzeCase(name, expression);
@@ -76,7 +77,7 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
     ['records-origin', 'bank_state.bank.records', 'local', 'initialization'],
     ['alias-origin', 'bank_state_alias.bank.records', 'session', 'initialization']
   ].map(([name, expression, origin, kind]) => test(name, () => {
-    const result = analyzeCase(name, expression);
+    const result = analyzeCase(name, expression, 'origin');
     assert.equal(result._tag, 'OriginFound');
     if (result._tag !== 'OriginFound') return;
     assert.equal(result.kind, kind);
@@ -105,7 +106,8 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
     assert.equal(analyzeCase('uninitialized', 'records')._tag, 'AnalysisFailure');
   });
   test('keeps an uninstantiated copy capture separate from its source', () => {
-    const result = analyzeCase('deferred-copy', 'session_state.bank_state.counters');
+    assert.equal(analyzeCase('deferred-copy', 'session_state.bank_state.counters')._tag, 'AnalysisFailure');
+    const result = analyzeCase('deferred-copy', 'session_state.bank_state.counters', 'origin');
     assert.equal(result._tag, 'OriginFound');
     if (result._tag === 'OriginFound') assert.equal(result.kind, 'parameter');
   });

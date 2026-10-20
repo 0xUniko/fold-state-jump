@@ -61,7 +61,7 @@ export type TraceCandidate = {
 };
 
 export type AnalysisResult =
-  | { readonly _tag: 'MutationFound'; readonly mutation: WrappedNode; readonly via: 'direct' | 'call' }
+  | { readonly _tag: 'MutationFound'; readonly mutation: WrappedNode; readonly via: 'direct' | 'call'; readonly wrapped?: boolean }
   | { readonly _tag: 'CandidatesFound'; readonly candidates: readonly TraceCandidate[] }
   | { readonly _tag: 'OriginFound'; readonly origin: WrappedNode; readonly kind: 'initialization' | 'parameter' }
   | { readonly _tag: 'AnalysisFailure'; readonly reason: string };
@@ -528,6 +528,14 @@ const traceMutations = (
   return [];
 };
 
+// Wrap-around is bounded by the lexical fold. A helper shared by several
+// folds cannot infer which fold invocation should supply its wrap target.
+const enclosingFold = (fn: FunctionInfo, index: AstIndex): FunctionInfo | undefined => {
+  if (foldFor(fn, index)) return fn;
+  const parent = enclosingFunction(fn.wrapped, index);
+  return parent && parent.id !== fn.id ? enclosingFold(parent, index) : undefined;
+};
+
 const originFor = (
   fn: FunctionInfo,
   target: ExpressionPath,
@@ -575,10 +583,17 @@ export const byteOffsetFromUtf16 = (text: string, offset: number): number =>
 export const utf16OffsetFromByte = (text: string, offset: number): number =>
   Buffer.from(text, 'utf8').subarray(0, Math.max(0, offset)).toString('utf8').length;
 
-export const analyzeAst = (
+type AnalysisSelection = {
+  readonly index: AstIndex;
+  readonly current: FunctionInfo;
+  readonly target: ExpressionPath;
+  readonly sourceTextByFile: ReadonlyMap<string, string>;
+};
+
+const resolveSelection = (
   ast: ClangNode,
   options: AnalysisOptions
-): AnalysisResult => {
+): AnalysisSelection | Extract<AnalysisResult, { readonly _tag: 'AnalysisFailure' }> => {
   const sourceTextByFile = new Map([
     ...(options.sourceTextByFile ?? []),
     [normalized(options.file), options.sourceText] as const
@@ -593,14 +608,55 @@ export const analyzeAst = (
   if (!target || !current) {
     return { _tag: 'AnalysisFailure', reason: 'Could not resolve the expression path or enclosing function.' };
   }
-  const candidates = uniqueCandidates(traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile));
-  if (candidates.length > 0) {
-    return candidates.length === 1
-      ? { _tag: 'MutationFound', mutation: candidates[0].mutation, via: candidates[0].frames.length > 0 ? 'call' : 'direct' }
-      : { _tag: 'CandidatesFound', candidates };
+  return { index, current, target, sourceTextByFile };
+};
+
+const mutationResult = (
+  candidates: readonly TraceCandidate[],
+  wrapped = false
+): AnalysisResult =>
+  candidates.length === 1
+    ? {
+        _tag: 'MutationFound',
+        mutation: candidates[0].mutation,
+        via: candidates[0].frames.length > 0 ? 'call' : 'direct',
+        wrapped
+      }
+    : { _tag: 'CandidatesFound', candidates };
+
+// Previous-mutation navigation never silently changes to origin navigation.
+export const analyzeAst = (
+  ast: ClangNode,
+  options: AnalysisOptions
+): AnalysisResult => {
+  const selection = resolveSelection(ast, options);
+  if ('_tag' in selection) return selection;
+  const { current, target, index, sourceTextByFile } = selection;
+  const previous = uniqueCandidates(traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile));
+  if (previous.length > 0) return mutationResult(previous);
+
+  const fold = enclosingFold(current, index);
+  if (fold) {
+    const last = findPreviousMutation(fold, target, Number.POSITIVE_INFINITY, index, sourceTextByFile);
+    if (last) return mutationResult([last], true);
   }
-  return originFor(current, target, index) ?? {
+  return {
     _tag: 'AnalysisFailure',
-    reason: 'No earlier mutation or supported initialization/parameter source was found for this expression.'
+    reason: fold
+      ? 'No supported mutation of this state was found inside the enclosing fold.'
+      : 'No earlier mutation was found; the cursor is not inside a supported fold for wrap-around.'
+  };
+};
+
+// Origin navigation is explicit, regardless of whether earlier mutations exist.
+export const analyzeOriginAst = (
+  ast: ClangNode,
+  options: AnalysisOptions
+): AnalysisResult => {
+  const selection = resolveSelection(ast, options);
+  if ('_tag' in selection) return selection;
+  return originFor(selection.current, selection.target, selection.index) ?? {
+    _tag: 'AnalysisFailure',
+    reason: 'No supported initialization, fold seed, or parameter declaration was found for this expression.'
   };
 };
