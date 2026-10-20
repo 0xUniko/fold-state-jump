@@ -27,4 +27,5 @@ jobs:
           node -e 'const a=require("/tmp/fold-state-jump-ast.json"); if(a.kind!=="TranslationUnitDecl" || !a.inner.some(n=>n.name==="example")) process.exit(1)'
           bun run test/native-integration.ts
           node -e 'if(require("node:fs").statSync("/tmp/fold-state-jump-ast.json").size > 1000000) process.exit(1)'
+      - run: bun run bench test/fixtures/native-paths.cpp bank_state.bank.records 10
 
