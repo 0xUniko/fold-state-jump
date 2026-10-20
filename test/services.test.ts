@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { makeCompileCommand, resolveCompileCommand, runClangAst } from '../src/services';
+import { makeCompileCommand, makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
 
 describe('compile commands', () => {
   test('preserves quoted include paths and removes build outputs', () => {
@@ -94,6 +94,21 @@ describe('compile commands', () => {
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
+  });
+
+  test('passes original language and include flags to native extractor, without the full-AST switches', () => {
+    const command = makeCompileCommand('/project/include/ffn.h', [], 'clang++', JSON.stringify([{
+      directory: '/project', file: 'src/ffn.cpp',
+      arguments: ['clang++', '-std=c++17', '-I/project/include', '-c', 'src/ffn.cpp']
+    }]));
+    const extraction = makeExtractionCommand(command, '/opt/fold-state-jump-ast');
+    assert.equal(extraction.compiler, '/opt/fold-state-jump-ast');
+    assert.equal(extraction.cwd, '/project');
+    assert.deepEqual(extraction.args, [
+      '--source', '/project/include/ffn.h', '--',
+      '-std=c++17', '-I/project/include', '-x', 'c++-header'
+    ]);
+    assert.ok(!extraction.args.includes('-ast-dump=json'));
   });
 
 });
