@@ -8,3 +8,10 @@ State example() {
     return state;
   });
 }
+
+State example_helper() {
+  return fold_left(State{1}, [](State state) {
+    mutate(state);
+    return state;
+  });
+}
