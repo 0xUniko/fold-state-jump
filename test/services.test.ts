@@ -34,6 +34,68 @@ describe('compile commands', () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+  test('inherits flags from a same-name C++ file when analyzing a header', () => {
+    const command = makeCompileCommand('/project/src/ffn.h', [], 'clang++', JSON.stringify([
+      { directory: '/project', file: 'src/unrelated.cpp', arguments: ['c++', '-Iwrong', '-c', 'src/unrelated.cpp'] },
+      { directory: '/project', file: 'src/ffn.cpp', arguments: [
+        'c++', '-std=c++23', '-I/project/ggml/include', '-DTEST=1', '-c', 'src/ffn.cpp', '-o', 'ffn.o'
+      ] }
+    ]));
+    assert.equal(command.context, 'inferred');
+    assert.deepEqual(command.args, [
+      '-std=c++23', '-I/project/ggml/include', '-DTEST=1',
+      '-x', 'c++-header', '-Xclang', '-ast-dump=json', '-fsyntax-only', '/project/src/ffn.h'
+    ]);
+  });
+
+  test('sets the language explicitly for headers without a database', () => {
+    const command = makeCompileCommand('/project/include/ffn.h', [], 'clang++');
+    assert.equal(command.context, 'fallback');
+    assert.deepEqual(command.args.slice(0, 3), ['-std=c++17', '-x', 'c++-header']);
+  });
+
+  test('prefers an exact entry in a CMake build directory to unrelated database entries', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-db-'));
+    try {
+      const source = path.join(directory, 'src', 'main.cpp');
+      await mkdir(path.dirname(source), { recursive: true });
+      await mkdir(path.join(directory, 'build-debug'), { recursive: true });
+      await writeFile(path.join(directory, 'compile_commands.json'), JSON.stringify([{
+        directory, file: 'other.cpp', arguments: ['c++', '-Iwrong', '-c', 'other.cpp']
+      }]));
+      await writeFile(path.join(directory, 'build-debug', 'compile_commands.json'), JSON.stringify([{
+        directory, file: source, arguments: ['c++', '-Icorrect', '-c', source]
+      }]));
+      const command = await Effect.runPromise(resolveCompileCommand(source, [directory], 'clang++'));
+      assert.equal(command.context, 'exact');
+      assert.ok(command.args.includes('-Icorrect'));
+      assert.ok(!command.args.includes('-Iwrong'));
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test('accepts an explicitly configured compilation database path', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-db-'));
+    try {
+      const source = path.join(directory, 'foo.h');
+      const database = path.join('custom', 'compile_commands.json');
+      await mkdir(path.join(directory, 'custom'), { recursive: true });
+      await writeFile(path.join(directory, database), JSON.stringify([{
+        directory, file: 'foo.cpp', arguments: ['c++', '-Icustom', '-c', 'foo.cpp']
+      }]));
+      const command = await Effect.runPromise(resolveCompileCommand(source, [directory], 'clang++', database));
+      assert.equal(command.context, 'inferred');
+      assert.ok(command.args.includes('-Icustom'));
+      await assert.rejects(
+        Effect.runPromise(resolveCompileCommand(source, [directory], 'clang++', 'absent/compile_commands.json')),
+        { _tag: 'FileFailure', message: /Configured compile_commands.json not found/ }
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
 });
 
 const runProcess = (script: string, maxBytes = 4096, signal = new AbortController().signal) =>
@@ -49,7 +111,20 @@ describe('compiler process', () => {
   });
 
   test('enforces the output byte limit', async () => {
-    await assert.rejects(runProcess('console.log("{".repeat(10000))', 64), { _tag: 'ProcessFailure', message: /maxBuffer/ });
+    await assert.rejects(runProcess('console.log("{".repeat(10000))', 64), { _tag: 'ProcessFailure', message: /exceeds the configured/ });
+  });
+
+  test('streams outputs larger than the usual execFile buffer', async () => {
+    const result = await runProcess('console.log(JSON.stringify({ kind: "TranslationUnitDecl", data: "x".repeat(262144) }))', 300000);
+    assert.ok(result.length > 262144);
+    assert.equal(JSON.parse(result).kind, 'TranslationUnitDecl');
+  });
+
+  test('preserves Clang diagnostics on failure', async () => {
+    await assert.rejects(
+      runProcess('console.error("fatal error: gguf.h file not found"); process.exitCode = 1'),
+      { _tag: 'ProcessFailure', message: /gguf.h file not found/ }
+    );
   });
 
   test('honors cancellation before starting', async () => {
