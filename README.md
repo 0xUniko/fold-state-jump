@@ -45,6 +45,29 @@ The extension searches for `compile_commands.json` in source ancestors, workspac
 
 By default the plugin invokes the bundled build location `native/build/fold-state-jump-ast` (override with `foldStateJump.extractorPath`). The native extractor uses Clang LibTooling to parse the translation unit but emits a compact JSON tree only for functions declared in the active file and directly reachable user-code callees. It does not dump the entire standard-library AST. The JSON output is capped at 64 MiB via `foldStateJump.maxAstBytes`. Parsing C++ templates still has its intrinsic cost, and complex unresolved/indirect calls remain a limitation. Native LLVM/Clang development libraries must match the chosen extractor build version; the native executable uses its linked Clang version, while the compilation database supplies the project's `-std`, `-I`, and `-D` arguments. `foldStateJump.clangPath` is retained for compatibility but does not choose the LibTooling version.
 
+## Performance and cache
+
+The first jump in a translation unit starts the native extractor and prepares reusable
+function/call indexes. Subsequent mutation and origin jumps reuse the prepared AST
+while the document version stays unchanged. Editing C/C++ sources, headers, or
+`compile_commands.json` inside the workspace (including unsaved editor changes)
+invalidates the cache, as do extension settings changes. To limit stale data from
+external headers outside the workspace watchers, the cache expires after 60 seconds.
+Only one translation unit is cached at a time to limit memory use.
+
+The cache does not make C++ parsing incremental: the next cold jump still parses
+the translation unit. As a conservative fallback for external dependency changes,
+re-run the jump after the cache expires or edit/save the active file to invalidate it.
+
+For an end-to-end timing comparison (after `bun run build:native`):
+
+```sh
+bun run bench /path/to/source.cpp 'state.member' 10
+```
+
+This prints native extraction, JSON decoding, index construction, and average cold
+vs warmed state-query times. Use the same file and selection for comparisons.
+
 ## Design constraints
 
 The implementation follows the repository's `AGENTS.md`:
