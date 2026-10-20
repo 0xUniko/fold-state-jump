@@ -20,7 +20,7 @@ const sourceText = await readFile(source, 'utf8');
 const marker = caseName ? '// @case ' + caseName : '';
 const markerOffset = marker ? sourceText.indexOf(marker) : -1;
 if (marker && markerOffset < 0) throw new Error('Missing benchmark case: ' + marker);
-const lineStart = marker ? sourceText.lastIndexOf('\\n', markerOffset) + 1 : 0;
+const lineStart = marker ? sourceText.lastIndexOf('\n', markerOffset) + 1 : 0;
 const cursor = sourceText.indexOf(needle, lineStart);
 if (cursor < 0 || (marker && cursor >= markerOffset)) {
   throw new Error('No occurrence of ' + JSON.stringify(needle) + ' in selected case of ' + source);
