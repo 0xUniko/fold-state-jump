@@ -7,3 +7,4 @@ AGENTS.md
 tsconfig.json
 bunfig.toml
 bun.lock
+repos/**
