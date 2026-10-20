@@ -225,7 +225,7 @@ export const runClangAst = (
       stderr = (stderr + chunk.toString('utf8')).slice(-12000);
     });
     child.on('error', (error: Error) => finish(Effect.fail(processFailure(
-      'Could not start Clang: ' + error.message
+      'Could not start native AST extractor: ' + error.message + '. Build it with bun run build:native (LLVM/Clang development libraries required).'
     ))));
     child.on('close', (code) => {
       const diagnostics = stderr.trim() ? '\n' + stderr.trim() : '';
