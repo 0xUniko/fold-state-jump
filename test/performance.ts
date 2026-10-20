@@ -12,11 +12,19 @@ import { makeExtractionCommand, resolveCompileCommand, runClangAst } from '../sr
 const source = path.resolve(process.argv[2] ?? 'test/fixtures/native-paths.cpp');
 const needle = process.argv[3] ?? 'bank_state.bank.records';
 const repetitions = Number(process.argv[4] ?? 10);
+const caseName = process.argv[5] ??
+  (path.basename(source) === 'native-paths.cpp' ? 'helper-records' : undefined);
 if (!Number.isSafeInteger(repetitions) || repetitions < 1) throw new Error('Repetitions must be a positive integer.');
 
 const sourceText = await readFile(source, 'utf8');
-const cursor = sourceText.indexOf(needle);
-if (cursor < 0) throw new Error('No occurrence of ' + JSON.stringify(needle) + ' in ' + source);
+const marker = caseName ? '// @case ' + caseName : '';
+const markerOffset = marker ? sourceText.indexOf(marker) : -1;
+if (marker && markerOffset < 0) throw new Error('Missing benchmark case: ' + marker);
+const lineStart = marker ? sourceText.lastIndexOf('\\n', markerOffset) + 1 : 0;
+const cursor = sourceText.indexOf(needle, lineStart);
+if (cursor < 0 || (marker && cursor >= markerOffset)) {
+  throw new Error('No occurrence of ' + JSON.stringify(needle) + ' in selected case of ' + source);
+}
 const options = {
   file: source,
   sourceText,
