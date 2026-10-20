@@ -20,7 +20,7 @@ jobs:
       - run: bun test
       - run: bun run build
       - run: sudo apt-get update && sudo apt-get install -y clang-18 llvm-18-dev libclang-18-dev
-      - run: cmake -S native -B native/build -DCMAKE_PREFIX_PATH=/usr/lib/llvm-18
+      - run: cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-18/lib/cmake/clang
       - run: cmake --build native/build -j 2
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json
