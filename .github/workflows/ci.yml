@@ -25,4 +25,5 @@ jobs:
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json
           node -e 'const a=require("/tmp/fold-state-jump-ast.json"); if(a.kind!=="TranslationUnitDecl" || !a.inner.some(n=>n.name==="example")) process.exit(1)'
+          bun run test/native-integration.ts
 
