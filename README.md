@@ -22,7 +22,7 @@ sudo apt install llvm-23-dev libclang-23-dev
 bun run build:native
 ```
 
-Build the native extractor before F5. For an LLVM installation outside the default CMake prefix, configure the build using `cmake -S native -B native/build -DCMAKE_PREFIX_PATH=/usr/lib/llvm-23 && cmake --build native/build -j 2`. F5 starts the Bun TypeScript watcher through the tracked VS Code task; the C++ executable is built separately.
+Build the native extractor before F5. For an LLVM installation outside the default CMake prefix, configure the build using `cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm && cmake --build native/build -j 2`. F5 starts the Bun TypeScript watcher through the tracked VS Code task; the C++ executable is built separately.
 
 To package a VSIX:
 
