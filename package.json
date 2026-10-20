@@ -47,19 +47,24 @@
         "foldStateJump.clangPath": {
           "type": "string",
           "default": "clang++",
-          "description": "Path to clang++."
+          "description": "Legacy fallback compiler setting; native AST extraction uses the version of Clang LibTooling linked into fold-state-jump-ast."
         },
         "foldStateJump.maxAstBytes": {
           "type": "number",
-          "default": 536870912,
+          "default": 67108864,
           "minimum": 1048576,
           "maximum": 1073741824,
-          "description": "Safety limit for streamed Clang JSON AST output in bytes. Larger ASTs still require substantial memory to parse."
+          "description": "Safety limit for compact native AST extraction JSON output in bytes (default 64 MiB)."
         },
         "foldStateJump.compileCommandsPath": {
           "type": "string",
           "default": "",
           "description": "Path to compile_commands.json, absolute or relative to the first workspace folder. When empty, standard project and build directories are searched."
+        },
+        "foldStateJump.extractorPath": {
+          "type": "string",
+          "default": "",
+          "description": "Native LibTooling extractor executable. Empty uses native/build/fold-state-jump-ast within the extension installation. Build it with bun run build:native."
         }
       }
     }
@@ -67,7 +72,8 @@
   "scripts": {
     "dev": "bun run build --watch",
     "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --sourcemap=external --outdir ./dist",
-    "package": "bun run build && bunx @vscode/vsce package"
+    "package": "bun run build && bunx @vscode/vsce package",
+    "build:native": "cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang && cmake --build native/build -j 2"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

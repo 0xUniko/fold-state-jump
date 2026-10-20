@@ -160,6 +160,27 @@ export const resolveCompileCommand = Effect.fnUntraced(function* (
   });
 });
 
+// The compiler arguments retain the project's include paths and language
+// standard, but the native frontend owns AST traversal and JSON serialization.
+export const makeExtractionCommand = (
+  command: CompileCommand,
+  executable: string
+): CompileCommand => {
+  const source = command.args.at(-1);
+  if (!source) throw new Error('Missing source path in Clang compile command.');
+  const original = command.args.slice(0, -1);
+  const flags = original.filter((argument, index) =>
+    argument !== '-fsyntax-only' &&
+    !(argument === '-Xclang' && original[index + 1] === '-ast-dump=json') &&
+    !(argument === '-ast-dump=json' && original[index - 1] === '-Xclang')
+  );
+  return {
+    ...command,
+    compiler: executable,
+    args: ['--source', source, '--', ...flags]
+  };
+};
+
 export const runClangAst = (
   command: CompileCommand,
   maxBytes: number,
@@ -204,7 +225,7 @@ export const runClangAst = (
       stderr = (stderr + chunk.toString('utf8')).slice(-12000);
     });
     child.on('error', (error: Error) => finish(Effect.fail(processFailure(
-      'Could not start Clang: ' + error.message
+      'Could not start native AST extractor: ' + error.message + '. Build it with bun run build:native (LLVM/Clang development libraries required).'
     ))));
     child.on('close', (code) => {
       const diagnostics = stderr.trim() ? '\n' + stderr.trim() : '';
@@ -212,8 +233,8 @@ export const runClangAst = (
         finish(Effect.fail(processFailure('Clang AST process was interrupted.')));
       } else if (oversized) {
         finish(Effect.fail(processFailure(
-          'Clang JSON AST exceeds the configured ' + (maxBytes / 1048576).toFixed(0) +
-          ' MiB limit. Consider increasing foldStateJump.maxAstBytes; whole-AST analysis ' +
+          'Extracted AST exceeds the configured ' + (maxBytes / 1048576).toFixed(0) +
+          ' MiB limit. Check whether the native extractor is selecting too many declarations; analysis ' +
           'may be too expensive for this translation unit.' + diagnostics
         )));
       } else if (code !== 0) {
