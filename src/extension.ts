@@ -81,7 +81,9 @@ const runAnalysis = Effect.fnUntraced(function* (
     config.get('compileCommandsPath', '') || undefined
   );
   if (command.context === 'fallback') {
-    yield* showFailure('Fold State Jump: no matching compile command was found. Clang will run without project include paths. Configure foldStateJump.compileCommandsPath if this fails.');
+    yield* Effect.sync(() => {
+      void vscode.window.showWarningMessage('Fold State Jump: no matching compile command found; Clang may lack project include paths. Set foldStateJump.compileCommandsPath if analysis fails.');
+    });
   }
   const controller = new AbortController();
   const cancellation = token.onCancellationRequested(() => controller.abort());
