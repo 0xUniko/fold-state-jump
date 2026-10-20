@@ -119,29 +119,36 @@ const explicitFile = (node: ClangNode): string => {
   return file ? normalized(file) : '';
 };
 
+// Build the wrapper tree without repeatedly copying every descendant array.
+// Large C++ header ASTs can contain hundreds of thousands of declarations.
 export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonly all: readonly WrappedNode[] } => {
   const visit = (
     node: ClangNode,
     ancestors: readonly ClangNode[],
     inheritedFile: string
-  ): { readonly root: WrappedNode; readonly all: readonly WrappedNode[]; readonly lastFile: string } => {
+  ): { readonly root: WrappedNode; readonly lastFile: string } => {
     const file = explicitFile(node) || inheritedFile;
+    const nextAncestors = [...ancestors, node];
     const children = (node.inner ?? []).reduce(
-      (state: { readonly file: string; readonly children: readonly WrappedNode[]; readonly all: readonly WrappedNode[] }, child) => {
-        const result = visit(child, [...ancestors, node], state.file);
-        return {
-          file: result.lastFile,
-          children: [...state.children, result.root],
-          all: [...state.all, ...result.all]
-        };
+      (state: { readonly file: string; readonly children: WrappedNode[] }, child) => {
+        const result = visit(child, nextAncestors, state.file);
+        state.children.push(result.root);
+        return { file: result.lastFile, children: state.children };
       },
-      { file, children: [], all: [] }
+      { file, children: [] as WrappedNode[] }
     );
-    const root: WrappedNode = { node, file, ancestors, children: children.children };
-    return { root, all: [root, ...children.all], lastFile: children.file };
+    return {
+      root: { node, file, ancestors, children: children.children },
+      lastFile: children.file
+    };
   };
+  // A generator avoids quadratic flattening work in heavily templated ASTs.
+  function* flatten(wrapped: WrappedNode): Generator<WrappedNode> {
+    yield wrapped;
+    for (const child of wrapped.children) yield* flatten(child);
+  }
   const result = visit(ast, [], '');
-  return { root: result.root, all: result.all };
+  return { root: result.root, all: Array.from(flatten(result.root)) };
 };
 
 const descendants = (wrapped: WrappedNode): readonly WrappedNode[] =>
