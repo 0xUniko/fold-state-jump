@@ -13,7 +13,6 @@ type CachedAst = {
   readonly documentVersion: number;
   readonly generation: number;
   readonly createdAt: number;
-  readonly sourceText: string;
   readonly prepared: PreparedAst;
 };
 
@@ -47,7 +46,9 @@ const readWorkspaceText = (document: vscode.TextDocument): ReadonlyMap<string, s
   new Map([[path.resolve(document.uri.fsPath), document.getText()]]);
 
 const sourceRange = (document: vscode.TextDocument, wrapped: WrappedNode): { readonly start: number; readonly end: number } | null =>
-  nodeRange(wrapped, readWorkspaceText(document));
+  wrapped.node.range?.end?.tokLen !== undefined
+    ? nodeRange(wrapped)
+    : nodeRange(wrapped, readWorkspaceText(document));
 
 const showFailure = (reason: string): Effect.Effect<void> =>
   Effect.sync(() => {
@@ -100,8 +101,7 @@ const extractAst = Effect.fnUntraced(function* (
   const options = {
     file: document.uri.fsPath,
     sourceText,
-    cursorByteOffset,
-    sourceTextByFile: readWorkspaceText(document)
+    cursorByteOffset
   };
   const cached = astCache.get(source);
   if (cached?.documentVersion === documentVersion &&
@@ -135,15 +135,15 @@ const extractAst = Effect.fnUntraced(function* (
     config.get('maxAstBytes', 67108864),
     controller.signal
   ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
+  if (document.version !== documentVersion || generation !== cacheGeneration) {
+    return { _tag: 'AnalysisFailure' as const, reason: 'A source file changed during analysis. Run the command again.' };
+  }
   const prepared = yield* Effect.try({
     try: () => prepareAst(JSON.parse(astText) as ClangNode),
     catch: (error) => new Error('Could not prepare Clang AST: ' + String(error))
   });
-  if (document.version !== documentVersion || document.getText() !== sourceText || generation !== cacheGeneration) {
-    return { _tag: 'AnalysisFailure' as const, reason: 'A source file changed during analysis. Run the command again.' };
-  }
   astCache.clear();
-  astCache.set(source, { documentVersion, generation, createdAt: Date.now(), sourceText, prepared });
+  astCache.set(source, { documentVersion, generation, createdAt: Date.now(), prepared });
   return { _tag: 'ExtractionReady' as const, prepared, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
@@ -217,9 +217,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
     databaseWatcher.onDidCreate(invalidateAstCache),
     databaseWatcher.onDidDelete(invalidateAstCache),
     vscode.workspace.onDidChangeTextDocument((event) => {
-      if (isCpp(event.document.languageId) ||
+      if (event.contentChanges.length > 0 && (isCpp(event.document.languageId) ||
           /\.(?:h|hh|hpp|hxx|ipp|inc)$/i.test(event.document.uri.fsPath) ||
-          path.basename(event.document.uri.fsPath) === 'compile_commands.json') invalidateAstCache();
+          path.basename(event.document.uri.fsPath) === 'compile_commands.json')) invalidateAstCache();
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('foldStateJump')) invalidateAstCache();

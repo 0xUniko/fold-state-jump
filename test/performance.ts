@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { analyzeAst, byteOffsetFromUtf16, prepareAst, type ClangNode } from '../src/analysis';
+import { analyzeAst, byteOffsetFromUtf16, prepareAst, type AnalysisResult, type ClangNode } from '../src/analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
 
 const source = path.resolve(process.argv[2] ?? 'test/fixtures/native-paths.cpp');
@@ -39,6 +39,20 @@ const measure = <T>(action: () => T): { readonly value: T; readonly ms: number }
 const print = (name: string, ms: number): void =>
   console.log(name.padEnd(26) + ms.toFixed(2).padStart(12) + ' ms');
 
+// Compare actual targets and call paths, rather than just result tags. Avoid
+// retaining previous query results and their complete indexes during cold runs.
+const signature = (result: AnalysisResult): unknown => {
+  switch (result._tag) {
+    case 'AnalysisFailure': return result;
+    case 'MutationFound': return [result._tag, result.mutation.node, result.via, result.wrapped];
+    case 'OriginFound': return [result._tag, result.origin.node, result.kind];
+    case 'CandidatesFound': return [result._tag, result.candidates.map((candidate) => [
+      candidate.mutation.node, candidate.orderOffset,
+      candidate.frames.map((frame) => [frame.callsite.node, frame.caller.id])
+    ])];
+  }
+};
+
 const command = await Effect.runPromise(resolveCompileCommand(source, [path.dirname(source)], 'clang++'));
 const executable = path.resolve('native/build/fold-state-jump-ast');
 const extractionStart = performance.now();
@@ -50,21 +64,25 @@ const astText = await Effect.runPromise(runClangAst(
 const nativeMs = performance.now() - extractionStart;
 const parsed = measure(() => JSON.parse(astText) as ClangNode);
 const prepared = measure(() => prepareAst(parsed.value));
-const warm = measure(() => Array.from({ length: repetitions }, () =>
-  analyzeAst(parsed.value, options, prepared.value)
-));
-const cold = measure(() => Array.from({ length: repetitions }, () =>
-  analyzeAst(parsed.value, options)
-));
-
-warm.value.map((result, index) =>
-  assert.equal(result._tag, cold.value[index]._tag, 'Prepared and cold analysis disagree'));
+const expected = signature(analyzeAst(parsed.value, options, prepared.value));
+Array.from({ length: 10 }).map(() => analyzeAst(parsed.value, options, prepared.value));
+const queries = Array.from({ length: repetitions });
+const warm = queries.reduce<number>((ms) => {
+  const query = measure(() => analyzeAst(parsed.value, options, prepared.value));
+  assert.deepEqual(signature(query.value), expected, 'Prepared query changed its target');
+  return ms + query.ms;
+}, 0);
+const cold = queries.reduce<number>((ms) => {
+  const query = measure(() => analyzeAst(parsed.value, options));
+  assert.deepEqual(signature(query.value), expected, 'Prepared and cold analysis disagree');
+  return ms + query.ms;
+}, 0);
 console.log('File: ' + source);
 console.log('Extracted JSON: ' + (Buffer.byteLength(astText) / 1048576).toFixed(2) + ' MiB');
 print('Native compile + extract', nativeMs);
 print('JSON.parse', parsed.ms);
 print('Prepare indexes', prepared.ms);
-print('Cold queries (avg)', cold.ms / repetitions);
-print('Warm queries (avg)', warm.ms / repetitions);
-console.log('Result: ' + warm.value[0]._tag);
+print('Cold queries (avg)', cold / repetitions);
+print('Warm queries (avg)', warm / repetitions);
+console.log('Result: ' + analyzeAst(parsed.value, options, prepared.value)._tag);
 console.log('RSS: ' + (process.memoryUsage().rss / 1048576).toFixed(1) + ' MiB');

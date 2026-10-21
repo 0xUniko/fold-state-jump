@@ -7,7 +7,7 @@ A VS Code extension prototype for tracing a value used inside C++ `ranges::fold_
 - **Bun** manages dependencies, runs tests, and bundles the extension.
 - **TypeScript** makes AST nodes, analysis results, and effect boundaries explicit.
 - **Effect-TS** models compiler invocation, file reads, cancellation, and recoverable failures.
-- **Clang LibTooling (native executable)** parses the translation unit and emits only AST nodes needed to analyze functions in the current source file and their directly reachable non-system helper definitions. The TypeScript analyzer remains unchanged.
+- **Clang LibTooling (native executable)** parses the translation unit and emits only AST nodes needed to analyze functions in the current source file and their directly reachable non-system helper definitions. The TypeScript analyzer builds reusable indexes from this compact tree.
 - VS Code's extension host runs the bundled CommonJS output on its Node-compatible runtime. Bun itself is not required at extension runtime.
 
 ## Development
@@ -23,6 +23,9 @@ bun run build:native
 ```
 
 Build the native extractor before F5. For an LLVM installation outside the default CMake prefix, configure the build using `cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm && cmake --build native/build -j 2`. F5 starts the Bun TypeScript watcher through the tracked VS Code task; the C++ executable is built separately.
+
+Native CMake builds default to `Release` to optimize AST traversal. An explicitly
+selected build type is preserved; use `-DCMAKE_BUILD_TYPE=Debug` for debugging.
 
 To package a VSIX:
 
@@ -55,6 +58,17 @@ invalidates the cache, as do extension settings changes. To limit stale data fro
 external headers outside the workspace watchers, the cache expires after 60 seconds.
 Only one translation unit is cached at a time to limit memory use.
 
+Prepared ASTs include an interval tree per file for identifier selection, with
+token ranges and template/depth precedence computed once. The balanced tree
+prunes non-overlapping subtrees instead of scanning every AST node. Overlapping
+template and macro ranges still require candidate comparison. Legacy nodes
+without token lengths or spellings use the query's source text. Index memory
+grows linearly with the number of identifiers.
+Write targets are normalized once and ordered from latest to earliest; tracing
+stops at the first relevant direct write and skips older helper calls once a
+newer mutation is known. Call-path analysis still depends on the reachable
+functions and mutations being traced.
+
 The cache does not make C++ parsing incremental: the next cold jump still parses
 the translation unit. As a conservative fallback for external dependency changes,
 re-run the jump after the cache expires or edit/save the active file to invalidate it.
@@ -68,9 +82,30 @@ bun run bench test/fixtures/native-paths.cpp bank_state.bank.records 10 helper-r
 ```
 
 This prints native extraction, JSON decoding, index construction, and average cold
-vs warmed state-query times. The optional fourth argument selects a `// @case`
+vs warmed state-query times. Queries verify actual targets and call paths, and
+the benchmark does not retain each cold result and its complete index.
+The optional fourth argument selects a `// @case`
 marker for an unambiguous fixture position. Use the same file and selection
 for comparisons.
+
+To isolate cursor-query scaling from C++ parsing:
+
+```sh
+bun run bench:queries 1000
+```
+
+This checks mutation and origin targets in synthetic ASTs with 100, 1,000 and
+10,000 functions (601–60,001 nodes), reporting index construction in milliseconds
+and warmed query averages in microseconds. Each function has one write and one
+read; this measures identifier selection, not large call graphs.
+
+On a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON),
+a paired native extraction comparison improved from 18.64 s to 13.35 s. Across
+206 cursor positions, all 412 mutation/origin results matched the prior analyzer;
+total query time on the same decoded AST decreased from 2,264 ms to 35.8 ms under
+Bun, and from 5,300 ms to 40.1 ms under Node 24. Native ASTs also matched after
+normalizing process-local declaration addresses. These are local measurements,
+not latency guarantees; template parsing remains the dominant cold cost.
 
 ## Design constraints
 

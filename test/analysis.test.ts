@@ -255,3 +255,143 @@ describe('prepared AST reuse', () => {
     }
   });
 });
+
+describe('indexed cursor selection', () => {
+  const selectionFunction = (
+    id: string,
+    start: number,
+    length: number | undefined,
+    options: { readonly file?: string; readonly dependent?: boolean; readonly nested?: boolean; readonly named?: boolean } = {}
+  ): ClangNode => {
+    const selected: ClangNode = {
+      kind: 'DeclRefExpr', referencedDecl: { id, ...(options.named === false ? {} : { name: id }) },
+      range: { begin: { offset: start, ...(length === undefined ? {} : { tokLen: length }) }, end: { offset: start } }
+    };
+    return {
+      kind: 'FunctionDecl', id: 'fn-' + id, name: 'fn-' + id,
+      loc: { file: options.file ?? '/fixture.cpp' }, dependent: options.dependent,
+      inner: [
+        { kind: 'ParmVarDecl', id, name: id, type: { qualType: 'int' } },
+        { kind: 'CompoundStmt', inner: options.nested ? [{ kind: 'ParenExpr', inner: [selected] }] : [selected] }
+      ]
+    };
+  };
+  const selectedOrigin = (functions: readonly ClangNode[], cursorByteOffset: number): string | undefined => {
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: functions };
+    const result = analyzeOriginAst(ast, { file: '/fixture.cpp', sourceText: ' '.repeat(200), cursorByteOffset }, prepareAst(ast));
+    return result._tag === 'OriginFound' ? result.origin.node.id : undefined;
+  };
+
+  test('finds an overlapping interval far before the nearest start offset', () => {
+    assert.equal(selectedOrigin([
+      selectionFunction('spanning', 10, 100),
+      ...Array.from({ length: 50 }, (_, index) => selectionFunction('short-' + index, 20 + index, 1))
+    ], 95), 'spanning');
+  });
+
+  test('keeps the first AST occurrence when sorting changes interval order', () => {
+    assert.equal(selectedOrigin([
+      selectionFunction('first', 11, 4), selectionFunction('second', 10, 4)
+    ], 12), 'first');
+  });
+
+  test('prefers narrower tokens before concrete template instances and depth', () => {
+    assert.equal(selectedOrigin([
+      selectionFunction('concrete', 10, 10, { nested: true }),
+      selectionFunction('dependent', 10, 1, { dependent: true })
+    ], 10), 'dependent');
+  });
+
+  test('prefers a concrete instance over a deeper dependent expression', () => {
+    assert.equal(selectedOrigin([
+      selectionFunction('dependent', 10, 4, { dependent: true, nested: true }),
+      selectionFunction('concrete', 10, 4)
+    ], 12), 'concrete');
+  });
+
+  test('prefers the deepest expression after token width and dependency tie', () => {
+    assert.equal(selectedOrigin([
+      selectionFunction('shallow', 10, 4), selectionFunction('deep', 10, 4, { nested: true })
+    ], 12), 'deep');
+  });
+
+  test('keeps files separate and excludes the token end offset', () => {
+    const functions = [
+      selectionFunction('header', 10, 1, { file: '/helper.h' }),
+      selectionFunction('source', 10, 4)
+    ];
+    assert.equal(selectedOrigin(functions, 10), 'source');
+    assert.equal(selectedOrigin(functions, 14), undefined);
+  });
+
+  test('resolves missing token lengths and spellings using each query source', () => {
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [selectionFunction('value', 10, undefined, { named: false })] };
+    const prepared = prepareAst(ast);
+    const options = { file: '/fixture.cpp', sourceText: ' '.repeat(10) + '值_value', cursorByteOffset: 15 };
+    const result = analyzeOriginAst(ast, options, prepared);
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.equal(result.origin.node.id, 'value');
+    assert.equal(analyzeOriginAst(ast, { ...options, sourceText: ' '.repeat(10) + 'x' }, prepared)._tag, 'AnalysisFailure');
+  });
+
+  test('uses UTF-8 spelling length when the token length is missing', () => {
+    assert.equal(selectedOrigin([selectionFunction('状态', 10, undefined)], 15), '状态');
+    assert.equal(selectedOrigin([selectionFunction('状态', 10, undefined)], 16), undefined);
+  });
+});
+
+describe('latest-call pruning', () => {
+  const helper = (id: string, mutation: ClangNode): ClangNode => ({
+    kind: 'FunctionDecl', id, name: id, loc: { file: '/fixture.cpp' },
+    inner: [
+      { kind: 'ParmVarDecl', id: id + '-param', name: 'value', type: { qualType: 'State &' } },
+      { kind: 'CompoundStmt', inner: [mutation] }
+    ]
+  });
+  const call = (id: string, offset: number): ClangNode => ({
+    kind: 'CallExpr', callee: { id, name: id },
+    range: { begin: { offset }, end: { offset: offset + 10, tokLen: 1 } },
+    inner: [reference(id, id, offset), reference('state', 'state', offset + 3)]
+  });
+  const first = increment('first-param', 'value', 10);
+  const second = increment('second-param', 'value', 20);
+  const helpers = [helper('first', first), helper('second', second)];
+
+  test('uses source order when call AST order is different', () => {
+    const result = analyze(foldAst([call('first', 70), call('second', 30), member('state', 'state', 100)], helpers));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, first);
+  });
+
+  test('preserves AST precedence for calls sharing a macro offset', () => {
+    const result = analyze(foldAst([call('first', 70), call('second', 70), member('state', 'state', 100)], helpers));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, first);
+  });
+
+  test('keeps a later direct write ahead of older helper mutations', () => {
+    const direct = increment('state', 'state', 80);
+    const result = analyze(foldAst([call('first', 70), direct, member('state', 'state', 100)], helpers));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.equal(result.mutation.node, direct);
+      assert.equal(result.via, 'direct');
+    }
+  });
+
+  test('keeps direct-write precedence when a call shares its offset', () => {
+    const direct = increment('state', 'state', 70);
+    const result = analyze(foldAst([call('first', 70), direct, member('state', 'state', 100)], helpers));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, direct);
+  });
+
+  test('uses source order for writes and retains the first write on ties', () => {
+    const direct = increment('state', 'state', 80);
+    const result = analyze(foldAst([
+      direct, increment('state', 'state', 30), increment('state', 'state', 80), member('state', 'state', 100)
+    ]));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, direct);
+  });
+});

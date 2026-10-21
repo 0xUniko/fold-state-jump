@@ -42,8 +42,8 @@ std::string identity(const Decl *declaration) {
 
 class Serializer {
 public:
-  Serializer(ASTContext &context, llvm::StringRef source)
-      : context(context), sm(context.getSourceManager()), source(absolutePath(source)) {}
+  explicit Serializer(ASTContext &context)
+      : context(context), sm(context.getSourceManager()) {}
 
   std::string fileFor(SourceLocation position) const {
     if (position.isInvalid()) return "";
@@ -187,7 +187,7 @@ public:
   }
 
   bool inSource(const FunctionDecl *function) const {
-    return fileFor(function->getLocation()) == source;
+    return sm.isWrittenInMainFile(sm.getExpansionLoc(function->getLocation()));
   }
 
   bool inUserCode(const FunctionDecl *function) const {
@@ -198,7 +198,6 @@ public:
 private:
   ASTContext &context;
   SourceManager &sm;
-  const std::string source;
 };
 
 class CalledFunctions : public RecursiveASTVisitor<CalledFunctions> {
@@ -223,6 +222,14 @@ public:
 class SourceFunctions : public RecursiveASTVisitor<SourceFunctions> {
 public:
   explicit SourceFunctions(const Serializer &serializer) : serializer(serializer) {}
+  bool TraverseDecl(Decl *declaration) {
+    // Header function bodies cannot contain active-file roots. Keep walking
+    // declaration contexts so namespaces, templates and local classes in the
+    // active file are still discovered. Reachable helpers are collected later.
+    const auto *function = llvm::dyn_cast_or_null<FunctionDecl>(declaration);
+    return function && !serializer.inSource(function)
+        ? true : RecursiveASTVisitor<SourceFunctions>::TraverseDecl(declaration);
+  }
   bool VisitFunctionDecl(FunctionDecl *function) {
     const auto *method = llvm::dyn_cast<CXXMethodDecl>(function);
     if (function->hasBody() && serializer.inSource(function) &&
@@ -237,7 +244,7 @@ class Extractor : public ASTConsumer {
 public:
   explicit Extractor(std::string source) : source(std::move(source)) {}
   void HandleTranslationUnit(ASTContext &context) override {
-    const Serializer serializer(context, source);
+    const Serializer serializer(context);
     SourceFunctions functions(serializer);
     functions.TraverseDecl(context.getTranslationUnitDecl());
     // Avoid dumping the complete translation unit: serialize active-file

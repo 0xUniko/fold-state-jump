@@ -10,5 +10,6 @@
     },
     "search.exclude": {
         "repos/**": true
-    }
+    },
+    "cmake.sourceDirectory": "/home/huawei/fold-state-jump/native"
 }

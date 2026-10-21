@@ -44,7 +44,7 @@ const compileDatabase = Schema.Array(Schema.Struct({
   arguments: Schema.optional(Schema.Array(Schema.String)),
   command: Schema.optional(Schema.String)
 }));
-
+const decodeCompileDatabase = Schema.decodeUnknownSync(Schema.fromJsonString(compileDatabase));
 
 type CompileEntry = typeof compileDatabase.Type[number];
 
@@ -79,23 +79,29 @@ const headerEntry = (source: string, entries: readonly CompileEntry[]): CompileE
     const distance = relative === '' ? 0 : relative.split(path.sep).length;
     return (path.parse(entry.file).name === name ? 0 : 10000) + distance;
   };
-  return entries.filter((entry) => isCppSource(entry.file)).reduce<CompileEntry | undefined>(
-    (best, entry) => !best || proximity(entry) < proximity(best) ? entry : best,
+  return entries.reduce<{ readonly entry: CompileEntry; readonly proximity: number } | undefined>(
+    (best, entry) => {
+      if (!isCppSource(entry.file)) return best;
+      const entryProximity = proximity(entry);
+      return !best || entryProximity < best.proximity ? { entry, proximity: entryProximity } : best;
+    },
     undefined
-  );
+  )?.entry;
 };
 
 const sanitizeArguments = (args: readonly string[], entry: CompileEntry): readonly string[] => {
   const noValue = ['-c', '-MD', '-MMD', '-MP', '-M', '-MM'];
   const withValue = ['-o', '-MF', '-MT', '-MQ', '-MJ', '--output'];
+  const source = entryPath(entry);
   return args.slice(1).reduce(
-    (state: { readonly skip: boolean; readonly result: readonly string[] }, argument) => {
+    (state: { readonly skip: boolean; readonly result: string[] }, argument) => {
       if (state.skip) return { skip: false, result: state.result };
       if (noValue.includes(argument)) return state;
       if (withValue.includes(argument)) return { skip: true, result: state.result };
       if (/^-(o|MF|MT|MQ|MJ).+/.test(argument)) return state;
-      if (entryPath(entry) === path.resolve(entry.directory, argument)) return state;
-      return { skip: false, result: [...state.result, argument] };
+      if (source === path.resolve(entry.directory, argument)) return state;
+      state.result.push(argument);
+      return state;
     },
     { skip: false, result: [] }
   ).result;
@@ -108,9 +114,10 @@ export const makeCompileCommand = (
   databaseText?: string
 ): CompileCommand => {
   const entries = databaseText
-    ? Schema.decodeUnknownSync(Schema.fromJsonString(compileDatabase))(databaseText)
+    ? decodeCompileDatabase(databaseText)
     : [];
-  const exact = entries.find((entry) => entryPath(entry) === path.resolve(source));
+  const sourcePath = path.resolve(source);
+  const exact = entries.find((entry) => entryPath(entry) === sourcePath);
   const entry = exact ?? (isHeader(source) ? headerEntry(source, entries) : undefined);
   const language = isHeader(source) ? ['-x', 'c++-header'] : [];
   if (!entry) {
@@ -142,7 +149,8 @@ export const resolveCompileCommand = Effect.fnUntraced(function* (
     readUtf8(database).pipe(
       Effect.map((text) => [{ database, text }]),
       Effect.catchTag('FileFailure', () => Effect.succeed([] as readonly { database: string; text: string }[]))
-    )
+    ),
+    { concurrency: 8 }
   );
   const databases = texts.flat();
   if (configuredPath && !databases.some(({ database }) => database === paths[0])) {

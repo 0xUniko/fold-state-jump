@@ -82,10 +82,38 @@ type AstIndex = {
   readonly functionsByName: ReadonlyMap<string, readonly FunctionInfo[]>;
   readonly declarations: ReadonlyMap<string, WrappedNode>;
   readonly wrappedByNode: ReadonlyMap<ClangNode, WrappedNode>;
-  readonly writesByFunctionId: ReadonlyMap<string, readonly WrappedNode[]>;
+  readonly writesByFunctionId: ReadonlyMap<string, readonly IndexedWrite[]>;
   readonly callsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly callsByCalleeId: ReadonlyMap<string, readonly WrappedNode[]>;
-  readonly resolvedCalls: Map<ClangNode, FunctionInfo | undefined>;
+  readonly resolvedCalls: ReadonlyMap<ClangNode, FunctionInfo | undefined>;
+  readonly identifiersByFile: ReadonlyMap<string, FileIdentifiers>;
+};
+
+type IndexedWrite = {
+  readonly mutation: WrappedNode;
+  readonly target: ExpressionPath;
+  readonly start: number;
+};
+
+type IndexedIdentifier = {
+  readonly wrapped: WrappedNode;
+  readonly range: { readonly start: number; readonly end: number };
+  readonly order: number;
+  readonly dependent: boolean;
+};
+
+type IdentifierTree = {
+  readonly identifier: IndexedIdentifier;
+  readonly maxEnd: number;
+  readonly left: IdentifierTree | undefined;
+  readonly right: IdentifierTree | undefined;
+};
+
+type FileIdentifiers = {
+  readonly tree: IdentifierTree | undefined;
+  // Legacy ASTs may omit both token length and spelling. Their ranges depend
+  // on source text supplied at query time, rather than on the prepared AST.
+  readonly unresolved: readonly { readonly wrapped: WrappedNode; readonly order: number }[];
 };
 
 // The tree and indexes are immutable after construction and reusable for
@@ -125,16 +153,14 @@ const normalized = (file: string): string => path.resolve(file);
 const isCall = (node: ClangNode): boolean => (CALLS as readonly string[]).includes(node.kind);
 const isFunction = (node: ClangNode): boolean => (FUNCTIONS as readonly string[]).includes(node.kind);
 
-const explicitFile = (node: ClangNode): string => {
-  const locations = [node.loc, node.range?.begin, node.range?.end].flatMap((location) =>
-    location
-      ? [location, location.expansionLoc, location.spellingLoc].filter(
-          (candidate): candidate is ClangLocation => candidate !== undefined
-        )
-      : []
-  );
-  const file = locations.find((location) => location.file)?.file;
-  return file ? normalized(file) : '';
+const locationFile = (location: ClangLocation | undefined): string | undefined =>
+  location?.file || location?.expansionLoc?.file || location?.spellingLoc?.file;
+
+const explicitFile = (node: ClangNode, inheritedFile: string): string => {
+  const file = locationFile(node.loc) || locationFile(node.range?.begin) || locationFile(node.range?.end);
+  // Native nodes normally repeat the same absolute filename. Resolve only
+  // file transitions; the inherited path is already normalized.
+  return file ? file === inheritedFile ? file : normalized(file) : '';
 };
 
 // Build the wrapper tree without repeatedly copying every descendant array.
@@ -145,7 +171,7 @@ export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonl
     ancestors: readonly ClangNode[],
     inheritedFile: string
   ): { readonly root: WrappedNode; readonly lastFile: string } => {
-    const file = explicitFile(node) || inheritedFile;
+    const file = explicitFile(node, inheritedFile) || inheritedFile;
     const nextAncestors = [...ancestors, node];
     const children = (node.inner ?? []).reduce(
       (state: { readonly file: string; readonly children: WrappedNode[] }, child) => {
@@ -170,8 +196,13 @@ export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonl
   return { root: result.root, all: appendChildren(result.root, [result.root]) };
 };
 
-const descendants = (wrapped: WrappedNode): readonly WrappedNode[] =>
-  [wrapped, ...wrapped.children.flatMap(descendants)];
+const findDescendant = (
+  wrapped: WrappedNode,
+  predicate: (wrapped: WrappedNode) => boolean
+): WrappedNode | undefined =>
+  predicate(wrapped) ? wrapped : wrapped.children.reduce<WrappedNode | undefined>(
+    (found, child) => found ?? findDescendant(child, predicate), undefined
+  );
 
 const bodyOf = (wrapped: WrappedNode): WrappedNode | undefined =>
   wrapped.children.find((child) => child.node.kind === 'CompoundStmt' || child.node.kind === 'CXXTryStmt');
@@ -213,10 +244,11 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     declarations: new Map(all.filter((wrapped) => ['VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind))
       .map((wrapped) => [wrapped.node.id ?? '', wrapped])),
     wrappedByNode: new Map(all.map((wrapped) => [wrapped.node, wrapped])),
-    writesByFunctionId: new Map<string, WrappedNode[]>(),
+    writesByFunctionId: new Map<string, IndexedWrite[]>(),
     callsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
-    resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>()
+    resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>(),
+    identifiersByFile: buildIdentifierIndex(all)
   };
 
   // Classify each node once instead of rescanning every function body on
@@ -226,12 +258,13 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     if (!owner || !(wrapped.node === owner.body.node || wrapped.ancestors.includes(owner.body.node))) return index;
     // The backward trace only needs potential writes, not every expression
     // in the function. Classify these once per extracted AST.
-    const isWrite = writeTarget(wrapped) !== undefined ||
-      (isCall(wrapped.node) && standardMutationTarget(wrapped) !== undefined);
-    if (isWrite) {
-      const byFunction = index.writesByFunctionId as Map<string, WrappedNode[]>;
+    const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
+    const target = write && pathAt(write, index);
+    const start = wrapped.node.range?.begin?.offset;
+    if (target && start !== undefined) {
+      const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
       const writes = byFunction.get(owner.id) ?? [];
-      writes.push(wrapped);
+      writes.push({ mutation: wrapped, target, start });
       byFunction.set(owner.id, writes);
     }
     if (isCall(wrapped.node)) {
@@ -245,12 +278,23 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
 
   index.calls.reduce((index, call) => {
     const callee = resolveFunction(call, index);
-    index.resolvedCalls.set(call.node, callee);
+    (index.resolvedCalls as Map<ClangNode, FunctionInfo | undefined>).set(call.node, callee);
     if (!callee) return index;
     const callsByCalleeId = index.callsByCalleeId as Map<string, WrappedNode[]>;
     const calls = callsByCalleeId.get(callee.id) ?? [];
     calls.push(call);
     callsByCalleeId.set(callee.id, calls);
+    return index;
+  }, index);
+  // Visit the latest writes and calls first. Once a mutation is known, older
+  // calls need no recursive tracing. Stable ordering retains AST precedence.
+  [...index.writesByFunctionId.values()].reduce((index, writes) => {
+    (writes as IndexedWrite[]).sort((left, right) => right.start - left.start);
+    return index;
+  }, index);
+  [...index.callsByCallerId.values()].reduce((index, calls) => {
+    (calls as WrappedNode[]).sort((left, right) =>
+      (right.node.range?.begin?.offset ?? -1) - (left.node.range?.begin?.offset ?? -1));
     return index;
   }, index);
   return index;
@@ -296,7 +340,7 @@ export const nodeRange = (
 
 const identifierRange = (
   wrapped: WrappedNode,
-  sourceTextByFile: ReadonlyMap<string, string>
+  sourceTextByFile?: ReadonlyMap<string, string>
 ): { readonly start: number; readonly end: number } | null => {
   const range = wrapped.node.range;
   if (!range?.begin || !range.end) return null;
@@ -311,37 +355,92 @@ const identifierRange = (
       ? location.offset + location.tokLen
       : name
         ? location.offset + Buffer.byteLength(name, 'utf8')
-        : identifierByteEnd(Buffer.from(sourceFor(sourceTextByFile, wrapped.file), 'utf8'), location.offset);
-  return { start: location.offset, end };
+        : sourceTextByFile
+          ? identifierByteEnd(Buffer.from(sourceFor(sourceTextByFile, wrapped.file), 'utf8'), location.offset)
+          : undefined;
+  return end === undefined ? null : { start: location.offset, end };
+};
+
+const buildIdentifierTree = (
+  identifiers: readonly IndexedIdentifier[],
+  start = 0,
+  end = identifiers.length
+): IdentifierTree | undefined => {
+  if (start >= end) return undefined;
+  const middle = start + Math.floor((end - start) / 2);
+  const identifier = identifiers[middle];
+  const left = buildIdentifierTree(identifiers, start, middle);
+  const right = buildIdentifierTree(identifiers, middle + 1, end);
+  return { identifier, left, right, maxEnd: Math.max(identifier.range.end, left?.maxEnd ?? -1, right?.maxEnd ?? -1) };
+};
+
+const buildIdentifierIndex = (all: readonly WrappedNode[]): ReadonlyMap<string, FileIdentifiers> => {
+  type Identifiers = {
+    readonly ranged: IndexedIdentifier[];
+    readonly unresolved: { readonly wrapped: WrappedNode; readonly order: number }[];
+  };
+  const identifiersByFile = all.reduce((identifiersByFile, wrapped, order) => {
+    if (!['DeclRefExpr', 'MemberExpr', 'CXXDependentScopeMemberExpr', 'VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind)) {
+      return identifiersByFile;
+    }
+    const file = wrapped.file || normalized('');
+    const identifiers = identifiersByFile.get(file) ?? { ranged: [], unresolved: [] };
+    const range = identifierRange(wrapped);
+    if (range) identifiers.ranged.push({ wrapped, range, order, dependent: isDependent(wrapped) });
+    else identifiers.unresolved.push({ wrapped, order });
+    identifiersByFile.set(file, identifiers);
+    return identifiersByFile;
+  }, new Map<string, Identifiers>());
+  const sortedIdentifiersByFile = [...identifiersByFile.keys()].reduce((identifiersByFile, file) => {
+    identifiersByFile.get(file)?.ranged.sort((left, right) => left.range.start - right.range.start || left.order - right.order);
+    return identifiersByFile;
+  }, identifiersByFile);
+  return new Map([...sortedIdentifiersByFile].map(([file, identifiers]) => [
+    file, { tree: buildIdentifierTree(identifiers.ranged), unresolved: identifiers.unresolved }
+  ]));
+};
+
+const preferIdentifier = (
+  selected: IndexedIdentifier | undefined,
+  candidate: IndexedIdentifier
+): IndexedIdentifier => {
+  if (!selected) return candidate;
+  const lengthDifference = candidate.range.end - candidate.range.start - (selected.range.end - selected.range.start);
+  if (lengthDifference !== 0) return lengthDifference < 0 ? candidate : selected;
+  if (candidate.dependent !== selected.dependent) return candidate.dependent ? selected : candidate;
+  const depthDifference = candidate.wrapped.ancestors.length - selected.wrapped.ancestors.length;
+  if (depthDifference !== 0) return depthDifference > 0 ? candidate : selected;
+  return candidate.order < selected.order ? candidate : selected;
+};
+
+const findIndexedIdentifier = (
+  tree: IdentifierTree | undefined,
+  offset: number,
+  selected?: IndexedIdentifier
+): IndexedIdentifier | undefined => {
+  if (!tree || offset >= tree.maxEnd) return selected;
+  const left = findIndexedIdentifier(tree.left, offset, selected);
+  const identifier = tree.identifier;
+  if (offset < identifier.range.start) return left;
+  const current = offset < identifier.range.end ? preferIdentifier(left, identifier) : left;
+  return findIndexedIdentifier(tree.right, offset, current);
 };
 
 const findNodeAt = (
-  all: readonly WrappedNode[],
+  index: AstIndex,
   file: string,
   offset: number,
   sourceTextByFile: ReadonlyMap<string, string>
-): WrappedNode | undefined =>
-  all
-    .filter(
-      (wrapped) =>
-        normalized(wrapped.file) === normalized(file) &&
-        ['DeclRefExpr', 'MemberExpr', 'CXXDependentScopeMemberExpr', 'VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind)
-    )
-    .flatMap((wrapped) => {
-      const range = identifierRange(wrapped, sourceTextByFile);
-      return range && offset >= range.start && offset < range.end ? [{ wrapped, range }] : [];
-    })
-    .reduce<{ readonly wrapped: WrappedNode; readonly range: { readonly start: number; readonly end: number } } | undefined>(
-      (selected, candidate) =>
-        !selected || candidate.range.end - candidate.range.start < selected.range.end - selected.range.start ||
-          (candidate.range.end - candidate.range.start === selected.range.end - selected.range.start &&
-            (Number(isDependent(candidate.wrapped)) < Number(isDependent(selected.wrapped)) ||
-              (isDependent(candidate.wrapped) === isDependent(selected.wrapped) &&
-                candidate.wrapped.ancestors.length > selected.wrapped.ancestors.length)))
-          ? candidate
-          : selected,
-      undefined
-    )?.wrapped;
+): WrappedNode | undefined => {
+  const identifiers = index.identifiersByFile.get(normalized(file));
+  if (!identifiers) return undefined;
+  return identifiers.unresolved.reduce((selected, { wrapped, order }) => {
+    const range = identifierRange(wrapped, sourceTextByFile);
+    return range && offset >= range.start && offset < range.end
+      ? preferIdentifier(selected, { wrapped, range, order, dependent: isDependent(wrapped) })
+      : selected;
+  }, findIndexedIdentifier(identifiers.tree, offset))?.wrapped;
+};
 
 const isDependent = (wrapped: WrappedNode): boolean =>
   !!wrapped.node.dependent || wrapped.ancestors.some((node) => isFunction(node) && node.dependent);
@@ -406,8 +505,8 @@ const resolveFunction = (call: WrappedNode, index: AstIndex): FunctionInfo | und
     if (method) return index.functionsByNode.get(method.node);
   }
   if (callee?.node.referencedMemberDecl) return index.functionsById.get(callee.node.referencedMemberDecl);
-  const reference = descendants(call.children[0]).find(
-    (wrapped) => wrapped.node.kind === 'DeclRefExpr' && wrapped.node.referencedDecl
+  const reference = findDescendant(call.children[0],
+    (wrapped) => wrapped.node.kind === 'DeclRefExpr' && wrapped.node.referencedDecl !== undefined
   )?.node.referencedDecl;
   const exact = reference?.id && index.functionsById.get(reference.id);
   if (exact) return exact;
@@ -447,15 +546,12 @@ const affects = (writeMembers: readonly string[], targetMembers: readonly string
 const isReferenceOrPointer = (parameter: WrappedNode): boolean =>
   /[&*]/.test(parameter.node.type?.qualType ?? '');
 
-const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined =>
-  [...wrapped.ancestors]
-    .reverse()
-    .filter(isFunction)
-    .flatMap((node) => {
-      const fn = index.functionsByNode.get(node);
-      return fn ? [fn] : [];
-    })
-    .at(0);
+const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
+  const findOwner = (position: number): FunctionInfo | undefined => position < 0
+    ? undefined
+    : index.functionsByNode.get(wrapped.ancestors[position]) ?? findOwner(position - 1);
+  return findOwner(wrapped.ancestors.length - 1);
+};
 
 const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined => {
   const lambdaNode = [...fn.wrapped.ancestors].reverse().find((node) => node.kind === 'LambdaExpr');
@@ -464,14 +560,15 @@ const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined =
 
 const isFoldCall = (call: WrappedNode): boolean =>
   (call.node.callee?.name ?? '').includes('fold_left') ||
-  call.children.slice(0, call.node.memberOperator ? 2 : 1).flatMap(descendants).some((wrapped) =>
-    (wrapped.node.referencedDecl?.name ?? wrapped.node.name ?? '').includes('fold_left'));
+  call.children.slice(0, call.node.memberOperator ? 2 : 1).some((wrapped) =>
+    findDescendant(wrapped, (wrapped) =>
+      (wrapped.node.referencedDecl?.name ?? wrapped.node.name ?? '').includes('fold_left')) !== undefined);
 
 const foldFor = (fn: FunctionInfo, index: AstIndex): { readonly call: WrappedNode; readonly initial: WrappedNode } | undefined => {
   const lambda = lambdaFor(fn, index);
   if (!lambda || fn.params.length === 0) return undefined;
   const callNode = [...lambda.ancestors].reverse().find(isCall);
-  const call = callNode && index.calls.find((call) => call.node === callNode);
+  const call = callNode && index.wrappedByNode.get(callNode);
   const initial = call && argsOf(call).at(-2);
   return call && initial && isFoldCall(call) ? { call, initial } : undefined;
 };
@@ -512,21 +609,23 @@ const findPreviousMutation = (
   if (visitedFunctionIds.includes(fn.id)) return undefined;
   const nextVisited = [...visitedFunctionIds, fn.id];
   const writes = index.writesByFunctionId.get(fn.id) ?? [];
-  const directCandidates = writes.flatMap((wrapped) => {
-    const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
-    const range = nodeRange(wrapped, sourceTextByFile);
-    const writePath = pathAt(write, index);
-    return range && range.end <= beforeOffset && writePath?.rootId === target.rootId && affects(writePath.members, target.members)
-      ? [{ mutation: wrapped, orderOffset: range.start, frames: [] as readonly TraceFrame[] }]
-      : [];
+  const directWrite = writes.find((write) => {
+    if (write.target.rootId !== target.rootId || !affects(write.target.members, target.members)) return false;
+    const range = nodeRange(write.mutation, sourceTextByFile);
+    return range !== null && range.end <= beforeOffset;
   });
-  const callCandidates = (index.callsByCallerId.get(fn.id) ?? []).flatMap((call) => {
+  const direct: MutationCandidate | undefined = directWrite && {
+    mutation: directWrite.mutation, orderOffset: directWrite.start, frames: []
+  };
+  return (index.callsByCallerId.get(fn.id) ?? []).reduce<MutationCandidate | undefined>((latest, call) => {
     const callRange = nodeRange(call, sourceTextByFile);
+    if (!callRange || callRange.end > beforeOffset || (latest && callRange.start <= latest.orderOffset)) return latest;
     const callee = resolveFunction(call, index);
-    if (!callRange || callRange.end > beforeOffset || !callee) return [];
+    if (!callee) return latest;
+    const args = argsOf(call);
     const parameterTargets = callee.params.flatMap((parameter, parameterIndex) => {
       if (!isReferenceOrPointer(parameter)) return [];
-      const argument = pathAt(argsOf(call)[parameterIndex], index);
+      const argument = pathAt(args[parameterIndex], index);
       if (!argument || argument.rootId !== target.rootId || !affects(argument.members, target.members)) return [];
       return [{ rootId: parameter.node.id ?? '', rootName: parameter.node.name ?? '', members: target.members.slice(argument.members.length) }];
     });
@@ -541,15 +640,12 @@ const findPreviousMutation = (
     const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
       callee.wrapped.ancestors.some((node) => node.id === owner.id);
     const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [target] : [];
-    return [...parameterTargets, ...receiverTargets, ...capturedTargets].flatMap((target) => {
+    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce((latest, target) => {
+      if (latest?.orderOffset === callRange.start) return latest;
       const nested = findPreviousMutation(callee, target, Number.POSITIVE_INFINITY, index, sourceTextByFile, nextVisited);
-      return nested ? [{ ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] }] : [];
-    });
-  });
-  return [...directCandidates, ...callCandidates].reduce<MutationCandidate | undefined>(
-    (latest, candidate) => !latest || candidate.orderOffset > latest.orderOffset ? candidate : latest,
-    undefined
-  );
+      return nested ? { ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] } : latest;
+    }, latest);
+  }, direct);
 };
 
 // Backward tracing preserves the value passed by copy, while forward call effects
@@ -663,7 +759,7 @@ const resolveSelection = (
     [normalized(options.file), options.sourceText] as const
   ]);
   const index = prepared?.index ?? prepareAst(ast).index;
-  const selected = findNodeAt(index.all, options.file, options.cursorByteOffset, sourceTextByFile);
+  const selected = findNodeAt(index, options.file, options.cursorByteOffset, sourceTextByFile);
   if (!selected) {
     return { _tag: 'AnalysisFailure', reason: 'No supported variable or member expression found at the cursor.' };
   }

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(fold_state_jump_ast LANGUAGES CXX)
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
 find_package(LLVM REQUIRED CONFIG)
 find_package(Clang REQUIRED CONFIG HINTS "${LLVM_DIR}/../clang" NO_DEFAULT_PATH)
 add_executable(fold-state-jump-ast ast-extractor.cpp)
