@@ -96,6 +96,31 @@ describe('AST source files', () => {
   });
 });
 
+describe('persistent AST ancestry', () => {
+  test('preserves lexical ancestor order and sibling file inheritance', () => {
+    const ast: ClangNode = {
+      kind: 'TranslationUnitDecl',
+      inner: [
+        { kind: 'FunctionDecl', id: 'outer', loc: { file: '/a.cpp' }, inner: [
+          { kind: 'CompoundStmt', inner: [
+            { kind: 'DeclRefExpr', referencedDecl: { id: 'value', name: 'value' } }
+          ] }
+        ] },
+        { kind: 'FunctionDecl', id: 'other', inner: [{ kind: 'CompoundStmt' }] }
+      ]
+    };
+    const all = buildTree(ast).all;
+    assert.deepEqual(all[3].ancestors.map((node) => node.kind), [
+      'TranslationUnitDecl', 'FunctionDecl', 'CompoundStmt'
+    ]);
+    assert.deepEqual(all[3].ancestors.map((node) => node.id), [
+      undefined, 'outer', undefined
+    ]);
+    assert.equal(all[4].file, '/a.cpp');
+    assert.deepEqual(all[4].ancestors.map((node) => node.kind), ['TranslationUnitDecl']);
+  });
+});
+
 describe('fold mutation analysis', () => {
   test('finds the latest mutation inside a fold lambda', () => {
     const mutation = increment('state', 'state', 30);
