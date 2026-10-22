@@ -56,7 +56,12 @@ while the document version stays unchanged. Editing C/C++ sources, headers, or
 `compile_commands.json` inside the workspace (including unsaved editor changes)
 invalidates the cache, as do extension settings changes. To limit stale data from
 external headers outside the workspace watchers, the cache expires after 60 seconds.
-Only one translation unit is cached at a time to limit memory use.
+A least-recently-used cache retains up to four prepared translation units by default.
+Set `foldStateJump.maxCachedAstEntries` from 1 to 8 (use 1 for the former
+single-file behavior). Cache hits update the eviction order. Each retained
+entry includes a complete parsed AST and indexes, so four large translation units
+can use substantially more memory than one; the entry limit is not a byte budget.
+The native JSON output itself is not retained after parsing.
 
 Prepared ASTs include an interval tree per file for identifier selection, with
 token ranges and template/depth precedence computed once. The balanced tree
