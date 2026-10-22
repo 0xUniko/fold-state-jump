@@ -5,3 +5,4 @@ dist/
 bun.lock
 .vscode/launch.json
 native/build/
+build
