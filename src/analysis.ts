@@ -276,35 +276,34 @@ const buildIndex = (root: WrappedNode, all: readonly WrappedNode[]): AstIndex =>
   // This keeps the traversal O(nodes) without retaining an owner Map or
   // several Sets for every node in shallow real-world translation units.
   const collectEffects = (
-    wrapped: WrappedNode,
+    parent: WrappedNode,
     index: AstIndex,
     owner: FunctionInfo | undefined,
     inBody: boolean
   ): AstIndex => {
-    const indexed = owner && inBody ? [wrapped].reduce((index, wrapped) => {
-      const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
-      const target = write && pathAt(write, index);
-      const start = wrapped.node.range?.begin?.offset;
-      if (target && start !== undefined) {
-        const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
-        const writes = byFunction.get(owner.id) ?? [];
-        writes.push({ mutation: wrapped, target, start });
-        byFunction.set(owner.id, writes);
+    const ownFunction = index.functionsByNode.get(parent.node);
+    return parent.children.reduce((index, wrapped) => {
+      const currentOwner = ownFunction ?? owner;
+      const currentInBody = ownFunction ? wrapped.node === ownFunction.body.node : inBody;
+      if (currentOwner && currentInBody) {
+        const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
+        const target = write && pathAt(write, index);
+        const start = wrapped.node.range?.begin?.offset;
+        if (target && start !== undefined) {
+          const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
+          const writes = byFunction.get(currentOwner.id) ?? [];
+          writes.push({ mutation: wrapped, target, start });
+          byFunction.set(currentOwner.id, writes);
+        }
+        if (isCall(wrapped.node)) {
+          const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
+          const calls = callers.get(currentOwner.id) ?? [];
+          calls.push(wrapped);
+          callers.set(currentOwner.id, calls);
+        }
       }
-      if (isCall(wrapped.node)) {
-        const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
-        const calls = callers.get(owner.id) ?? [];
-        calls.push(wrapped);
-        callers.set(owner.id, calls);
-      }
-      return index;
-    }, index) : index;
-    const ownFunction = index.functionsByNode.get(wrapped.node);
-    return wrapped.children.reduce((index, child) =>
-      collectEffects(
-        child, index, ownFunction ?? owner,
-        ownFunction ? child.node === ownFunction.body.node : inBody
-      ), indexed);
+      return collectEffects(wrapped, index, currentOwner, currentInBody);
+    }, index);
   };
   collectEffects(root, index, undefined, false);
 
