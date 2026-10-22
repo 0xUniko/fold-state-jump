@@ -94,10 +94,12 @@ public:
     if (depth > 256) return json::Object{{"kind", "UnsupportedDepth"}};
     json::Object node{{"kind", stmt->getStmtClassName()},
                       {"range", range(stmt->getSourceRange())}};
-    if (const auto *expression = llvm::dyn_cast<Expr>(stmt)) {
-      node["type"] = json::Object{{"qualType", expression->getType().getAsString()}};
-      node["dependent"] = expression->isTypeDependent();
-    }
+    // Expression qualType is never consumed by the tracer. Printing it for
+    // every Clang expression creates expensive strings and oversized JSON.
+    // Only identifier selection uses the expression's dependent flag.
+    if (llvm::isa<DeclRefExpr>(stmt) || llvm::isa<MemberExpr>(stmt) ||
+        llvm::isa<CXXDependentScopeMemberExpr>(stmt))
+      node["dependent"] = llvm::cast<Expr>(stmt)->isTypeDependent();
     if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
       if (const auto *callee = call->getDirectCallee())
         node["callee"] = json::Object{
