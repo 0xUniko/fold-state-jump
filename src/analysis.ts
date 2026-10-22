@@ -32,10 +32,17 @@ export type ClangNode = {
   readonly inner?: readonly ClangNode[];
 };
 
+export type AncestorLink = {
+  readonly node: ClangNode;
+  readonly previous: AncestorLink | undefined;
+};
+
 export type WrappedNode = {
   readonly node: ClangNode;
   readonly file: string;
-  readonly ancestors: readonly ClangNode[];
+  // Explicit structural metadata: reading depth never materializes ancestors.
+  readonly ancestry: AncestorLink | undefined;
+  readonly depth: number;
   readonly children: readonly WrappedNode[];
 };
 
@@ -168,33 +175,47 @@ const explicitFile = (node: ClangNode, inheritedFile: string): string => {
 export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonly all: readonly WrappedNode[] } => {
   const visit = (
     node: ClangNode,
-    ancestors: readonly ClangNode[],
+    ancestry: AncestorLink | undefined,
+    depth: number,
     inheritedFile: string
   ): { readonly root: WrappedNode; readonly lastFile: string } => {
     const file = explicitFile(node, inheritedFile) || inheritedFile;
-    const nextAncestors = [...ancestors, node];
+    // Only nodes with children need an ancestor-link record. Siblings share it.
+    const nextAncestry: AncestorLink | undefined = (node.inner?.length ?? 0) > 0
+      ? { node, previous: ancestry }
+      : undefined;
     const children = (node.inner ?? []).reduce(
       (state: { readonly file: string; readonly children: WrappedNode[] }, child) => {
-        const result = visit(child, nextAncestors, state.file);
+        const result = visit(child, nextAncestry, depth + 1, state.file);
         state.children.push(result.root);
         return { file: result.lastFile, children: state.children };
       },
       { file, children: [] as WrappedNode[] }
     );
     return {
-      root: { node, file, ancestors, children: children.children },
+      root: { node, file, ancestry, depth, children: children.children },
       lastFile: children.file
     };
   };
-  // Thread the flat collection through the traversal without copying descendants.
   const appendChildren = (wrapped: WrappedNode, all: WrappedNode[]): WrappedNode[] =>
     wrapped.children.reduce((all, child) => {
       all.push(child);
       return appendChildren(child, all);
     }, all);
-  const result = visit(ast, [], '');
+  const result = visit(ast, undefined, 0, '');
   return { root: result.root, all: appendChildren(result.root, [result.root]) };
 };
+
+// Search along the persistent chain without allocating ancestor arrays.
+const findAncestor = (
+  wrapped: WrappedNode,
+  predicate: (node: ClangNode) => boolean
+): ClangNode | undefined => {
+  const visit = (link: AncestorLink | undefined): ClangNode | undefined =>
+    !link ? undefined : predicate(link.node) ? link.node : visit(link.previous);
+  return visit(wrapped.ancestry);
+};
+
 
 const findDescendant = (
   wrapped: WrappedNode,
@@ -222,7 +243,7 @@ const functionInfo = (wrapped: WrappedNode): FunctionInfo | undefined => {
     : undefined;
 };
 
-const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
+const buildIndex = (root: WrappedNode, all: readonly WrappedNode[]): AstIndex => {
   const functions = all.filter((wrapped) => isFunction(wrapped.node)).flatMap((wrapped) => {
     const info = functionInfo(wrapped);
     return info ? [info] : [];
@@ -232,7 +253,7 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     functionsByNode: new Map(functions.map((fn) => [fn.wrapped.node, fn])),
     functionsById: functions.reduce((functionsById, fn) => {
       const previous = functionsById.get(fn.id);
-      if (!previous || fn.wrapped.ancestors.length > previous.wrapped.ancestors.length) functionsById.set(fn.id, fn);
+      if (!previous || fn.wrapped.depth > previous.wrapped.depth) functionsById.set(fn.id, fn);
       return functionsById;
     }, new Map<string, FunctionInfo>()),
     functionsByName: functions.reduce((byName, fn) => {
@@ -251,30 +272,41 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     identifiersByFile: buildIdentifierIndex(all)
   };
 
-  // Classify each node once instead of rescanning every function body on
-  // each backward trace. Nested functions belong to their own nearest owner.
-  all.reduce((index, wrapped) => {
-    const owner = enclosingFunction(wrapped, index);
-    if (!owner || !(wrapped.node === owner.body.node || wrapped.ancestors.includes(owner.body.node))) return index;
-    // The backward trace only needs potential writes, not every expression
-    // in the function. Classify these once per extracted AST.
-    const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
-    const target = write && pathAt(write, index);
-    const start = wrapped.node.range?.begin?.offset;
-    if (target && start !== undefined) {
-      const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
-      const writes = byFunction.get(owner.id) ?? [];
-      writes.push({ mutation: wrapped, target, start });
-      byFunction.set(owner.id, writes);
-    }
-    if (isCall(wrapped.node)) {
-      const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
-      const calls = callers.get(owner.id) ?? [];
-      calls.push(wrapped);
-      callers.set(owner.id, calls);
-    }
-    return index;
-  }, index);
+  // Classify ownership and function-body membership as the tree is visited.
+  // This keeps the traversal O(nodes) without retaining an owner Map or
+  // several Sets for every node in shallow real-world translation units.
+  const collectEffects = (
+    wrapped: WrappedNode,
+    index: AstIndex,
+    owner: FunctionInfo | undefined,
+    inBody: boolean
+  ): AstIndex => {
+    const indexed = owner && inBody ? [wrapped].reduce((index, wrapped) => {
+      const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
+      const target = write && pathAt(write, index);
+      const start = wrapped.node.range?.begin?.offset;
+      if (target && start !== undefined) {
+        const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
+        const writes = byFunction.get(owner.id) ?? [];
+        writes.push({ mutation: wrapped, target, start });
+        byFunction.set(owner.id, writes);
+      }
+      if (isCall(wrapped.node)) {
+        const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
+        const calls = callers.get(owner.id) ?? [];
+        calls.push(wrapped);
+        callers.set(owner.id, calls);
+      }
+      return index;
+    }, index) : index;
+    const ownFunction = index.functionsByNode.get(wrapped.node);
+    return wrapped.children.reduce((index, child) =>
+      collectEffects(
+        child, index, ownFunction ?? owner,
+        ownFunction ? child.node === ownFunction.body.node : inBody
+      ), indexed);
+  };
+  collectEffects(root, index, undefined, false);
 
   index.calls.reduce((index, call) => {
     const callee = resolveFunction(call, index);
@@ -300,10 +332,10 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   return index;
 };
 
-export const prepareAst = (ast: ClangNode): PreparedAst => ({
-  ast,
-  index: buildIndex(buildTree(ast).all)
-});
+export const prepareAst = (ast: ClangNode): PreparedAst => {
+  const { root, all } = buildTree(ast);
+  return { ast, index: buildIndex(root, all) };
+};
 
 const sourceFor = (sourceTextByFile: ReadonlyMap<string, string>, file: string): string =>
   sourceTextByFile.get(normalized(file)) ?? '';
@@ -408,7 +440,7 @@ const preferIdentifier = (
   const lengthDifference = candidate.range.end - candidate.range.start - (selected.range.end - selected.range.start);
   if (lengthDifference !== 0) return lengthDifference < 0 ? candidate : selected;
   if (candidate.dependent !== selected.dependent) return candidate.dependent ? selected : candidate;
-  const depthDifference = candidate.wrapped.ancestors.length - selected.wrapped.ancestors.length;
+  const depthDifference = candidate.wrapped.depth - selected.wrapped.depth;
   if (depthDifference !== 0) return depthDifference > 0 ? candidate : selected;
   return candidate.order < selected.order ? candidate : selected;
 };
@@ -443,7 +475,8 @@ const findNodeAt = (
 };
 
 const isDependent = (wrapped: WrappedNode): boolean =>
-  !!wrapped.node.dependent || wrapped.ancestors.some((node) => isFunction(node) && node.dependent);
+  !!wrapped.node.dependent ||
+  findAncestor(wrapped, (node) => isFunction(node) && !!node.dependent) !== undefined;
 
 const unwrap = (wrapped: WrappedNode | undefined): WrappedNode | undefined => {
   if (!wrapped || !(TRANSPARENT_EXPRESSIONS as readonly string[]).includes(wrapped.node.kind)) return wrapped;
@@ -547,14 +580,13 @@ const isReferenceOrPointer = (parameter: WrappedNode): boolean =>
   /[&*]/.test(parameter.node.type?.qualType ?? '');
 
 const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
-  const findOwner = (position: number): FunctionInfo | undefined => position < 0
-    ? undefined
-    : index.functionsByNode.get(wrapped.ancestors[position]) ?? findOwner(position - 1);
-  return findOwner(wrapped.ancestors.length - 1);
+  const visit = (link: AncestorLink | undefined): FunctionInfo | undefined =>
+    !link ? undefined : index.functionsByNode.get(link.node) ?? visit(link.previous);
+  return visit(wrapped.ancestry);
 };
 
 const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined => {
-  const lambdaNode = [...fn.wrapped.ancestors].reverse().find((node) => node.kind === 'LambdaExpr');
+  const lambdaNode = findAncestor(fn.wrapped, (node) => node.kind === 'LambdaExpr');
   return lambdaNode && index.wrappedByNode.get(lambdaNode);
 };
 
@@ -567,7 +599,7 @@ const isFoldCall = (call: WrappedNode): boolean =>
 const foldFor = (fn: FunctionInfo, index: AstIndex): { readonly call: WrappedNode; readonly initial: WrappedNode } | undefined => {
   const lambda = lambdaFor(fn, index);
   if (!lambda || fn.params.length === 0) return undefined;
-  const callNode = [...lambda.ancestors].reverse().find(isCall);
+  const callNode = findAncestor(lambda, isCall);
   const call = callNode && index.wrappedByNode.get(callNode);
   const initial = call && argsOf(call).at(-2);
   return call && initial && isFoldCall(call) ? { call, initial } : undefined;
@@ -638,7 +670,7 @@ const findPreviousMutation = (
     const declaration = index.declarations.get(target.rootId);
     const owner = declaration && enclosingFunction(declaration, index);
     const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
-      callee.wrapped.ancestors.some((node) => node.id === owner.id);
+      findAncestor(callee.wrapped, (node) => node.id === owner.id) !== undefined;
     const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [target] : [];
     return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce((latest, target) => {
       if (latest?.orderOffset === callRange.start) return latest;
