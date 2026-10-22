@@ -118,6 +118,38 @@ describe('explicit persistent ancestry', () => {
   });
 });
 
+describe('deep lexical ownership indexing', () => {
+  [128, 256].map((depth) => test('finds writes through ' + depth + ' nested compounds', () => {
+    const nested = (remaining: number, statement: ClangNode): ClangNode =>
+      remaining === 0 ? statement : { kind: 'CompoundStmt', inner: [nested(remaining - 1, statement)] };
+    const ref = (offset: number): ClangNode => ({
+      kind: 'DeclRefExpr', referencedDecl: { id: 'state', name: 'state' },
+      range: { begin: { offset, tokLen: 5 }, end: { offset, tokLen: 5 } }
+    });
+    const write: ClangNode = {
+      kind: 'UnaryOperator', opcode: '++',
+      range: { begin: { offset: 10 }, end: { offset: 15, tokLen: 2 } },
+      inner: [ref(10)]
+    };
+    const ast: ClangNode = {
+      kind: 'TranslationUnitDecl',
+      inner: [{
+        kind: 'FunctionDecl', id: 'deep', name: 'deep', loc: { file: '/fixture.cpp' },
+        inner: [
+          { kind: 'ParmVarDecl', id: 'state', name: 'state', type: { qualType: 'int &' } },
+          { kind: 'CompoundStmt', inner: [nested(depth, write), ref(100)] }
+        ]
+      }]
+    };
+    const prepared = prepareAst(ast);
+    const result = analyzeAst(ast, {
+      file: '/fixture.cpp', sourceText: ' '.repeat(200), cursorByteOffset: 102
+    }, prepared);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, write);
+  }));
+});
+
 describe('fold mutation analysis', () => {
   test('finds the latest mutation inside a fold lambda', () => {
     const mutation = increment('state', 'state', 30);
