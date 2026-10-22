@@ -3,28 +3,20 @@ import path from 'node:path';
 import { Effect } from 'effect';
 import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, prepareAst, type ClangNode, type PreparedAst, type WrappedNode, type TraceCandidate } from './analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from './services';
+import { emptyAstCache, invalidateAstCache as invalidateCache, readAstCache, putAstCache } from './ast-cache';
 
 const isCpp = (languageId: string): boolean =>
   ['cpp', 'c', 'cuda-cpp', 'objective-cpp'].includes(languageId);
 
 const activeDocument = (): vscode.TextDocument | undefined => vscode.window.activeTextEditor?.document;
 
-type CachedAst = {
-  readonly documentVersion: number;
-  readonly generation: number;
-  readonly createdAt: number;
-  readonly prepared: PreparedAst;
-};
-
-// One entry bounds the cost of retaining both the native JSON representation
-// and the indexed AST. File watchers invalidate it; the age limit also covers
-// headers located outside the workspace, which VS Code cannot watch here.
-const astCache = new Map<string, CachedAst>();
+// The cache retains indexes and their underlying ASTs, not the native JSON.
+// A configurable entry cap bounds retention; it is NOT a fixed memory budget.
+// Watchers and a 60-second TTL protect against changed source dependencies.
+let astCache = emptyAstCache<PreparedAst>();
 const cacheMaxAgeMs = 60_000;
-let cacheGeneration = 0;
 const invalidateAstCache = (): void => {
-  cacheGeneration += 1;
-  astCache.clear();
+  astCache = invalidateCache(astCache);
 };
 
 const saveIfDirty = (document: vscode.TextDocument): Effect.Effect<boolean> =>
@@ -90,7 +82,7 @@ const extractAst = Effect.fnUntraced(function* (
 ) {
   const sourceText = document.getText();
   const documentVersion = document.version;
-  const generation = cacheGeneration;
+  const generation = astCache.generation;
   const source = path.resolve(document.uri.fsPath);
   const cursorByteOffset = byteOffsetFromUtf16(
     sourceText,
@@ -103,10 +95,9 @@ const extractAst = Effect.fnUntraced(function* (
     sourceText,
     cursorByteOffset
   };
-  const cached = astCache.get(source);
-  if (cached?.documentVersion === documentVersion &&
-      cached.generation === generation &&
-      Date.now() - cached.createdAt < cacheMaxAgeMs) {
+  const cached = readAstCache(astCache, source, documentVersion, Date.now(), cacheMaxAgeMs);
+  astCache = cached.cache;
+  if (cached.prepared) {
     return { _tag: 'ExtractionReady' as const, prepared: cached.prepared, options };
   }
   const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
@@ -135,15 +126,18 @@ const extractAst = Effect.fnUntraced(function* (
     config.get('maxAstBytes', 67108864),
     controller.signal
   ).pipe(Effect.ensuring(Effect.sync(() => cancellation.dispose())));
-  if (document.version !== documentVersion || generation !== cacheGeneration) {
+  if (document.version !== documentVersion || generation !== astCache.generation) {
     return { _tag: 'AnalysisFailure' as const, reason: 'A source file changed during analysis. Run the command again.' };
   }
   const prepared = yield* Effect.try({
     try: () => prepareAst(JSON.parse(astText) as ClangNode),
     catch: (error) => new Error('Could not prepare Clang AST: ' + String(error))
   });
-  astCache.clear();
-  astCache.set(source, { documentVersion, generation, createdAt: Date.now(), prepared });
+  astCache = putAstCache(
+    astCache,
+    { source, documentVersion, createdAt: Date.now(), prepared },
+    config.get('maxCachedAstEntries', 4)
+  );
   return { _tag: 'ExtractionReady' as const, prepared, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
