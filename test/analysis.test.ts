@@ -5,7 +5,8 @@ import { analyzeAst, analyzeOriginAst, buildTree, byteOffsetFromUtf16, utf16Offs
 const wrapped = (node: WrappedNode['node'], children: readonly WrappedNode[] = []): WrappedNode => ({
   node,
   children,
-  ancestors: [],
+  ancestry: undefined,
+  depth: 0,
   file: '/fixture.cpp'
 });
 
@@ -93,6 +94,27 @@ describe('AST source files', () => {
     assert.deepEqual(buildTree(ast).all.slice(1).map((wrapped) => wrapped.file), [
       '/header.hpp', '/header.hpp', '/header.hpp', '/fixture.cpp', '/fixture.cpp'
     ]);
+  });
+});
+
+describe('explicit persistent ancestry', () => {
+  test('preserves nearest-to-farthest lexical ancestors and sibling file inheritance', () => {
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      { kind: 'FunctionDecl', id: 'parent', loc: { file: '/parent.cpp' }, inner: [
+        { kind: 'CompoundStmt', inner: [{ kind: 'DeclRefExpr', referencedDecl: { id: 'x', name: 'x' } }] }
+      ] },
+      { kind: 'FunctionDecl', id: 'sibling', inner: [{ kind: 'CompoundStmt' }] }
+    ] };
+    const nodes = buildTree(ast).all;
+    const ancestors = (link: typeof nodes[number]['ancestry']): readonly ClangNode[] =>
+      link ? [...ancestors(link.previous), link.node] : [];
+    assert.equal(nodes[3].depth, 3);
+    assert.deepEqual(ancestors(nodes[3].ancestry).map((node) => node.kind), [
+      'TranslationUnitDecl', 'FunctionDecl', 'CompoundStmt'
+    ]);
+    assert.equal(nodes[4].depth, 1);
+    assert.equal(nodes[4].file, '/parent.cpp');
+    assert.deepEqual(ancestors(nodes[4].ancestry).map((node) => node.kind), ['TranslationUnitDecl']);
   });
 });
 
