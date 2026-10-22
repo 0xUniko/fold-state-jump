@@ -16,11 +16,12 @@ type CachedAst = {
   readonly prepared: PreparedAst;
 };
 
-// One entry bounds the cost of retaining both the native JSON representation
-// and the indexed AST. File watchers invalidate it; the age limit also covers
-// headers located outside the workspace, which VS Code cannot watch here.
+// Keep a small LRU of parsed translation units. Moving between source files
+// should not force a full Clang reparse each time. The age bound still covers
+// external headers that workspace watchers cannot see.
 const astCache = new Map<string, CachedAst>();
 const cacheMaxAgeMs = 60_000;
+const cacheMaxEntries = 4;
 let cacheGeneration = 0;
 const invalidateAstCache = (): void => {
   cacheGeneration += 1;
@@ -107,6 +108,9 @@ const extractAst = Effect.fnUntraced(function* (
   if (cached?.documentVersion === documentVersion &&
       cached.generation === generation &&
       Date.now() - cached.createdAt < cacheMaxAgeMs) {
+    // Insertion order is the eviction order.
+    astCache.delete(source);
+    astCache.set(source, cached);
     return { _tag: 'ExtractionReady' as const, prepared: cached.prepared, options };
   }
   const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
@@ -142,8 +146,12 @@ const extractAst = Effect.fnUntraced(function* (
     try: () => prepareAst(JSON.parse(astText) as ClangNode),
     catch: (error) => new Error('Could not prepare Clang AST: ' + String(error))
   });
-  astCache.clear();
+  astCache.delete(source);
   astCache.set(source, { documentVersion, generation, createdAt: Date.now(), prepared });
+  if (astCache.size > cacheMaxEntries) {
+    const oldest = astCache.keys().next().value;
+    if (oldest !== undefined) astCache.delete(oldest);
+  }
   return { _tag: 'ExtractionReady' as const, prepared, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
