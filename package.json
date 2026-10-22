@@ -59,6 +59,13 @@
           "default": "clang++",
           "description": "Legacy fallback compiler setting; native AST extraction uses the version of Clang LibTooling linked into fold-state-jump-ast."
         },
+        "foldStateJump.maxCachedAstEntries": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Number of prepared translation units to retain (1–8). Each entry retains a complete parsed AST and indexes; lower this for large C++ projects."
+        },
         "foldStateJump.maxAstBytes": {
           "type": "number",
           "default": 67108864,
