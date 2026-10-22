@@ -78,6 +78,7 @@ type AstIndex = {
   readonly functions: readonly FunctionInfo[];
   readonly calls: readonly WrappedNode[];
   readonly functionsByNode: ReadonlyMap<ClangNode, FunctionInfo>;
+  readonly enclosingFunctionByNode: ReadonlyMap<ClangNode, FunctionInfo>;
   readonly functionsById: ReadonlyMap<string, FunctionInfo>;
   readonly functionsByName: ReadonlyMap<string, readonly FunctionInfo[]>;
   readonly declarations: ReadonlyMap<string, WrappedNode>;
@@ -165,14 +166,32 @@ const explicitFile = (node: ClangNode, inheritedFile: string): string => {
 
 // Build the wrapper tree without repeatedly copying every descendant array.
 // Large C++ header ASTs can contain hundreds of thousands of declarations.
+type AncestorLink = {
+  readonly node: ClangNode;
+  readonly previous: AncestorLink | undefined;
+  readonly depth: number;
+};
+
+// The vast majority of nodes are never inspected by a cursor query. Keep
+// ancestry as persistent links instead of copying O(depth) references per node.
+// Materialize an array only for the handful of paths that actually need one.
+const materializeAncestors = (link: AncestorLink | undefined): readonly ClangNode[] => {
+  const ancestors = new Array<ClangNode>(link?.depth ?? 0);
+  // This indexed traversal avoids repeatedly copying partial ancestor arrays.
+  for (let current = link; current; current = current.previous) {
+    ancestors[current.depth - 1] = current.node;
+  }
+  return ancestors;
+};
+
 export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonly all: readonly WrappedNode[] } => {
   const visit = (
     node: ClangNode,
-    ancestors: readonly ClangNode[],
+    ancestors: AncestorLink | undefined,
     inheritedFile: string
   ): { readonly root: WrappedNode; readonly lastFile: string } => {
     const file = explicitFile(node, inheritedFile) || inheritedFile;
-    const nextAncestors = [...ancestors, node];
+    const nextAncestors: AncestorLink = { node, previous: ancestors, depth: (ancestors?.depth ?? 0) + 1 };
     const children = (node.inner ?? []).reduce(
       (state: { readonly file: string; readonly children: WrappedNode[] }, child) => {
         const result = visit(child, nextAncestors, state.file);
@@ -182,17 +201,20 @@ export const buildTree = (ast: ClangNode): { readonly root: WrappedNode; readonl
       { file, children: [] as WrappedNode[] }
     );
     return {
-      root: { node, file, ancestors, children: children.children },
+      root: {
+        node, file,
+        get ancestors() { return materializeAncestors(ancestors); },
+        children: children.children
+      },
       lastFile: children.file
     };
   };
-  // Thread the flat collection through the traversal without copying descendants.
   const appendChildren = (wrapped: WrappedNode, all: WrappedNode[]): WrappedNode[] =>
     wrapped.children.reduce((all, child) => {
       all.push(child);
       return appendChildren(child, all);
     }, all);
-  const result = visit(ast, [], '');
+  const result = visit(ast, undefined, '');
   return { root: result.root, all: appendChildren(result.root, [result.root]) };
 };
 
@@ -222,14 +244,49 @@ const functionInfo = (wrapped: WrappedNode): FunctionInfo | undefined => {
     : undefined;
 };
 
-const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
+type NodeClassification = {
+  readonly owners: ReadonlyMap<ClangNode, FunctionInfo>;
+  readonly bodyNodes: ReadonlySet<ClangNode>;
+  readonly dependent: ReadonlySet<ClangNode>;
+};
+
+const classifyNodes = (
+  root: WrappedNode,
+  functionsByNode: ReadonlyMap<ClangNode, FunctionInfo>
+): NodeClassification => {
+  const visit = (
+    wrapped: WrappedNode,
+    owner: FunctionInfo | undefined,
+    inBody: boolean,
+    insideDependentFunction: boolean,
+    state: { owners: Map<ClangNode, FunctionInfo>; bodyNodes: Set<ClangNode>; dependent: Set<ClangNode> }
+  ): typeof state => {
+    if (owner) state.owners.set(wrapped.node, owner);
+    if (inBody) state.bodyNodes.add(wrapped.node);
+    if (insideDependentFunction || wrapped.node.dependent) state.dependent.add(wrapped.node);
+    const own = functionsByNode.get(wrapped.node);
+    const dependent = insideDependentFunction || (isFunction(wrapped.node) && !!wrapped.node.dependent);
+    return wrapped.children.reduce((state, child) =>
+      visit(child, own ?? owner, own ? child.node === own.body.node : inBody, dependent, state), state);
+  };
+  return visit(root, undefined, false, false, {
+    owners: new Map(), bodyNodes: new Set(), dependent: new Set()
+  });
+};
+
+const buildIndex = (root: WrappedNode, all: readonly WrappedNode[]): AstIndex => {
   const functions = all.filter((wrapped) => isFunction(wrapped.node)).flatMap((wrapped) => {
     const info = functionInfo(wrapped);
     return info ? [info] : [];
   });
+  const functionsByNode = new Map(functions.map((fn) => [fn.wrapped.node, fn] as const));
+  // One DFS assigns each node its lexical owner and body membership. Previously
+  // two independent ancestor scans ran for every node (O(nodes * depth)).
+  const classification = classifyNodes(root, functionsByNode);
   const index: AstIndex = {
     all, functions, calls: all.filter((wrapped) => isCall(wrapped.node)),
-    functionsByNode: new Map(functions.map((fn) => [fn.wrapped.node, fn])),
+    functionsByNode,
+    enclosingFunctionByNode: classification.owners,
     functionsById: functions.reduce((functionsById, fn) => {
       const previous = functionsById.get(fn.id);
       if (!previous || fn.wrapped.ancestors.length > previous.wrapped.ancestors.length) functionsById.set(fn.id, fn);
@@ -248,14 +305,14 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     callsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
     resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>(),
-    identifiersByFile: buildIdentifierIndex(all)
+    identifiersByFile: buildIdentifierIndex(all, classification.dependent)
   };
 
   // Classify each node once instead of rescanning every function body on
   // each backward trace. Nested functions belong to their own nearest owner.
   all.reduce((index, wrapped) => {
-    const owner = enclosingFunction(wrapped, index);
-    if (!owner || !(wrapped.node === owner.body.node || wrapped.ancestors.includes(owner.body.node))) return index;
+    const owner = index.enclosingFunctionByNode.get(wrapped.node);
+    if (!owner || !classification.bodyNodes.has(wrapped.node)) return index;
     // The backward trace only needs potential writes, not every expression
     // in the function. Classify these once per extracted AST.
     const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
@@ -300,10 +357,10 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   return index;
 };
 
-export const prepareAst = (ast: ClangNode): PreparedAst => ({
-  ast,
-  index: buildIndex(buildTree(ast).all)
-});
+export const prepareAst = (ast: ClangNode): PreparedAst => {
+  const { root, all } = buildTree(ast);
+  return { ast, index: buildIndex(root, all) };
+};
 
 const sourceFor = (sourceTextByFile: ReadonlyMap<string, string>, file: string): string =>
   sourceTextByFile.get(normalized(file)) ?? '';
@@ -374,7 +431,10 @@ const buildIdentifierTree = (
   return { identifier, left, right, maxEnd: Math.max(identifier.range.end, left?.maxEnd ?? -1, right?.maxEnd ?? -1) };
 };
 
-const buildIdentifierIndex = (all: readonly WrappedNode[]): ReadonlyMap<string, FileIdentifiers> => {
+const buildIdentifierIndex = (
+  all: readonly WrappedNode[],
+  dependentNodes: ReadonlySet<ClangNode>
+): ReadonlyMap<string, FileIdentifiers> => {
   type Identifiers = {
     readonly ranged: IndexedIdentifier[];
     readonly unresolved: { readonly wrapped: WrappedNode; readonly order: number }[];
@@ -386,7 +446,7 @@ const buildIdentifierIndex = (all: readonly WrappedNode[]): ReadonlyMap<string, 
     const file = wrapped.file || normalized('');
     const identifiers = identifiersByFile.get(file) ?? { ranged: [], unresolved: [] };
     const range = identifierRange(wrapped);
-    if (range) identifiers.ranged.push({ wrapped, range, order, dependent: isDependent(wrapped) });
+    if (range) identifiers.ranged.push({ wrapped, range, order, dependent: dependentNodes.has(wrapped.node) });
     else identifiers.unresolved.push({ wrapped, order });
     identifiersByFile.set(file, identifiers);
     return identifiersByFile;
@@ -546,12 +606,8 @@ const affects = (writeMembers: readonly string[], targetMembers: readonly string
 const isReferenceOrPointer = (parameter: WrappedNode): boolean =>
   /[&*]/.test(parameter.node.type?.qualType ?? '');
 
-const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
-  const findOwner = (position: number): FunctionInfo | undefined => position < 0
-    ? undefined
-    : index.functionsByNode.get(wrapped.ancestors[position]) ?? findOwner(position - 1);
-  return findOwner(wrapped.ancestors.length - 1);
-};
+const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined =>
+  index.enclosingFunctionByNode.get(wrapped.node);
 
 const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined => {
   const lambdaNode = [...fn.wrapped.ancestors].reverse().find((node) => node.kind === 'LambdaExpr');
