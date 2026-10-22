@@ -1,6 +1,6 @@
 import { Effect, Schema } from 'effect';
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 export type CompileCommand = {
@@ -48,6 +48,41 @@ const decodeCompileDatabase = Schema.decodeUnknownSync(Schema.fromJsonString(com
 
 type CompileEntry = typeof compileDatabase.Type[number];
 
+type IndexedSourceEntry = {
+  readonly entry: CompileEntry;
+  readonly directory: string;
+  readonly name: string;
+};
+
+type ExactCompileDatabase = {
+  readonly _tag: 'ExactIndex';
+  readonly entries: readonly CompileEntry[];
+  readonly entriesByPath: ReadonlyMap<string, CompileEntry>;
+};
+
+type HeaderCompileDatabase = {
+  readonly _tag: 'HeaderIndex';
+  readonly entriesByPath: ReadonlyMap<string, CompileEntry>;
+  readonly sources: readonly IndexedSourceEntry[];
+  readonly sourcesByName: ReadonlyMap<string, readonly IndexedSourceEntry[]>;
+};
+
+type CachedCompileDatabase = {
+  readonly stamp: string;
+  readonly inputBytes: number;
+  readonly indexed: ExactCompileDatabase | HeaderCompileDatabase;
+};
+
+export type CompileDatabaseCache = ReadonlyMap<string, CachedCompileDatabase>;
+
+export const emptyCompileDatabaseCache: CompileDatabaseCache = new Map();
+
+// Bound retained inputs to eight databases and 16 MiB of source JSON (UTF-16).
+// Decoded entries and indexes have additional object overhead; source text is
+// discarded after indexing. Each lookup verifies filesystem metadata first.
+const compileDatabaseCacheInputBytes = 16 * 1024 * 1024;
+const compileDatabaseCacheEntries = 8;
+
 const isHeader = (source: string): boolean => /\.(h|hh|hpp|hxx)$/i.test(source);
 const isCppSource = (source: string): boolean => /\.(cc|cpp|cxx|c\+\+|mm)$/i.test(source);
 
@@ -68,6 +103,51 @@ const compileDatabases = (source: string, roots: readonly string[], configuredPa
 };
 
 const entryPath = (entry: CompileEntry): string => path.resolve(entry.directory, entry.file);
+
+const indexCompileDatabase = (text: string): ExactCompileDatabase => {
+  const entries = text ? decodeCompileDatabase(text) : [];
+  const entriesByPath = entries.reduce((entriesByPath, entry) => {
+    const source = entryPath(entry);
+    // compile_commands can contain several configurations for the same file.
+    // Keep the first one, matching the original linear lookup.
+    if (!entriesByPath.has(source)) entriesByPath.set(source, entry);
+    return entriesByPath;
+  }, new Map<string, CompileEntry>());
+  return { _tag: 'ExactIndex', entries, entriesByPath };
+};
+
+const indexHeaderDatabase = (indexed: ExactCompileDatabase): HeaderCompileDatabase => {
+  const sources = indexed.entries.reduce((sources, entry) => {
+    if (isCppSource(entry.file)) {
+      const indexedSource = { entry, directory: path.dirname(entryPath(entry)), name: path.parse(entry.file).name };
+      sources.sources.push(indexedSource);
+      const sameName = sources.sourcesByName.get(indexedSource.name);
+      if (sameName) sameName.push(indexedSource);
+      else sources.sourcesByName.set(indexedSource.name, [indexedSource]);
+    }
+    return sources;
+  }, {
+    sources: [] as IndexedSourceEntry[],
+    sourcesByName: new Map<string, IndexedSourceEntry[]>()
+  });
+  return { _tag: 'HeaderIndex', entriesByPath: indexed.entriesByPath, ...sources };
+};
+
+const indexedHeaderEntry = (source: string, indexed: HeaderCompileDatabase): CompileEntry | undefined => {
+  const directory = path.dirname(path.resolve(source));
+  const name = path.parse(source).name;
+  const nearest = (sources: readonly IndexedSourceEntry[]) =>
+    sources.reduce<{ readonly entry: CompileEntry; readonly proximity: number } | undefined>((best, indexedSource) => {
+      const relative = path.relative(directory, indexedSource.directory);
+      const distance = relative === '' ? 0 : relative.split(path.sep).length;
+      const proximity = (indexedSource.name === name ? 0 : 10000) + distance;
+      return !best || proximity < best.proximity ? { entry: indexedSource.entry, proximity } : best;
+    }, undefined);
+  const sameName = nearest(indexed.sourcesByName.get(name) ?? []);
+  // Other basenames have a minimum penalty of 10000. Retain the full scoring
+  // rule, including its original tie order, for unusually deep directory trees.
+  return sameName && sameName.proximity < 10000 ? sameName.entry : nearest(indexed.sources)?.entry;
+};
 
 // A header has no compile_commands entry. Use a nearby C++ translation unit,
 // preferring the same source basename, without pretending the match is exact.
@@ -93,8 +173,9 @@ const sanitizeArguments = (args: readonly string[], entry: CompileEntry): readon
   const noValue = ['-c', '-MD', '-MMD', '-MP', '-M', '-MM'];
   const withValue = ['-o', '-MF', '-MT', '-MQ', '-MJ', '--output'];
   const source = entryPath(entry);
-  return args.slice(1).reduce(
-    (state: { readonly skip: boolean; readonly result: string[] }, argument) => {
+  return args.reduce(
+    (state: { readonly skip: boolean; readonly result: string[] }, argument, index) => {
+      if (index === 0) return state;
       if (state.skip) return { skip: false, result: state.result };
       if (noValue.includes(argument)) return state;
       if (withValue.includes(argument)) return { skip: true, result: state.result };
@@ -107,20 +188,18 @@ const sanitizeArguments = (args: readonly string[], entry: CompileEntry): readon
   ).result;
 };
 
-export const makeCompileCommand = (
+type CompileEntrySelection =
+  | { readonly context: 'exact'; readonly entry: CompileEntry }
+  | { readonly context: 'inferred'; readonly entry: CompileEntry }
+  | { readonly context: 'fallback' };
+
+const makeSelectedCompileCommand = (
   source: string,
-  _roots: readonly string[],
   clangPath: string,
-  databaseText?: string
+  selection: CompileEntrySelection
 ): CompileCommand => {
-  const entries = databaseText
-    ? decodeCompileDatabase(databaseText)
-    : [];
-  const sourcePath = path.resolve(source);
-  const exact = entries.find((entry) => entryPath(entry) === sourcePath);
-  const entry = exact ?? (isHeader(source) ? headerEntry(source, entries) : undefined);
   const language = isHeader(source) ? ['-x', 'c++-header'] : [];
-  if (!entry) {
+  if (selection.context === 'fallback') {
     return {
       compiler: clangPath,
       args: ['-std=c++17', ...language, '-Xclang', '-ast-dump=json', '-fsyntax-only', source],
@@ -128,45 +207,129 @@ export const makeCompileCommand = (
       context: 'fallback'
     };
   }
-  const raw = entry.arguments ? [...entry.arguments] : tokenizeCommand(entry.command ?? '');
+  const entry = selection.entry;
+  const raw = entry.arguments ?? tokenizeCommand(entry.command ?? '');
   if (raw.length === 0) throw new Error('Empty compile command for ' + entry.file);
   return {
     compiler: clangPath,
     args: [...sanitizeArguments(raw, entry), ...language, '-Xclang', '-ast-dump=json', '-fsyntax-only', source],
     cwd: entry.directory,
-    context: exact ? 'exact' : 'inferred'
+    context: selection.context
   };
 };
 
-export const resolveCompileCommand = Effect.fnUntraced(function* (
+export const makeCompileCommand = (
+  source: string,
+  _roots: readonly string[],
+  clangPath: string,
+  databaseText?: string
+): CompileCommand => {
+  const entries = databaseText ? decodeCompileDatabase(databaseText) : [];
+  const sourcePath = path.resolve(source);
+  const exact = entries.find((entry) => entryPath(entry) === sourcePath);
+  if (exact) return makeSelectedCompileCommand(source, clangPath, { context: 'exact', entry: exact });
+  const inferred = isHeader(source) ? headerEntry(source, entries) : undefined;
+  return makeSelectedCompileCommand(source, clangPath, inferred
+    ? { context: 'inferred', entry: inferred }
+    : { context: 'fallback' });
+};
+
+type LocatedCompileDatabase =
+  | { readonly _tag: 'Cached'; readonly database: string; readonly cached: CachedCompileDatabase }
+  | { readonly _tag: 'Read'; readonly database: string; readonly stamp: string; readonly text: string };
+
+const locateCompileDatabase = Effect.fnUntraced(function* (
+  database: string,
+  cache: CompileDatabaseCache
+): Effect.fn.Return<LocatedCompileDatabase, FileFailure> {
+  const metadata = yield* Effect.tryPromise({
+    try: () => stat(database, { bigint: true }),
+    catch: (error) => fileFailure('Could not stat ' + database + ': ' + String(error))
+  });
+  const stamp = [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs].join(':');
+  const cached = cache.get(database);
+  if (cached?.stamp === stamp) return { _tag: 'Cached', database, cached };
+  const text = yield* readUtf8(database);
+  return { _tag: 'Read', database, stamp, text };
+});
+
+export const resolveCompileCommandCached = Effect.fnUntraced(function* (
   source: string,
   roots: readonly string[],
   clangPath: string,
+  cache: CompileDatabaseCache,
   configuredPath?: string
-): Effect.fn.Return<CompileCommand, FileFailure> {
+): Effect.fn.Return<{ readonly command: CompileCommand; readonly cache: CompileDatabaseCache }, FileFailure> {
   const paths = compileDatabases(source, roots, configuredPath);
-  const texts = yield* Effect.forEach(paths, (database) =>
-    readUtf8(database).pipe(
-      Effect.map((text) => [{ database, text }]),
-      Effect.catchTag('FileFailure', () => Effect.succeed([] as readonly { database: string; text: string }[]))
+  const located = yield* Effect.forEach(paths, (database) =>
+    locateCompileDatabase(database, cache).pipe(
+      Effect.map((located) => [located]),
+      Effect.catchTag('FileFailure', () => Effect.succeed([] as readonly LocatedCompileDatabase[]))
     ),
     { concurrency: 8 }
   );
-  const databases = texts.flat();
-  if (configuredPath && !databases.some(({ database }) => database === paths[0])) {
+  const locatedDatabases = located.flat();
+  if (configuredPath && !locatedDatabases.some(({ database }) => database === paths[0])) {
     return yield* Effect.fail(fileFailure('Configured compile_commands.json not found: ' + paths[0]));
   }
   return yield* Effect.try({
     try: () => {
-      const commands = databases.map(({ text }) => makeCompileCommand(source, roots, clangPath, text));
-      return commands.find((command) => command.context === 'exact') ??
+      const sourcePath = path.resolve(source);
+      const databases = locatedDatabases.map((located) => {
+        const cached = located._tag === 'Cached' ? located.cached : {
+          stamp: located.stamp,
+          inputBytes: located.text.length * 2,
+          indexed: indexCompileDatabase(located.text)
+        };
+        const exact = cached.indexed.entriesByPath.get(sourcePath);
+        if (exact) return {
+          database: located.database,
+          cached,
+          command: makeSelectedCompileCommand(source, clangPath, { context: 'exact', entry: exact })
+        };
+        if (isHeader(source)) {
+          const indexed = cached.indexed._tag === 'HeaderIndex' ? cached.indexed : indexHeaderDatabase(cached.indexed);
+          const inferred = indexedHeaderEntry(source, indexed);
+          return {
+            database: located.database,
+            cached: indexed === cached.indexed ? cached : { ...cached, indexed },
+            command: makeSelectedCompileCommand(source, clangPath, inferred
+              ? { context: 'inferred', entry: inferred }
+              : { context: 'fallback' })
+          };
+        }
+        return {
+          database: located.database,
+          cached,
+          command: makeSelectedCompileCommand(source, clangPath, { context: 'fallback' })
+        };
+      });
+      const commands = databases.map(({ command }) => command);
+      const command = commands.find((command) => command.context === 'exact') ??
         commands.find((command) => command.context === 'inferred') ??
         commands[0] ??
         makeCompileCommand(source, roots, clangPath);
+      const retained = databases.reduce((retained, { database, cached }) => {
+        if (retained.cache.size >= compileDatabaseCacheEntries ||
+            retained.inputBytes + cached.inputBytes > compileDatabaseCacheInputBytes) return retained;
+        retained.cache.set(database, cached);
+        return { cache: retained.cache, inputBytes: retained.inputBytes + cached.inputBytes };
+      }, { cache: new Map<string, CachedCompileDatabase>(), inputBytes: 0 });
+      return { command, cache: retained.cache };
     },
     catch: (error) => fileFailure('Invalid compile_commands.json: ' + String(error))
   });
 });
+
+export const resolveCompileCommand = (
+  source: string,
+  roots: readonly string[],
+  clangPath: string,
+  configuredPath?: string
+): Effect.Effect<CompileCommand, FileFailure> =>
+  resolveCompileCommandCached(source, roots, clangPath, emptyCompileDatabaseCache, configuredPath).pipe(
+    Effect.map(({ command }) => command)
+  );
 
 // The compiler arguments retain the project's include paths and language
 // standard, but the native frontend owns AST traversal and JSON serialization.

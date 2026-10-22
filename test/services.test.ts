@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Effect } from 'effect';
-import { makeCompileCommand, makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
+import { emptyCompileDatabaseCache, makeCompileCommand, makeExtractionCommand, resolveCompileCommand, resolveCompileCommandCached, runClangAst } from '../src/services';
 
 describe('compile commands', () => {
   test('preserves quoted include paths and removes build outputs', () => {
@@ -109,6 +109,101 @@ describe('compile commands', () => {
       '-std=c++17', '-I/project/include', '-x', 'c++-header'
     ]);
     assert.ok(!extraction.args.includes('-ast-dump=json'));
+  });
+
+  test('reuses an unchanged database across sources and preserves first-entry and header inference rules', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-cache-'));
+    try {
+      const database = path.join(directory, 'compile_commands.json');
+      const entries = [
+        { directory, file: 'src/other.cpp', arguments: ['c++', '-Iother', '-c', 'src/other.cpp'] },
+        { directory, file: 'src/main.cpp', arguments: ['c++', '-Ifirst', '-c', 'src/main.cpp'] },
+        { directory, file: 'src/main.cpp', arguments: ['c++', '-Isecond', '-c', 'src/main.cpp'] },
+        { directory, file: 'distant/main.cpp', arguments: ['c++', '-Idistant', '-c', 'distant/main.cpp'] }
+      ];
+      const text = JSON.stringify(entries);
+      await writeFile(database, text);
+      const first = await Effect.runPromise(resolveCompileCommandCached(
+        path.join(directory, 'src/main.cpp'), [directory], 'clang++', emptyCompileDatabaseCache
+      ));
+      assert.ok(first.command.args.includes('-Ifirst'));
+      const header = path.join(directory, 'include/main.h');
+      const second = await Effect.runPromise(resolveCompileCommandCached(header, [directory], 'clang++', first.cache));
+      assert.deepEqual(second.command, makeCompileCommand(header, [], 'clang++', text));
+      assert.strictEqual(second.cache.get(database)?.indexed.entriesByPath, first.cache.get(database)?.indexed.entriesByPath);
+      assert.equal(emptyCompileDatabaseCache.size, 0);
+      const unrelated = path.join(directory, 'src/unrelated.h');
+      const third = await Effect.runPromise(resolveCompileCommandCached(unrelated, [directory], 'clang++', second.cache));
+      assert.deepEqual(third.command, makeCompileCommand(unrelated, [], 'clang++', text));
+      assert.strictEqual(third.cache.get(database), second.cache.get(database));
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test('observes changed, deleted and newly created databases without mutating earlier cache snapshots', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-cache-'));
+    try {
+      const database = path.join(directory, 'compile_commands.json');
+      const source = path.join(directory, 'main.cpp');
+      const text = (flag: string) => JSON.stringify([{
+        directory, file: 'main.cpp', arguments: ['c++', flag, '-c', 'main.cpp']
+      }]);
+      await writeFile(database, text('-Iold'));
+      const first = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', emptyCompileDatabaseCache));
+      const firstDatabase = first.cache.get(database);
+      // Same-size content changes must invalidate the cached index too.
+      await writeFile(database, text('-Inew'));
+      const changed = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', first.cache));
+      assert.ok(changed.command.args.includes('-Inew'));
+      assert.notStrictEqual(changed.cache.get(database), firstDatabase);
+      assert.strictEqual(first.cache.get(database), firstDatabase);
+      await rm(database);
+      const deleted = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', changed.cache));
+      assert.equal(deleted.command.context, 'fallback');
+      assert.equal(deleted.cache.has(database), false);
+      await writeFile(database, text('-Icreated'));
+      const created = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', deleted.cache));
+      assert.ok(created.command.args.includes('-Icreated'));
+      await writeFile(database, '{broken');
+      await assert.rejects(
+        Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', created.cache)),
+        { _tag: 'FileFailure', message: /Invalid compile_commands/ }
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test('keeps validating lower-priority databases when the first database has an exact match', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-cache-'));
+    try {
+      const source = path.join(directory, 'main.cpp');
+      await mkdir(path.join(directory, 'build'));
+      await writeFile(path.join(directory, 'compile_commands.json'), JSON.stringify([{
+        directory, file: source, arguments: ['c++', '-c', source]
+      }]));
+      await writeFile(path.join(directory, 'build', 'compile_commands.json'), '{broken');
+      await assert.rejects(
+        Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', emptyCompileDatabaseCache)),
+        { _tag: 'FileFailure', message: /Invalid compile_commands/ }
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test('treats an empty database file as the existing fallback behavior', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-cache-'));
+    try {
+      await writeFile(path.join(directory, 'compile_commands.json'), '');
+      const result = await Effect.runPromise(resolveCompileCommandCached(
+        path.join(directory, 'main.cpp'), [directory], 'clang++', emptyCompileDatabaseCache
+      ));
+      assert.equal(result.command.context, 'fallback');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
 });

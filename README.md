@@ -56,7 +56,20 @@ while the document version stays unchanged. Editing C/C++ sources, headers, or
 `compile_commands.json` inside the workspace (including unsaved editor changes)
 invalidates the cache, as do extension settings changes. To limit stale data from
 external headers outside the workspace watchers, the cache expires after 60 seconds.
-Only one translation unit is cached at a time to limit memory use.
+The cache keeps up to three translation units in least-recently-used order, with
+a combined budget of 16 MiB of serialized AST data. Decoded nodes and indexes
+require additional memory. A single AST larger than this budget is retained
+alone so repeated commands on large files still benefit from caching.
+Cold extractions are serialized, and queued commands recheck the cache before
+starting Clang. Concurrent commands for the same document share the result;
+cancellation releases the extraction slot and removes queued work. Warm commands
+can run while another translation unit is extracting.
+
+Compilation databases have a separate explicit cache. Each cold extraction
+checks device, inode, size, modification time and change time before reusing an
+index. Exact source matches use a path index; header proximity indexes are built
+only when needed. This cache retains at most eight databases and a combined
+16 MiB of UTF-16 input size; parsed objects and indexes have additional overhead.
 
 Prepared ASTs include an interval tree per file for identifier selection, with
 token ranges and template/depth precedence computed once. The balanced tree
@@ -64,10 +77,16 @@ prunes non-overlapping subtrees instead of scanning every AST node. Overlapping
 template and macro ranges still require candidate comparison. Legacy nodes
 without token lengths or spellings use the query's source text. Index memory
 grows linearly with the number of identifiers.
-Write targets are normalized once and ordered from latest to earliest; tracing
-stops at the first relevant direct write and skips older helper calls once a
-newer mutation is known. Call-path analysis still depends on the reachable
-functions and mutations being traced.
+Write targets and reference aliases are normalized once, and writes are grouped
+by function and root variable. Binary search skips operations after the cursor;
+tracing stops at the first relevant direct write or helper mutation. Function
+ownership is indexed once rather than recovered from ancestors on each query.
+Call-path analysis still depends on the reachable functions and mutations being
+traced. These indexes add preparation work that is amortized by repeated queries.
+
+The native extractor streams JSON directly to stdout and reuses normalized
+source paths. It no longer retains a complete JSON object tree alongside Clang's
+AST. The extension bundle is minified, with external source maps for debugging.
 
 The cache does not make C++ parsing incremental: the next cold jump still parses
 the translation unit. As a conservative fallback for external dependency changes,
@@ -99,8 +118,28 @@ This checks mutation and origin targets in synthetic ASTs with 100, 1,000 and
 and warmed query averages in microseconds. Each function has one write and one
 read; this measures identifier selection, not large call graphs.
 
-On a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON),
-a paired native extraction comparison improved from 18.64 s to 13.35 s. Across
+Additional focused benchmarks and full analysis-result comparisons:
+
+```sh
+bun run bench:analysis
+bun run bench:services
+bun run bench:native
+# Compare against saved pre-change files or binaries:
+bun run bench:analysis /path/to/baseline-analysis.ts 200
+bun run bench:services /path/to/baseline-services.ts 17
+bun run bench:native --baseline /path/to/baseline-extractor
+bun test/compare-analysis.ts /path/to/ast.json /path/to/source.cpp /path/to/baseline-analysis.ts
+```
+
+The native benchmark requires Python 3 and GNU `time`; it checks the complete
+JSON contract after normalizing process-local declaration addresses. The analysis
+comparison checks both commands at every indexed identifier in the active file,
+including targets and candidate call paths. See [PERFORMANCE.md](PERFORMANCE.md)
+for the current measurements and their limits.
+
+An earlier optimization pass, before the changes measured in PERFORMANCE.md,
+used a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON).
+A paired native extraction comparison improved from 18.64 s to 13.35 s. Across
 206 cursor positions, all 412 mutation/origin results matched the prior analyzer;
 total query time on the same decoded AST decreased from 2,264 ms to 35.8 ms under
 Bun, and from 5,300 ms to 40.1 ms under Node 24. Native ASTs also matched after

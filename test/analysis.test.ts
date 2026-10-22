@@ -394,4 +394,77 @@ describe('latest-call pruning', () => {
     assert.equal(result._tag, 'MutationFound');
     if (result._tag === 'MutationFound') assert.equal(result.mutation.node, direct);
   });
+
+  test('skips calls after the cursor and incomplete calls before it', () => {
+    const incomplete = { ...call('second', 90), range: { begin: { offset: 90 }, end: { offset: 120, tokLen: 1 } } };
+    const result = analyze(foldAst([
+      call('second', 140), incomplete, call('first', 50), member('state', 'state', 100)
+    ], helpers));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, first);
+  });
+});
+
+describe('large function indexes', () => {
+  test('keeps unrelated variable writes separate from the selected state', () => {
+    const mutation = increment('state', 'state', 10);
+    const unrelated = Array.from({ length: 2000 }, (_, index) => increment('other-' + index, 'other', 20 + index * 10));
+    const ast = foldAst([mutation, ...unrelated, member('state', 'state', 21_000)]);
+    const result = analyzeAst(ast, { file: '/fixture.cpp', sourceText: '', cursorByteOffset: 21_006 }, prepareAst(ast));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+  });
+
+  test('finds an early mutation when most indexed writes are after the cursor', () => {
+    const mutation = increment('state', 'state', 10);
+    const future = Array.from({ length: 2000 }, (_, index) => increment('state', 'state', 200 + index * 10));
+    const ast = foldAst([...future, mutation, member('state', 'state', 100)]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+  });
+});
+
+describe('reference path indexes', () => {
+  const alias = (id: string, initial: ClangNode): ClangNode => ({
+    kind: 'VarDecl', id, name: id, type: { qualType: 'State &' }, inner: [initial]
+  });
+
+  test('normalizes long reference chains for writes and origin navigation', () => {
+    const initial: ClangNode = { kind: 'VarDecl', id: 'state', name: 'state', inner: [{ kind: 'InitListExpr' }] };
+    const aliases = Array.from({ length: 1200 }, (_, index) => alias('alias-' + index,
+      reference(index === 0 ? 'state' : 'alias-' + (index - 1), 'state', 1)));
+    const mutation = increment('alias-1199', 'alias', 30);
+    const ast = foldAst([initial, ...aliases, mutation, member('state', 'state', 100)]);
+    const prepared = prepareAst(ast);
+    const options = { file: '/fixture.cpp', sourceText: '', cursorByteOffset: 106 };
+    const result = analyzeAst(ast, options, prepared);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+    const resultOrigin = analyzeOriginAst(ast, options, prepared);
+    assert.equal(resultOrigin._tag, 'OriginFound');
+    if (resultOrigin._tag === 'OriginFound') assert.equal(resultOrigin.origin.node, initial);
+  });
+
+  test('preserves member prefixes when normalizing nested aliases', () => {
+    const first = alias('first', member('state', 'state', 1));
+    const second = alias('second', member('first', 'first', 10));
+    const mutation = increment('second', 'second', 30);
+    const ast = foldAst([first, second, mutation, member('state', 'state', 100)]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+  });
+
+  test('retains root-specific cycle handling for malformed legacy aliases', () => {
+    const first = alias('first', reference('second', 'second', 1));
+    const second = alias('second', reference('first', 'first', 10));
+    const ast = foldAst([first, second, reference('first', 'first', 80), reference('second', 'second', 100)]);
+    const prepared = prepareAst(ast);
+    [{ cursorByteOffset: 81, declaration: first }, { cursorByteOffset: 101, declaration: second }].map(({ cursorByteOffset, declaration }) => {
+      const result = analyzeOriginAst(ast, { file: '/fixture.cpp', sourceText: '', cursorByteOffset }, prepared);
+      assert.equal(result._tag, 'OriginFound');
+      if (result._tag === 'OriginFound') assert.equal(result.origin.node, declaration);
+    });
+  });
 });

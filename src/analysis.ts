@@ -82,7 +82,9 @@ type AstIndex = {
   readonly functionsByName: ReadonlyMap<string, readonly FunctionInfo[]>;
   readonly declarations: ReadonlyMap<string, WrappedNode>;
   readonly wrappedByNode: ReadonlyMap<ClangNode, WrappedNode>;
-  readonly writesByFunctionId: ReadonlyMap<string, readonly IndexedWrite[]>;
+  readonly enclosingFunctions: ReadonlyMap<WrappedNode, FunctionInfo>;
+  readonly normalizedPaths: ReadonlyMap<string, ExpressionPath>;
+  readonly writesByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly IndexedWrite[]>>;
   readonly callsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly callsByCalleeId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly resolvedCalls: ReadonlyMap<ClangNode, FunctionInfo | undefined>;
@@ -223,33 +225,60 @@ const functionInfo = (wrapped: WrappedNode): FunctionInfo | undefined => {
 };
 
 const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
-  const functions = all.filter((wrapped) => isFunction(wrapped.node)).flatMap((wrapped) => {
-    const info = functionInfo(wrapped);
-    return info ? [info] : [];
-  });
-  const index: AstIndex = {
-    all, functions, calls: all.filter((wrapped) => isCall(wrapped.node)),
-    functionsByNode: new Map(functions.map((fn) => [fn.wrapped.node, fn])),
-    functionsById: functions.reduce((functionsById, fn) => {
-      const previous = functionsById.get(fn.id);
-      if (!previous || fn.wrapped.ancestors.length > previous.wrapped.ancestors.length) functionsById.set(fn.id, fn);
-      return functionsById;
-    }, new Map<string, FunctionInfo>()),
-    functionsByName: functions.reduce((byName, fn) => {
-      const matching = byName.get(fn.name) ?? [];
+  const index = all.reduce((index, wrapped) => {
+    const fn = isFunction(wrapped.node) ? functionInfo(wrapped) : undefined;
+    if (fn) {
+      index.functions.push(fn);
+      index.functionsByNode.set(wrapped.node, fn);
+      const previous = index.functionsById.get(fn.id);
+      if (!previous || wrapped.ancestors.length > previous.wrapped.ancestors.length) index.functionsById.set(fn.id, fn);
+      const matching = index.functionsByName.get(fn.name) ?? [];
       matching.push(fn);
-      byName.set(fn.name, matching);
-      return byName;
-    }, new Map<string, FunctionInfo[]>()),
-    declarations: new Map(all.filter((wrapped) => ['VarDecl', 'ParmVarDecl'].includes(wrapped.node.kind))
-      .map((wrapped) => [wrapped.node.id ?? '', wrapped])),
-    wrappedByNode: new Map(all.map((wrapped) => [wrapped.node, wrapped])),
-    writesByFunctionId: new Map<string, IndexedWrite[]>(),
+      index.functionsByName.set(fn.name, matching);
+    }
+    if (isCall(wrapped.node)) index.calls.push(wrapped);
+    if (wrapped.node.kind === 'VarDecl' || wrapped.node.kind === 'ParmVarDecl') index.declarations.set(wrapped.node.id ?? '', wrapped);
+    index.wrappedByNode.set(wrapped.node, wrapped);
+    return index;
+  }, {
+    all, functions: [] as FunctionInfo[], calls: [] as WrappedNode[],
+    functionsByNode: new Map<ClangNode, FunctionInfo>(),
+    functionsById: new Map<string, FunctionInfo>(),
+    functionsByName: new Map<string, FunctionInfo[]>(),
+    declarations: new Map<string, WrappedNode>(),
+    wrappedByNode: new Map<ClangNode, WrappedNode>(),
+    enclosingFunctions: new Map<WrappedNode, FunctionInfo>(),
+    normalizedPaths: new Map<string, ExpressionPath>(),
+    writesByFunctionId: new Map<string, Map<string, IndexedWrite[]>>(),
     callsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
     resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>(),
     identifiersByFile: buildIdentifierIndex(all)
-  };
+  });
+
+  // Thread ownership through the wrapper tree, including AST inputs that reuse
+  // a raw node in different functions. No node needs to rescan its ancestors.
+  const collectOwners = (
+    children: readonly WrappedNode[],
+    owner: FunctionInfo | undefined,
+    enclosingFunctions: Map<WrappedNode, FunctionInfo>
+  ): Map<WrappedNode, FunctionInfo> => children.reduce((enclosingFunctions, wrapped) => {
+    if (owner) enclosingFunctions.set(wrapped, owner);
+    return collectOwners(wrapped.children, index.functionsByNode.get(wrapped.node) ?? owner, enclosingFunctions);
+  }, enclosingFunctions);
+  collectOwners(all.length > 0 ? [all[0]] : [], undefined, index.enclosingFunctions);
+
+  // C++ reference declarations normally follow their initializer declarations,
+  // so each alias reuses the already-normalized prefix of a long alias chain.
+  // Cyclic legacy ASTs retain the per-query visited-root behavior instead.
+  [...index.declarations.values()].reduce((normalizedPaths, declaration) => {
+    if (declaration.node.kind !== 'VarDecl' || !/&/.test(declaration.node.type?.qualType ?? '')) return normalizedPaths;
+    const initial = expressionPath(declaration.children[0]);
+    if (!initial) return normalizedPaths;
+    const resolved = resolveNormalizedPath(initial, index, [declaration.node.id ?? '']);
+    if (resolved._tag === 'NormalizedPath') normalizedPaths.set(declaration.node.id ?? '', resolved.target);
+    return normalizedPaths;
+  }, index.normalizedPaths);
 
   // Classify each node once instead of rescanning every function body on
   // each backward trace. Nested functions belong to their own nearest owner.
@@ -262,13 +291,15 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     const target = write && pathAt(write, index);
     const start = wrapped.node.range?.begin?.offset;
     if (target && start !== undefined) {
-      const byFunction = index.writesByFunctionId as Map<string, IndexedWrite[]>;
-      const writes = byFunction.get(owner.id) ?? [];
+      const byFunction = index.writesByFunctionId;
+      const byRoot = byFunction.get(owner.id) ?? new Map<string, IndexedWrite[]>();
+      const writes = byRoot.get(target.rootId) ?? [];
       writes.push({ mutation: wrapped, target, start });
-      byFunction.set(owner.id, writes);
+      byRoot.set(target.rootId, writes);
+      byFunction.set(owner.id, byRoot);
     }
     if (isCall(wrapped.node)) {
-      const callers = index.callsByCallerId as Map<string, WrappedNode[]>;
+      const callers = index.callsByCallerId;
       const calls = callers.get(owner.id) ?? [];
       calls.push(wrapped);
       callers.set(owner.id, calls);
@@ -278,9 +309,9 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
 
   index.calls.reduce((index, call) => {
     const callee = resolveFunction(call, index);
-    (index.resolvedCalls as Map<ClangNode, FunctionInfo | undefined>).set(call.node, callee);
+    index.resolvedCalls.set(call.node, callee);
     if (!callee) return index;
-    const callsByCalleeId = index.callsByCalleeId as Map<string, WrappedNode[]>;
+    const callsByCalleeId = index.callsByCalleeId;
     const calls = callsByCalleeId.get(callee.id) ?? [];
     calls.push(call);
     callsByCalleeId.set(callee.id, calls);
@@ -288,12 +319,15 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   }, index);
   // Visit the latest writes and calls first. Once a mutation is known, older
   // calls need no recursive tracing. Stable ordering retains AST precedence.
-  [...index.writesByFunctionId.values()].reduce((index, writes) => {
-    (writes as IndexedWrite[]).sort((left, right) => right.start - left.start);
+  [...index.writesByFunctionId.values()].reduce((index, byRoot) => {
+    [...byRoot.values()].reduce((byRoot, writes) => {
+      writes.sort((left, right) => right.start - left.start);
+      return byRoot;
+    }, byRoot);
     return index;
   }, index);
   [...index.callsByCallerId.values()].reduce((index, calls) => {
-    (calls as WrappedNode[]).sort((left, right) =>
+    calls.sort((left, right) =>
       (right.node.range?.begin?.offset ?? -1) - (left.node.range?.begin?.offset ?? -1));
     return index;
   }, index);
@@ -546,12 +580,8 @@ const affects = (writeMembers: readonly string[], targetMembers: readonly string
 const isReferenceOrPointer = (parameter: WrappedNode): boolean =>
   /[&*]/.test(parameter.node.type?.qualType ?? '');
 
-const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
-  const findOwner = (position: number): FunctionInfo | undefined => position < 0
-    ? undefined
-    : index.functionsByNode.get(wrapped.ancestors[position]) ?? findOwner(position - 1);
-  return findOwner(wrapped.ancestors.length - 1);
-};
+const enclosingFunction = (wrapped: WrappedNode, index: AstIndex): FunctionInfo | undefined =>
+  index.enclosingFunctions.get(wrapped);
 
 const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined => {
   const lambdaNode = [...fn.wrapped.ancestors].reverse().find((node) => node.kind === 'LambdaExpr');
@@ -573,12 +603,34 @@ const foldFor = (fn: FunctionInfo, index: AstIndex): { readonly call: WrappedNod
   return call && initial && isFoldCall(call) ? { call, initial } : undefined;
 };
 
-const normalizePath = (target: ExpressionPath, index: AstIndex, visited: readonly string[] = []): ExpressionPath => {
-  if (visited.includes(target.rootId)) return target;
+type NormalizedPathResolution =
+  | { readonly _tag: 'NormalizedPath'; readonly target: ExpressionPath }
+  | { readonly _tag: 'CyclicPath'; readonly target: ExpressionPath };
+
+const resolveNormalizedPath = (
+  target: ExpressionPath,
+  index: AstIndex,
+  visited: readonly string[]
+): NormalizedPathResolution => {
+  if (visited.includes(target.rootId)) return { _tag: 'CyclicPath', target };
+  const normalizedPath = index.normalizedPaths.get(target.rootId);
+  if (normalizedPath) return {
+    _tag: 'NormalizedPath', target: { ...normalizedPath, members: [...normalizedPath.members, ...target.members] }
+  };
+  const declaration = index.declarations.get(target.rootId);
+  if (declaration?.node.kind !== 'VarDecl' || !/&/.test(declaration.node.type?.qualType ?? '')) return { _tag: 'NormalizedPath', target };
+  const initial = expressionPath(declaration.children[0]);
+  return initial
+    ? resolveNormalizedPath({ ...initial, members: [...initial.members, ...target.members] }, index, [...visited, target.rootId])
+    : { _tag: 'NormalizedPath', target };
+};
+
+const normalizePath = (target: ExpressionPath, index: AstIndex): ExpressionPath => {
+  const normalizedPath = index.normalizedPaths.get(target.rootId);
+  if (normalizedPath) return { ...normalizedPath, members: [...normalizedPath.members, ...target.members] };
   const declaration = index.declarations.get(target.rootId);
   if (declaration?.node.kind !== 'VarDecl' || !/&/.test(declaration.node.type?.qualType ?? '')) return target;
-  const initial = expressionPath(declaration.children[0]);
-  return initial ? normalizePath({ ...initial, members: [...initial.members, ...target.members] }, index, [...visited, target.rootId]) : target;
+  return resolveNormalizedPath(target, index, []).target;
 };
 
 const pathAt = (wrapped: WrappedNode | undefined, index: AstIndex): ExpressionPath | null => {
@@ -598,6 +650,35 @@ const standardMutationTarget = (call: WrappedNode): WrappedNode | undefined =>
     ? receiverOf(call)
     : undefined;
 
+// Balanced searches keep stack usage logarithmic while preserving the first
+// matching AST occurrence. Neither skipped prefixes nor successful suffixes
+// need to be copied or linearly visited on each cursor query.
+const firstAtMost = <A>(
+  values: readonly A[],
+  offset: number,
+  startOf: (value: A) => number,
+  start = 0,
+  end = values.length
+): number => {
+  if (start >= end) return start;
+  const middle = start + Math.floor((end - start) / 2);
+  return startOf(values[middle]) > offset
+    ? firstAtMost(values, offset, startOf, middle + 1, end)
+    : firstAtMost(values, offset, startOf, start, middle);
+};
+
+const findFirstMapped = <A, B>(
+  values: readonly A[],
+  select: (value: A) => B | undefined,
+  start: number,
+  end = values.length
+): B | undefined => {
+  if (start >= end) return undefined;
+  if (end - start === 1) return select(values[start]);
+  const middle = start + Math.floor((end - start) / 2);
+  return findFirstMapped(values, select, start, middle) ?? findFirstMapped(values, select, middle, end);
+};
+
 const findPreviousMutation = (
   fn: FunctionInfo,
   target: ExpressionPath,
@@ -608,20 +689,22 @@ const findPreviousMutation = (
 ): MutationCandidate | undefined => {
   if (visitedFunctionIds.includes(fn.id)) return undefined;
   const nextVisited = [...visitedFunctionIds, fn.id];
-  const writes = index.writesByFunctionId.get(fn.id) ?? [];
-  const directWrite = writes.find((write) => {
-    if (write.target.rootId !== target.rootId || !affects(write.target.members, target.members)) return false;
+  const writes = index.writesByFunctionId.get(fn.id)?.get(target.rootId) ?? [];
+  const directWrite = findFirstMapped(writes, (write) => {
+    if (!affects(write.target.members, target.members)) return undefined;
     const range = nodeRange(write.mutation, sourceTextByFile);
-    return range !== null && range.end <= beforeOffset;
-  });
+    return range !== null && range.end <= beforeOffset ? write : undefined;
+  }, firstAtMost(writes, beforeOffset, (write) => write.start));
   const direct: MutationCandidate | undefined = directWrite && {
     mutation: directWrite.mutation, orderOffset: directWrite.start, frames: []
   };
-  return (index.callsByCallerId.get(fn.id) ?? []).reduce<MutationCandidate | undefined>((latest, call) => {
+  const calls = index.callsByCallerId.get(fn.id) ?? [];
+  const callStart = (call: WrappedNode): number => call.node.range?.begin?.offset ?? -1;
+  return findFirstMapped(calls, (call) => {
     const callRange = nodeRange(call, sourceTextByFile);
-    if (!callRange || callRange.end > beforeOffset || (latest && callRange.start <= latest.orderOffset)) return latest;
+    if (!callRange || callRange.end > beforeOffset) return undefined;
     const callee = resolveFunction(call, index);
-    if (!callee) return latest;
+    if (!callee) return undefined;
     const args = argsOf(call);
     const parameterTargets = callee.params.flatMap((parameter, parameterIndex) => {
       if (!isReferenceOrPointer(parameter)) return [];
@@ -640,12 +723,12 @@ const findPreviousMutation = (
     const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
       callee.wrapped.ancestors.some((node) => node.id === owner.id);
     const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [target] : [];
-    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce((latest, target) => {
+    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce<MutationCandidate | undefined>((latest, target) => {
       if (latest?.orderOffset === callRange.start) return latest;
       const nested = findPreviousMutation(callee, target, Number.POSITIVE_INFINITY, index, sourceTextByFile, nextVisited);
       return nested ? { ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] } : latest;
-    }, latest);
-  }, direct);
+    }, undefined);
+  }, firstAtMost(calls, beforeOffset, callStart), direct ? firstAtMost(calls, direct.orderOffset, callStart) : calls.length) ?? direct;
 };
 
 // Backward tracing preserves the value passed by copy, while forward call effects

@@ -83,7 +83,10 @@
     "dev": "bun run build --watch",
     "bench": "bun test/performance.ts",
     "bench:queries": "bun test/query-performance.ts",
-    "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --sourcemap=external --outdir ./dist",
+    "bench:analysis": "bun test/analysis-performance.ts",
+    "bench:services": "bun test/services-performance.ts",
+    "bench:native": "python3 native/benchmark.py",
+    "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --minify --sourcemap=external --outdir ./dist",
     "package": "bun run build && bunx @vscode/vsce package",
     "build:native": "cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang && cmake --build native/build -j 10"
   },
