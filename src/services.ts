@@ -357,18 +357,21 @@ export const makeExtractionCommand = (
 export const runClangAst = (
   command: CompileCommand,
   maxBytes: number,
-  signal: AbortSignal
+  signal: AbortSignal,
+  report: (event: Readonly<Record<string, unknown>>) => void = () => {}
 ): Effect.Effect<string, ProcessFailure> =>
   Effect.callback<string, ProcessFailure>((resume) => {
     if (signal.aborted) {
       resume(Effect.fail(processFailure('Clang AST process was interrupted.')));
       return;
     }
+    const startedAt = performance.now();
     const child = spawn(command.compiler, [...command.args], {
       cwd: command.cwd,
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe']
     });
+    report({ event: 'native-start', pid: child.pid });
     const stdout: Buffer[] = [];
     let bytes = 0;
     let stderr = '';
@@ -401,6 +404,7 @@ export const runClangAst = (
       'Could not start native AST extractor: ' + error.message + '. Build it with bun run build:native (LLVM/Clang development libraries required).'
     ))));
     child.on('close', (code) => {
+      report({ event: 'native-exit', pid: child.pid, code, ms: performance.now() - startedAt, bytes });
       const diagnostics = stderr.trim() ? '\n' + stderr.trim() : '';
       if (signal.aborted) {
         finish(Effect.fail(processFailure('Clang AST process was interrupted.')));
@@ -419,8 +423,15 @@ export const runClangAst = (
           : Effect.fail(processFailure('Clang did not produce a JSON AST.' + diagnostics)));
       }
     });
-    return Effect.sync(() => {
+    return Effect.promise(async () => {
       signal.removeEventListener('abort', aborted);
-      child.kill();
+      if (!child.pid || child.exitCode !== null || child.signalCode !== null) return;
+      // Keep the permit until the OS has reaped this child. A slow SIGTERM
+      // must not overlap a replacement extraction or leave an orphan on exit.
+      await new Promise<void>((resolve) => {
+        const deadline = setTimeout(() => child.kill('SIGKILL'), 1000);
+        child.once('close', () => { clearTimeout(deadline); resolve(); });
+        child.kill();
+      });
     });
   });

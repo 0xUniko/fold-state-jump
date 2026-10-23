@@ -30,7 +30,7 @@ export type AstCache = {
 };
 
 export type AstExtractionResult =
-  | { readonly _tag: 'ExtractionReady'; readonly prepared: PreparedAst; readonly hit: 'memory' | 'load' }
+  | { readonly _tag: 'ExtractionReady'; readonly prepared: PreparedAst; readonly hit: 'memory' | 'load'; readonly dependencies?: DependencyManifest }
   | { readonly _tag: 'AnalysisFailure'; readonly reason: string };
 
 const maxEntries = 3;
@@ -87,7 +87,7 @@ const lookupPreparedAst = Effect.fnUntraced(function* (
   return yield* Ref.modify(cache.state, (state): readonly [AstExtractionResult, AstCacheState] =>
     changed(before, state, request.source, entry.dependencies)
       ? [changedDuringExtraction, state]
-      : [{ _tag: 'ExtractionReady', prepared: entry.prepared, hit: 'memory' }, {
+      : [{ _tag: 'ExtractionReady', prepared: entry.prepared, hit: 'memory', dependencies: entry.dependencies }, {
           ...state, entries: retainedEntries([entry, ...state.entries.filter((other) => other !== entry)])
         }]);
 });
@@ -114,7 +114,7 @@ export const loadPreparedAst = Effect.fnUntraced(function* (
     const extracted = yield* extract;
     return yield* Ref.modify(cache.state, (state): readonly [AstExtractionResult, AstCacheState] => {
       if (changed(before, state, request.source, extracted.dependencies)) return [changedDuringExtraction, state];
-      const result: AstExtractionResult = { _tag: 'ExtractionReady', prepared: extracted.prepared, hit: 'load' };
+      const result: AstExtractionResult = { _tag: 'ExtractionReady', prepared: extracted.prepared, hit: 'load', dependencies: extracted.dependencies };
       if (extracted.cacheable === false) return [result, state];
       const entry: CachedAst = { ...request, prepared: extracted.prepared, astBytes: extracted.astBytes,
         dependencies: extracted.dependencies, createdAt: Date.now() };

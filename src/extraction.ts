@@ -7,7 +7,8 @@ import { decodeDependencies, fingerprintFile, reusableCommand, validateDependenc
 import { makeExtractionCommand, runClangAst, type CompileCommand } from './services';
 
 export const extractVerifiedAst = Effect.fnUntraced(function* (
-  source: string, command: CompileCommand, executable: string, maxAstBytes: number, signal: AbortSignal
+  source: string, command: CompileCommand, executable: string, maxAstBytes: number, signal: AbortSignal,
+  report: (event: Readonly<Record<string, unknown>>) => void = () => {}
 ) {
   const before = yield* Effect.tryPromise({ try: () => fingerprintFile(source), catch: (error) => new Error(String(error)) });
   const directory = yield* Effect.tryPromise({
@@ -18,7 +19,7 @@ export const extractVerifiedAst = Effect.fnUntraced(function* (
     const manifest = path.join(directory, 'dependencies.json');
     const astText = yield* runClangAst({ ...extraction,
       args: [...extraction.args.slice(0, 2), '--cache-manifest', manifest, ...extraction.args.slice(2)]
-    }, maxAstBytes, signal).pipe(Effect.mapError((error) => new Error(error.message)));
+    }, maxAstBytes, signal, report).pipe(Effect.mapError((error) => new Error(error.message)));
     const dependencies = yield* Effect.tryPromise({
       try: async () => decodeDependencies(JSON.parse(await readFile(manifest, 'utf8'))),
       catch: (error) => new Error('Could not read extractor dependency manifest. Rebuild the native extractor: ' + String(error))

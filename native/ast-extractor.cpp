@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <chrono>
 
 namespace {
@@ -309,6 +310,7 @@ std::string digest(llvm::StringRef text) {
 // misses newly generated headers and higher-priority include directories.
 struct DependencyState {
   bool reusable = true;
+  std::set<std::string> attempted;
   std::map<std::string, std::pair<std::string, std::string>> paths;
 };
 
@@ -317,7 +319,7 @@ void capturePath(DependencyState &state, llvm::StringRef name) {
   if (llvm::sys::fs::make_absolute(requested)) { state.reusable = false; return; }
   // Do not lexically collapse '..' across a symlink before filesystem lookup.
   const auto pathname = requested.str().str();
-  if (state.paths.count(pathname)) return;
+  if (!state.attempted.insert(pathname).second) return;
   llvm::SmallString<256> real;
   const auto error = llvm::sys::fs::real_path(pathname, real);
   if (error) {
@@ -404,10 +406,21 @@ private:
   DependencyState &state;
 };
 
+struct Timings {
+  double selectionMs = 0;
+  double serializationMs = 0;
+  std::chrono::steady_clock::time_point started;
+};
+
+double elapsedMs(std::chrono::steady_clock::time_point started) {
+  return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+}
+
 class Extractor : public ASTConsumer {
 public:
-  explicit Extractor(std::string source) : source(std::move(source)) {}
+  Extractor(std::string source, Timings &timings) : source(std::move(source)), timings(timings) {}
   void HandleTranslationUnit(ASTContext &context) override {
+    const auto selectionStarted = std::chrono::steady_clock::now();
     const Serializer serializer(context);
     SourceFunctions functions(serializer);
     functions.TraverseDecl(context.getTranslationUnitDecl());
@@ -431,6 +444,8 @@ public:
     fold(functions.roots, selection, [&](auto &selection, const FunctionDecl *root) {
       include(include, root, selection);
     });
+    timings.selectionMs = elapsedMs(selectionStarted);
+    const auto serializationStarted = std::chrono::steady_clock::now();
     // Stream the compact tree directly. A JSON DOM retains a hash table for
     // every node and source position, amplifying large source files in memory.
     json::OStream output(llvm::outs());
@@ -443,9 +458,11 @@ public:
       });
     });
     llvm::outs() << "\n";
+    timings.serializationMs = elapsedMs(serializationStarted);
   }
 private:
   std::string source;
+  Timings &timings;
 };
 
 class ExtractionAction : public ASTFrontendAction {
@@ -453,6 +470,7 @@ public:
   ExtractionAction(std::string source, std::string manifest)
       : source(std::move(source)), manifest(std::move(manifest)) {}
   bool BeginSourceFileAction(CompilerInstance &compiler) override {
+    timings.started = std::chrono::steady_clock::now();
     if (!manifest.empty()) {
       capturePath(dependencies, source);
       compiler.getPreprocessor().addPPCallbacks(std::make_unique<Dependencies>(compiler, dependencies));
@@ -461,6 +479,7 @@ public:
   }
   void EndSourceFileAction() override {
     if (manifest.empty()) return;
+    const auto frontendMs = elapsedMs(timings.started);
     const auto &sm = getCompilerInstance().getSourceManager();
     const auto files = llvm::make_range(sm.fileinfo_begin(), sm.fileinfo_end());
     fold(files, dependencies, [&](auto &dependencies, const auto &file) {
@@ -480,6 +499,11 @@ public:
     output.object([&] {
       output.attribute("schema", 1);
       output.attribute("reusable", dependencies.reusable);
+      output.attributeObject("timings", [&] {
+        output.attribute("frontendMs", frontendMs);
+        output.attribute("selectionMs", timings.selectionMs);
+        output.attribute("serializationMs", timings.serializationMs);
+      });
       output.attributeArray("paths", [&] {
         fold(dependencies.paths, output, [](auto &output, const auto &file) {
           output.object([&] {
@@ -492,12 +516,13 @@ public:
     });
   }
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &, llvm::StringRef) override {
-    return std::make_unique<Extractor>(source);
+    return std::make_unique<Extractor>(source, timings);
   }
 private:
   std::string source;
   std::string manifest;
   DependencyState dependencies;
+  Timings timings;
 };
 
 class ExtractionFactory : public tooling::FrontendActionFactory {

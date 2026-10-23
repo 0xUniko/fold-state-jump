@@ -52,7 +52,8 @@ try {
       queryCount: offsets.length * 2, astBytes: Buffer.byteLength(text), userSeconds, systemSeconds, peakRssKiB,
       inputBlocks, outputBlocks, host: process.memoryUsage(),
       ...(manifest ? { manifestBytes: Buffer.byteLength(await readFile(path.join(directory, 'manifest.json'))),
-        reusable: JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8')).reusable } : {}) }];
+        reusable: JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8')).reusable,
+        nativeTimings: JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8')).timings } : {}) }];
   }, Promise.resolve([] as Record<string, unknown>[]));
   const percentile = (key: string, fraction: number) => {
     const values = samples.reduce<number[]>((values, sample) => { values.push(sample[key] as number); return values.sort((a, b) => a - b); }, []);

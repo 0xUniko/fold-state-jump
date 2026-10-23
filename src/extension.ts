@@ -1,3 +1,4 @@
+import { makePrewarmScheduler, schedulePrewarm, requestForeground, cancelPrewarm, disposePrewarm, cancelAllTasks, type PrewarmScheduler } from './prewarm';
 import { buildIdentity, validateDependencies } from './dependencies';
 import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
 import { extractVerifiedAst } from './extraction';
@@ -15,6 +16,7 @@ const activeDocument = (): vscode.TextDocument | undefined => vscode.window.acti
 
 type ExtractionRuntime = {
   readonly astCache: AstCache;
+  readonly scheduler: PrewarmScheduler;
   readonly diskCache: DiskCache;
   readonly output: vscode.OutputChannel;
   readonly compileDatabaseCache: Ref.Ref<CompileDatabaseCache>;
@@ -103,17 +105,6 @@ const extractAst = Effect.fnUntraced(function* (
   const documentVersion = document.version;
   const generation = (yield* Ref.get(runtime.astCache.state)).generation;
   const source = path.resolve(document.uri.fsPath);
-  const cursorByteOffset = byteOffsetFromUtf16(
-    sourceText,
-    vscode.window.activeTextEditor?.document === document
-      ? document.offsetAt(vscode.window.activeTextEditor.selection.active)
-      : 0
-  );
-  const options = {
-    file: document.uri.fsPath,
-    sourceText,
-    cursorByteOffset
-  };
   const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
   const config = vscode.workspace.getConfiguration('foldStateJump');
   const resolveInput = Effect.gen(function* () {
@@ -145,12 +136,8 @@ const extractAst = Effect.fnUntraced(function* (
       yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-hit', source, astBytes: disk.astBytes })));
       return disk;
     }
-    if (command.context === 'fallback') {
-      yield* Effect.sync(() => {
-        void vscode.window.showWarningMessage('Fold State Jump: no matching compile command found; Clang may lack project include paths. Set foldStateJump.compileCommandsPath if analysis fails.');
-      });
-    }
-    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal);
+    if (command.context === 'fallback') runtime.output.appendLine(JSON.stringify({ event: 'fallback-command', source }));
+    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal, (event) => runtime.output.appendLine(JSON.stringify({ ...event, source })));
     const afterCommand = yield* resolveInput;
     if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
         identity !== (yield* identify(afterCommand))) {
@@ -166,11 +153,46 @@ const extractAst = Effect.fnUntraced(function* (
   const afterCommand = yield* resolveInput;
   if (identity !== (yield* identify(afterCommand)) || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
       document.version !== documentVersion || document.isDirty) {
-    return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.', options };
+    return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.' };
+  }
+  if (extraction._tag === 'ExtractionReady' && vscode.workspace.textDocuments.some((document) =>
+      document.isDirty && extraction.dependencies?.paths.some((file) =>
+        path.resolve(file.path) === path.resolve(document.uri.fsPath) || file.real === path.resolve(document.uri.fsPath)))) {
+    return { _tag: 'AnalysisFailure' as const, reason: 'Save the modified included files before analysis.' };
   }
   yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: extraction._tag === 'ExtractionReady' ? extraction.hit : 'stale', source, ms: performance.now() - startedAt, memory: process.memoryUsage() })));
-  return { ...extraction, options };
+  return extraction;
 }, Effect.mapError((error) => new Error(error.message)));
+
+const analysisOptions = (document: vscode.TextDocument) => ({
+  file: document.uri.fsPath, sourceText: document.getText(),
+  cursorByteOffset: byteOffsetFromUtf16(document.getText(),
+    vscode.window.activeTextEditor?.document === document
+      ? document.offsetAt(vscode.window.activeTextEditor.selection.active) : 0)
+});
+
+const extractionTask = (document: vscode.TextDocument, extensionPath: string, runtime: ExtractionRuntime, reason: string) => {
+  const documentVersion = document.version;
+  const source = path.resolve(document.uri.fsPath);
+  const generation = Effect.runSync(Ref.get(runtime.astCache.state)).generation;
+  return {
+    input: { source, reason, key: JSON.stringify([source, documentVersion, generation]) },
+    work: (signal: AbortSignal) => Effect.runPromise(Effect.gen(function* () {
+      if (document.version !== documentVersion || document.isDirty || document.isClosed) {
+        return { _tag: 'AnalysisFailure' as const, reason: 'The document changed before analysis.' };
+      }
+      return yield* extractAst(document, signal, extensionPath, runtime);
+    }), { signal })
+  };
+};
+
+const requestAst = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) => {
+  const task = extractionTask(document, extensionPath, runtime, 'command');
+  return Effect.tryPromise({
+    try: () => requestForeground(runtime.scheduler, task.input, signal, task.work),
+    catch: (error) => new Error(String(error))
+  });
+};
 
 const runMutationAnalysis = Effect.fnUntraced(function* (
   document: vscode.TextDocument,
@@ -178,10 +200,13 @@ const runMutationAnalysis = Effect.fnUntraced(function* (
   extensionPath: string,
   runtime: ExtractionRuntime
 ) {
-  const extraction = yield* extractAst(document, signal, extensionPath, runtime);
+  const options = analysisOptions(document);
+  const documentVersion = document.version;
+  const extraction = yield* requestAst(document, signal, extensionPath, runtime);
+  if (document.version !== documentVersion) return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis.' };
   return extraction._tag === 'AnalysisFailure'
     ? extraction
-    : analyzeAst(extraction.prepared.ast, extraction.options, extraction.prepared);
+    : analyzeAst(extraction.prepared.ast, options, extraction.prepared);
 });
 
 const runOriginAnalysis = Effect.fnUntraced(function* (
@@ -190,10 +215,13 @@ const runOriginAnalysis = Effect.fnUntraced(function* (
   extensionPath: string,
   runtime: ExtractionRuntime
 ) {
-  const extraction = yield* extractAst(document, signal, extensionPath, runtime);
+  const options = analysisOptions(document);
+  const documentVersion = document.version;
+  const extraction = yield* requestAst(document, signal, extensionPath, runtime);
+  if (document.version !== documentVersion) return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis.' };
   return extraction._tag === 'AnalysisFailure'
     ? extraction
-    : analyzeOriginAst(extraction.prepared.ast, extraction.options, extraction.prepared);
+    : analyzeOriginAst(extraction.prepared.ast, options, extraction.prepared);
 });
 
 // User interaction happens after the progress promise has settled. VS Code
@@ -231,19 +259,50 @@ const presentAnalysis = (
     }
   });
 
+const activeRuntime = Ref.makeUnsafe<ExtractionRuntime | undefined>(undefined);
+
 export const activate = (context: vscode.ExtensionContext): void => {
+  const output = vscode.window.createOutputChannel('Fold State Jump');
   const runtime: ExtractionRuntime = {
     astCache: makeAstCache(),
+    scheduler: makePrewarmScheduler((event) => output.appendLine(JSON.stringify(event))),
     diskCache: makeDiskCache(path.join(context.globalStorageUri.fsPath, 'ast-v1')),
-    output: vscode.window.createOutputChannel('Fold State Jump'),
+    output,
     compileDatabaseCache: Ref.makeUnsafe(emptyCompileDatabaseCache)
   };
-  const invalidate = (): void => Effect.runSync(invalidateAstCache(runtime.astCache));
-  const invalidateSource = (uri: vscode.Uri): void => Effect.runSync(invalidateAstCache(runtime.astCache, path.resolve(uri.fsPath)));
+  Effect.runSync(Ref.set(activeRuntime, runtime));
+  const prewarm = (reason: string): void => {
+    const document = activeDocument();
+    const config = vscode.workspace.getConfiguration('foldStateJump');
+    if (!config.get('prewarm.enabled', true) || !document || document.uri.scheme !== 'file' ||
+        !isCpp(document.languageId) || document.isDirty || document.isClosed) {
+      cancelPrewarm(runtime.scheduler, 'ineligible-document');
+      return;
+    }
+    const task = extractionTask(document, context.extensionPath, runtime, reason);
+    schedulePrewarm(runtime.scheduler, task.input, config.get('prewarm.delayMs', 1500), task.work);
+  };
+  const invalidate = (): void => {
+    Effect.runSync(invalidateAstCache(runtime.astCache));
+    cancelPrewarm(runtime.scheduler, 'configuration-changed');
+    prewarm('configuration');
+  };
+  const invalidateSource = (uri: vscode.Uri): void => {
+    Effect.runSync(invalidateAstCache(runtime.astCache, path.resolve(uri.fsPath)));
+    if (activeDocument()?.uri.fsPath === uri.fsPath) {
+      cancelPrewarm(runtime.scheduler, 'active-source-changed');
+      if (!activeDocument()?.isDirty) prewarm('file-change');
+    }
+  };
   const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{c,cc,cpp,cxx,cu,cuh,h,hh,hpp,hxx,ipp,inc,mm,m,inl,tpp,C,H}');
   const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
   context.subscriptions.push(
     runtime.output,
+    { dispose: () => { void disposePrewarm(runtime.scheduler); } },
+    vscode.window.onDidChangeActiveTextEditor(() => prewarm('active-editor')),
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document === activeDocument() && vscode.workspace.getConfiguration('foldStateJump').get('prewarm.onSave', true)) prewarm('save');
+    }),
     sourceWatcher,
     databaseWatcher,
     sourceWatcher.onDidChange(invalidateSource),
@@ -265,6 +324,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     vscode.workspace.onDidChangeWorkspaceFolders(invalidate),
 
     vscode.commands.registerCommand('foldStateJump.clearCache', () => Effect.runPromise(Effect.gen(function* () {
+      yield* Effect.promise(() => cancelAllTasks(runtime.scheduler));
       yield* invalidateAstCache(runtime.astCache);
       yield* clearDiskCache(runtime.diskCache);
       runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared' }));
@@ -273,7 +333,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
       const disk = yield* diskCacheStats(runtime.diskCache);
       const memory = yield* Ref.get(runtime.astCache.state);
       runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, memoryEntries: memory.entries.length,
-        serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0), host: process.memoryUsage() }));
+        serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0),
+        scheduler: { tasks: (yield* Ref.get(runtime.scheduler.state)).tasks.map((task) => ({ id: task.id, source: task.source, priority: task._tag })),
+          cancellations: (yield* Ref.get(runtime.scheduler.state)).cancellations }, host: process.memoryUsage() }));
       runtime.output.show(true);
     }))),
     vscode.commands.registerCommand('foldStateJump.jumpToPreviousMutation', () =>
@@ -327,6 +389,11 @@ export const activate = (context: vscode.ExtensionContext): void => {
       )
     )
   );
+  prewarm('activation');
 };
 
-export const deactivate = (): void => {};
+export const deactivate = async (): Promise<void> => {
+  const runtime = Effect.runSync(Ref.get(activeRuntime));
+  Effect.runSync(Ref.set(activeRuntime, undefined));
+  if (runtime) await disposePrewarm(runtime.scheduler);
+};

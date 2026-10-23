@@ -103,3 +103,33 @@ independently configurable; clear/statistics commands expose lifecycle and usage
 A preliminary gzip round trip reduced the AST from 5,685,272 to 282,968 bytes;
 compression/decompression took 21.72/7.70 ms. This is useful storage evidence;
 format adoption and repeated resource measurements are evaluated separately.
+
+## D: event-driven background preparation
+
+A native-backed service integration (not a VS Code UI test) completed a pipeline
+prewarm in 13,067.53 ms. Fifteen later foreground hits took roughly 102–126 ms.
+Three foreground requests issued immediately after the native spawn waited
+12,673.03 / 12,395.95 / 12,737.01 ms and each joined exactly one extraction;
+prewarming does not accelerate work which has only just begun. A warm foreground
+request while another background extraction was running completed in 107.92 ms,
+cancelling that background child. Five children were started in total: one warmup,
+one cancelled and three joined builds. All PIDs were reaped, no tasks remained.
+[Raw lifecycle and latency samples](measurements/prewarm-pipeline.json).
+
+The scheduler exposes scheduled/background/foreground states, job IDs, reasons,
+start/completion/failure/cancellation and native PIDs. It debounces only editor,
+save/configuration/file events, never polls for reparsing. Same-version foreground
+waiters have independent cancellation; promoting background work preserves its
+process. At most one native extractor runs, and a warm hit bypasses its permit.
+Cancellation finalization waits for child exit, escalating SIGTERM to SIGKILL
+after one second. Disposal drains tracked promises and native handles.
+
+Default prewarm delay is 1.5 s; background deadline 120 s; active saved local
+C/C++ documents only. Dirty main documents retain the explicit save prompt.
+Dirty included documents block navigation until saved rather than mixing disk
+AST offsets with unsaved buffers. Clear cancels/drains tasks before deleting
+snapshots. Output channel and statistics commands expose usage/cancellations.
+
+126 tests, TypeScript and bundle build passed. Native integration verifies real
+child lifetime and single-flight behavior. Actual VS Code UI responsiveness,
+Windows native behavior and /mnt/c semantics are not covered by these results.

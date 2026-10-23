@@ -49,12 +49,13 @@ const diskSamples = await Array.from({ length: repetitions }).reduce<Promise<num
     Effect.gen(function* () {
       const loaded = yield* readDiskAst(makeDiskCache(directory), identity);
       if (!loaded) return yield* Effect.fail(new Error('Disk cache miss'));
-      assert.deepEqual(loaded.prepared.ast, extracted.prepared.ast);
       return loaded;
     }), validateDependencies));
   assert.equal(diskLoaded._tag, 'ExtractionReady');
   assert.equal(await buildIdentity(source, command, executable, {}), identity);
-  return [...previous, performance.now() - start];
+  const ms = performance.now() - start;
+  if (diskLoaded._tag === 'ExtractionReady') assert.deepEqual(diskLoaded.prepared.ast, extracted.prepared.ast);
+  return [...previous, ms];
 }, Promise.resolve([]));
 const stats = await Effect.runPromise(diskCacheStats(disk));
 await rm(directory, { recursive: true, force: true });

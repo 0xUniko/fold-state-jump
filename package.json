@@ -95,6 +95,23 @@
           "minimum": 1048576,
           "maximum": 1073741824,
           "description": "Soft disk AST cache capacity, independent of the native output safety limit."
+        },
+        "foldStateJump.prewarm.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prewarm only the active saved C/C++ file after editor and save events. At most one native extraction runs."
+        },
+        "foldStateJump.prewarm.delayMs": {
+          "type": "number",
+          "default": 1500,
+          "minimum": 100,
+          "maximum": 60000,
+          "description": "Debounce delay for background AST preparation."
+        },
+        "foldStateJump.prewarm.onSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Schedule active saved files for background AST preparation."
         }
       }
     }
