@@ -57,3 +57,28 @@ builds and other benchmarks. Machine-specific ASTs stay in /tmp, not in git.
 
 Further stages, validity guarantees, experimental decisions and final validation
 are recorded below as implementation and measurements finish.
+
+## B: validated memory reuse
+
+Native PPCallbacks record include/has_include candidates (including directories
+which did not exist at invocation), and SourceManager records actual buffer
+hashes. SHA-256 plus realpath validates external and system files as well as
+workspace files. Missing ancestors coalesce negative candidates. The pipeline
+manifest shrank from 12,789 paths / 1,219,059 bytes to 3,921 / 455,084 bytes.
+
+Fifteen complete memory hits (command resolution, extractor identity and dependency
+hash validation included) measured p50 **77.76 ms**, p95 **91.66 ms**, without
+starting Clang. Raw [memory samples](measurements/memory-pipeline.json). The first
+prototype cost p50 150.91 ms before absent-ancestor coalescing. Source contents
+and executable are hashed rather than trusting a TTL. This is intentionally
+more expensive than the old unchecked warm hit, but avoids its roughly 12-second
+rebuild after time expiry or unrelated edits. The process RSS snapshot was
+245.5 MiB; serialized AST budgets are not JS heap limits.
+
+The first five-run dependency prototype measured native p50/p95
+12,055.41/12,571.30 ms, maximum 924,228 KiB; see
+[raw samples](measurements/dependency-prototype-pipeline.json). These precede the
+negative-path coalescing change and are not the final cold overhead measurement.
+Full normalized pipeline JSON matched the baseline, as did all 3,602 mutation/
+origin signatures, including candidate order and call frames. Analyzer source
+was not changed. 113 tests, temporary TypeScript --noEmit and bundle build passed.

@@ -1,19 +1,24 @@
 import { Effect, Ref, Semaphore } from 'effect';
 import type { PreparedAst } from './analysis';
+import path from 'node:path';
+import type { DependencyManifest } from './dependencies';
 
 export type AstRequest = {
   readonly source: string;
   readonly documentVersion: number;
+  readonly buildIdentity?: string;
 };
 
 type CachedAst = AstRequest & {
   readonly createdAt: number;
   readonly astBytes: number;
   readonly prepared: PreparedAst;
+  readonly dependencies?: DependencyManifest;
 };
 
 type AstCacheState = {
   readonly generation: number;
+  readonly revisions: ReadonlyMap<string, number>;
   // Most recently used first. The budget measures serialized AST bytes;
   // decoded nodes and indexes require additional memory.
   readonly entries: readonly CachedAst[];
@@ -25,26 +30,31 @@ export type AstCache = {
 };
 
 export type AstExtractionResult =
-  | { readonly _tag: 'ExtractionReady'; readonly prepared: PreparedAst }
+  | { readonly _tag: 'ExtractionReady'; readonly prepared: PreparedAst; readonly hit: 'memory' | 'load' }
   | { readonly _tag: 'AnalysisFailure'; readonly reason: string };
 
-const maxAgeMs = 60_000;
 const maxEntries = 3;
 const maxAstBytes = 16 * 1024 * 1024;
 
 // Ref and Semaphore bridge the editor's independent callbacks. Cache state
 // transitions replace immutable values; only the eviction fold builds arrays.
 export const makeAstCache = (): AstCache => ({
-  state: Ref.makeUnsafe<AstCacheState>({ generation: 0, entries: [] }),
+  state: Ref.makeUnsafe<AstCacheState>({ generation: 0, revisions: new Map(), entries: [] }),
   extraction: Semaphore.makeUnsafe(1)
 });
 
-export const invalidateAstCache = (cache: AstCache): Effect.Effect<void> =>
-  Ref.update(cache.state, (state) => ({ generation: state.generation + 1, entries: [] }));
+const dependsOn = (entry: CachedAst, source: string): boolean =>
+  entry.source === source || !!entry.dependencies?.paths.some((file) => path.resolve(file.path) === source || file.real === source);
 
-const retainedEntries = (entries: readonly CachedAst[], now: number): readonly CachedAst[] =>
+export const invalidateAstCache = (cache: AstCache, source?: string): Effect.Effect<void> =>
+  Ref.update(cache.state, (state) => source && state.revisions.size < 4096
+    ? { ...state, revisions: new Map([...state.revisions, [source, (state.revisions.get(source) ?? 0) + 1]]),
+        entries: state.entries.filter((entry) => !dependsOn(entry, source)) }
+    : { generation: state.generation + 1, revisions: new Map(), entries: [] });
+
+const retainedEntries = (entries: readonly CachedAst[]): readonly CachedAst[] =>
   entries.reduce<{ readonly entries: CachedAst[]; readonly astBytes: number }>((state, entry) => {
-    if (now - entry.createdAt >= maxAgeMs || state.entries.length >= maxEntries) return state;
+    if (state.entries.length >= maxEntries) return state;
     // Always retain the newest AST, even when it alone exceeds the budget.
     // Otherwise every command on a large translation unit would reparse it.
     if (state.entries.length > 0 && state.astBytes + entry.astBytes > maxAstBytes) return state;
@@ -56,39 +66,61 @@ const changedDuringExtraction: AstExtractionResult = {
   _tag: 'AnalysisFailure', reason: 'A source file changed during analysis. Run the command again.'
 };
 
-const lookupPreparedAst = (cache: AstCache, request: AstRequest, generation: number): Effect.Effect<AstExtractionResult | undefined> =>
-  Ref.modify(cache.state, (state): readonly [AstExtractionResult | undefined, AstCacheState] => {
-    if (state.generation !== generation) return [changedDuringExtraction, state];
-    const now = Date.now();
-    const entry = state.entries.find((entry) => entry.source === request.source &&
-      entry.documentVersion === request.documentVersion && now - entry.createdAt < maxAgeMs);
-    return entry
-      ? [{ _tag: 'ExtractionReady', prepared: entry.prepared }, {
-          ...state, entries: retainedEntries([entry, ...state.entries.filter((other) => other !== entry)], now)
-        }]
-      : [undefined, state];
-  });
+const changed = (before: AstCacheState, after: AstCacheState, source: string, dependencies?: DependencyManifest): boolean =>
+  before.generation !== after.generation ||
+  [source, ...(dependencies?.paths.flatMap((file) => [path.resolve(file.path), file.real]) ?? [])].some((file) =>
+    (before.revisions.get(file) ?? 0) !== (after.revisions.get(file) ?? 0));
+
+const lookupPreparedAst = Effect.fnUntraced(function* (
+  cache: AstCache, request: AstRequest, before: AstCacheState,
+  validate: (dependencies: DependencyManifest) => Effect.Effect<boolean>
+) {
+  const state = yield* Ref.get(cache.state);
+  if (changed(before, state, request.source)) return changedDuringExtraction;
+  const entry = state.entries.find((entry) => entry.source === request.source &&
+    entry.documentVersion === request.documentVersion && entry.buildIdentity === request.buildIdentity);
+  if (!entry) return undefined;
+  if (entry.dependencies && !(yield* validate(entry.dependencies))) {
+    yield* Ref.update(cache.state, (state) => ({ ...state, entries: state.entries.filter((other) => other !== entry) }));
+    return undefined;
+  }
+  return yield* Ref.modify(cache.state, (state): readonly [AstExtractionResult, AstCacheState] =>
+    changed(before, state, request.source, entry.dependencies)
+      ? [changedDuringExtraction, state]
+      : [{ _tag: 'ExtractionReady', prepared: entry.prepared, hit: 'memory' }, {
+          ...state, entries: retainedEntries([entry, ...state.entries.filter((other) => other !== entry)])
+        }]);
+});
+
+export type ExtractedAst = {
+  readonly prepared: PreparedAst;
+  readonly astBytes: number;
+  readonly dependencies?: DependencyManifest;
+  readonly cacheable?: boolean;
+};
 
 export const loadPreparedAst = Effect.fnUntraced(function* (
   cache: AstCache,
   request: AstRequest,
-  extract: Effect.Effect<{ readonly prepared: PreparedAst; readonly astBytes: number }, Error>
+  extract: Effect.Effect<ExtractedAst, Error>,
+  validate: (dependencies: DependencyManifest) => Effect.Effect<boolean> = () => Effect.succeed(true)
 ): Effect.fn.Return<AstExtractionResult, Error> {
-  const generation = (yield* Ref.get(cache.state)).generation;
-  const cached = yield* lookupPreparedAst(cache, request, generation);
+  const before = yield* Ref.get(cache.state);
+  const cached = yield* lookupPreparedAst(cache, request, before, validate);
   if (cached) return cached;
-  // Recheck after acquiring the permit: concurrent commands for the same
-  // document then reuse the first result instead of starting another Clang.
   return yield* cache.extraction.withPermit(Effect.gen(function* () {
-    const cached = yield* lookupPreparedAst(cache, request, generation);
+    const cached = yield* lookupPreparedAst(cache, request, before, validate);
     if (cached) return cached;
     const extracted = yield* extract;
     return yield* Ref.modify(cache.state, (state): readonly [AstExtractionResult, AstCacheState] => {
-      if (state.generation !== generation) return [changedDuringExtraction, state];
-      const now = Date.now();
-      const entry: CachedAst = { ...request, ...extracted, createdAt: now };
-      return [{ _tag: 'ExtractionReady', prepared: extracted.prepared }, {
-        ...state, entries: retainedEntries([entry, ...state.entries.filter((entry) => entry.source !== request.source)], now)
+      if (changed(before, state, request.source, extracted.dependencies)) return [changedDuringExtraction, state];
+      const result: AstExtractionResult = { _tag: 'ExtractionReady', prepared: extracted.prepared, hit: 'load' };
+      if (extracted.cacheable === false) return [result, state];
+      const entry: CachedAst = { ...request, prepared: extracted.prepared, astBytes: extracted.astBytes,
+        dependencies: extracted.dependencies, createdAt: Date.now() };
+      return [result, {
+        ...state, entries: retainedEntries([entry, ...state.entries.filter((entry) =>
+          entry.source !== request.source || entry.buildIdentity !== request.buildIdentity)])
       }];
     });
   }));

@@ -20,7 +20,7 @@ const measure = <A>(action: () => A) => {
   return { value, ms: performance.now() - start };
 };
 try {
-  const samples = await Array.from({ length: repetitions }).reduce(async (samples, _, index) => {
+  const samples = await Array.from({ length: repetitions }).reduce<Promise<Record<string, unknown>[]>>(async (samples, _, index) => {
     const previous = await samples;
     const resolveStart = performance.now();
     const command = await Effect.runPromise(resolveCompileCommand(source, [path.dirname(source)], 'clang++'));
@@ -55,7 +55,7 @@ try {
         reusable: JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8')).reusable } : {}) }];
   }, Promise.resolve([] as Record<string, unknown>[]));
   const percentile = (key: string, fraction: number) => {
-    const values = samples.map((sample) => sample[key] as number).toSorted((a, b) => a - b);
+    const values = samples.reduce<number[]>((values, sample) => { values.push(sample[key] as number); return values.sort((a, b) => a - b); }, []);
     return values[Math.ceil(values.length * fraction) - 1];
   };
   console.log(JSON.stringify({ source, executable, repetitions, manifest, samples,

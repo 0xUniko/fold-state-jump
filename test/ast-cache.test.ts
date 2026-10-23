@@ -42,7 +42,7 @@ describe('AST extraction cache', () => {
     assert.equal((await Effect.runPromise(Ref.get(cache.state))).entries.length, 1);
   });
 
-  test('replaces earlier document versions and expires old ASTs', async () => {
+  test('replaces earlier document versions and retains unchanged ASTs beyond 60 seconds', async () => {
     const cache = makeAstCache();
     await Effect.runPromise(load(cache, '/one.cpp'));
     await assert.rejects(Effect.runPromise(loadPreparedAst(cache, request('/one.cpp', 2), unexpectedExtraction)), /Unexpected native extraction/);
@@ -51,7 +51,7 @@ describe('AST extraction cache', () => {
     await Effect.runPromise(Ref.update(cache.state, (state) => ({
       ...state, entries: state.entries.map((entry) => ({ ...entry, createdAt: Date.now() - 60_001 }))
     })));
-    await assert.rejects(Effect.runPromise(loadPreparedAst(cache, request('/one.cpp', 2), unexpectedExtraction)), /Unexpected native extraction/);
+    assert.equal((await Effect.runPromise(loadPreparedAst(cache, request('/one.cpp', 2), unexpectedExtraction)))._tag, 'ExtractionReady');
   });
 
   test('invalidates every cached translation unit after source changes', async () => {
@@ -76,7 +76,9 @@ describe('AST extraction cache', () => {
     await Effect.runPromise(Deferred.await(started));
     const second = Effect.runPromise(loadPreparedAst(cache, request('/one.cpp'), unexpectedExtraction));
     await Effect.runPromise(Deferred.succeed(released, undefined));
-    assert.deepEqual(await second, await first);
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+    assert.equal(firstResult._tag, secondResult._tag);
+    if (firstResult._tag === 'ExtractionReady' && secondResult._tag === 'ExtractionReady') assert.equal(firstResult.prepared, secondResult.prepared);
   });
 
   test('serves warm commands while another translation unit is extracting', async () => {

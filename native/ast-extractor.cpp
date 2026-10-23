@@ -5,12 +5,18 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Lex/Lexer.h>
+#include <clang/Lex/HeaderSearch.h>
+#include <clang/Lex/HeaderSearchOptions.h>
+#include <clang/Lex/PPCallbacks.h>
+#include <clang/Lex/Preprocessor.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/JSON.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/SHA256.h>
+#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/ADT/StringExtras.h>
 #include <llvm/ADT/DenseSet.h>
 #include <llvm/ADT/StringMap.h>
@@ -21,6 +27,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
+#include <chrono>
 
 namespace {
 namespace json = llvm::json;
@@ -293,6 +301,109 @@ struct FunctionSelection {
   std::vector<const FunctionDecl *> selected;
 };
 
+std::string digest(llvm::StringRef text) {
+  return llvm::toHex(llvm::SHA256::hash(llvm::arrayRefFromStringRef(text)), true);
+}
+
+// Candidate paths include unsuccessful lookups. Checking only opened files
+// misses newly generated headers and higher-priority include directories.
+struct DependencyState {
+  bool reusable = true;
+  std::map<std::string, std::pair<std::string, std::string>> paths;
+};
+
+void capturePath(DependencyState &state, llvm::StringRef name) {
+  llvm::SmallString<256> requested(name);
+  if (llvm::sys::fs::make_absolute(requested)) { state.reusable = false; return; }
+  // Do not lexically collapse '..' across a symlink before filesystem lookup.
+  const auto pathname = requested.str().str();
+  if (state.paths.count(pathname)) return;
+  llvm::SmallString<256> real;
+  const auto error = llvm::sys::fs::real_path(pathname, real);
+  if (error) {
+    if (error != std::errc::no_such_file_or_directory && error != std::errc::not_a_directory)
+      state.reusable = false;
+    // One absent ancestor proves that every candidate below it is absent.
+    // This keeps thousands of speculative include paths out of the manifest.
+    const auto missing = [&](const auto &self, llvm::StringRef pathname) -> std::string {
+      const auto parent = llvm::sys::path::parent_path(pathname);
+      if (parent.empty() || parent == pathname) return pathname.str();
+      llvm::SmallString<256> real;
+      const auto error = llvm::sys::fs::real_path(parent, real);
+      return error == std::errc::no_such_file_or_directory || error == std::errc::not_a_directory
+          ? self(self, parent) : pathname.str();
+    };
+    state.paths.emplace(missing(missing, pathname), std::make_pair("", ""));
+    return;
+  }
+  const auto buffer = llvm::MemoryBuffer::getFile(pathname);
+  if (!buffer) {
+    state.reusable = false;
+    return;
+  }
+  state.paths.emplace(pathname, std::make_pair(real.str().str(), digest((*buffer)->getBuffer())));
+}
+
+class Dependencies : public PPCallbacks {
+public:
+  Dependencies(CompilerInstance &compiler, DependencyState &state)
+      : compiler(compiler), state(state) {}
+
+  void lookup(SourceLocation location, llvm::StringRef name, bool angled,
+              OptionalFileEntryRef file) {
+    const auto &headers = compiler.getPreprocessor().getHeaderSearchInfo();
+    fold(headers.search_dir_range(), state, [&](auto &state, const DirectoryLookup &directory) {
+      if (!directory.isNormalDir()) { state.reusable = false; return; }
+      capturePath(state, directory.getName().str() + "/" + name.str());
+    });
+    // Clang removes nonexistent -I entries from search_dir_range(). They still
+    // affect a future invocation if a generated include directory appears.
+    fold(compiler.getHeaderSearchOpts().UserEntries, state, [&](auto &state, const auto &directory) {
+      if (directory.IsFramework || !directory.IgnoreSysRoot) state.reusable = false;
+      capturePath(state, directory.Path + "/" + name.str());
+    });
+    if (llvm::sys::path::is_absolute(name)) capturePath(state, name);
+    const auto &sm = compiler.getSourceManager();
+    const auto quote = [&](const auto &self, SourceLocation location) -> void {
+      if (location.isInvalid()) return;
+      const auto fileID = sm.getFileID(sm.getExpansionLoc(location));
+      if (const auto entry = sm.getFileEntryRefForID(fileID)) {
+        const auto directory = llvm::sys::path::parent_path(entry->getName());
+        capturePath(state, directory.str() + "/" + name.str());
+      }
+      self(self, sm.getIncludeLoc(fileID));
+    };
+    if (!angled) quote(quote, location);
+    if (!angled) capturePath(state, "./" + name.str());
+    if (file) capturePath(state, file->getName());
+  }
+
+  void InclusionDirective(SourceLocation location, const Token &, StringRef name,
+      bool angled, CharSourceRange, OptionalFileEntryRef file, StringRef,
+      StringRef, const Module *module, bool imported, SrcMgr::CharacteristicKind) override {
+    if (module || imported) state.reusable = false;
+    lookup(location, name, angled, file);
+  }
+  void HasInclude(SourceLocation location, StringRef name, bool angled,
+      OptionalFileEntryRef file, SrcMgr::CharacteristicKind) override {
+    lookup(location, name, angled, file);
+  }
+  void HasEmbed(SourceLocation, StringRef, bool, OptionalFileEntryRef) override {
+    state.reusable = false;
+  }
+  void EmbedDirective(SourceLocation, StringRef, bool, OptionalFileEntryRef,
+      const LexEmbedParametersResult &) override { state.reusable = false; }
+  void MacroExpands(const Token &token, const MacroDefinition &, SourceRange,
+      const MacroArgs *) override {
+    const auto name = token.getIdentifierInfo()->getName();
+    if (name == "__TIME__" || name == "__DATE__" || name == "__TIMESTAMP__")
+      state.reusable = false;
+  }
+private:
+  CompilerInstance &compiler;
+  DependencyState &state;
+};
+
 class Extractor : public ASTConsumer {
 public:
   explicit Extractor(std::string source) : source(std::move(source)) {}
@@ -339,38 +450,84 @@ private:
 
 class ExtractionAction : public ASTFrontendAction {
 public:
-  explicit ExtractionAction(std::string source) : source(std::move(source)) {}
+  ExtractionAction(std::string source, std::string manifest)
+      : source(std::move(source)), manifest(std::move(manifest)) {}
+  bool BeginSourceFileAction(CompilerInstance &compiler) override {
+    if (!manifest.empty()) {
+      capturePath(dependencies, source);
+      compiler.getPreprocessor().addPPCallbacks(std::make_unique<Dependencies>(compiler, dependencies));
+    }
+    return true;
+  }
+  void EndSourceFileAction() override {
+    if (manifest.empty()) return;
+    const auto &sm = getCompilerInstance().getSourceManager();
+    const auto files = llvm::make_range(sm.fileinfo_begin(), sm.fileinfo_end());
+    fold(files, dependencies, [&](auto &dependencies, const auto &file) {
+      if (file.second->BufferOverridden) dependencies.reusable = false;
+      capturePath(dependencies, file.first.getName());
+      if (const auto buffer = file.second->getBufferDataIfLoaded()) {
+        llvm::SmallString<256> requested(file.first.getName());
+        llvm::sys::fs::make_absolute(requested);
+        if (dependencies.paths[requested.str().str()].second != digest(*buffer))
+          dependencies.reusable = false;
+      }
+    });
+    std::error_code error;
+    llvm::raw_fd_ostream stream(manifest, error);
+    if (error) return;
+    json::OStream output(stream);
+    output.object([&] {
+      output.attribute("schema", 1);
+      output.attribute("reusable", dependencies.reusable);
+      output.attributeArray("paths", [&] {
+        fold(dependencies.paths, output, [](auto &output, const auto &file) {
+          output.object([&] {
+            output.attribute("path", file.first);
+            output.attribute("real", file.second.first);
+            output.attribute("sha256", file.second.second);
+          });
+        });
+      });
+    });
+  }
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &, llvm::StringRef) override {
     return std::make_unique<Extractor>(source);
   }
 private:
   std::string source;
+  std::string manifest;
+  DependencyState dependencies;
 };
 
 class ExtractionFactory : public tooling::FrontendActionFactory {
 public:
-  explicit ExtractionFactory(std::string source) : source(std::move(source)) {}
+  ExtractionFactory(std::string source, std::string manifest)
+      : source(std::move(source)), manifest(std::move(manifest)) {}
   std::unique_ptr<FrontendAction> create() override {
-    return std::make_unique<ExtractionAction>(source);
+    return std::make_unique<ExtractionAction>(source, manifest);
   }
 private:
   std::string source;
+  std::string manifest;
 };
 } // namespace
 
 int main(int argc, const char **argv) {
   // fold-state-jump-ast --source FILE -- [Clang compile options]
-  if (argc < 4 || llvm::StringRef(argv[1]) != "--source" ||
-      llvm::StringRef(argv[3]) != "--") {
+  const bool manifest = argc >= 6 && llvm::StringRef(argv[3]) == "--cache-manifest";
+  const int flags = manifest ? 6 : 4;
+  if (argc < flags || llvm::StringRef(argv[1]) != "--source" ||
+      llvm::StringRef(argv[flags - 1]) != "--") {
     llvm::errs() << "Usage: fold-state-jump-ast --source FILE -- [clang flags]\n";
     return 2;
   }
   const std::string source = absolutePath(argv[2]);
   std::vector<std::string> args;
-  fold(llvm::ArrayRef<const char *>(argv + 4, argc - 4), args,
+  fold(llvm::ArrayRef<const char *>(argv + flags, argc - flags), args,
       [](auto &args, const char *arg) { args.emplace_back(arg); });
   tooling::FixedCompilationDatabase database(".", args);
   tooling::ClangTool tool(database, {source});
-  ExtractionFactory factory(source);
+  ExtractionFactory factory(source, manifest ? argv[4] : "");
   return tool.run(&factory);
 }

@@ -8,6 +8,7 @@ export type CompileCommand = {
   readonly args: readonly string[];
   readonly cwd: string;
   readonly context?: 'exact' | 'inferred' | 'fallback';
+  readonly buildConfiguration?: string;
 };
 
 export type ProcessFailure = {
@@ -214,7 +215,8 @@ const makeSelectedCompileCommand = (
     compiler: clangPath,
     args: [...sanitizeArguments(raw, entry), ...language, '-Xclang', '-ast-dump=json', '-fsyntax-only', source],
     cwd: entry.directory,
-    context: selection.context
+    context: selection.context,
+    buildConfiguration: JSON.stringify(entry)
   };
 };
 

@@ -1,9 +1,11 @@
+import { buildIdentity, validateDependencies } from './dependencies';
+import { extractVerifiedAst } from './extraction';
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
-import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, prepareAst, type ClangNode, type WrappedNode, type TraceCandidate } from './analysis';
+import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type WrappedNode, type TraceCandidate } from './analysis';
 import { makeAstCache, invalidateAstCache, loadPreparedAst, type AstCache } from './ast-cache';
-import { emptyCompileDatabaseCache, makeExtractionCommand, resolveCompileCommandCached, runClangAst, type CompileDatabaseCache } from './services';
+import { emptyCompileDatabaseCache, resolveCompileCommandCached, type CompileCommand, type CompileDatabaseCache } from './services';
 
 const isCpp = (languageId: string): boolean =>
   ['cpp', 'c', 'cuda-cpp', 'objective-cpp'].includes(languageId);
@@ -108,9 +110,9 @@ const extractAst = Effect.fnUntraced(function* (
     sourceText,
     cursorByteOffset
   };
-  const extraction = yield* loadPreparedAst(runtime.astCache, { source, documentVersion }, Effect.gen(function* () {
-    const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
-    const config = vscode.workspace.getConfiguration('foldStateJump');
+  const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  const config = vscode.workspace.getConfiguration('foldStateJump');
+  const resolveInput = Effect.gen(function* () {
     const resolved = yield* resolveCompileCommandCached(
       document.uri.fsPath,
       roots,
@@ -119,30 +121,35 @@ const extractAst = Effect.fnUntraced(function* (
       config.get('compileCommandsPath', '') || undefined
     );
     yield* Ref.set(runtime.compileDatabaseCache, resolved.cache);
-    const command = resolved.command;
+    return resolved.command;
+  });
+  const command = yield* resolveInput;
+  const configuredExtractor = config.get('extractorPath', '');
+  const executable = configuredExtractor
+    ? (path.isAbsolute(configuredExtractor) ? configuredExtractor : path.resolve(extensionPath, configuredExtractor))
+    : path.join(extensionPath, 'native', 'build', 'fold-state-jump-ast');
+  const configuration = { roots, config: config.get('compileCommandsPath', ''), maxAstBytes: config.get('maxAstBytes', 67108864) };
+  const identify = (command: CompileCommand) => Effect.tryPromise({
+    try: () => buildIdentity(source, command, executable, configuration), catch: (error) => new Error(String(error))
+  });
+  const identity = yield* identify(command);
+  const extraction = yield* loadPreparedAst(runtime.astCache, { source, documentVersion, buildIdentity: identity }, Effect.gen(function* () {
     if (command.context === 'fallback') {
       yield* Effect.sync(() => {
         void vscode.window.showWarningMessage('Fold State Jump: no matching compile command found; Clang may lack project include paths. Set foldStateJump.compileCommandsPath if analysis fails.');
       });
     }
-    const configuredExtractor = config.get('extractorPath', '');
-    const executable = configuredExtractor
-      ? (path.isAbsolute(configuredExtractor) ? configuredExtractor : path.resolve(extensionPath, configuredExtractor))
-      : path.join(extensionPath, 'native', 'build', 'fold-state-jump-ast');
-    const astText = yield* runClangAst(
-      makeExtractionCommand(command, executable),
-      config.get('maxAstBytes', 67108864),
-      signal
-    );
-    if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation) {
-      return yield* Effect.fail(new Error('A source file changed during analysis. Run the command again.'));
+    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal);
+    const afterCommand = yield* resolveInput;
+    if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
+        identity !== (yield* identify(afterCommand))) {
+      return yield* Effect.fail(new Error('An input changed during analysis. Run the command again.'));
     }
-    const prepared = yield* Effect.try({
-      try: () => prepareAst(JSON.parse(astText) as ClangNode),
-      catch: (error) => new Error('Could not prepare Clang AST: ' + String(error))
-    });
-    return { prepared, astBytes: Buffer.byteLength(astText) };
-  }).pipe(Effect.mapError((error) => new Error(error.message))));
+    return extracted;
+  }).pipe(Effect.mapError((error) => new Error(error.message))), validateDependencies);
+  if (document.version !== documentVersion || document.isDirty) {
+    return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.', options };
+  }
   return { ...extraction, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
@@ -211,21 +218,25 @@ export const activate = (context: vscode.ExtensionContext): void => {
     compileDatabaseCache: Ref.makeUnsafe(emptyCompileDatabaseCache)
   };
   const invalidate = (): void => Effect.runSync(invalidateAstCache(runtime.astCache));
+  const invalidateSource = (uri: vscode.Uri): void => Effect.runSync(invalidateAstCache(runtime.astCache, path.resolve(uri.fsPath)));
   const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{c,cc,cpp,cxx,cu,cuh,h,hh,hpp,hxx,ipp,inc,mm,m,inl,tpp,C,H}');
   const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
   context.subscriptions.push(
     sourceWatcher,
     databaseWatcher,
-    sourceWatcher.onDidChange(invalidate),
-    sourceWatcher.onDidCreate(invalidate),
-    sourceWatcher.onDidDelete(invalidate),
+    sourceWatcher.onDidChange(invalidateSource),
+    sourceWatcher.onDidCreate(invalidateSource),
+    sourceWatcher.onDidDelete(invalidateSource),
     databaseWatcher.onDidChange(invalidate),
     databaseWatcher.onDidCreate(invalidate),
     databaseWatcher.onDidDelete(invalidate),
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.contentChanges.length > 0 && (isCpp(event.document.languageId) ||
           /\.(?:c|cc|cpp|cxx|cu|cuh|h|hh|hpp|hxx|ipp|inc|mm|m|inl|tpp)$/i.test(event.document.uri.fsPath) ||
-          path.basename(event.document.uri.fsPath) === 'compile_commands.json')) invalidate();
+          path.basename(event.document.uri.fsPath) === 'compile_commands.json')) {
+        if (path.basename(event.document.uri.fsPath) === 'compile_commands.json') invalidate();
+        else invalidateSource(event.document.uri);
+      }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('foldStateJump')) invalidate();
