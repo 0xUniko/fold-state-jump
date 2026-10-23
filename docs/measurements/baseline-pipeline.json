@@ -1,0 +1,115 @@
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "executable": "/tmp/fold-state-jump-baseline/fold-state-jump-ast",
+  "repetitions": 5,
+  "manifest": false,
+  "samples": [
+    {
+      "resolveMs": 6.010536000000002,
+      "nativeMs": 12180.804220999999,
+      "parseMs": 7.063851999999315,
+      "prepareMs": 28.049511000001075,
+      "queryAllMs": 56.77464300000065,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.11,
+      "systemSeconds": 0.79,
+      "peakRssKiB": 922912,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 170766336,
+        "heapTotal": 70057984,
+        "heapUsed": 31573883,
+        "external": 14604155,
+        "arrayBuffers": 5804592
+      }
+    },
+    {
+      "resolveMs": 2.457435999998779,
+      "nativeMs": 12080.356056,
+      "parseMs": 7.330835000000661,
+      "prepareMs": 20.27496500000052,
+      "queryAllMs": 38.92667000000074,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.06,
+      "systemSeconds": 0.59,
+      "peakRssKiB": 922912,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 174440448,
+        "heapTotal": 72158208,
+        "heapUsed": 31379304,
+        "external": 14496568,
+        "arrayBuffers": 5776688
+      }
+    },
+    {
+      "resolveMs": 2.4054199999991397,
+      "nativeMs": 12211.668793,
+      "parseMs": 7.173543000004429,
+      "prepareMs": 19.566931999994267,
+      "queryAllMs": 54.9833540000036,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.39,
+      "systemSeconds": 0.67,
+      "peakRssKiB": 922352,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 178647040,
+        "heapTotal": 74566656,
+        "heapUsed": 31578885,
+        "external": 14693717,
+        "arrayBuffers": 5816880
+      }
+    },
+    {
+      "resolveMs": 2.2858329999944544,
+      "nativeMs": 11664.057321,
+      "parseMs": 7.644298999999592,
+      "prepareMs": 17.325817999997525,
+      "queryAllMs": 30.579399999995076,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 11.64,
+      "systemSeconds": 0.61,
+      "peakRssKiB": 920956,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 164032512,
+        "heapTotal": 70995968,
+        "heapUsed": 31600060,
+        "external": 14643132,
+        "arrayBuffers": 5804688
+      }
+    },
+    {
+      "resolveMs": 1.8318260000014561,
+      "nativeMs": 11976.836266999999,
+      "parseMs": 8.118308000004617,
+      "prepareMs": 17.492713999999978,
+      "queryAllMs": 28.274098000001686,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 11.96,
+      "systemSeconds": 0.54,
+      "peakRssKiB": 923220,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 159617024,
+        "heapTotal": 68849664,
+        "heapUsed": 31374640,
+        "external": 14616592,
+        "arrayBuffers": 5776112
+      }
+    }
+  ],
+  "nativeP50": 12080.356056,
+  "nativeP95": 12211.668793
+}
