@@ -30,6 +30,9 @@
 #include <map>
 #include <set>
 #include <chrono>
+#ifdef __linux__
+#include <sys/stat.h>
+#endif
 
 namespace {
 namespace json = llvm::json;
@@ -312,7 +315,43 @@ struct DependencyState {
   bool reusable = true;
   std::set<std::string> attempted;
   std::map<std::string, std::pair<std::string, std::string>> paths;
+  std::map<std::string, std::string> runtime;
 };
+
+void captureRuntime(DependencyState &state) {
+#ifdef __linux__
+  const auto maps = llvm::MemoryBuffer::getFileAsStream("/proc/self/maps");
+  if (!maps) { state.reusable = false; return; }
+  llvm::SmallVector<llvm::StringRef> lines;
+  (*maps)->getBuffer().split(lines, '\n');
+  fold(lines, state, [](auto &state, llvm::StringRef line) {
+    const auto slash = line.find('/');
+    if (slash == llvm::StringRef::npos) return;
+    const auto pathname = line.substr(slash).str();
+    if (state.runtime.count(pathname)) return;
+    llvm::SmallVector<llvm::StringRef> fields;
+    line.split(fields, ' ', -1, false);
+    uint64_t inode = 0;
+    struct stat metadata;
+    if (fields.size() < 5 || fields[4].getAsInteger(10, inode) ||
+        ::stat(pathname.c_str(), &metadata) || inode != metadata.st_ino) {
+      state.reusable = false;
+      return;
+    }
+    // Match Node's bigint stat stamp, and verify the pathname still identifies
+    // the inode mapped into this process (package updates can replace DSOs).
+    const auto ns = [](const timespec &time) { return int64_t(time.tv_sec) * 1000000000 + time.tv_nsec; };
+    state.runtime.emplace(pathname, std::to_string(metadata.st_dev) + ":" +
+        std::to_string(metadata.st_ino) + ":" + std::to_string(metadata.st_size) + ":" +
+        std::to_string(metadata.st_mode) + ":" + std::to_string(ns(metadata.st_mtim)) + ":" +
+        std::to_string(ns(metadata.st_ctim)));
+  });
+  if (state.runtime.empty()) state.reusable = false;
+#else
+  // No unverified persistent reuse on platforms without runtime-image capture.
+  state.reusable = false;
+#endif
+}
 
 void capturePath(DependencyState &state, llvm::StringRef name) {
   llvm::SmallString<256> requested(name);
@@ -391,6 +430,12 @@ public:
     lookup(location, name, angled, file);
   }
   void HasEmbed(SourceLocation, StringRef, bool, OptionalFileEntryRef) override {
+    state.reusable = false;
+  }
+  void moduleImport(SourceLocation, ModuleIdPath, const Module *) override {
+    state.reusable = false;
+  }
+  void EnteredSubmodule(Module *, SourceLocation, bool) override {
     state.reusable = false;
   }
   void EmbedDirective(SourceLocation, StringRef, bool, OptionalFileEntryRef,
@@ -472,6 +517,7 @@ public:
   bool BeginSourceFileAction(CompilerInstance &compiler) override {
     timings.started = std::chrono::steady_clock::now();
     if (!manifest.empty()) {
+      captureRuntime(dependencies);
       capturePath(dependencies, source);
       compiler.getPreprocessor().addPPCallbacks(std::make_unique<Dependencies>(compiler, dependencies));
     }
@@ -499,6 +545,14 @@ public:
     output.object([&] {
       output.attribute("schema", 1);
       output.attribute("reusable", dependencies.reusable);
+      output.attributeArray("runtime", [&] {
+        fold(dependencies.runtime, output, [](auto &output, const auto &file) {
+          output.object([&] {
+            output.attribute("path", file.first);
+            output.attribute("stamp", file.second);
+          });
+        });
+      });
       output.attributeObject("timings", [&] {
         output.attribute("frontendMs", frontendMs);
         output.attribute("selectionMs", timings.selectionMs);

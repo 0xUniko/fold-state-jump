@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Effect } from 'effect';
 import { prepareAst, type ClangNode } from './analysis';
-import { decodeDependencies, fingerprintFile, reusableCommand, validateDependencies } from './dependencies';
+import { decodeNativeDependencies, fingerprintFile, reusableCommand, verifyDependencies } from './dependencies';
 import { makeExtractionCommand, runClangAst, type CompileCommand } from './services';
 
 export const extractVerifiedAst = Effect.fnUntraced(function* (
@@ -20,12 +20,13 @@ export const extractVerifiedAst = Effect.fnUntraced(function* (
     const astText = yield* runClangAst({ ...extraction,
       args: [...extraction.args.slice(0, 2), '--cache-manifest', manifest, ...extraction.args.slice(2)]
     }, maxAstBytes, signal, report).pipe(Effect.mapError((error) => new Error(error.message)));
-    const dependencies = yield* Effect.tryPromise({
-      try: async () => decodeDependencies(JSON.parse(await readFile(manifest, 'utf8'))),
+    const nativeDependencies = yield* Effect.tryPromise({
+      try: async () => decodeNativeDependencies(JSON.parse(await readFile(manifest, 'utf8'))),
       catch: (error) => new Error('Could not read extractor dependency manifest. Rebuild the native extractor: ' + String(error))
     });
+    const dependencies = yield* verifyDependencies(nativeDependencies);
     const after = yield* Effect.tryPromise({ try: () => fingerprintFile(source), catch: (error) => new Error(String(error)) });
-    if (before.sha256 !== after.sha256 || before.real !== after.real || !(yield* validateDependencies(dependencies))) {
+    if (before.sha256 !== after.sha256 || before.real !== after.real || !dependencies) {
       return yield* Effect.fail(new Error('An input changed during analysis. Run the command again.'));
     }
     const prepared = yield* Effect.try({

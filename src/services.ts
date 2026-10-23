@@ -1,4 +1,5 @@
 import { Effect, Schema } from 'effect';
+import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -248,10 +249,15 @@ const locateCompileDatabase = Effect.fnUntraced(function* (
     try: () => stat(database, { bigint: true }),
     catch: (error) => fileFailure('Could not stat ' + database + ': ' + String(error))
   });
-  const stamp = [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs].join(':');
+  // Coarse filesystems may change twice within one timestamp tick. Hash the
+  // database text there before reusing a decoded command/index snapshot.
+  const coarse = metadata.mtimeNs % 1000000n === 0n || metadata.ctimeNs % 1000000n === 0n;
+  const coarseText = coarse ? yield* readUtf8(database) : undefined;
+  const stamp = [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs,
+    coarseText === undefined ? '' : createHash('sha256').update(coarseText).digest('hex')].join(':');
   const cached = cache.get(database);
   if (cached?.stamp === stamp) return { _tag: 'Cached', database, cached };
-  const text = yield* readUtf8(database);
+  const text = coarseText ?? (yield* readUtf8(database));
   return { _tag: 'Read', database, stamp, text };
 });
 

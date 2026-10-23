@@ -1,11 +1,11 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm, symlink, utimes } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, symlink, utimes, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Deferred, Effect } from 'effect';
 import { extractVerifiedAst } from '../src/extraction';
-import { buildIdentity, fingerprintFile, reusableCommand, validateDependencies, type DependencyManifest } from '../src/dependencies';
+import { buildIdentity, fingerprintFile, reusableCommand, validateDependencies, verifyDependencies, type DependencyManifest } from '../src/dependencies';
 import { makeAstCache, loadPreparedAst, invalidateAstCache } from '../src/ast-cache';
 import { prepareAst } from '../src/analysis';
 import type { CompileCommand } from '../src/services';
@@ -16,7 +16,7 @@ const fixture = async (action: (directory: string) => Promise<void>) => {
   try { await action(directory); } finally { await rm(directory, { recursive: true, force: true }); }
 };
 const prepared = prepareAst({ kind: 'TranslationUnitDecl' });
-const proof = (files: readonly string[]): DependencyManifest => ({ schema: 1, reusable: true,
+const proof = (files: readonly string[]): DependencyManifest => ({ schema: 2, reusable: true, guards: [],
   paths: files.map((file) => ({ path: file, real: file, sha256: 'unused' })) });
 
 describe('verified build inputs', () => {
@@ -33,6 +33,8 @@ describe('verified build inputs', () => {
       args: ['-std=c++17', '-I' + generated, '-I' + path.dirname(header), source] };
     const extracted = await Effect.runPromise(extractVerifiedAst(source, command, executable, 67108864, AbortSignal.timeout(10000)));
     assert.equal(extracted.cacheable, true);
+    assert.ok(extracted.dependencies.guards.some((guard) => guard._tag === 'StatFile' && guard.path === executable),
+      'The native executable must be present in mapped-runtime guards');
     assert.ok(extracted.dependencies.paths.some((file) => file.path === transitive));
     assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), true);
     await writeFile(path.join(directory, 'unrelated.cpp'), '// irrelevant');
@@ -40,16 +42,17 @@ describe('verified build inputs', () => {
     await writeFile(transitive, '#define VALUE 2\n');
     assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), false);
     await writeFile(transitive, '#define VALUE 1\n');
+    const dependencies = (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [], paths: extracted.dependencies.paths })))!;
     await writeFile(path.join(directory, 'optional.h'), '// generated');
-    assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), false);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
     await rm(path.join(directory, 'optional.h'));
-    assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), true);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
     await mkdir(generated);
     await writeFile(path.join(generated, 'state.h'), 'struct State { long value; };');
-    assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), false);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
     await rm(generated, { recursive: true });
     await rm(transitive);
-    assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), false);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
   }));
 
   test('hashes content despite restored timestamp and detects symlink retargeting', () => fixture(async (directory) => {
@@ -60,14 +63,29 @@ describe('verified build inputs', () => {
     await writeFile(second, 'one');
     await symlink(first, link);
     const dependency = { path: link, ...await fingerprintFile(link) };
-    const dependencies: DependencyManifest = { schema: 1, reusable: true, paths: [dependency] };
+    const dependencies = (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [], paths: [dependency] })))!;
     await rm(link);
     await symlink(second, link);
     assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
     const secondDependency = { path: second, ...await fingerprintFile(second) };
     await writeFile(second, 'two');
     await utimes(second, 1, 1);
-    assert.equal(await Effect.runPromise(validateDependencies({ ...dependencies, paths: [secondDependency] })), false);
+    assert.equal(await Effect.runPromise(validateDependencies({ ...dependencies, guards: [{ _tag: 'HashFile', ...secondDependency }] })), false);
+  }));
+
+  test('restored coarse mtime cannot hide a same-size write from verified guards', () => fixture(async (directory) => {
+    const file = path.join(directory, 'restored.h');
+    await writeFile(file, 'one');
+    await utimes(file, 1, 1);
+    const dependencies = (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [],
+      paths: [{ path: file, ...await fingerprintFile(file) }] })))!;
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
+    await writeFile(file, 'two');
+    await utimes(file, 1, 1);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
+    const hashDependencies: DependencyManifest = { ...dependencies,
+      guards: [{ _tag: 'HashFile', path: file, real: file, sha256: dependencies.paths[0].sha256 }] };
+    assert.equal(await Effect.runPromise(validateDependencies(hashDependencies)), false);
   }));
 
   test('identity distinguishes flags, compiler selection, cwd, extractor and configuration', () => fixture(async (directory) => {
@@ -83,10 +101,38 @@ describe('verified build inputs', () => {
       assert.notEqual(await buildIdentity(source, command, extractor, {}), identity);
     }, Promise.resolve());
     assert.notEqual(await buildIdentity(source, command, extractor, { database: 'other' }), identity);
+    const oldIpc = process.env.VSCODE_IPC_HOOK_EXTHOST;
+    const oldCpath = process.env.CPATH;
+    try {
+      process.env.VSCODE_IPC_HOOK_EXTHOST = 'new-extension-host';
+      assert.equal(await buildIdentity(source, command, extractor, {}), identity);
+      process.env.CPATH = '/changed-include-path';
+      assert.notEqual(await buildIdentity(source, command, extractor, {}), identity);
+    } finally {
+      if (oldIpc === undefined) delete process.env.VSCODE_IPC_HOOK_EXTHOST;
+      else process.env.VSCODE_IPC_HOOK_EXTHOST = oldIpc;
+      if (oldCpath === undefined) delete process.env.CPATH;
+      else process.env.CPATH = oldCpath;
+    }
     await writeFile(extractor, 'v2');
     assert.notEqual(await buildIdentity(source, command, extractor, {}), identity);
     assert.equal(reusableCommand({ ...command, args: ['@flags.rsp', source] }), false);
     assert.equal(reusableCommand({ ...command, args: ['-include-pch', 'state.pch', source] }), false);
+  }));
+
+  test('tracks native runtime image replacement separately from the extractor command', () => fixture(async (directory) => {
+    const source = path.join(directory, 'main.cpp');
+    const runtime = path.join(directory, 'libclang-test.so');
+    await writeFile(source, 'int main() {}');
+    await writeFile(runtime, 'runtime-v1');
+    const metadata = await stat(runtime, { bigint: true });
+    const stamp = [metadata.dev, metadata.ino, metadata.size, metadata.mode, metadata.mtimeNs, metadata.ctimeNs].join(':');
+    const native = { schema: 1 as const, reusable: true, paths: [{ path: source, ...await fingerprintFile(source) }], runtime: [{ path: runtime, stamp }] };
+    const dependencies = (await Effect.runPromise(verifyDependencies(native)))!;
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
+    await writeFile(runtime, 'runtime-v2');
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
+    assert.equal(await Effect.runPromise(verifyDependencies(native)), undefined);
   }));
 
   test('time-dependent builtins are parsed but never retained', () => fixture(async (directory) => {

@@ -1,9 +1,9 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, utimes } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { Effect } from 'effect';
+import { Deferred, Effect } from 'effect';
 import { emptyCompileDatabaseCache, makeCompileCommand, makeExtractionCommand, resolveCompileCommand, resolveCompileCommandCached, runClangAst } from '../src/services';
 
 describe('compile commands', () => {
@@ -193,6 +193,24 @@ describe('compile commands', () => {
     }
   });
 
+  test('hashes compilation database content on coarse timestamps', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-coarse-'));
+    try {
+      const source = path.join(directory, 'main.cpp');
+      const database = path.join(directory, 'compile_commands.json');
+      const content = (value: number) => JSON.stringify([{ directory, file: source, arguments: ['c++', '-DVALUE=' + value, source] }]);
+      await writeFile(database, content(1));
+      await utimes(database, 1, 1);
+      const first = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', emptyCompileDatabaseCache));
+      assert.match(first.cache.get(database)!.stamp, /:[a-f0-9]{64}$/);
+      await writeFile(database, content(2));
+      await utimes(database, 1, 1);
+      const second = await Effect.runPromise(resolveCompileCommandCached(source, [directory], 'clang++', first.cache));
+      assert.ok(second.command.args.includes('-DVALUE=2'));
+      assert.notEqual(second.cache.get(database)!.stamp, first.cache.get(database)!.stamp);
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  });
+
   test('treats an empty database file as the existing fallback behavior', async () => {
     const directory = await mkdtemp(path.join(os.tmpdir(), 'fold-state-jump-cache-'));
     try {
@@ -249,4 +267,20 @@ describe('compiler process', () => {
     controller.abort();
     await assert.rejects(result, { _tag: 'ProcessFailure', message: /interrupted/ });
   });
+  test('interrupting a stubborn child waits for its exit before releasing ownership', async () => {
+    const started = Deferred.makeUnsafe<number>();
+    const controller = new AbortController();
+    const extraction = Effect.runPromise(runClangAst({ compiler: process.execPath,
+      args: ['-e', 'process.on("SIGTERM", () => {}); setInterval(() => {}, 1000)'], cwd: os.tmpdir()
+    }, 4096, controller.signal, (event) => {
+      if (event.event === 'native-start') Effect.runSync(Deferred.succeed(started, event.pid as number));
+    }), { signal: controller.signal });
+    const pid = await Effect.runPromise(Deferred.await(started));
+    // Give the child time to install its signal handler; no benchmark uses this delay.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    controller.abort();
+    await assert.rejects(extraction);
+    assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
+  });
+
 });

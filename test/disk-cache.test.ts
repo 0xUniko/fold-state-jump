@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Effect } from 'effect';
 import { clearDiskCache, diskCacheStats, makeDiskCache, readDiskAst, writeDiskAst, type DiskCache } from '../src/disk-cache';
-import { fingerprintFile, sha256 } from '../src/dependencies';
+import { fingerprintFile, sha256, verifyDependencies } from '../src/dependencies';
 
 const fixture = async (action: (cache: DiskCache, source: string) => Promise<void>) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'fsj-disk-'));
@@ -16,7 +16,7 @@ const fixture = async (action: (cache: DiskCache, source: string) => Promise<voi
 };
 const extracted = async (source: string) => ({
   astText: JSON.stringify({ kind: 'TranslationUnitDecl', inner: [] }), cacheable: true,
-  dependencies: { schema: 1 as const, reusable: true, paths: [{ path: source, ...await fingerprintFile(source) }] }
+  dependencies: (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [], paths: [{ path: source, ...await fingerprintFile(source) }] })))!
 });
 const write = async (cache: DiskCache, source: string, identity = 'config-1') =>
   Effect.runPromise(writeDiskAst(cache, identity, await extracted(source), new AbortController().signal));
@@ -39,8 +39,8 @@ describe('persistent compact AST', () => {
     const missing = path.join(path.dirname(source), 'generated.h');
     await writeFile(external, '#define VALUE 1');
     const extraction = await extracted(source);
-    const dependencies = { ...extraction.dependencies, paths: [...extraction.dependencies.paths,
-      { path: external, ...await fingerprintFile(external) }, { path: missing, ...await fingerprintFile(missing) }] };
+    const dependencies = (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [], paths: [...extraction.dependencies.paths,
+      { path: external, ...await fingerprintFile(external) }, { path: missing, ...await fingerprintFile(missing) }] })))!;
     await Effect.runPromise(writeDiskAst(cache, 'config-1', { ...extraction, dependencies }, new AbortController().signal));
     await writeFile(external, '#define VALUE 2');
     assert.equal(await Effect.runPromise(readDiskAst(cache, 'config-1')), undefined);
@@ -57,10 +57,14 @@ describe('persistent compact AST', () => {
 
   test('damaged, partial, old-schema, mismatched and oversized entries are misses', () => fixture(async (cache, source) => {
     await write(cache, source);
-    const original = await readFile(file(cache), 'utf8');
-    await [original.slice(0, -5), 'garbage', original.replace('"schema":1', '"schema":0'),
-      original.replace('"identity":"config-1"', '"identity":"config-2"'),
-      original.replace('TranslationUnitDecl', 'MalformedRoot')].reduce(async (previous, text) => {
+    const original = await readFile(file(cache));
+    const boundary = original.indexOf(10);
+    const header = original.subarray(0, boundary).toString('utf8');
+    const payload = original.subarray(boundary);
+    const changedHeader = (text: string) => Buffer.concat([Buffer.from(text), payload]);
+    await [original.subarray(0, original.length - 5), Buffer.from('garbage'), changedHeader(header.replace('"schema":2', '"schema":0')),
+      changedHeader(header.replace('"identity":"config-1"', '"identity":"config-2"')),
+      Buffer.concat([original, Buffer.from('garbage')])].reduce(async (previous, text) => {
       await previous;
       await writeFile(file(cache), text);
       assert.equal(await Effect.runPromise(readDiskAst(cache, 'config-1')), undefined);
@@ -97,6 +101,24 @@ describe('persistent compact AST', () => {
     assert.ok(results.every(Boolean));
     assert.ok(await Effect.runPromise(readDiskAst(cache, 'config-1')));
     assert.equal((await readdir(cache.directory)).filter((name) => name.endsWith('.tmp')).length, 0);
+  }));
+
+  test('rejects a decompression bomb, invalid AST root and stale crash temporary files', () => fixture(async (cache, source) => {
+    const invalid = { ...await extracted(source), astText: '{"kind":"WrongRoot","inner":[]}' };
+    await Effect.runPromise(writeDiskAst(cache, 'invalid', invalid, new AbortController().signal));
+    assert.equal(await Effect.runPromise(readDiskAst(cache, 'invalid')), undefined);
+    const large = { ...await extracted(source), astText: JSON.stringify({ kind: 'TranslationUnitDecl', inner: [], padding: 'x'.repeat(100000) }) };
+    await Effect.runPromise(writeDiskAst(cache, 'large', large, new AbortController().signal));
+    const original = await readFile(file(cache, 'large'));
+    const boundary = original.indexOf(10);
+    const header = JSON.parse(original.subarray(0, boundary).toString('utf8'));
+    await writeFile(file(cache, 'large'), Buffer.concat([Buffer.from(JSON.stringify({ ...header, astBytes: 1 }) + '\n'), original.subarray(boundary + 1)]));
+    assert.equal(await Effect.runPromise(readDiskAst({ ...cache, maxAstBytes: 1000 }, 'large')), undefined);
+    const temporary = path.join(cache.directory, 'dead-beef.tmp');
+    await writeFile(temporary, 'orphan');
+    await utimes(temporary, 1, 1);
+    await write(cache, source);
+    await assert.rejects(readFile(temporary), { code: 'ENOENT' });
   }));
 
   test('permission/I/O failures fall back without failing navigation', () => fixture(async (cache, source) => {

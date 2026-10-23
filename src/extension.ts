@@ -4,6 +4,7 @@ import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStat
 import { extractVerifiedAst } from './extraction';
 import * as vscode from 'vscode';
 import path from 'node:path';
+import { freemem } from 'node:os';
 import { Effect, Ref } from 'effect';
 import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type WrappedNode, type TraceCandidate } from './analysis';
 import { makeAstCache, invalidateAstCache, loadPreparedAst, type AstCache } from './ast-cache';
@@ -101,7 +102,6 @@ const extractAst = Effect.fnUntraced(function* (
   runtime: ExtractionRuntime
 ) {
   const startedAt = performance.now();
-  const sourceText = document.getText();
   const documentVersion = document.version;
   const generation = (yield* Ref.get(runtime.astCache.state)).generation;
   const source = path.resolve(document.uri.fsPath);
@@ -178,7 +178,7 @@ const extractionTask = (document: vscode.TextDocument, extensionPath: string, ru
   return {
     input: { source, reason, key: JSON.stringify([source, documentVersion, generation]) },
     work: (signal: AbortSignal) => Effect.runPromise(Effect.gen(function* () {
-      if (document.version !== documentVersion || document.isDirty || document.isClosed) {
+      if (document.version !== documentVersion || document.isDirty || document.isClosed || document.uri.scheme !== 'file') {
         return { _tag: 'AnalysisFailure' as const, reason: 'The document changed before analysis.' };
       }
       return yield* extractAst(document, signal, extensionPath, runtime);
@@ -266,7 +266,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
   const runtime: ExtractionRuntime = {
     astCache: makeAstCache(),
     scheduler: makePrewarmScheduler((event) => output.appendLine(JSON.stringify(event))),
-    diskCache: makeDiskCache(path.join(context.globalStorageUri.fsPath, 'ast-v1')),
+    diskCache: makeDiskCache(path.join(context.globalStorageUri.fsPath, 'ast-v2')),
     output,
     compileDatabaseCache: Ref.makeUnsafe(emptyCompileDatabaseCache)
   };
@@ -277,6 +277,11 @@ export const activate = (context: vscode.ExtensionContext): void => {
     if (!config.get('prewarm.enabled', true) || !document || document.uri.scheme !== 'file' ||
         !isCpp(document.languageId) || document.isDirty || document.isClosed) {
       cancelPrewarm(runtime.scheduler, 'ineligible-document');
+      return;
+    }
+    if (freemem() < 2 * 1024 ** 3) {
+      cancelPrewarm(runtime.scheduler, 'memory-pressure');
+      output.appendLine(JSON.stringify({ event: 'prewarm-skipped', reason: 'memory-pressure' }));
       return;
     }
     const task = extractionTask(document, context.extensionPath, runtime, reason);
@@ -319,7 +324,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('foldStateJump')) invalidate();
+      if (['clangPath', 'extractorPath', 'compileCommandsPath', 'maxAstBytes'].some((key) =>
+          event.affectsConfiguration('foldStateJump.' + key))) invalidate();
+      else if (event.affectsConfiguration('foldStateJump')) prewarm('settings');
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(invalidate),
 
