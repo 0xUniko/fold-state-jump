@@ -1,7 +1,7 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Deferred, Effect, Ref } from 'effect';
-import { makePrewarmScheduler, schedulePrewarm, requestForeground, disposePrewarm, cancelPrewarm, cancelAllTasks } from '../src/prewarm';
+import { makePrewarmScheduler, schedulePrewarm, requestForeground, disposePrewarm, cancelPrewarm, cancelAllTasks, withSchedulerMaintenance, cancelSourceTasks, backgroundAdmission, trackNativeProcess } from '../src/prewarm';
 import { prepareAst } from '../src/analysis';
 import type { AstExtractionResult } from '../src/ast-cache';
 
@@ -25,6 +25,74 @@ const fixture = () => {
 };
 
 describe('event-driven prewarm scheduler', () => {
+  test('resource admission distinguishes CPU and memory pressure', () => {
+    assert.equal(backgroundAdmission(1024 ** 3, 0, 8), 'memory-pressure');
+    assert.equal(backgroundAdmission(8 * 1024 ** 3, 7, 8), 'cpu-pressure');
+    assert.equal(backgroundAdmission(8 * 1024 ** 3, 2, 8), 'ready');
+  });
+
+  test('clear closes admission through cancellation and asynchronous deletion, then reopens on failure', async () => {
+    const { scheduler, state } = fixture();
+    const task = pending();
+    schedulePrewarm(scheduler, input(), 0, task.work);
+    await task.started();
+    const deleting = Deferred.makeUnsafe<void>();
+    const release = Deferred.makeUnsafe<void>();
+    const clear = withSchedulerMaintenance(scheduler, async () => {
+      assert.equal(state().tasks.length, 0);
+      await Effect.runPromise(Deferred.succeed(deleting, undefined));
+      await Effect.runPromise(Deferred.await(release));
+      throw new Error('delete failed');
+    });
+    schedulePrewarm(scheduler, input('/unexpected.cpp'), 0, async () => { throw new Error('unexpected'); });
+    await Effect.runPromise(Deferred.await(deleting));
+    await assert.rejects(requestForeground(scheduler, input(), controller().signal, async () => ready), /clearing/);
+    assert.equal(state().scheduled, undefined);
+    await Effect.runPromise(Deferred.succeed(release, undefined));
+    await assert.rejects(clear, /delete failed/);
+    assert.equal(state().maintenance, 0);
+    assert.equal(await requestForeground(scheduler, input(), controller().signal, async () => ready), ready);
+    await disposePrewarm(scheduler);
+  });
+
+  test('overlapping clears serialize and keep admission closed until both complete', async () => {
+    const { scheduler, state } = fixture();
+    const started = Deferred.makeUnsafe<void>();
+    const released = Deferred.makeUnsafe<void>();
+    const order = Ref.makeUnsafe<readonly number[]>([]);
+    const first = withSchedulerMaintenance(scheduler, async () => {
+      await Effect.runPromise(Deferred.succeed(started, undefined));
+      await Effect.runPromise(Deferred.await(released));
+      Effect.runSync(Ref.update(order, (order) => [...order, 1]));
+    });
+    await Effect.runPromise(Deferred.await(started));
+    const second = withSchedulerMaintenance(scheduler, async () => {
+      assert.equal(state().maintenance > 0, true);
+      Effect.runSync(Ref.update(order, (order) => [...order, 2]));
+    });
+    assert.equal(state().maintenance, 2);
+    await Effect.runPromise(Deferred.succeed(released, undefined));
+    await Promise.all([first, second]);
+    assert.deepEqual(Effect.runSync(Ref.get(order)), [1, 2]);
+    assert.equal(state().maintenance, 0);
+    await disposePrewarm(scheduler);
+  });
+
+  test('dependency cancellation targets affected TUs and exited PID ownership ends before promotion', async () => {
+    const { scheduler, state, events } = fixture();
+    const task = pending();
+    schedulePrewarm(scheduler, input('/affected.cpp'), 0, task.work);
+    await task.started();
+    const signal = state().tasks[0].controller.signal;
+    trackNativeProcess(scheduler, signal, undefined);
+    const foreground = requestForeground(scheduler, input('/affected.cpp'), controller().signal, task.work);
+    assert.equal(events().some((event) => event.event === 'native-priority'), false);
+    cancelSourceTasks(scheduler, ['/unrelated.cpp']);
+    assert.equal(signal.aborted, false);
+    cancelSourceTasks(scheduler, ['/affected.cpp']);
+    await assert.rejects(foreground);
+    await disposePrewarm(scheduler);
+  });
   test('debounces rapid events into one tracked task', async () => {
     const { scheduler, events, state } = fixture();
     const task = pending();
@@ -35,6 +103,20 @@ describe('event-driven prewarm scheduler', () => {
     await task.release();
     await disposePrewarm(scheduler);
     assert.equal(state().tasks.length, 0);
+  });
+
+  test('returning to an existing foreground task removes another editor debounce', async () => {
+    const { scheduler, state } = fixture();
+    const task = pending();
+    const foreground = requestForeground(scheduler, input('/a.cpp'), controller().signal, task.work);
+    await task.started();
+    schedulePrewarm(scheduler, input('/b.cpp'), 60000, async () => { throw new Error('stale editor task'); });
+    assert.equal(state().scheduled?.source, '/b.cpp');
+    schedulePrewarm(scheduler, input('/a.cpp'), 60000, task.work);
+    assert.equal(state().scheduled, undefined);
+    await task.release();
+    await foreground;
+    await disposePrewarm(scheduler);
   });
 
   test('foreground joins a running prewarm once and preserves its result', async () => {

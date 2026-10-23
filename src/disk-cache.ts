@@ -13,7 +13,7 @@ export type DiskCache = {
   readonly maxAstBytes: number;
   readonly writes: Semaphore.Semaphore;
 };
-export const makeDiskCache = (directory: string, maxBytes = 128 * 1024 * 1024, maxAstBytes = 67108864): DiskCache =>
+export const makeDiskCache = (directory: string, maxBytes = 0, maxAstBytes = 67108864): DiskCache =>
   ({ directory, maxBytes, maxAstBytes, writes: Semaphore.makeUnsafe(1) });
 const compress = promisify(gzip);
 const decompress = promisify(gunzip);
@@ -86,6 +86,7 @@ const trimDiskCache = async (cache: DiskCache): Promise<void> => {
     const metadata = await stat(file).catch(() => undefined);
     if (metadata && Date.now() - metadata.mtimeMs > 3600000) await rm(file, { force: true });
   }));
+  if (cache.maxBytes === 0) return;
   const files = (await entries(cache)).reduce<Awaited<ReturnType<typeof entries>>>((files, file) => {
     files.push(file);
     return files.sort((a, b) => b.usedAt - a.usedAt || a.file.localeCompare(b.file));
@@ -110,7 +111,8 @@ export const writeDiskAst = (cache: DiskCache, identity: string,
     const header = JSON.stringify({ schema: 2, encoding: 'gzip', identity, astBytes, payloadBytes: payload.length, checksum: sha256(extracted.astText),
       createdAt: Date.now(), proofChecksum: sha256(JSON.stringify(extracted.dependencies)), dependencies: extracted.dependencies });
     const bytes = payload.length + Buffer.byteLength(header) + 1;
-    if (astBytes > cache.maxAstBytes || Buffer.byteLength(header) > manifestLimit || bytes > cache.maxBytes) return false;
+    if (astBytes > cache.maxAstBytes || Buffer.byteLength(header) > manifestLimit ||
+        (cache.maxBytes > 0 && bytes > cache.maxBytes)) return false;
     await mkdir(cache.directory, { recursive: true, mode: 0o700 });
     const temporary = path.join(cache.directory, randomUUID() + '.tmp');
     try {
@@ -121,7 +123,7 @@ export const writeDiskAst = (cache: DiskCache, identity: string,
       return true;
     } finally { await rm(temporary, { force: true }); }
   }, catch: () => false
-}).pipe(Effect.orElseSucceed(() => false)));
+}).pipe(Effect.orElseSucceed(() => false), Effect.uninterruptible));
 
 export const clearDiskCache = (cache: DiskCache): Effect.Effect<void> =>
   cache.writes.withPermit(Effect.promise(async () => {

@@ -1,13 +1,13 @@
-import { makePrewarmScheduler, schedulePrewarm, requestForeground, cancelPrewarm, disposePrewarm, cancelAllTasks, type PrewarmScheduler } from './prewarm';
+import { makePrewarmScheduler, schedulePrewarm, requestForeground, cancelPrewarm, disposePrewarm, withSchedulerMaintenance, cancelSourceTasks, trackNativeProcess, backgroundAdmission, type PrewarmScheduler } from './prewarm';
+import { prepareCacheLocation, resolveCacheProject } from './cache-location';
 import { buildIdentity, validateDependencies } from './dependencies';
 import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
 import { extractVerifiedAst } from './extraction';
 import * as vscode from 'vscode';
 import path from 'node:path';
-import { freemem } from 'node:os';
 import { Effect, Ref } from 'effect';
 import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type WrappedNode, type TraceCandidate } from './analysis';
-import { makeAstCache, invalidateAstCache, loadPreparedAst, type AstCache } from './ast-cache';
+import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, type AstCache } from './ast-cache';
 import { emptyCompileDatabaseCache, resolveCompileCommandCached, type CompileCommand, type CompileDatabaseCache } from './services';
 
 const isCpp = (languageId: string): boolean =>
@@ -18,10 +18,31 @@ const activeDocument = (): vscode.TextDocument | undefined => vscode.window.acti
 type ExtractionRuntime = {
   readonly astCache: AstCache;
   readonly scheduler: PrewarmScheduler;
-  readonly diskCache: DiskCache;
+  readonly diskCaches: Ref.Ref<ReadonlyMap<string, { readonly projectKey: string; readonly cache: DiskCache }>>;
+  readonly globalStorage: string;
   readonly output: vscode.OutputChannel;
   readonly compileDatabaseCache: Ref.Ref<CompileDatabaseCache>;
 };
+
+const documentDiskCache = Effect.fnUntraced(function* (document: vscode.TextDocument, runtime: ExtractionRuntime, inspectDisabled = false) {
+  const config = vscode.workspace.getConfiguration('foldStateJump', document.uri);
+  if (!inspectDisabled && !config.get('cache.disk.enabled', true)) return undefined;
+  const location = yield* Effect.promise(() => prepareCacheLocation({
+    source: path.resolve(document.uri.fsPath),
+    workspaceRoots: (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+    globalStorage: runtime.globalStorage, configuredPath: config.get('cache.disk.path', '')
+  }));
+  if (location._tag === 'UnavailableCache') {
+    runtime.output.appendLine(JSON.stringify({ event: 'disk-unavailable', reason: location.reason }));
+    return undefined;
+  }
+  if (location._tag === 'GlobalFallbackCache') runtime.output.appendLine(JSON.stringify({ event: 'disk-fallback', reason: location.reason, root: location.root }));
+  return yield* Ref.modify(runtime.diskCaches, (diskCaches) => {
+    const cache = { ...(diskCaches.get(location.astDirectory)?.cache ?? makeDiskCache(location.astDirectory)),
+      maxBytes: config.get('cache.disk.maxBytes', 0), maxAstBytes: config.get('maxAstBytes', 67108864) };
+    return [cache, new Map([...diskCaches, [location.astDirectory, { projectKey: location.project.key, cache }]])] as const;
+  });
+});
 
 const runWithCancellation = async <A>(
   token: vscode.CancellationToken,
@@ -106,7 +127,7 @@ const extractAst = Effect.fnUntraced(function* (
   const generation = (yield* Ref.get(runtime.astCache.state)).generation;
   const source = path.resolve(document.uri.fsPath);
   const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
-  const config = vscode.workspace.getConfiguration('foldStateJump');
+  const config = vscode.workspace.getConfiguration('foldStateJump', document.uri);
   const resolveInput = Effect.gen(function* () {
     const resolved = yield* resolveCompileCommandCached(
       document.uri.fsPath,
@@ -128,36 +149,43 @@ const extractAst = Effect.fnUntraced(function* (
     try: () => buildIdentity(source, command, executable, configuration), catch: (error) => new Error(String(error))
   });
   const identity = yield* identify(command);
-  const diskCache = { ...runtime.diskCache, maxBytes: config.get('cache.disk.maxBytes', 134217728), maxAstBytes: configuration.maxAstBytes };
-  const diskEnabled = config.get('cache.disk.enabled', true);
+  const diskCache = yield* Effect.cached(documentDiskCache(document, runtime));
   const extraction = yield* loadPreparedAst(runtime.astCache, { source, documentVersion, buildIdentity: identity }, Effect.gen(function* () {
-    const disk = diskEnabled ? yield* readDiskAst(diskCache, identity) : undefined;
-    if (disk) {
-      yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-hit', source, astBytes: disk.astBytes })));
-      return disk;
+    const task = (yield* Ref.get(runtime.scheduler.state)).tasks.find((task) => task.controller.signal === signal);
+    if (task?._tag === 'Background' && backgroundAdmission() !== 'ready') {
+      return yield* Effect.fail(new Error('Background parsing deferred because system resources are busy.'));
     }
     if (command.context === 'fallback') runtime.output.appendLine(JSON.stringify({ event: 'fallback-command', source }));
-    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal, (event) => runtime.output.appendLine(JSON.stringify({ ...event, source })));
+    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal, (event) => {
+      if (event.event === 'native-start') trackNativeProcess(runtime.scheduler, signal, event.pid as number | undefined);
+      if (event.event === 'native-exit') trackNativeProcess(runtime.scheduler, signal, undefined);
+      runtime.output.appendLine(JSON.stringify({ ...event, source }));
+    });
     const afterCommand = yield* resolveInput;
     if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
         identity !== (yield* identify(afterCommand))) {
       return yield* Effect.fail(new Error('An input changed during analysis. Run the command again.'));
     }
-    if (diskEnabled) {
-      const written = yield* writeDiskAst(diskCache, identity, extracted, signal);
+    const disk = yield* diskCache;
+    if (disk) {
+      const written = yield* writeDiskAst(disk, identity, extracted, signal);
       yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-write', source, written })));
     }
     yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'native-extraction', source, astBytes: extracted.astBytes, cacheable: extracted.cacheable })));
     return extracted;
-  }).pipe(Effect.mapError((error) => new Error(error.message))), validateDependencies);
+  }).pipe(Effect.mapError((error) => new Error(error.message))), validateDependencies, Effect.gen(function* () {
+    const disk = yield* diskCache;
+    const restored = disk ? yield* readDiskAst(disk, identity) : undefined;
+    if (restored) runtime.output.appendLine(JSON.stringify({ event: 'disk-hit', source, astBytes: restored.astBytes }));
+    return restored;
+  }));
   const afterCommand = yield* resolveInput;
   if (identity !== (yield* identify(afterCommand)) || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
       document.version !== documentVersion || document.isDirty) {
     return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.' };
   }
   if (extraction._tag === 'ExtractionReady' && vscode.workspace.textDocuments.some((document) =>
-      document.isDirty && extraction.dependencies?.paths.some((file) =>
-        path.resolve(file.path) === path.resolve(document.uri.fsPath) || file.real === path.resolve(document.uri.fsPath)))) {
+      document.isDirty && extraction.dependencies && dependencyIncludes(extraction.dependencies.paths, path.resolve(document.uri.fsPath)))) {
     return { _tag: 'AnalysisFailure' as const, reason: 'Save the modified included files before analysis.' };
   }
   yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: extraction._tag === 'ExtractionReady' ? extraction.hit : 'stale', source, ms: performance.now() - startedAt, memory: process.memoryUsage() })));
@@ -174,9 +202,9 @@ const analysisOptions = (document: vscode.TextDocument) => ({
 const extractionTask = (document: vscode.TextDocument, extensionPath: string, runtime: ExtractionRuntime, reason: string) => {
   const documentVersion = document.version;
   const source = path.resolve(document.uri.fsPath);
-  const generation = Effect.runSync(Ref.get(runtime.astCache.state)).generation;
+  const state = Effect.runSync(Ref.get(runtime.astCache.state));
   return {
-    input: { source, reason, key: JSON.stringify([source, documentVersion, generation]) },
+    input: { source, reason, key: JSON.stringify([source, documentVersion, state.generation, state.revisions.get(source)]) },
     work: (signal: AbortSignal) => Effect.runPromise(Effect.gen(function* () {
       if (document.version !== documentVersion || document.isDirty || document.isClosed || document.uri.scheme !== 'file') {
         return { _tag: 'AnalysisFailure' as const, reason: 'The document changed before analysis.' };
@@ -266,22 +294,30 @@ export const activate = (context: vscode.ExtensionContext): void => {
   const runtime: ExtractionRuntime = {
     astCache: makeAstCache(),
     scheduler: makePrewarmScheduler((event) => output.appendLine(JSON.stringify(event))),
-    diskCache: makeDiskCache(path.join(context.globalStorageUri.fsPath, 'ast-v2')),
+    diskCaches: Ref.makeUnsafe<ReadonlyMap<string, { readonly projectKey: string; readonly cache: DiskCache }>>(new Map()),
+    globalStorage: context.globalStorageUri.fsPath,
     output,
     compileDatabaseCache: Ref.makeUnsafe(emptyCompileDatabaseCache)
   };
   Effect.runSync(Ref.set(activeRuntime, runtime));
   const prewarm = (reason: string): void => {
     const document = activeDocument();
-    const config = vscode.workspace.getConfiguration('foldStateJump');
+    const config = vscode.workspace.getConfiguration('foldStateJump', document?.uri);
     if (!config.get('prewarm.enabled', true) || !document || document.uri.scheme !== 'file' ||
         !isCpp(document.languageId) || document.isDirty || document.isClosed) {
       cancelPrewarm(runtime.scheduler, 'ineligible-document');
       return;
     }
-    if (freemem() < 2 * 1024 ** 3) {
-      cancelPrewarm(runtime.scheduler, 'memory-pressure');
-      output.appendLine(JSON.stringify({ event: 'prewarm-skipped', reason: 'memory-pressure' }));
+    const known = Effect.runSync(Ref.get(runtime.astCache.state)).observed.find((entry) => entry.source === path.resolve(document.uri.fsPath));
+    if (known && vscode.workspace.textDocuments.some((document) => document.isDirty &&
+        dependencyIncludes(known.paths, path.resolve(document.uri.fsPath)))) {
+      cancelPrewarm(runtime.scheduler, 'dirty-dependency');
+      return;
+    }
+    const admission = backgroundAdmission();
+    if (admission !== 'ready') {
+      cancelPrewarm(runtime.scheduler, admission);
+      output.appendLine(JSON.stringify({ event: 'prewarm-skipped', reason: admission }));
       return;
     }
     const task = extractionTask(document, context.extensionPath, runtime, reason);
@@ -293,11 +329,12 @@ export const activate = (context: vscode.ExtensionContext): void => {
     prewarm('configuration');
   };
   const invalidateSource = (uri: vscode.Uri): void => {
-    Effect.runSync(invalidateAstCache(runtime.astCache, path.resolve(uri.fsPath)));
-    if (activeDocument()?.uri.fsPath === uri.fsPath) {
-      cancelPrewarm(runtime.scheduler, 'active-source-changed');
-      if (!activeDocument()?.isDirty) prewarm('file-change');
-    }
+    const source = path.resolve(uri.fsPath);
+    const affected = Effect.runSync(affectedAstSources(runtime.astCache, source));
+    Effect.runSync(invalidateAstCache(runtime.astCache, source));
+    cancelSourceTasks(runtime.scheduler, affected);
+    const document = activeDocument();
+    if (document && affected.includes(path.resolve(document.uri.fsPath))) prewarm('dependency-change');
   };
   const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{c,cc,cpp,cxx,cu,cuh,h,hh,hpp,hxx,ipp,inc,mm,m,inl,tpp,C,H}');
   const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
@@ -306,21 +343,22 @@ export const activate = (context: vscode.ExtensionContext): void => {
     { dispose: () => { void disposePrewarm(runtime.scheduler); } },
     vscode.window.onDidChangeActiveTextEditor(() => prewarm('active-editor')),
     vscode.workspace.onDidSaveTextDocument((document) => {
-      if (document === activeDocument() && vscode.workspace.getConfiguration('foldStateJump').get('prewarm.onSave', true)) prewarm('save');
+      if (vscode.workspace.getConfiguration('foldStateJump', activeDocument()?.uri).get('prewarm.onSave', true)) invalidateSource(document.uri);
     }),
     sourceWatcher,
     databaseWatcher,
     sourceWatcher.onDidChange(invalidateSource),
     sourceWatcher.onDidCreate(invalidateSource),
     sourceWatcher.onDidDelete(invalidateSource),
-    databaseWatcher.onDidChange(invalidateSource),
-    databaseWatcher.onDidCreate(invalidateSource),
-    databaseWatcher.onDidDelete(invalidateSource),
+    databaseWatcher.onDidChange(invalidate),
+    databaseWatcher.onDidCreate(invalidate),
+    databaseWatcher.onDidDelete(invalidate),
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.contentChanges.length > 0 && (isCpp(event.document.languageId) ||
           /\.(?:c|cc|cpp|cxx|cu|cuh|h|hh|hpp|hxx|ipp|inc|mm|m|inl|tpp)$/i.test(event.document.uri.fsPath) ||
           path.basename(event.document.uri.fsPath) === 'compile_commands.json')) {
-        invalidateSource(event.document.uri);
+        if (path.basename(event.document.uri.fsPath) === 'compile_commands.json') invalidate();
+        else invalidateSource(event.document.uri);
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
@@ -330,14 +368,25 @@ export const activate = (context: vscode.ExtensionContext): void => {
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(invalidate),
 
-    vscode.commands.registerCommand('foldStateJump.clearCache', () => Effect.runPromise(Effect.gen(function* () {
-      yield* Effect.promise(() => cancelAllTasks(runtime.scheduler));
-      yield* invalidateAstCache(runtime.astCache);
-      yield* clearDiskCache(runtime.diskCache);
-      runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared' }));
-    }))),
+    vscode.commands.registerCommand('foldStateJump.clearCache', () => withSchedulerMaintenance(runtime.scheduler, async () => {
+      const document = activeDocument();
+      if (!document || document.uri.scheme !== 'file') { output.appendLine('Open a project file to clear its caches.'); return; }
+      const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+      const project = await resolveCacheProject(path.resolve(document.uri.fsPath), roots);
+      await Effect.runPromise(documentDiskCache(document, runtime, true));
+      const caches = [...Effect.runSync(Ref.get(runtime.diskCaches)).values()].filter((entry) => entry.projectKey === project.key);
+      const memory = Effect.runSync(Ref.get(runtime.astCache.state));
+      const sources = [...new Set([...memory.entries.map((entry) => entry.source), ...memory.observed.map((entry) => entry.source)])];
+      const projects = await Promise.all(sources.map(async (source) => ({ source, project: await resolveCacheProject(source, roots) })));
+      await Effect.runPromise(Effect.forEach(projects.filter((entry) => entry.project.key === project.key),
+        (entry) => invalidateAstCache(runtime.astCache, entry.source)));
+      await Effect.runPromise(Effect.forEach(caches, (entry) => clearDiskCache(entry.cache)));
+      runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
+    })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
-      const disk = yield* diskCacheStats(runtime.diskCache);
+      const document = activeDocument();
+      const cache = document ? yield* documentDiskCache(document, runtime, true) : undefined;
+      const disk = cache ? yield* diskCacheStats(cache) : undefined;
       const memory = yield* Ref.get(runtime.astCache.state);
       runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, memoryEntries: memory.entries.length,
         serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0),

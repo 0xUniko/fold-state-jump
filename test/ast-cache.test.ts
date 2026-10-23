@@ -155,4 +155,47 @@ describe('AST extraction cache', () => {
     await assert.rejects(Effect.runPromise(loadPreparedAst(cache, request('/one.cpp'), unexpectedExtraction)), /Unexpected native extraction/);
     assert.equal((await Effect.runPromise(load(cache, '/one.cpp')))._tag, 'ExtractionReady');
   });
+
+  test('restores another key before the native permit is released and single-flights restoration', async () => {
+    const cache = makeAstCache();
+    const started = Deferred.makeUnsafe<void>();
+    const released = Deferred.makeUnsafe<void>();
+    const restores = Ref.makeUnsafe(0);
+    const native = Effect.runPromise(loadPreparedAst(cache, request('/native.cpp'), Effect.gen(function* () {
+      yield* Deferred.succeed(started, undefined);
+      yield* Deferred.await(released);
+      return { prepared, astBytes: 1 };
+    })));
+    await Effect.runPromise(Deferred.await(started));
+    try {
+      const restore = Ref.update(restores, (count) => count + 1).pipe(Effect.andThen(extracted()));
+      const results = await Promise.all(Array.from({ length: 5 }, () => Effect.runPromise(
+        loadPreparedAst(cache, request('/disk.cpp'), unexpectedExtraction, undefined, restore),
+        { signal: AbortSignal.timeout(1000) }
+      )));
+      assert.ok(results.every((result) => result._tag === 'ExtractionReady'));
+      assert.equal(Effect.runSync(Ref.get(restores)), 1);
+    } finally {
+      await Effect.runPromise(Deferred.succeed(released, undefined));
+      await native;
+    }
+    assert.equal(Effect.runSync(Ref.get(cache.loads)).size, 0);
+  });
+
+  test('cancels a restoration owner, releases its queued waiter, and rejects invalidated restores', async () => {
+    const cache = makeAstCache();
+    const started = Deferred.makeUnsafe<void>();
+    const controller = new AbortController();
+    const first = Effect.runPromise(loadPreparedAst(cache, request('/disk.cpp'), unexpectedExtraction, undefined,
+      Deferred.succeed(started, undefined).pipe(Effect.andThen(Effect.never))), { signal: controller.signal });
+    await Effect.runPromise(Deferred.await(started));
+    const second = Effect.runPromise(loadPreparedAst(cache, request('/disk.cpp'), unexpectedExtraction, undefined, extracted()));
+    controller.abort();
+    await assert.rejects(first);
+    assert.equal((await second)._tag, 'ExtractionReady');
+    assert.equal(Effect.runSync(Ref.get(cache.loads)).size, 0);
+    const stale = await Effect.runPromise(loadPreparedAst(cache, request('/stale.cpp'), unexpectedExtraction, undefined,
+      invalidateAstCache(cache, '/stale.cpp').pipe(Effect.andThen(extracted()))));
+    assert.equal(stale._tag, 'AnalysisFailure');
+  });
 });

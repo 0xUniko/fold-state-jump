@@ -91,10 +91,14 @@
         },
         "foldStateJump.cache.disk.maxBytes": {
           "type": "number",
-          "default": 134217728,
-          "minimum": 1048576,
-          "maximum": 1073741824,
-          "description": "Soft disk AST cache capacity, independent of the native output safety limit."
+          "default": 0,
+          "minimum": 0,
+          "description": "Optional soft disk AST cache capacity in bytes. 0 retains snapshots without a cumulative limit; maxAstBytes still limits each AST."
+        },
+        "foldStateJump.cache.disk.path": {
+          "type": "string",
+          "default": "",
+          "description": "Cache base directory, absolute or relative to each project root. Empty uses .cache/fold-state-jump. Custom bases isolate each project in its own subdirectory."
         },
         "foldStateJump.prewarm.enabled": {
           "type": "boolean",

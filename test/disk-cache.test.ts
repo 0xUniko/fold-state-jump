@@ -23,6 +23,17 @@ const write = async (cache: DiskCache, source: string, identity = 'config-1') =>
 const file = (cache: DiskCache, identity = 'config-1') => path.join(cache.directory, sha256(identity) + '.ast');
 
 describe('persistent compact AST', () => {
+  test('unlimited capacity preserves history while retaining per-entry safety bounds', () => fixture(async (cache, source) => {
+    assert.equal(cache.maxBytes, 0);
+    await Array.from({ length: 12 }).reduce(async (previous, _, index) => {
+      await previous;
+      assert.equal(await write(cache, source, 'history-' + index), true);
+    }, Promise.resolve());
+    assert.equal((await Effect.runPromise(diskCacheStats(cache))).entries, 12);
+    assert.ok(await Effect.runPromise(readDiskAst(cache, 'history-0')));
+    assert.equal(await write({ ...cache, maxAstBytes: 1 }, source, 'oversize'), false);
+    assert.equal((await Effect.runPromise(diskCacheStats(cache))).entries, 12);
+  }));
   test('reloads with a fresh service and no native process; preserves the whole AST', () => fixture(async (cache, source) => {
     const extraction = await extracted(source);
     assert.equal(await Effect.runPromise(writeDiskAst(cache, 'config-1', extraction, new AbortController().signal)), true);
