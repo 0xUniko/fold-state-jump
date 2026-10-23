@@ -1,0 +1,24 @@
+{
+  "original": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "isolatedCopy": "/tmp/fsj-edited-tu-5bCaLO/pipeline.h",
+  "repetitions": 3,
+  "initialColdMs": 12414.561608,
+  "unrelatedHitMs": 23.727356999999756,
+  "actualWaitMs": 61000.027783000005,
+  "waited61Seconds": true,
+  "agedHitMs": 23.644228999997722,
+  "rebuildMs": [
+    13130.769654999996,
+    12248.081718999994,
+    12526.643322000004
+  ],
+  "nativeStarts": 4,
+  "allTargetsEqual": true,
+  "host": {
+    "rss": 230912000,
+    "heapTotal": 191000576,
+    "heapUsed": 47704096,
+    "external": 15284484,
+    "arrayBuffers": 212471
+  }
+}

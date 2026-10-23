@@ -1,0 +1,545 @@
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "repetitions": 3,
+  "prewarmMs": 12889.589807999999,
+  "warmMs": [
+    28.583260999999766,
+    27.996116999998776,
+    26.678608999998687,
+    25.658006999999998,
+    29.653612999998586,
+    24.29026200000044,
+    23.21003500000006,
+    24.286753999998837,
+    22.189095000001544,
+    24.2222929999989,
+    22.751094999999623,
+    24.836832999999388,
+    25.059487000000445,
+    24.056698999998844,
+    24.752926000001025
+  ],
+  "priorityMs": 26.41577900000084,
+  "inFlightMs": [
+    12981.423636000001,
+    12662.631343000001,
+    12783.930014999998
+  ],
+  "nativeStarts": 5,
+  "cancellations": 1,
+  "remainingTasks": 0,
+  "host": {
+    "rss": 259141632,
+    "heapTotal": 167555072,
+    "heapUsed": 29661696,
+    "external": 4351511,
+    "arrayBuffers": 425670
+  },
+  "events": [
+    {
+      "event": "scheduled",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration",
+      "delayMs": 0
+    },
+    {
+      "event": "start",
+      "id": 1,
+      "priority": "background",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "native-start",
+      "pid": 29
+    },
+    {
+      "event": "native-exit",
+      "pid": 29,
+      "code": 0,
+      "ms": 12628.601801,
+      "bytes": 5685272
+    },
+    {
+      "event": "complete",
+      "id": 1,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 12887.789325,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 2,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 2,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 2,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 28.35528499999964,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 3,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 3,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 3,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 27.92374100000052,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 4,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 4,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 4,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 26.601034999999683,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 5,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 5,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 5,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 25.504047000000355,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 6,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 6,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 6,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 29.569872000000032,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 7,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 7,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 7,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.241996000000654,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 8,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 8,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 8,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 23.15748100000019,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 9,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 9,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 9,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.14869700000054,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 10,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 10,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 10,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 22.08182399999896,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 11,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 11,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 11,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.16147500000079,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 12,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 12,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 12,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 22.703175000000556,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 13,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 13,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 13,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.792621999999028,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 14,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 14,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 14,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 25.010510000000068,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 15,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 15,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 15,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.008897000001525,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "start",
+      "id": 16,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 16,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "complete",
+      "id": 16,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 24.665078999998514,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "scheduled",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",2,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration",
+      "delayMs": 0
+    },
+    {
+      "event": "start",
+      "id": 17,
+      "priority": "background",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",2,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "native-start",
+      "pid": 30
+    },
+    {
+      "event": "cancel",
+      "id": 17,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "reason": "foreground-priority"
+    },
+    {
+      "event": "start",
+      "id": 18,
+      "priority": "foreground",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "foreground",
+      "id": 18,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 30,
+      "code": null,
+      "ms": 3.9933789999995497,
+      "bytes": 0
+    },
+    {
+      "event": "cancelled",
+      "id": 17,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "error": "Error: All fibers interrupted without error"
+    },
+    {
+      "event": "complete",
+      "id": 18,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 25.705125999998927,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "scheduled",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",10,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration",
+      "delayMs": 0
+    },
+    {
+      "event": "start",
+      "id": 19,
+      "priority": "background",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",10,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "native-start",
+      "pid": 31
+    },
+    {
+      "event": "join",
+      "id": 19,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 31,
+      "code": 0,
+      "ms": 12761.542194,
+      "bytes": 5685272
+    },
+    {
+      "event": "complete",
+      "id": 19,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 12986.260073,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "scheduled",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",11,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration",
+      "delayMs": 0
+    },
+    {
+      "event": "start",
+      "id": 20,
+      "priority": "background",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",11,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "native-start",
+      "pid": 32
+    },
+    {
+      "event": "join",
+      "id": 20,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 32,
+      "code": 0,
+      "ms": 12449.334474,
+      "bytes": 5685272
+    },
+    {
+      "event": "complete",
+      "id": 20,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 12668.547397000002,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "scheduled",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",12,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration",
+      "delayMs": 0
+    },
+    {
+      "event": "start",
+      "id": 21,
+      "priority": "background",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",12,\"6ef2e77bbda596332ad53994b2286d39cf80cbba05b74f56f5346d39365ec6dd\"]",
+      "reason": "integration"
+    },
+    {
+      "event": "native-start",
+      "pid": 33
+    },
+    {
+      "event": "join",
+      "id": 21,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 33,
+      "code": 0,
+      "ms": 12582.581394,
+      "bytes": 5685272
+    },
+    {
+      "event": "complete",
+      "id": 21,
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "ms": 12790.633175999996,
+      "result": "ExtractionReady"
+    }
+  ]
+}

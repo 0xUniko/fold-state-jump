@@ -1,0 +1,80 @@
+{
+  "write": {
+    "mode": "write",
+    "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+    "identity": "fa879b0803f13522e9bcd4d9280c9dbca8fff13f9a606c294b56c5bb272fa0d1",
+    "nativeStarts": 1,
+    "ms": 12752.859684000001,
+    "cpuMicros": {
+      "user": 351520,
+      "system": 169337
+    },
+    "checksum": "e0e6448c0fdfbcaf9b9b4fd31e1c76052020cc5599552418cac44435c9a3ae99",
+    "host": {
+      "rss": 147148800,
+      "heapTotal": 75591680,
+      "heapUsed": 32921632,
+      "external": 17616839,
+      "arrayBuffers": 7999017
+    }
+  },
+  "reads": [
+    {
+      "mode": "read",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "identity": "fa879b0803f13522e9bcd4d9280c9dbca8fff13f9a606c294b56c5bb272fa0d1",
+      "nativeStarts": 0,
+      "ms": 155.95460300000002,
+      "cpuMicros": {
+        "user": 202037,
+        "system": 55769
+      },
+      "checksum": "e0e6448c0fdfbcaf9b9b4fd31e1c76052020cc5599552418cac44435c9a3ae99",
+      "host": {
+        "rss": 130682880,
+        "heapTotal": 57200640,
+        "heapUsed": 31033192,
+        "external": 9898856,
+        "arrayBuffers": 221622
+      }
+    },
+    {
+      "mode": "read",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "identity": "fa879b0803f13522e9bcd4d9280c9dbca8fff13f9a606c294b56c5bb272fa0d1",
+      "nativeStarts": 0,
+      "ms": 165.459891,
+      "cpuMicros": {
+        "user": 215031,
+        "system": 62956
+      },
+      "checksum": "e0e6448c0fdfbcaf9b9b4fd31e1c76052020cc5599552418cac44435c9a3ae99",
+      "host": {
+        "rss": 130949120,
+        "heapTotal": 57724928,
+        "heapUsed": 30959616,
+        "external": 9903464,
+        "arrayBuffers": 226230
+      }
+    },
+    {
+      "mode": "read",
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "identity": "fa879b0803f13522e9bcd4d9280c9dbca8fff13f9a606c294b56c5bb272fa0d1",
+      "nativeStarts": 0,
+      "ms": 150.314762,
+      "cpuMicros": {
+        "user": 200823,
+        "system": 48594
+      },
+      "checksum": "e0e6448c0fdfbcaf9b9b4fd31e1c76052020cc5599552418cac44435c9a3ae99",
+      "host": {
+        "rss": 131186688,
+        "heapTotal": 57200640,
+        "heapUsed": 30148616,
+        "external": 9898856,
+        "arrayBuffers": 221622
+      }
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+> Follow-up investigation (2026-10-23): validated memory/disk caching and event-driven
+> prewarm are measured in [the investigation report](docs/performance-investigation.md).
+> The older 60-second/global-invalidation cache described below is the baseline
+> for that follow-up, not the current cache policy. See also [cache design](docs/cache-design.md).
+
 # Performance measurements
 
 Measured locally on 2026-10-22 with Bun 1.4.3 and the Release extractor linked

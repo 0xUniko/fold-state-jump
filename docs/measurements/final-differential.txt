@@ -1,0 +1,6 @@
+{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","expressions":2381,"uniqueCursors":1801,"queries":3602,"prepareMs":{"baseline":31.155,"current":17.28},"queryMs":{"baseline":53.916,"current":48.428},"signatures":"equal"}
+{"warmRound":1,"queries":3602,"queryMs":{"baseline":33.788,"current":36.78}}
+{"warmRound":2,"queries":3602,"queryMs":{"baseline":28.94,"current":31.488}}
+{"warmRound":3,"queries":3602,"queryMs":{"baseline":26.906,"current":35.356}}
+{"warmRound":4,"queries":3602,"queryMs":{"baseline":28.407,"current":28.157}}
+{"warmRound":5,"queries":3602,"queryMs":{"baseline":28.16,"current":28.22}}

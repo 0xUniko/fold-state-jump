@@ -63,6 +63,7 @@ describe('persistent compact AST', () => {
     const payload = original.subarray(boundary);
     const changedHeader = (text: string) => Buffer.concat([Buffer.from(text), payload]);
     await [original.subarray(0, original.length - 5), Buffer.from('garbage'), changedHeader(header.replace('"schema":2', '"schema":0')),
+      changedHeader(header.replace('"reusable":true', '"reusable":false')),
       changedHeader(header.replace('"identity":"config-1"', '"identity":"config-2"')),
       Buffer.concat([original, Buffer.from('garbage')])].reduce(async (previous, text) => {
       await previous;

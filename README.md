@@ -44,32 +44,52 @@ Origin navigation is intentionally separate from mutation navigation. A referenc
 
 `bun test` includes native AST regression tests when the extractor has been built. To check the actual `nano-infer` member paths and cross-header targets, run `bun test/project-integration.ts /path/to/nano-infer` after building the native tool.
 
-The extension searches for `compile_commands.json` in source ancestors, workspace roots, and common CMake build folders. For headers, it inherits flags from a nearby C++ source entry (preferably with the same basename) and explicitly uses `-x c++-header`. Set `foldStateJump.compileCommandsPath` if the build database lives elsewhere, or build the native LibTooling extractor against the desired Clang version. When no compile command is found it warns and uses a minimal `-std=c++17` fallback; project includes such as `gguf.h` may then be missing.
+The extension searches for `compile_commands.json` in source ancestors, workspace roots, and common CMake build folders. For headers, it inherits flags from a nearby C++ source entry (preferably with the same basename) and explicitly uses `-x c++-header`. Set `foldStateJump.compileCommandsPath` if the build database lives elsewhere, or build the native LibTooling extractor against the desired Clang version. When no compile command is found it records the fallback in the Fold State Jump output channel and uses a minimal `-std=c++17` fallback; project includes such as `gguf.h` may then be missing.
 
 By default the plugin invokes the bundled build location `native/build/fold-state-jump-ast` (override with `foldStateJump.extractorPath`). The native extractor uses Clang LibTooling to parse the translation unit but emits a compact JSON tree only for functions declared in the active file and directly reachable user-code callees. It does not dump the entire standard-library AST. The JSON output is capped at 64 MiB via `foldStateJump.maxAstBytes`. Parsing C++ templates still has its intrinsic cost, and complex unresolved/indirect calls remain a limitation. Native LLVM/Clang development libraries must match the chosen extractor build version; the native executable uses its linked Clang version, while the compilation database supplies the project's `-std`, `-I`, and `-D` arguments. `foldStateJump.clangPath` is retained for compatibility but does not choose the LibTooling version.
 
 ## Performance and cache
 
-The first jump in a translation unit starts the native extractor and prepares reusable
-function/call indexes. Subsequent mutation and origin jumps reuse the prepared AST
-while the document version stays unchanged. Editing C/C++ sources, headers, or
-`compile_commands.json` inside the workspace (including unsaved editor changes)
-invalidates the cache, as do extension settings changes. To limit stale data from
-external headers outside the workspace watchers, the cache expires after 60 seconds.
-The cache keeps up to three translation units in least-recently-used order, with
-a combined budget of 16 MiB of serialized AST data. Decoded nodes and indexes
-require additional memory. A single AST larger than this budget is retained
-alone so repeated commands on large files still benefit from caching.
-Cold extractions are serialized, and queued commands recheck the cache before
-starting Clang. Concurrent commands for the same document share the result;
-cancellation releases the extraction slot and removes queued work. Warm commands
-can run while another translation unit is extracting.
+The active saved C/C++ file is prepared after a 1.5-second debounce on editor and
+save events. Foreground commands join the same in-flight extraction; another
+file's background job yields to foreground work. Prewarm never saves documents.
+The first cold load still runs Clang and prepares indexes; later commands reuse
+validated memory data, or a gzip snapshot under VS Code global storage after
+reload. Mutation and origin commands retain independent cursor snapshots.
 
-Compilation databases have a separate explicit cache. Each cold extraction
-checks device, inode, size, modification time and change time before reusing an
-index. Exact source matches use a path index; header proximity indexes are built
-only when needed. This cache retains at most eight databases and a combined
-16 MiB of UTF-16 input size; parsed objects and indexes have additional overhead.
+Cache reuse checks compilation settings, source/transitive include dependencies,
+negative include candidates and native runtime images. Entries do not expire
+just because 60 seconds elapsed, and unrelated file edits do not clear them.
+Nanosecond metadata guards accelerate validation on verified Linux ext4; other
+file inputs use hashes/directory reads. Unverified native runtime platforms and
+unsupported inputs such as modules, forced includes/PCH or VFS parse cold without
+retention. Dirty included documents must be saved before navigation.
+
+Memory retention remains three translation units / 16 MiB serialized AST, with
+one oversized entry retained alone. This is a soft input-size budget; decoded
+nodes and indexes consume extra memory. Disk storage has a separate 128 MiB soft
+LRU capacity. Invalid, truncated, oversized or outdated snapshots rebuild.
+
+```json
+{
+  "foldStateJump.prewarm.enabled": true,
+  "foldStateJump.prewarm.delayMs": 1500,
+  "foldStateJump.prewarm.onSave": true,
+  "foldStateJump.cache.disk.enabled": true,
+  "foldStateJump.cache.disk.maxBytes": 134217728
+}
+```
+
+Use **Fold State Jump: Show Cache Statistics** for hit/task/native PID/memory
+information and **Fold State Jump: Clear AST Caches** to cancel/drain work and
+reclaim storage. Disable prewarm to avoid background parsing. Native concurrency
+stays fixed at one. Cancellation/deactivation waits for child exit.
+
+Compilation databases retain their separate eight-entry / 16 MiB input index
+cache, with metadata checks on every jump and content hashes for coarse
+filesystem timestamps. See [cache design and limitations](docs/cache-design.md)
+and the [measured investigation](docs/performance-investigation.md). Rebuild the
+native executable when updating this extension.
 
 Prepared ASTs include an interval tree per file for identifier selection, with
 token ranges and template/depth precedence computed once. The balanced tree
@@ -89,8 +109,9 @@ source paths. It no longer retains a complete JSON object tree alongside Clang's
 AST. The extension bundle is minified, with external source maps for debugging.
 
 The cache does not make C++ parsing incremental: the next cold jump still parses
-the translation unit. As a conservative fallback for external dependency changes,
-re-run the jump after the cache expires or edit/save the active file to invalidate it.
+the translation unit. Dependency validation includes external headers; the cache does not depend on
+workspace watchers alone. Unsupported dependency modes remain conservative cold
+loads rather than trusting an incomplete snapshot.
 
 For an end-to-end timing comparison (after `bun run build:native`):
 
@@ -135,7 +156,9 @@ The native benchmark requires Python 3 and GNU `time`; it checks the complete
 JSON contract after normalizing process-local declaration addresses. The analysis
 comparison checks both commands at every indexed identifier in the active file,
 including targets and candidate call paths. See [PERFORMANCE.md](PERFORMANCE.md)
-for the current measurements and their limits.
+for the earlier optimization measurements. The current cache/parse investigation,
+raw samples, experiment decisions and platform limits are in
+[docs/performance-investigation.md](docs/performance-investigation.md).
 
 An earlier optimization pass, before the changes measured in PERFORMANCE.md,
 used a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON).

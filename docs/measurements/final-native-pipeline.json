@@ -1,0 +1,150 @@
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "executable": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+  "repetitions": 5,
+  "manifest": true,
+  "samples": [
+    {
+      "resolveMs": 6.670678999999993,
+      "nativeMs": 12220.310191,
+      "parseMs": 7.233235000001514,
+      "prepareMs": 28.286243999998987,
+      "queryAllMs": 58.73947699999917,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.08,
+      "systemSeconds": 0.77,
+      "peakRssKiB": 924716,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 169205760,
+        "heapTotal": 72458240,
+        "heapUsed": 31754006,
+        "external": 14667862,
+        "arrayBuffers": 5767632
+      },
+      "manifestBytes": 457653,
+      "reusable": true,
+      "nativeTimings": {
+        "frontendMs": 12074.363326,
+        "selectionMs": 17.815921,
+        "serializationMs": 34.892622
+      }
+    },
+    {
+      "resolveMs": 2.4995770000004995,
+      "nativeMs": 12447.633707,
+      "parseMs": 6.3188609999997425,
+      "prepareMs": 21.91842700000052,
+      "queryAllMs": 39.276582999998936,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.27,
+      "systemSeconds": 0.71,
+      "peakRssKiB": 924284,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 170250240,
+        "heapTotal": 72933376,
+        "heapUsed": 31571595,
+        "external": 14568587,
+        "arrayBuffers": 5804880
+      },
+      "manifestBytes": 457647,
+      "reusable": true,
+      "nativeTimings": {
+        "frontendMs": 12316.302507,
+        "selectionMs": 21.203853,
+        "serializationMs": 42.800696
+      }
+    },
+    {
+      "resolveMs": 2.4589129999985744,
+      "nativeMs": 12381.012008000005,
+      "parseMs": 7.623808000003919,
+      "prepareMs": 16.774938999995356,
+      "queryAllMs": 44.63082200000645,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.35,
+      "systemSeconds": 0.73,
+      "peakRssKiB": 924668,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 185106432,
+        "heapTotal": 75030528,
+        "heapUsed": 31618222,
+        "external": 14663854,
+        "arrayBuffers": 5780400
+      },
+      "manifestBytes": 457647,
+      "reusable": true,
+      "nativeTimings": {
+        "frontendMs": 12254.658744,
+        "selectionMs": 26.47239,
+        "serializationMs": 41.48576
+      }
+    },
+    {
+      "resolveMs": 2.0414359999995213,
+      "nativeMs": 12362.350863,
+      "parseMs": 8.358990000000631,
+      "prepareMs": 18.164618999995582,
+      "queryAllMs": 31.323560999997426,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.3,
+      "systemSeconds": 0.68,
+      "peakRssKiB": 924284,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 165449728,
+        "heapTotal": 71983104,
+        "heapUsed": 31847027,
+        "external": 14693891,
+        "arrayBuffers": 5816880
+      },
+      "manifestBytes": 457633,
+      "reusable": true,
+      "nativeTimings": {
+        "frontendMs": 12229.864068,
+        "selectionMs": 17.8307,
+        "serializationMs": 44.279826
+      }
+    },
+    {
+      "resolveMs": 1.9280910000015865,
+      "nativeMs": 12134.092292000001,
+      "parseMs": 9.744664000005287,
+      "prepareMs": 18.31026600000041,
+      "queryAllMs": 39.193035000003874,
+      "queryCount": 3602,
+      "astBytes": 5685272,
+      "userSeconds": 12.04,
+      "systemSeconds": 0.64,
+      "peakRssKiB": 924584,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "host": {
+        "rss": 166592512,
+        "heapTotal": 72146944,
+        "heapUsed": 31405183,
+        "external": 14692863,
+        "arrayBuffers": 5771824
+      },
+      "manifestBytes": 457653,
+      "reusable": true,
+      "nativeTimings": {
+        "frontendMs": 12005.224481,
+        "selectionMs": 19.016654,
+        "serializationMs": 44.81265
+      }
+    }
+  ],
+  "nativeP50": 12362.350863,
+  "nativeP95": 12447.633707
+}

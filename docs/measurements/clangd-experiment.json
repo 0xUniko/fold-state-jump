@@ -1,0 +1,72 @@
+{
+  "version": "Ubuntu clangd version 23.1.4 (++20261018124056+71c76755a8ff-1~exp1~20261018124211.83)\nFeatures: linux\nPlatform: x86_64-pc-linux-gnu",
+  "source": "/home/huawei/fold-state-jump/test/fixtures/native-paths.cpp",
+  "astProvider": true,
+  "error": null,
+  "bytes": 999,
+  "nodes": 3,
+  "fields": [
+    "arcana",
+    "children",
+    "detail",
+    "kind",
+    "range",
+    "role"
+  ],
+  "response": {
+    "id": 2,
+    "jsonrpc": "2.0",
+    "result": {
+      "arcana": "MemberExpr 0x7ef7040fe208 </home/huawei/fold-state-jump/test/fixtures/native-paths.cpp:16:42, col:58> 'int' lvalue .records 0x7ef7040f25d8",
+      "children": [
+        {
+          "arcana": "MemberExpr 0x7ef7040fe1d8 </home/huawei/fold-state-jump/test/fixtures/native-paths.cpp:16:42, col:53> 'Bank' lvalue .bank 0x7ef7040cb128",
+          "children": [
+            {
+              "arcana": "DeclRefExpr 0x7ef7040fe1b8 </home/huawei/fold-state-jump/test/fixtures/native-paths.cpp:16:42> 'BankState' lvalue ParmVar 0x7ef7040fdfc8 'bank_state' 'BankState'",
+              "detail": "bank_state",
+              "kind": "DeclRef",
+              "range": {
+                "end": {
+                  "character": 51,
+                  "line": 15
+                },
+                "start": {
+                  "character": 41,
+                  "line": 15
+                }
+              },
+              "role": "expression"
+            }
+          ],
+          "detail": "bank",
+          "kind": "Member",
+          "range": {
+            "end": {
+              "character": 56,
+              "line": 15
+            },
+            "start": {
+              "character": 41,
+              "line": 15
+            }
+          },
+          "role": "expression"
+        }
+      ],
+      "detail": "records",
+      "kind": "Member",
+      "range": {
+        "end": {
+          "character": 64,
+          "line": 15
+        },
+        "start": {
+          "character": 41,
+          "line": 15
+        }
+      },
+      "role": "expression"
+    }
+  }
+}

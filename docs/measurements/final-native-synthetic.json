@@ -1,0 +1,26 @@
+{
+  "source": "synthetic: 3000 functions",
+  "current": {
+    "medianMs": 256.01060100052564,
+    "samplesMs": [
+      247.49560899999778,
+      256.01060100052564,
+      271.4596559999336
+    ],
+    "maxRssKiB": 87172,
+    "jsonBytes": 14010549
+  },
+  "baseline": {
+    "medianMs": 261.06927399996493,
+    "samplesMs": [
+      277.17536499949347,
+      255.6323800008613,
+      261.06927399996493
+    ],
+    "maxRssKiB": 87300,
+    "jsonBytes": 14010549
+  },
+  "speedup": 1.0197596231549368,
+  "rssReductionPercent": 0.1466208476517794,
+  "jsonContractIdentical": true
+}
