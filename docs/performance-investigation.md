@@ -82,3 +82,24 @@ negative-path coalescing change and are not the final cold overhead measurement.
 Full normalized pipeline JSON matched the baseline, as did all 3,602 mutation/
 origin signatures, including candidate order and call frames. Analyzer source
 was not changed. 113 tests, temporary TypeScript --noEmit and bundle build passed.
+
+## C: atomic disk snapshots
+
+Plain snapshots initially measured 6,140,586 bytes per pipeline entry. Fifteen
+fresh-cache service reloads read/validate/parse/prepare without calling Clang:
+p50/p95 161.49/179.72 ms. These prototype timings include full AST equality
+assertions and two command/extractor identity checks. Memory hits with both
+before/after identity checks measured 106.92/114.71 ms. Disk writes took 12.16 ms.
+See [prototype samples](measurements/disk-prototype-pipeline.json); final timings
+will move correctness assertions outside timed intervals.
+
+119 tests, TypeScript checking and bundle build passed. Disk-specific coverage
+includes reloads, source/external/generated dependency changes, corruption,
+truncation, schema/key mismatch, size limits, LRU, capacity rejection, atomic
+concurrent writes, cancellation, clear and I/O failure fallback. A write failure
+never prevents a correct jump. Disk caching uses globalStorageUri and is
+independently configurable; clear/statistics commands expose lifecycle and usage.
+
+A preliminary gzip round trip reduced the AST from 5,685,272 to 282,968 bytes;
+compression/decompression took 21.72/7.70 ms. This is useful storage evidence;
+format adoption and repeated resource measurements are evaluated separately.

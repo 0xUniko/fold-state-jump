@@ -35,6 +35,14 @@
       {
         "command": "foldStateJump.jumpToOrigin",
         "title": "Fold State Jump: Go to State Origin"
+      },
+      {
+        "command": "foldStateJump.clearCache",
+        "title": "Fold State Jump: Clear AST Caches"
+      },
+      {
+        "command": "foldStateJump.cacheStats",
+        "title": "Fold State Jump: Show Cache Statistics"
       }
     ],
     "keybindings": [
@@ -75,6 +83,18 @@
           "type": "string",
           "default": "",
           "description": "Native LibTooling extractor executable. Empty uses native/build/fold-state-jump-ast within the extension installation. Build it with bun run build:native."
+        },
+        "foldStateJump.cache.disk.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Persist validated compact AST snapshots across extension reloads."
+        },
+        "foldStateJump.cache.disk.maxBytes": {
+          "type": "number",
+          "default": 134217728,
+          "minimum": 1048576,
+          "maximum": 1073741824,
+          "description": "Soft disk AST cache capacity, independent of the native output safety limit."
         }
       }
     }
@@ -88,7 +108,9 @@
     "bench:native": "python3 native/benchmark.py",
     "build": "bun build ./src/extension.ts --target=node --format=cjs --external vscode --minify --sourcemap=external --outdir ./dist",
     "package": "bun run build && bunx @vscode/vsce package",
-    "build:native": "cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang && cmake --build native/build -j 10"
+    "build:native": "cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang && cmake --build native/build -j 10",
+    "bench:investigation": "bun test/investigation.ts",
+    "bench:cache": "bun test/cache-performance.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

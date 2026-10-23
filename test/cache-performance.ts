@@ -1,5 +1,9 @@
 // Opt-in service benchmark. No VS Code UI is simulated by these timings.
 import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { gzipSync, gunzipSync } from 'node:zlib';
+import { readDiskAst, writeDiskAst, makeDiskCache, diskCacheStats } from '../src/disk-cache';
 import { Effect } from 'effect';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -26,12 +30,46 @@ const samples = await Array.from({ length: repetitions }).reduce<Promise<number[
   const identity = await buildIdentity(source, command, executable, {});
   const result = await Effect.runPromise(loadPreparedAst(cache, { ...request, buildIdentity: identity }, Effect.fail(new Error('Unexpected extraction')), validateDependencies));
   assert.equal(result._tag, 'ExtractionReady');
+  assert.equal(await buildIdentity(source, command, executable, {}), identity);
   return [...previous, performance.now() - start];
 }, Promise.resolve([]));
 await Effect.runPromise(invalidateAstCache(cache, '/unrelated.cpp'));
 assert.equal((await Effect.runPromise(loadPreparedAst(cache, request, Effect.fail(new Error('unrelated edit')), validateDependencies)))._tag, 'ExtractionReady');
-const sorted = samples.reduce<number[]>((sorted, value) => { sorted.push(value); return sorted.sort((a, b) => a - b); }, []);
+const directory = await mkdtemp(path.join(tmpdir(), 'fsj-cache-bench-'));
+const disk = makeDiskCache(directory);
+const diskStart = performance.now();
+assert.equal(await Effect.runPromise(writeDiskAst(disk, request.buildIdentity, extracted, new AbortController().signal)), true);
+const writeMs = performance.now() - diskStart;
+const diskSamples = await Array.from({ length: repetitions }).reduce<Promise<number[]>>(async (samples) => {
+  const previous = await samples;
+  const start = performance.now();
+  const command = await Effect.runPromise(resolveCompileCommand(source, [path.dirname(source)], 'clang++'));
+  const identity = await buildIdentity(source, command, executable, {});
+  const diskLoaded = await Effect.runPromise(loadPreparedAst(makeAstCache(), { ...request, buildIdentity: identity },
+    Effect.gen(function* () {
+      const loaded = yield* readDiskAst(makeDiskCache(directory), identity);
+      if (!loaded) return yield* Effect.fail(new Error('Disk cache miss'));
+      assert.deepEqual(loaded.prepared.ast, extracted.prepared.ast);
+      return loaded;
+    }), validateDependencies));
+  assert.equal(diskLoaded._tag, 'ExtractionReady');
+  assert.equal(await buildIdentity(source, command, executable, {}), identity);
+  return [...previous, performance.now() - start];
+}, Promise.resolve([]));
+const stats = await Effect.runPromise(diskCacheStats(disk));
+await rm(directory, { recursive: true, force: true });
+const gzipStart = performance.now();
+const gzip = gzipSync(extracted.astText);
+const gzipMs = performance.now() - gzipStart;
+const gunzipStart = performance.now();
+assert.equal(gunzipSync(gzip).toString('utf8'), extracted.astText);
+const gunzipMs = performance.now() - gunzipStart;
+const percentile = (samples: readonly number[], fraction: number) => {
+  const sorted = samples.reduce<number[]>((sorted, value) => { sorted.push(value); return sorted.sort((a, b) => a - b); }, []);
+  return sorted[Math.ceil(sorted.length * fraction) - 1];
+};
 console.log(JSON.stringify({ source, repetitions, coldMs, dependencies: extracted.dependencies.paths.length,
   manifestBytes: Buffer.byteLength(JSON.stringify(extracted.dependencies)), memoryMs: samples,
-  p50: sorted[Math.ceil(sorted.length * .5) - 1], p95: sorted[Math.ceil(sorted.length * .95) - 1],
-  host: process.memoryUsage() }, null, 2));
+  memoryP50: percentile(samples, .5), memoryP95: percentile(samples, .95), diskMs: diskSamples,
+  diskP50: percentile(diskSamples, .5), diskP95: percentile(diskSamples, .95), writeMs, disk: stats,
+  gzip: { bytes: gzip.length, compressMs: gzipMs, decompressMs: gunzipMs }, host: process.memoryUsage() }, null, 2));

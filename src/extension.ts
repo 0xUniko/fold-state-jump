@@ -1,4 +1,5 @@
 import { buildIdentity, validateDependencies } from './dependencies';
+import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
 import { extractVerifiedAst } from './extraction';
 import * as vscode from 'vscode';
 import path from 'node:path';
@@ -14,6 +15,8 @@ const activeDocument = (): vscode.TextDocument | undefined => vscode.window.acti
 
 type ExtractionRuntime = {
   readonly astCache: AstCache;
+  readonly diskCache: DiskCache;
+  readonly output: vscode.OutputChannel;
   readonly compileDatabaseCache: Ref.Ref<CompileDatabaseCache>;
 };
 
@@ -95,6 +98,7 @@ const extractAst = Effect.fnUntraced(function* (
   extensionPath: string,
   runtime: ExtractionRuntime
 ) {
+  const startedAt = performance.now();
   const sourceText = document.getText();
   const documentVersion = document.version;
   const generation = (yield* Ref.get(runtime.astCache.state)).generation;
@@ -133,7 +137,14 @@ const extractAst = Effect.fnUntraced(function* (
     try: () => buildIdentity(source, command, executable, configuration), catch: (error) => new Error(String(error))
   });
   const identity = yield* identify(command);
+  const diskCache = { ...runtime.diskCache, maxBytes: config.get('cache.disk.maxBytes', 134217728), maxAstBytes: configuration.maxAstBytes };
+  const diskEnabled = config.get('cache.disk.enabled', true);
   const extraction = yield* loadPreparedAst(runtime.astCache, { source, documentVersion, buildIdentity: identity }, Effect.gen(function* () {
+    const disk = diskEnabled ? yield* readDiskAst(diskCache, identity) : undefined;
+    if (disk) {
+      yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-hit', source, astBytes: disk.astBytes })));
+      return disk;
+    }
     if (command.context === 'fallback') {
       yield* Effect.sync(() => {
         void vscode.window.showWarningMessage('Fold State Jump: no matching compile command found; Clang may lack project include paths. Set foldStateJump.compileCommandsPath if analysis fails.');
@@ -145,11 +156,19 @@ const extractAst = Effect.fnUntraced(function* (
         identity !== (yield* identify(afterCommand))) {
       return yield* Effect.fail(new Error('An input changed during analysis. Run the command again.'));
     }
+    if (diskEnabled) {
+      const written = yield* writeDiskAst(diskCache, identity, extracted, signal);
+      yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-write', source, written })));
+    }
+    yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'native-extraction', source, astBytes: extracted.astBytes, cacheable: extracted.cacheable })));
     return extracted;
   }).pipe(Effect.mapError((error) => new Error(error.message))), validateDependencies);
-  if (document.version !== documentVersion || document.isDirty) {
+  const afterCommand = yield* resolveInput;
+  if (identity !== (yield* identify(afterCommand)) || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
+      document.version !== documentVersion || document.isDirty) {
     return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis. Run the command again.', options };
   }
+  yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: extraction._tag === 'ExtractionReady' ? extraction.hit : 'stale', source, ms: performance.now() - startedAt, memory: process.memoryUsage() })));
   return { ...extraction, options };
 }, Effect.mapError((error) => new Error(error.message)));
 
@@ -215,6 +234,8 @@ const presentAnalysis = (
 export const activate = (context: vscode.ExtensionContext): void => {
   const runtime: ExtractionRuntime = {
     astCache: makeAstCache(),
+    diskCache: makeDiskCache(path.join(context.globalStorageUri.fsPath, 'ast-v1')),
+    output: vscode.window.createOutputChannel('Fold State Jump'),
     compileDatabaseCache: Ref.makeUnsafe(emptyCompileDatabaseCache)
   };
   const invalidate = (): void => Effect.runSync(invalidateAstCache(runtime.astCache));
@@ -222,20 +243,20 @@ export const activate = (context: vscode.ExtensionContext): void => {
   const sourceWatcher = vscode.workspace.createFileSystemWatcher('**/*.{c,cc,cpp,cxx,cu,cuh,h,hh,hpp,hxx,ipp,inc,mm,m,inl,tpp,C,H}');
   const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
   context.subscriptions.push(
+    runtime.output,
     sourceWatcher,
     databaseWatcher,
     sourceWatcher.onDidChange(invalidateSource),
     sourceWatcher.onDidCreate(invalidateSource),
     sourceWatcher.onDidDelete(invalidateSource),
-    databaseWatcher.onDidChange(invalidate),
-    databaseWatcher.onDidCreate(invalidate),
-    databaseWatcher.onDidDelete(invalidate),
+    databaseWatcher.onDidChange(invalidateSource),
+    databaseWatcher.onDidCreate(invalidateSource),
+    databaseWatcher.onDidDelete(invalidateSource),
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.contentChanges.length > 0 && (isCpp(event.document.languageId) ||
           /\.(?:c|cc|cpp|cxx|cu|cuh|h|hh|hpp|hxx|ipp|inc|mm|m|inl|tpp)$/i.test(event.document.uri.fsPath) ||
           path.basename(event.document.uri.fsPath) === 'compile_commands.json')) {
-        if (path.basename(event.document.uri.fsPath) === 'compile_commands.json') invalidate();
-        else invalidateSource(event.document.uri);
+        invalidateSource(event.document.uri);
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
@@ -243,6 +264,18 @@ export const activate = (context: vscode.ExtensionContext): void => {
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(invalidate),
 
+    vscode.commands.registerCommand('foldStateJump.clearCache', () => Effect.runPromise(Effect.gen(function* () {
+      yield* invalidateAstCache(runtime.astCache);
+      yield* clearDiskCache(runtime.diskCache);
+      runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared' }));
+    }))),
+    vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
+      const disk = yield* diskCacheStats(runtime.diskCache);
+      const memory = yield* Ref.get(runtime.astCache.state);
+      runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, memoryEntries: memory.entries.length,
+        serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0), host: process.memoryUsage() }));
+      runtime.output.show(true);
+    }))),
     vscode.commands.registerCommand('foldStateJump.jumpToPreviousMutation', () =>
       Effect.gen(function* () {
         const document = activeDocument();
