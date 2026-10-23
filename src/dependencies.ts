@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, realpath, stat, statfs, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { release } from 'node:os';
 import { Effect, Schema } from 'effect';
 import type { CompileCommand } from './services';
 
@@ -27,11 +28,18 @@ const stampOf = (metadata: Metadata): string =>
   [metadata.dev, metadata.ino, metadata.size, metadata.mode, metadata.mtimeNs, metadata.ctimeNs].join(':');
 // Fast guards are deliberately limited to the filesystem tested here. Other
 // filesystems/platforms and coarse change timestamps retain content/directory
-// checks. A restored/coarse mtime is safe only with ext4 nanosecond ctime,
+// checks. Linux 6.13+ ext4 multigrain timestamps make observed changes
+// visible even within one coarse clock tick. A restored/coarse mtime is safe
+// only with that policy and ext4 nanosecond ctime,
 // which changes on content writes and cannot be restored with utimes().
-const fineMetadata = async (file: string, metadata: Metadata): Promise<boolean> =>
-  process.platform === 'linux' && metadata.ctimeNs % 1000000n !== 0n &&
-  (await statfs(file)).type === 0xef53;
+export const hasFineChangeTimestamps = (platform: string, kernel: string): boolean => {
+  const version = /^(\d+)\.(\d+)\./.exec(kernel);
+  return platform === 'linux' && !!version && (Number(version[1]) > 6 || Number(version[1]) === 6 && Number(version[2]) >= 13);
+};
+
+export const hasFineFileMetadata = async (file: string, metadata: Metadata): Promise<boolean> =>
+  hasFineChangeTimestamps(process.platform, release()) && metadata.ctimeNs % 1000000n !== 0n &&
+  (await statfs(file).catch(() => undefined))?.type === 0xef53;
 
 export const fingerprintFile = async (file: string): Promise<{ readonly real: string; readonly sha256: string }> => {
   try {
@@ -64,7 +72,7 @@ export const verifyDependencies = Effect.fnUntraced(function* (native: NativeDep
       const fingerprint = await fingerprintFile(file.path);
       const after = await metadataOf(file.path);
       if (stampOf(before) !== stampOf(after) || fingerprint.real !== file.real || fingerprint.sha256 !== file.sha256) throw new Error('Changed file');
-      return await fineMetadata(file.path, after)
+      return await hasFineFileMetadata(file.path, after)
         ? { _tag: 'StatFile', path: file.path, stamp: stampOf(after) }
         : { _tag: 'HashFile', ...file };
     }, catch: (error) => new Error(String(error))
@@ -73,7 +81,7 @@ export const verifyDependencies = Effect.fnUntraced(function* (native: NativeDep
     try: async (): Promise<readonly Guard[]> => {
       const metadata = await metadataOf(file.path);
       if (stampOf(metadata) !== file.stamp) throw new Error('Native runtime image changed');
-      return await fineMetadata(file.path, metadata) ? [{ _tag: 'StatFile', path: file.path, stamp: file.stamp }] : [];
+      return await hasFineFileMetadata(file.path, metadata) ? [{ _tag: 'StatFile', path: file.path, stamp: file.stamp }] : [];
     }, catch: (error) => new Error(String(error))
   }), { concurrency: 32 });
   const directories = native.paths.filter((file) => file.sha256 === '').reduce((directories, file) => {
@@ -87,7 +95,7 @@ export const verifyDependencies = Effect.fnUntraced(function* (native: NativeDep
       if (!(await missingIn(directory, missing))) throw new Error('Created include candidate');
       const after = await metadataOf(directory);
       if (stampOf(before) !== stampOf(after)) throw new Error('Changed include directory');
-      return await fineMetadata(directory, after)
+      return await hasFineFileMetadata(directory, after)
         ? { _tag: 'StatDirectory', path: directory, stamp: stampOf(after), missing }
         : { _tag: 'ReadDirectory', path: directory, missing };
     }, catch: (error) => new Error(String(error))
@@ -127,12 +135,12 @@ const parseEnvironment = new Set([
 ]);
 const executableVersion = async (executable: string) => {
   const metadata = await metadataOf(executable);
-  return await fineMetadata(executable, metadata)
+  return await hasFineFileMetadata(executable, metadata)
     ? { real: await realpath(executable), stamp: stampOf(metadata) }
     : fingerprintFile(executable);
 };
 export const buildIdentity = async (source: string, command: CompileCommand, executable: string, configuration: unknown): Promise<string> =>
-  sha256(JSON.stringify({ schema: 2, source: path.resolve(source), sourceReal: await realpath(source), command,
+  sha256(JSON.stringify({ schema: 3, validationPlatform: { platform: process.platform, kernel: release() }, source: path.resolve(source), sourceReal: await realpath(source), command,
     executable: await executableVersion(executable), configuration,
     environment: Object.entries(process.env).filter(([name]) => parseEnvironment.has(name) || name.startsWith('CCC_') || name.startsWith('LC_'))
       .reduce<[string, string | undefined][]>((environment, entry) => {

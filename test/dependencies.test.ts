@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Deferred, Effect } from 'effect';
 import { extractVerifiedAst } from '../src/extraction';
-import { buildIdentity, fingerprintFile, reusableCommand, validateDependencies, verifyDependencies, type DependencyManifest } from '../src/dependencies';
+import { buildIdentity, hasFineChangeTimestamps, fingerprintFile, reusableCommand, validateDependencies, verifyDependencies, type DependencyManifest } from '../src/dependencies';
 import { makeAstCache, loadPreparedAst, invalidateAstCache } from '../src/ast-cache';
 import { prepareAst } from '../src/analysis';
 import type { CompileCommand } from '../src/services';
@@ -20,6 +20,15 @@ const proof = (files: readonly string[]): DependencyManifest => ({ schema: 2, re
   paths: files.map((file) => ({ path: file, real: file, sha256: 'unused' })) });
 
 describe('verified build inputs', () => {
+  test('timestamp fast paths require kernels with ext4 multigrain change tracking', () => {
+    assert.equal(hasFineChangeTimestamps('linux', '6.18.54.1-microsoft-standard-WSL2'), true);
+    assert.equal(hasFineChangeTimestamps('linux', '6.13.0'), true);
+    assert.equal(hasFineChangeTimestamps('linux', '6.12.99'), false);
+    assert.equal(hasFineChangeTimestamps('linux', '5.15.0'), false);
+    assert.equal(hasFineChangeTimestamps('linux', 'unknown'), false);
+    assert.equal(hasFineChangeTimestamps('win32', '10.0.1'), false);
+  });
+
   test('native tracks external/transitive headers, absent has_include and nonexistent -I directories', () => fixture(async (directory) => {
     await mkdir(path.join(directory, 'external'));
     const source = path.join(directory, 'main.cpp');

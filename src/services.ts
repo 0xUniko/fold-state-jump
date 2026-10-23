@@ -1,4 +1,5 @@
 import { Effect, Schema } from 'effect';
+import { hasFineFileMetadata } from './dependencies';
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { readFile, stat } from 'node:fs/promises';
@@ -251,7 +252,8 @@ const locateCompileDatabase = Effect.fnUntraced(function* (
   });
   // Coarse filesystems may change twice within one timestamp tick. Hash the
   // database text there before reusing a decoded command/index snapshot.
-  const coarse = metadata.mtimeNs % 1000000n === 0n || metadata.ctimeNs % 1000000n === 0n;
+  const fine = yield* Effect.promise(() => hasFineFileMetadata(database, metadata));
+  const coarse = !fine || metadata.mtimeNs % 1000000n === 0n || metadata.ctimeNs % 1000000n === 0n;
   const coarseText = coarse ? yield* readUtf8(database) : undefined;
   const stamp = [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs,
     coarseText === undefined ? '' : createHash('sha256').update(coarseText).digest('hex')].join(':');
