@@ -11,10 +11,9 @@ export const extractVerifiedAst = Effect.fnUntraced(function* (
   report: (event: Readonly<Record<string, unknown>>) => void = () => {}
 ) {
   const before = yield* Effect.tryPromise({ try: () => fingerprintFile(source), catch: (error) => new Error(String(error)) });
-  const directory = yield* Effect.tryPromise({
+  return yield* Effect.acquireUseRelease(Effect.tryPromise({
     try: () => mkdtemp(path.join(tmpdir(), 'fold-state-jump-')), catch: (error) => new Error(String(error))
-  });
-  return yield* Effect.gen(function* () {
+  }), (directory) => Effect.gen(function* () {
     const extraction = makeExtractionCommand(command, executable);
     const manifest = path.join(directory, 'dependencies.json');
     const astText = yield* runClangAst({ ...extraction,
@@ -35,5 +34,5 @@ export const extractVerifiedAst = Effect.fnUntraced(function* (
     });
     return { prepared, astBytes: Buffer.byteLength(astText), dependencies,
       cacheable: dependencies.reusable && reusableCommand(command), astText };
-  }).pipe(Effect.ensuring(Effect.promise(() => rm(directory, { recursive: true, force: true }))));
+  }), (directory) => Effect.promise(() => rm(directory, { recursive: true, force: true })));
 });

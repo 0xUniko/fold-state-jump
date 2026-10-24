@@ -54,8 +54,12 @@ The active saved C/C++ file is prepared after a 1.5-second debounce on editor an
 save events. Foreground commands join the same in-flight extraction; another
 file's background job yields to foreground work. Prewarm never saves documents.
 The first cold load still runs Clang and prepares indexes; later commands reuse
-validated memory data, or a gzip snapshot under VS Code global storage after
-reload. Mutation and origin commands retain independent cursor snapshots.
+validated memory data, or a gzip snapshot in `<project>/.cache/fold-state-jump/ast`
+after reload. Git roots (including nested repositories and worktrees) take
+precedence over containing workspace roots. Custom cache bases isolate projects;
+unwritable locations or custom cache `.gitignore` rules use a project-scoped
+global-storage fallback. Existing ignore files are never overwritten or followed
+through symlinks. Mutation and origin commands retain independent cursor snapshots.
 
 Cache reuse checks compilation settings, source/transitive include dependencies,
 negative include candidates and native runtime images. Entries do not expire
@@ -67,8 +71,9 @@ retention. Dirty included documents must be saved before navigation.
 
 Memory retention remains three translation units / 16 MiB serialized AST, with
 one oversized entry retained alone. This is a soft input-size budget; decoded
-nodes and indexes consume extra memory. Disk storage has a separate 128 MiB soft
-LRU capacity. Invalid, truncated, oversized or outdated snapshots rebuild.
+nodes and indexes consume extra memory. Cumulative disk capacity defaults to
+unlimited (`0`); a positive byte budget enables soft LRU eviction. The single-AST
+limit still applies. Invalid, truncated, oversized or outdated snapshots rebuild.
 
 ```json
 {
@@ -76,7 +81,8 @@ LRU capacity. Invalid, truncated, oversized or outdated snapshots rebuild.
   "foldStateJump.prewarm.delayMs": 1500,
   "foldStateJump.prewarm.onSave": true,
   "foldStateJump.cache.disk.enabled": true,
-  "foldStateJump.cache.disk.maxBytes": 134217728
+  "foldStateJump.cache.disk.maxBytes": 0,
+  "foldStateJump.cache.disk.path": ""
 }
 ```
 
@@ -84,11 +90,14 @@ Use **Fold State Jump: Show Cache Statistics** for hit/task/native PID/memory
 information and **Fold State Jump: Clear AST Caches** to cancel/drain work and
 reclaim storage. Disable prewarm to avoid background parsing. Native concurrency
 stays fixed at one. Cancellation/deactivation waits for child exit.
+Background children run at nice 10. Joining a running background parse attempts
+normal priority, but unprivileged Linux may deny the increase; that parse then
+continues at nice 10. A newly started foreground parse uses normal priority.
 
 Compilation databases retain their separate eight-entry / 16 MiB input index
 cache, with metadata checks on every jump and content hashes for coarse
 filesystem timestamps. See [cache design and limitations](docs/cache-design.md)
-and the [measured investigation](docs/performance-investigation.md). Rebuild the
+and the [measured investigation](docs/performance-investigation-v2.md). Rebuild the
 native executable when updating this extension.
 
 Prepared ASTs include an interval tree per file for identifier selection, with
@@ -158,7 +167,10 @@ comparison checks both commands at every indexed identifier in the active file,
 including targets and candidate call paths. See [PERFORMANCE.md](PERFORMANCE.md)
 for the earlier optimization measurements. The current cache/parse investigation,
 raw samples, experiment decisions and platform limits are in
-[docs/performance-investigation.md](docs/performance-investigation.md).
+[docs/performance-investigation-v2.md](docs/performance-investigation-v2.md).
+The [final acceptance record](docs/final-acceptance.md) lists release checks and
+known limits. PCH/PrecompiledPreamble remains an independent research PoC and is
+not enabled in the extension; see the [research findings](docs/pch-investigation-v2.md).
 
 An earlier optimization pass, before the changes measured in PERFORMANCE.md,
 used a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON).

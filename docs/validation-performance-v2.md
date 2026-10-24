@@ -51,9 +51,7 @@ processes retain the AST, old validator module and benchmark machinery; these
 are not peaks, isolated validator memory increments or steady extension-host
 bounds. The optimization does not change proof or AST storage bytes.
 
-An earlier [preliminary run](measurements/validation-v2-initial.json), possibly
-concurrent with PCH work and before the final AstCache revision change, is kept
-for reproducibility but is superseded by the formal table. Warm OS caches, CPU
+The formal forward/reverse runs supersede the preliminary investigation. Warm OS caches, CPU
 frequency, temperature, GC and unrelated host applications were not controlled.
 This is not a VS Code UI measurement.
 

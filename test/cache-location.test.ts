@@ -171,6 +171,19 @@ describe('project cache location', () => {
     assert.equal(await readFile(ignore, 'utf8'), 'user-owned\n');
   }));
 
+  test('rejects a FIFO ignore without waiting for a writer', { skip: process.platform === 'win32', timeout: 5000 }, () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const cacheRoot = path.join(root, '.cache', 'fold-state-jump');
+    await mkdir(cacheRoot, { recursive: true });
+    const ignore = path.join(cacheRoot, '.gitignore');
+    await execute('mkfifo', [ignore]);
+    const location = await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') });
+    assert.equal(location._tag, 'GlobalFallbackCache');
+    assert.equal((await stat(ignore)).isFIFO(), true);
+    await assert.rejects(stat(path.join(cacheRoot, 'ast')), { code: 'ENOENT' });
+  }));
+
   test('namespaces a shared custom cache base and resolves relative configuration from the project', () => fixture(async (directory) => {
     const source = await repository(path.join(directory, 'first'));
     const otherSource = await repository(path.join(directory, 'second'));

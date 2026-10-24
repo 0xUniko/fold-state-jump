@@ -1,8 +1,7 @@
 # Second performance investigation, completed 2026-10-24
 
-Base `a6abeb80c`, branch `perf/validated-cache-prewarm`. No main or remote changes.
-The pre-existing README modification is excluded from these commits. The
-[plan](optimization-v2-plan.md), [Cache V2 design](cache-design.md),
+Base `a6abeb80c`, branch `perf/validated-cache-prewarm`. The
+[Cache V2 design](cache-design.md),
 [project selection](cache-location-v2.md), [validator profiling](validation-performance-v2.md)
 and [PCH investigation](pch-investigation-v2.md) describe the separate decisions.
 
@@ -256,18 +255,6 @@ unchecked hit, but clear is not a cross-host storage lock or fsync durability
 guarantee. Unknown old custom paths require explicit user cleanup.
 No UI/Extension Host validation is claimed or required for this round.
 
-## Stage commits
-
-| Stage | Commit |
-| --- | --- |
-| Read findings and second-round plan | `27e925204` |
-| Project storage, quota, restore permits and lifecycle | `7bd283da3` |
-| Measured full dependency-validation batching | `aeead3e90` |
-| Project-scoped maintenance and real lifecycle/event tests | `35f295832` |
-| PCH order explanation, original preamble and counterexamples | `568042820` |
-| Resource-scoped settings and disabled/fallback-cache clear | `5a4584fba` |
-
-The final cache benchmark artifacts and report are recorded in the subsequent
-documentation/measurement commit.
-No remote operation or main modification was performed. The original README
-build-parallelism hunk remains uncommitted. Vendored repositories are unchanged.
+See the [final acceptance record](final-acceptance.md) for the merge-time checks,
+cleanup decisions and remaining limits. Historical stage plans and superseded
+prototype measurements remain recoverable from Git history.

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "refactor/**"]
+    branches: [main, "refactor/**", "perf/**"]
   pull_request:
 
 jobs:
@@ -17,11 +17,11 @@ jobs:
         with:
           node-version: 22
       - run: bun install
-      - run: bun test
-      - run: bun run build
       - run: sudo apt-get update && sudo apt-get install -y clang-18 llvm-18-dev libclang-18-dev
       - run: cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-18/lib/cmake/clang
       - run: cmake --build native/build -j 2
+      - run: bun test
+      - run: bun run build
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json
           node -e 'const a=require("/tmp/fold-state-jump-ast.json"); if(a.kind!=="TranslationUnitDecl" || !a.inner.some(n=>n.name==="example")) process.exit(1)'

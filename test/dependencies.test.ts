@@ -42,7 +42,8 @@ describe('verified build inputs', () => {
       args: ['-std=c++17', '-I' + generated, '-I' + path.dirname(header), source] };
     const extracted = await Effect.runPromise(extractVerifiedAst(source, command, executable, 67108864, AbortSignal.timeout(10000)));
     assert.equal(extracted.cacheable, true);
-    assert.ok(extracted.dependencies.guards.some((guard) => guard._tag === 'StatFile' && guard.path === executable),
+    assert.ok(extracted.dependencies.guards.some((guard) =>
+      (guard._tag === 'StatFile' || guard._tag === 'HashFile') && guard.path === executable),
       'The native executable must be present in mapped-runtime guards');
     assert.ok(extracted.dependencies.paths.some((file) => file.path === transitive));
     assert.equal(await Effect.runPromise(validateDependencies(extracted.dependencies)), true);

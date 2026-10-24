@@ -102,7 +102,9 @@ const prepareDirectory = async (root: string): Promise<void> => {
     finally { await ignore.close(); }
   } catch (error) {
     if (error === null || typeof error !== 'object' || !('code' in error) || error.code !== 'EEXIST') throw error;
-    const ignore = await open(ignorePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+    // Non-regular paths (for example a FIFO) must reach the stat rejection
+    // without blocking while waiting for a writer.
+    const ignore = await open(ignorePath, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
     try {
       if (!(await ignore.stat()).isFile() || await ignore.readFile('utf8') !== cacheGitignore)
         throw new Error('Existing cache .gitignore has custom contents; leaving it unchanged');

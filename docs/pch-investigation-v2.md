@@ -1,7 +1,6 @@
 # PCH / PrecompiledPreamble investigation, 2026-10-23
 
-This investigation supersedes the earlier interpretation of the PCH mismatch in
-`performance-investigation.md`. **All 20 differences on pipeline.h are explained
+This investigation resolves the earlier PCH mismatch. **All 20 differences on pipeline.h are explained
 by two generic-lambda specializations exchanging enumeration order. No C++ type
 change was demonstrated.** The unchanged, unsorted cold and reused snapshots
 produce identical mutation/origin signatures for all **3,602** queries. A correct
@@ -52,7 +51,8 @@ not a production tail estimate. No Extension Host/UI experiment is claimed.
 
 ## Review of the previous include-line extraction
 
-`native-experiments.py` searches for lines starting exactly with `#include` before
+The early manual-prefix experiment (reproduced by the retained V2 runner)
+searches for lines starting exactly with `#include` before
 the first textual `namespace minicpm`, rewrites the first quote into an absolute
 source-directory path and creates a different header. It retains the order of
 the matched includes, but discards all intervening preprocessing directives and

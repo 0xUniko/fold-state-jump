@@ -1,0 +1,1277 @@
+{
+  "date": "2026-10-24 Asia/Shanghai",
+  "scope": "Final acceptance of validated-cache-prewarm; warm OS cache; service/native checks, no Extension Host/UI.",
+  "checks": {
+    "bunTest": {
+      "passed": 160,
+      "failed": 0
+    },
+    "nativeBuild": "LLVM 23.1.4 Release passed; separate LLVM 18 build passed",
+    "bundle": "passed",
+    "typecheck": "TypeScript 7.0.2 --noEmit passed",
+    "projectTargets": {
+      "ffn.h": 14,
+      "experts.h": 3,
+      "pipeline.h": 8
+    },
+    "queries": {
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "expressions": 2381,
+      "uniqueCursors": 1801,
+      "queries": 3602,
+      "prepareMs": {
+        "baseline": 35.943,
+        "current": 25.726
+      },
+      "queryMs": {
+        "baseline": 72.527,
+        "current": 63.445
+      },
+      "signatures": "equal"
+    },
+    "gitIgnore": "No .cache Git status entries in actual nano-infer; real-Git unit tests passed",
+    "extensionEvents": "Actual activate callbacks with API stub and real tiny Clang children passed; not UI testing"
+  },
+  "freshNativeExtraction": {
+    "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+    "nativeMs": 13193.34685,
+    "astBytes": 5685272
+  },
+  "cache": {
+    "environment": {
+      "date": "2026-10-24T08:49:55.525Z",
+      "node": "v24.22.1",
+      "bunBundle": "bun build --target=node --format=esm",
+      "platform": "linux",
+      "kernel": "6.18.54.1-microsoft-standard-WSL2",
+      "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+      "logicalCpus": 18,
+      "totalMemory": 25199718400,
+      "argv": [
+        "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+        "/tmp/fsj-final-cache.mjs",
+        "bench",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "/tmp/fsj-final-proof.json",
+        "/tmp/fsj-final-pipeline.json",
+        "/home/huawei/nano-infer",
+        "51"
+      ],
+      "limitations": "Warm OS page cache; uncontrolled frequency, thermals, GC and external applications. Service code without VS Code host. RSS is a snapshot, not peak. read excludes Node startup/imports. Native AST/proof generated separately; no Clang is launched by this script."
+    },
+    "mode": "bench",
+    "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+    "location": {
+      "_tag": "ProjectLocalCache",
+      "project": {
+        "_tag": "GitProject",
+        "root": "/home/huawei/nano-infer",
+        "key": "672fc3c8afa260d169b53c1899312b61d95ce18319bbf9e427db274868c6e306"
+      },
+      "root": "/home/huawei/nano-infer/.cache/fold-state-jump",
+      "astDirectory": "/home/huawei/nano-infer/.cache/fold-state-jump/ast"
+    },
+    "nativeStarts": 0,
+    "identity": "0cac204972da9f766d3bdff1b3528be1a8d52a539d1277e06c10e89b7b376513",
+    "checksum": "db31f3dcb6bafc7dcc0f25e7cc1f70e4ffb24874b14218a800c85a9bdbc3c6cd",
+    "astBytes": 5685272,
+    "proofBytes": 633922,
+    "guards": 804,
+    "memory": {
+      "n": 51,
+      "p50Ms": 22.538026999999943,
+      "p95Ms": 29.234317000000033,
+      "samples": [
+        {
+          "ms": 31.382001999999943,
+          "cpuMicros": {
+            "user": 16251,
+            "system": 22796
+          }
+        },
+        {
+          "ms": 29.234317000000033,
+          "cpuMicros": {
+            "user": 10332,
+            "system": 27772
+          }
+        },
+        {
+          "ms": 29.20587899999998,
+          "cpuMicros": {
+            "user": 27606,
+            "system": 28308
+          }
+        },
+        {
+          "ms": 22.538026999999943,
+          "cpuMicros": {
+            "user": 14955,
+            "system": 13777
+          }
+        },
+        {
+          "ms": 21.847984999999994,
+          "cpuMicros": {
+            "user": 14218,
+            "system": 13423
+          }
+        },
+        {
+          "ms": 28.604607999999985,
+          "cpuMicros": {
+            "user": 8064,
+            "system": 26642
+          }
+        },
+        {
+          "ms": 27.569679000000065,
+          "cpuMicros": {
+            "user": 27763,
+            "system": 7586
+          }
+        },
+        {
+          "ms": 23.247944000000075,
+          "cpuMicros": {
+            "user": 12349,
+            "system": 18913
+          }
+        },
+        {
+          "ms": 19.986665000000016,
+          "cpuMicros": {
+            "user": 17066,
+            "system": 8566
+          }
+        },
+        {
+          "ms": 20.194255,
+          "cpuMicros": {
+            "user": 14302,
+            "system": 12842
+          }
+        },
+        {
+          "ms": 22.575341999999978,
+          "cpuMicros": {
+            "user": 25852,
+            "system": 6512
+          }
+        },
+        {
+          "ms": 23.848780999999917,
+          "cpuMicros": {
+            "user": 12964,
+            "system": 16812
+          }
+        },
+        {
+          "ms": 22.053412999999978,
+          "cpuMicros": {
+            "user": 13736,
+            "system": 17288
+          }
+        },
+        {
+          "ms": 19.86189200000001,
+          "cpuMicros": {
+            "user": 955,
+            "system": 24269
+          }
+        },
+        {
+          "ms": 20.39992899999993,
+          "cpuMicros": {
+            "user": 14126,
+            "system": 13438
+          }
+        },
+        {
+          "ms": 20.34254700000008,
+          "cpuMicros": {
+            "user": 17001,
+            "system": 8583
+          }
+        },
+        {
+          "ms": 21.290781999999922,
+          "cpuMicros": {
+            "user": 16878,
+            "system": 10017
+          }
+        },
+        {
+          "ms": 22.458234999999945,
+          "cpuMicros": {
+            "user": 16293,
+            "system": 12222
+          }
+        },
+        {
+          "ms": 22.87119299999995,
+          "cpuMicros": {
+            "user": 15029,
+            "system": 15492
+          }
+        },
+        {
+          "ms": 21.071262000000047,
+          "cpuMicros": {
+            "user": 11478,
+            "system": 15808
+          }
+        },
+        {
+          "ms": 19.89072299999998,
+          "cpuMicros": {
+            "user": 17046,
+            "system": 8636
+          }
+        },
+        {
+          "ms": 22.047924999999964,
+          "cpuMicros": {
+            "user": 16538,
+            "system": 12378
+          }
+        },
+        {
+          "ms": 22.381150999999818,
+          "cpuMicros": {
+            "user": 18816,
+            "system": 9776
+          }
+        },
+        {
+          "ms": 20.457175000000007,
+          "cpuMicros": {
+            "user": 15442,
+            "system": 10230
+          }
+        },
+        {
+          "ms": 22.367009999999937,
+          "cpuMicros": {
+            "user": 12787,
+            "system": 15296
+          }
+        },
+        {
+          "ms": 21.115341999999828,
+          "cpuMicros": {
+            "user": 18374,
+            "system": 12330
+          }
+        },
+        {
+          "ms": 23.275109000000157,
+          "cpuMicros": {
+            "user": 16231,
+            "system": 14880
+          }
+        },
+        {
+          "ms": 20.328377000000046,
+          "cpuMicros": {
+            "user": 9274,
+            "system": 17140
+          }
+        },
+        {
+          "ms": 19.698327999999947,
+          "cpuMicros": {
+            "user": 21389,
+            "system": 4659
+          }
+        },
+        {
+          "ms": 22.62994700000013,
+          "cpuMicros": {
+            "user": 13491,
+            "system": 15854
+          }
+        },
+        {
+          "ms": 23.81627000000003,
+          "cpuMicros": {
+            "user": 21018,
+            "system": 9939
+          }
+        },
+        {
+          "ms": 24.0030670000001,
+          "cpuMicros": {
+            "user": 8765,
+            "system": 22099
+          }
+        },
+        {
+          "ms": 20.611512000000175,
+          "cpuMicros": {
+            "user": 19312,
+            "system": 6122
+          }
+        },
+        {
+          "ms": 23.23362199999997,
+          "cpuMicros": {
+            "user": 20842,
+            "system": 8465
+          }
+        },
+        {
+          "ms": 27.87163600000008,
+          "cpuMicros": {
+            "user": 14411,
+            "system": 20533
+          }
+        },
+        {
+          "ms": 20.52423399999998,
+          "cpuMicros": {
+            "user": 17127,
+            "system": 8692
+          }
+        },
+        {
+          "ms": 23.606851000000006,
+          "cpuMicros": {
+            "user": 14204,
+            "system": 14910
+          }
+        },
+        {
+          "ms": 25.810682000000043,
+          "cpuMicros": {
+            "user": 14546,
+            "system": 21751
+          }
+        },
+        {
+          "ms": 33.44306299999994,
+          "cpuMicros": {
+            "user": 25037,
+            "system": 23251
+          }
+        },
+        {
+          "ms": 22.704970999999887,
+          "cpuMicros": {
+            "user": 15373,
+            "system": 15600
+          }
+        },
+        {
+          "ms": 25.64212100000009,
+          "cpuMicros": {
+            "user": 12032,
+            "system": 22447
+          }
+        },
+        {
+          "ms": 18.671856999999818,
+          "cpuMicros": {
+            "user": 14563,
+            "system": 12135
+          }
+        },
+        {
+          "ms": 18.784812999999986,
+          "cpuMicros": {
+            "user": 10528,
+            "system": 13787
+          }
+        },
+        {
+          "ms": 26.127272000000175,
+          "cpuMicros": {
+            "user": 17915,
+            "system": 16247
+          }
+        },
+        {
+          "ms": 22.575325999999905,
+          "cpuMicros": {
+            "user": 8354,
+            "system": 20301
+          }
+        },
+        {
+          "ms": 22.974903999999924,
+          "cpuMicros": {
+            "user": 16600,
+            "system": 12439
+          }
+        },
+        {
+          "ms": 20.88393700000006,
+          "cpuMicros": {
+            "user": 9322,
+            "system": 17014
+          }
+        },
+        {
+          "ms": 21.444063000000142,
+          "cpuMicros": {
+            "user": 16131,
+            "system": 12098
+          }
+        },
+        {
+          "ms": 22.63548199999991,
+          "cpuMicros": {
+            "user": 9816,
+            "system": 18422
+          }
+        },
+        {
+          "ms": 23.723883000000114,
+          "cpuMicros": {
+            "user": 12583,
+            "system": 17451
+          }
+        },
+        {
+          "ms": 20.89448900000002,
+          "cpuMicros": {
+            "user": 11305,
+            "system": 15476
+          }
+        }
+      ]
+    },
+    "disk": {
+      "n": 15,
+      "p50Ms": 100.80625200000031,
+      "p95Ms": 117.06754100000012,
+      "samples": [
+        {
+          "ms": 117.06754100000012,
+          "cpuMicros": {
+            "user": 183152,
+            "system": 37482
+          }
+        },
+        {
+          "ms": 95.83126600000014,
+          "cpuMicros": {
+            "user": 94134,
+            "system": 22866
+          }
+        },
+        {
+          "ms": 110.0096460000002,
+          "cpuMicros": {
+            "user": 181746,
+            "system": 20691
+          }
+        },
+        {
+          "ms": 105.65968199999998,
+          "cpuMicros": {
+            "user": 166345,
+            "system": 18692
+          }
+        },
+        {
+          "ms": 94.21641899999986,
+          "cpuMicros": {
+            "user": 91216,
+            "system": 39514
+          }
+        },
+        {
+          "ms": 115.85240999999996,
+          "cpuMicros": {
+            "user": 134427,
+            "system": 40441
+          }
+        },
+        {
+          "ms": 105.85739399999966,
+          "cpuMicros": {
+            "user": 155255,
+            "system": 31990
+          }
+        },
+        {
+          "ms": 97.68256500000007,
+          "cpuMicros": {
+            "user": 113274,
+            "system": 26822
+          }
+        },
+        {
+          "ms": 100.80625200000031,
+          "cpuMicros": {
+            "user": 113300,
+            "system": 28503
+          }
+        },
+        {
+          "ms": 103.54672900000014,
+          "cpuMicros": {
+            "user": 130223,
+            "system": 38865
+          }
+        },
+        {
+          "ms": 99.8954560000002,
+          "cpuMicros": {
+            "user": 166289,
+            "system": 18803
+          }
+        },
+        {
+          "ms": 91.19974700000012,
+          "cpuMicros": {
+            "user": 110212,
+            "system": 22993
+          }
+        },
+        {
+          "ms": 90.23979700000018,
+          "cpuMicros": {
+            "user": 93597,
+            "system": 26100
+          }
+        },
+        {
+          "ms": 102.20270100000016,
+          "cpuMicros": {
+            "user": 147655,
+            "system": 23432
+          }
+        },
+        {
+          "ms": 98.61754100000007,
+          "cpuMicros": {
+            "user": 152455,
+            "system": 34825
+          }
+        }
+      ]
+    },
+    "writeMs": 47.85549199999997,
+    "storage": {
+      "entries": 2,
+      "bytes": 1839163
+    },
+    "unrelatedPreservesMemory": true,
+    "host": {
+      "rss": 427888640,
+      "heapTotal": 237838336,
+      "heapUsed": 124503320,
+      "external": 58158232,
+      "arrayBuffers": 37164492
+    }
+  },
+  "crossNodeRestarts": [
+    {
+      "environment": {
+        "date": "2026-10-24T08:51:22.630Z",
+        "node": "v24.22.1",
+        "bunBundle": "bun build --target=node --format=esm",
+        "platform": "linux",
+        "kernel": "6.18.54.1-microsoft-standard-WSL2",
+        "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+        "logicalCpus": 18,
+        "totalMemory": 25199718400,
+        "argv": [
+          "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+          "/tmp/fsj-final-cache.mjs",
+          "read",
+          "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+          "unused",
+          "unused",
+          "/home/huawei/nano-infer"
+        ],
+        "limitations": "Warm OS page cache; uncontrolled frequency, thermals, GC and external applications. Service code without VS Code host. RSS is a snapshot, not peak. read excludes Node startup/imports. Native AST/proof generated separately; no Clang is launched by this script."
+      },
+      "mode": "read",
+      "location": {
+        "_tag": "ProjectLocalCache",
+        "project": {
+          "_tag": "GitProject",
+          "root": "/home/huawei/nano-infer",
+          "key": "672fc3c8afa260d169b53c1899312b61d95ce18319bbf9e427db274868c6e306"
+        },
+        "root": "/home/huawei/nano-infer/.cache/fold-state-jump",
+        "astDirectory": "/home/huawei/nano-infer/.cache/fold-state-jump/ast"
+      },
+      "nativeStarts": 0,
+      "ms": 183.653681,
+      "cpuMicros": {
+        "user": 291808,
+        "system": 81515
+      },
+      "checksum": "db31f3dcb6bafc7dcc0f25e7cc1f70e4ffb24874b14218a800c85a9bdbc3c6cd",
+      "host": {
+        "rss": 158400512,
+        "heapTotal": 105480192,
+        "heapUsed": 36551688,
+        "external": 9834034,
+        "arrayBuffers": 212886
+      }
+    },
+    {
+      "environment": {
+        "date": "2026-10-24T08:51:25.301Z",
+        "node": "v24.22.1",
+        "bunBundle": "bun build --target=node --format=esm",
+        "platform": "linux",
+        "kernel": "6.18.54.1-microsoft-standard-WSL2",
+        "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+        "logicalCpus": 18,
+        "totalMemory": 25199718400,
+        "argv": [
+          "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+          "/tmp/fsj-final-cache.mjs",
+          "read",
+          "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+          "unused",
+          "unused",
+          "/home/huawei/nano-infer"
+        ],
+        "limitations": "Warm OS page cache; uncontrolled frequency, thermals, GC and external applications. Service code without VS Code host. RSS is a snapshot, not peak. read excludes Node startup/imports. Native AST/proof generated separately; no Clang is launched by this script."
+      },
+      "mode": "read",
+      "location": {
+        "_tag": "ProjectLocalCache",
+        "project": {
+          "_tag": "GitProject",
+          "root": "/home/huawei/nano-infer",
+          "key": "672fc3c8afa260d169b53c1899312b61d95ce18319bbf9e427db274868c6e306"
+        },
+        "root": "/home/huawei/nano-infer/.cache/fold-state-jump",
+        "astDirectory": "/home/huawei/nano-infer/.cache/fold-state-jump/ast"
+      },
+      "nativeStarts": 0,
+      "ms": 233.814434,
+      "cpuMicros": {
+        "user": 328445,
+        "system": 113306
+      },
+      "checksum": "db31f3dcb6bafc7dcc0f25e7cc1f70e4ffb24874b14218a800c85a9bdbc3c6cd",
+      "host": {
+        "rss": 156626944,
+        "heapTotal": 104955904,
+        "heapUsed": 36593432,
+        "external": 22075364,
+        "arrayBuffers": 212886
+      }
+    },
+    {
+      "environment": {
+        "date": "2026-10-24T08:51:27.553Z",
+        "node": "v24.22.1",
+        "bunBundle": "bun build --target=node --format=esm",
+        "platform": "linux",
+        "kernel": "6.18.54.1-microsoft-standard-WSL2",
+        "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+        "logicalCpus": 18,
+        "totalMemory": 25199718400,
+        "argv": [
+          "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+          "/tmp/fsj-final-cache.mjs",
+          "read",
+          "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+          "unused",
+          "unused",
+          "/home/huawei/nano-infer"
+        ],
+        "limitations": "Warm OS page cache; uncontrolled frequency, thermals, GC and external applications. Service code without VS Code host. RSS is a snapshot, not peak. read excludes Node startup/imports. Native AST/proof generated separately; no Clang is launched by this script."
+      },
+      "mode": "read",
+      "location": {
+        "_tag": "ProjectLocalCache",
+        "project": {
+          "_tag": "GitProject",
+          "root": "/home/huawei/nano-infer",
+          "key": "672fc3c8afa260d169b53c1899312b61d95ce18319bbf9e427db274868c6e306"
+        },
+        "root": "/home/huawei/nano-infer/.cache/fold-state-jump",
+        "astDirectory": "/home/huawei/nano-infer/.cache/fold-state-jump/ast"
+      },
+      "nativeStarts": 0,
+      "ms": 223.688333,
+      "cpuMicros": {
+        "user": 302388,
+        "system": 110986
+      },
+      "checksum": "db31f3dcb6bafc7dcc0f25e7cc1f70e4ffb24874b14218a800c85a9bdbc3c6cd",
+      "host": {
+        "rss": 154984448,
+        "heapTotal": 105218048,
+        "heapUsed": 36603696,
+        "external": 9834034,
+        "arrayBuffers": 212886
+      }
+    }
+  ],
+  "lifecycle": {
+    "environment": {
+      "node": "v24.22.1",
+      "execPath": "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+      "platform": "linux",
+      "kernel": "6.18.54.1-microsoft-standard-WSL2",
+      "arch": "x64",
+      "cpus": 18,
+      "cpuModel": "Intel(R) Core(TM) Ultra 5 125H",
+      "totalMemoryBytes": 25199718400,
+      "processMemory": {
+        "rss": 74514432,
+        "heapTotal": 19976192,
+        "heapUsed": 13893176,
+        "external": 4919332,
+        "arrayBuffers": 954209
+      },
+      "processResourceUsage": {
+        "userCPUTime": 161550,
+        "systemCPUTime": 96930,
+        "maxRSS": 72768,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 13484,
+        "majorPageFault": 0,
+        "swappedOut": 0,
+        "fsRead": 0,
+        "fsWrite": 0,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 2016,
+        "involuntaryContextSwitches": 1
+      }
+    },
+    "repetitions": 5,
+    "fixture": {
+      "astBytes": 41,
+      "nativeProcess": "Python child producing valid compact AST; 10s timeout or 300ms completion",
+      "disk": "real gzip snapshots with verified source dependency; 12 simultaneous same-version callers"
+    },
+    "nodeSpawnProbe": {
+      "stdout": "",
+      "stderr": "",
+      "expectedStdout": "node-child-probe",
+      "usable": false
+    },
+    "summary": {
+      "diskRestoreWhileNativeAliveMs": {
+        "p50": 1.148183999999958,
+        "p95": 5.508489999999995
+      },
+      "cancellationReapMs": {
+        "p50": 0.5563660000000255,
+        "p95": 1.535539000000199
+      },
+      "sameVersionSingleFlightMs": {
+        "p50": 23.433380999999997,
+        "p95": 25.185320999999988
+      },
+      "maintenanceMs": {
+        "p50": 5.626044000000093,
+        "p95": 6.498761000000059
+      }
+    },
+    "assertions": "disk restore bypasses unrelated native work; 12 same-version callers restore once; independent cancellation; clear excludes admission/drains writes and reaps children; reusable after clear",
+    "priorities": [
+      {
+        "backgroundNice": 10,
+        "promotedNice": 10
+      },
+      {
+        "backgroundNice": 10,
+        "promotedNice": 10
+      },
+      {
+        "backgroundNice": 10,
+        "promotedNice": 10
+      },
+      {
+        "backgroundNice": 10,
+        "promotedNice": 10
+      },
+      {
+        "backgroundNice": 10,
+        "promotedNice": 10
+      }
+    ]
+  },
+  "realClangPrewarm": {
+    "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+    "repetitions": 1,
+    "prewarmMs": 13447.513473,
+    "warmMs": [
+      31.486707000000024,
+      21.015540999998848,
+      20.361178999999538,
+      21.76934699999947,
+      21.019030999999814,
+      21.435159000000567,
+      18.81671599999936,
+      18.146002999999837,
+      20.146919000000707,
+      21.925021999999444,
+      22.218745000000126,
+      19.384196000000884,
+      17.450118999999177,
+      18.50177799999983,
+      18.484895999999935
+    ],
+    "priorityMs": 18.376453000000765,
+    "inFlightMs": [
+      12977.365147
+    ],
+    "nativeStarts": 3,
+    "cancellations": 1,
+    "remainingTasks": 0,
+    "host": {
+      "rss": 183267328,
+      "heapTotal": 77942784,
+      "heapUsed": 52007384,
+      "external": 10323413,
+      "arrayBuffers": 712300
+    },
+    "events": [
+      {
+        "event": "scheduled",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration",
+        "delayMs": 0
+      },
+      {
+        "event": "start",
+        "id": 1,
+        "priority": "background",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "native-start",
+        "pid": 27
+      },
+      {
+        "event": "native-exit",
+        "pid": 27,
+        "code": 0,
+        "ms": 13202.095368999999,
+        "bytes": 5685272
+      },
+      {
+        "event": "complete",
+        "id": 1,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 13445.533926,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 2,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 2,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 2,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 31.273425999999745,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 3,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 3,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 3,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 20.945799999999508,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 4,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 4,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 4,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 20.288892000000487,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 5,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 5,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 5,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 21.572884999999587,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 6,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 6,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 6,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 20.953982999999425,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 7,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 7,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 7,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 21.382787000000462,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 8,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 8,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 8,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 18.728558999999223,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 9,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 9,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 9,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 18.081285999998727,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 10,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 10,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 10,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 20.0468290000008,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 11,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 11,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 11,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 21.815567999999985,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 12,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 12,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 12,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 22.157084000000395,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 13,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 13,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 13,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 19.32988800000021,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 14,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 14,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 14,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 17.40202599999975,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 15,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 15,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 15,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 18.45308699999987,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "start",
+        "id": 16,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 16,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "complete",
+        "id": 16,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 18.433461999999054,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "scheduled",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",2,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration",
+        "delayMs": 0
+      },
+      {
+        "event": "start",
+        "id": 17,
+        "priority": "background",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",2,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "native-start",
+        "pid": 28
+      },
+      {
+        "event": "cancel",
+        "id": 17,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "reason": "foreground-priority"
+      },
+      {
+        "event": "start",
+        "id": 18,
+        "priority": "foreground",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",1,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "foreground",
+        "id": 18,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "native-exit",
+        "pid": 28,
+        "code": null,
+        "ms": 4.018696000001,
+        "bytes": 0
+      },
+      {
+        "event": "cancelled",
+        "id": 17,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "error": "Error: All fibers interrupted without error"
+      },
+      {
+        "event": "complete",
+        "id": 18,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 17.653080000000045,
+        "result": "ExtractionReady"
+      },
+      {
+        "event": "scheduled",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",10,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration",
+        "delayMs": 0
+      },
+      {
+        "event": "start",
+        "id": 19,
+        "priority": "background",
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "key": "[\"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h\",10,\"65a1f7aac9f0d998b9e02b673d8c94a56ad00228b89322cdf5eda4d5c025a144\"]",
+        "reason": "integration"
+      },
+      {
+        "event": "native-start",
+        "pid": 29
+      },
+      {
+        "event": "join",
+        "id": 19,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+      },
+      {
+        "event": "native-exit",
+        "pid": 29,
+        "code": 0,
+        "ms": 12744.041087,
+        "bytes": 5685272
+      },
+      {
+        "event": "complete",
+        "id": 19,
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "ms": 12982.650767000001,
+        "result": "ExtractionReady"
+      }
+    ]
+  },
+  "limitations": [
+    "No before/after speedup inferred from this acceptance rerun; matched results remain in cache-v2-baseline-node.json/cache-v2-node.json.",
+    "N=1 real prewarm join/cancellation is correctness evidence, not latency distribution.",
+    "Initial restricted-sandbox restart attempts used fallback storage because the local write probe was denied and missed. Recorded restarts use the same permissions/location as the successful writer.",
+    "Child-spawned Node stdout probe is unusable on this host; separate top-level shell Node invocations supply restart evidence.",
+    "PCH disabled; full proof/lifecycle/cold fallback still deferred."
+  ]
+}
