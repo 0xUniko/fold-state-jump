@@ -92,10 +92,22 @@ const projectKey = (root: string): string => createHash('sha256').update(root).d
 
 const prepareDirectory = async (root: string): Promise<void> => {
   await mkdir(root, { recursive: true, mode: 0o700 });
-  // Never follow an existing ignore-file symlink into source-controlled files.
-  const ignore = await open(path.join(root, '.gitignore'), constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW, 0o600);
-  try { await ignore.writeFile(cacheGitignore); }
-  finally { await ignore.close(); }
+  // Create only when absent; never truncate an existing (possibly user-owned) file.
+  // A nonstandard ignore file could expose AST artifacts to Git, so use the
+  // project-scoped global fallback instead of modifying it or trusting its rules.
+  const ignorePath = path.join(root, '.gitignore');
+  try {
+    const ignore = await open(ignorePath, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+    try { await ignore.writeFile(cacheGitignore); }
+    finally { await ignore.close(); }
+  } catch (error) {
+    if (error === null || typeof error !== 'object' || !('code' in error) || error.code !== 'EEXIST') throw error;
+    const ignore = await open(ignorePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      if (!(await ignore.stat()).isFile() || await ignore.readFile('utf8') !== cacheGitignore)
+        throw new Error('Existing cache .gitignore has custom contents; leaving it unchanged');
+    } finally { await ignore.close(); }
+  }
   const astDirectory = path.join(root, 'ast');
   await mkdir(astDirectory, { recursive: true, mode: 0o700 });
   // Check the actual destination, including existing read-only directories.
