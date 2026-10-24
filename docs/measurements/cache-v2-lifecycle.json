@@ -1,0 +1,936 @@
+{
+  "recordedAt": "2026-10-24T07:58:37.142Z",
+  "repetitions": 5,
+  "commands": [
+    "bun build test/cache-v2-integration.ts --target=node --format=esm --outfile=/tmp/fsj-cache-v2-integration.mjs",
+    "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node /tmp/fsj-cache-v2-integration.mjs 5 docs/measurements/cache-v2-lifecycle.json"
+  ],
+  "environment": {
+    "node": "v24.22.1",
+    "execPath": "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+    "platform": "linux",
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "arch": "x64",
+    "cpus": 18,
+    "cpuModel": "Intel(R) Core(TM) Ultra 5 125H",
+    "totalMemoryBytes": 25199718400,
+    "processMemory": {
+      "rss": 74637312,
+      "heapTotal": 20238336,
+      "heapUsed": 13864352,
+      "external": 4918246,
+      "arrayBuffers": 954224
+    },
+    "processResourceUsage": {
+      "userCPUTime": 164711,
+      "systemCPUTime": 91506,
+      "maxRSS": 72888,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 13978,
+      "majorPageFault": 0,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 2036,
+      "involuntaryContextSwitches": 2
+    }
+  },
+  "fixture": {
+    "astBytes": 41,
+    "nativeProcess": "Python child producing valid compact AST; 10s timeout or 300ms completion",
+    "disk": "real gzip snapshots with verified source dependency; 12 simultaneous same-version callers"
+  },
+  "limitations": [
+    "Small fixtures exercise service ordering, I/O and real process lifecycle, not Clang parsing cost.",
+    "CPU and RSS belong to the parent Node process unless identified otherwise; fake children do not represent Clang memory.",
+    "N=5 P95 is the maximum observed sample and is descriptive, not a tail-latency estimate.",
+    "Node-spawned Node returned exit 0 with empty output on this host; the probe records this. Cross-process Node restore uses separate shell invocations outside this script.",
+    "No VS Code Extension Host/UI tests. Priority promotion may be denied without CAP_SYS_NICE and is recorded."
+  ],
+  "nodeSpawnProbe": {
+    "stdout": "",
+    "stderr": "",
+    "expectedStdout": "node-child-probe",
+    "usable": false
+  },
+  "summary": {
+    "diskRestoreWhileNativeAliveMs": {
+      "p50": 1.1495569999999589,
+      "p95": 4.148174000000012
+    },
+    "cancellationReapMs": {
+      "p50": 0.3616660000000138,
+      "p95": 0.8171759999999892
+    },
+    "sameVersionSingleFlightMs": {
+      "p50": 23.00090899999998,
+      "p95": 25.095791000000006
+    },
+    "maintenanceMs": {
+      "p50": 5.357567000000017,
+      "p95": 6.6999850000000265
+    }
+  },
+  "samples": [
+    {
+      "diskBypass": {
+        "restoreMs": 4.148174000000012,
+        "restoreCpuMicros": {
+          "user": 4776,
+          "system": 74
+        },
+        "cancellationReapMs": 0.8171759999999892,
+        "bCompletedWhileAAlive": true,
+        "nativePid": 41,
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 41
+          },
+          {
+            "event": "native-exit",
+            "pid": 41,
+            "code": null,
+            "ms": 7.446009999999987,
+            "bytes": 0
+          }
+        ]
+      },
+      "singleFlight": {
+        "callers": 12,
+        "restores": 1,
+        "ms": 25.095791000000006,
+        "cpuMicros": {
+          "user": 2656,
+          "system": 4000
+        }
+      },
+      "promotion": {
+        "backgroundNice": 10,
+        "promotedNice": 10,
+        "oneWaiterCancelledProcessSurvived": true,
+        "nativePid": 42,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-ckQe7F/main.cpp",
+            "key": "same-version",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-ckQe7F/main.cpp",
+            "key": "same-version",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 42
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 42,
+            "priority": 10
+          },
+          {
+            "event": "native-priority-unavailable",
+            "id": 1,
+            "pid": 42,
+            "priority": 0,
+            "error": "SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_setpriority returned EACCES (permission denied)"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ckQe7F/main.cpp"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ckQe7F/main.cpp"
+          },
+          {
+            "event": "native-exit",
+            "pid": 42,
+            "code": 0,
+            "ms": 316.29077399999994,
+            "bytes": 41
+          },
+          {
+            "event": "complete",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ckQe7F/main.cpp",
+            "ms": 316.83682999999996,
+            "result": "ExtractionReady"
+          }
+        ]
+      },
+      "maintenance": {
+        "clearMs": 6.6999850000000265,
+        "admissionRejected": true,
+        "writeDrainedBeforeClear": true,
+        "childReapedBeforeClear": true,
+        "usableAfterClear": true,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 43
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 43,
+            "priority": 10
+          },
+          {
+            "event": "cancel",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "reason": "cache-clear"
+          },
+          {
+            "event": "native-exit",
+            "pid": 43,
+            "code": null,
+            "ms": 3.9169730000000413,
+            "bytes": 0
+          },
+          {
+            "event": "cancelled",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "error": "Error: All fibers interrupted without error"
+          },
+          {
+            "event": "start",
+            "id": 2,
+            "priority": "foreground",
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "key": "after-clear",
+            "reason": "integration"
+          },
+          {
+            "event": "foreground",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp"
+          },
+          {
+            "event": "complete",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-3YQ5Qn/main.cpp",
+            "ms": 0.1041890000000194,
+            "result": "ExtractionReady"
+          }
+        ]
+      }
+    },
+    {
+      "diskBypass": {
+        "restoreMs": 0.993759999999952,
+        "restoreCpuMicros": {
+          "user": 1262,
+          "system": 0
+        },
+        "cancellationReapMs": 0.2741800000000012,
+        "bCompletedWhileAAlive": true,
+        "nativePid": 44,
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 44
+          },
+          {
+            "event": "native-exit",
+            "pid": 44,
+            "code": null,
+            "ms": 2.5151050000000055,
+            "bytes": 0
+          }
+        ]
+      },
+      "singleFlight": {
+        "callers": 12,
+        "restores": 1,
+        "ms": 22.543563000000006,
+        "cpuMicros": {
+          "user": 2496,
+          "system": 1013
+        }
+      },
+      "promotion": {
+        "backgroundNice": 10,
+        "promotedNice": 10,
+        "oneWaiterCancelledProcessSurvived": true,
+        "nativePid": 45,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-pVqVQc/main.cpp",
+            "key": "same-version",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-pVqVQc/main.cpp",
+            "key": "same-version",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 45
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 45,
+            "priority": 10
+          },
+          {
+            "event": "native-priority-unavailable",
+            "id": 1,
+            "pid": 45,
+            "priority": 0,
+            "error": "SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_setpriority returned EACCES (permission denied)"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-pVqVQc/main.cpp"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-pVqVQc/main.cpp"
+          },
+          {
+            "event": "native-exit",
+            "pid": 45,
+            "code": 0,
+            "ms": 315.753351,
+            "bytes": 41
+          },
+          {
+            "event": "complete",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-pVqVQc/main.cpp",
+            "ms": 316.13192699999996,
+            "result": "ExtractionReady"
+          }
+        ]
+      },
+      "maintenance": {
+        "clearMs": 4.554609000000028,
+        "admissionRejected": true,
+        "writeDrainedBeforeClear": true,
+        "childReapedBeforeClear": true,
+        "usableAfterClear": true,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 46
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 46,
+            "priority": 10
+          },
+          {
+            "event": "cancel",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "reason": "cache-clear"
+          },
+          {
+            "event": "native-exit",
+            "pid": 46,
+            "code": null,
+            "ms": 1.9600279999999657,
+            "bytes": 0
+          },
+          {
+            "event": "cancelled",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "error": "Error: All fibers interrupted without error"
+          },
+          {
+            "event": "start",
+            "id": 2,
+            "priority": "foreground",
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "key": "after-clear",
+            "reason": "integration"
+          },
+          {
+            "event": "foreground",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp"
+          },
+          {
+            "event": "complete",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-YQz3Zf/main.cpp",
+            "ms": 0.04153500000006716,
+            "result": "ExtractionReady"
+          }
+        ]
+      }
+    },
+    {
+      "diskBypass": {
+        "restoreMs": 0.7893450000000257,
+        "restoreCpuMicros": {
+          "user": 683,
+          "system": 211
+        },
+        "cancellationReapMs": 0.31610699999998815,
+        "bCompletedWhileAAlive": true,
+        "nativePid": 47,
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 47
+          },
+          {
+            "event": "native-exit",
+            "pid": 47,
+            "code": null,
+            "ms": 2.349749999999972,
+            "bytes": 0
+          }
+        ]
+      },
+      "singleFlight": {
+        "callers": 12,
+        "restores": 1,
+        "ms": 23.00090899999998,
+        "cpuMicros": {
+          "user": 2675,
+          "system": 998
+        }
+      },
+      "promotion": {
+        "backgroundNice": 10,
+        "promotedNice": 10,
+        "oneWaiterCancelledProcessSurvived": true,
+        "nativePid": 48,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-0aKPC7/main.cpp",
+            "key": "same-version",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-0aKPC7/main.cpp",
+            "key": "same-version",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 48
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 48,
+            "priority": 10
+          },
+          {
+            "event": "native-priority-unavailable",
+            "id": 1,
+            "pid": 48,
+            "priority": 0,
+            "error": "SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_setpriority returned EACCES (permission denied)"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-0aKPC7/main.cpp"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-0aKPC7/main.cpp"
+          },
+          {
+            "event": "native-exit",
+            "pid": 48,
+            "code": 0,
+            "ms": 319.01396699999987,
+            "bytes": 41
+          },
+          {
+            "event": "complete",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-0aKPC7/main.cpp",
+            "ms": 319.31923900000004,
+            "result": "ExtractionReady"
+          }
+        ]
+      },
+      "maintenance": {
+        "clearMs": 4.808271999999988,
+        "admissionRejected": true,
+        "writeDrainedBeforeClear": true,
+        "childReapedBeforeClear": true,
+        "usableAfterClear": true,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 49
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 49,
+            "priority": 10
+          },
+          {
+            "event": "cancel",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "reason": "cache-clear"
+          },
+          {
+            "event": "native-exit",
+            "pid": 49,
+            "code": null,
+            "ms": 2.535077999999885,
+            "bytes": 0
+          },
+          {
+            "event": "cancelled",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "error": "Error: All fibers interrupted without error"
+          },
+          {
+            "event": "start",
+            "id": 2,
+            "priority": "foreground",
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "key": "after-clear",
+            "reason": "integration"
+          },
+          {
+            "event": "foreground",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp"
+          },
+          {
+            "event": "complete",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-5xC6Yr/main.cpp",
+            "ms": 0.06058600000005754,
+            "result": "ExtractionReady"
+          }
+        ]
+      }
+    },
+    {
+      "diskBypass": {
+        "restoreMs": 1.3165520000000015,
+        "restoreCpuMicros": {
+          "user": 1057,
+          "system": 438
+        },
+        "cancellationReapMs": 0.3616660000000138,
+        "bCompletedWhileAAlive": true,
+        "nativePid": 50,
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 50
+          },
+          {
+            "event": "native-exit",
+            "pid": 50,
+            "code": null,
+            "ms": 2.804349000000002,
+            "bytes": 0
+          }
+        ]
+      },
+      "singleFlight": {
+        "callers": 12,
+        "restores": 1,
+        "ms": 22.88316400000008,
+        "cpuMicros": {
+          "user": 3607,
+          "system": 833
+        }
+      },
+      "promotion": {
+        "backgroundNice": 10,
+        "promotedNice": 10,
+        "oneWaiterCancelledProcessSurvived": true,
+        "nativePid": 51,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-Mo2abK/main.cpp",
+            "key": "same-version",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-Mo2abK/main.cpp",
+            "key": "same-version",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 51
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 51,
+            "priority": 10
+          },
+          {
+            "event": "native-priority-unavailable",
+            "id": 1,
+            "pid": 51,
+            "priority": 0,
+            "error": "SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_setpriority returned EACCES (permission denied)"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-Mo2abK/main.cpp"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-Mo2abK/main.cpp"
+          },
+          {
+            "event": "native-exit",
+            "pid": 51,
+            "code": 0,
+            "ms": 316.7147809999999,
+            "bytes": 41
+          },
+          {
+            "event": "complete",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-Mo2abK/main.cpp",
+            "ms": 317.0455810000001,
+            "result": "ExtractionReady"
+          }
+        ]
+      },
+      "maintenance": {
+        "clearMs": 5.811914999999999,
+        "admissionRejected": true,
+        "writeDrainedBeforeClear": true,
+        "childReapedBeforeClear": true,
+        "usableAfterClear": true,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 52
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 52,
+            "priority": 10
+          },
+          {
+            "event": "cancel",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "reason": "cache-clear"
+          },
+          {
+            "event": "native-exit",
+            "pid": 52,
+            "code": null,
+            "ms": 1.8768169999998463,
+            "bytes": 0
+          },
+          {
+            "event": "cancelled",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "error": "Error: All fibers interrupted without error"
+          },
+          {
+            "event": "start",
+            "id": 2,
+            "priority": "foreground",
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "key": "after-clear",
+            "reason": "integration"
+          },
+          {
+            "event": "foreground",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp"
+          },
+          {
+            "event": "complete",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-ZSHxDz/main.cpp",
+            "ms": 0.048265000000128566,
+            "result": "ExtractionReady"
+          }
+        ]
+      }
+    },
+    {
+      "diskBypass": {
+        "restoreMs": 1.1495569999999589,
+        "restoreCpuMicros": {
+          "user": 1612,
+          "system": 0
+        },
+        "cancellationReapMs": 0.535769000000073,
+        "bCompletedWhileAAlive": true,
+        "nativePid": 53,
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 53
+          },
+          {
+            "event": "native-exit",
+            "pid": 53,
+            "code": null,
+            "ms": 3.02747700000009,
+            "bytes": 0
+          }
+        ]
+      },
+      "singleFlight": {
+        "callers": 12,
+        "restores": 1,
+        "ms": 23.635680000000093,
+        "cpuMicros": {
+          "user": 4493,
+          "system": 0
+        }
+      },
+      "promotion": {
+        "backgroundNice": 10,
+        "promotedNice": 10,
+        "oneWaiterCancelledProcessSurvived": true,
+        "nativePid": 54,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-UrMajW/main.cpp",
+            "key": "same-version",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-UrMajW/main.cpp",
+            "key": "same-version",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 54
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 54,
+            "priority": 10
+          },
+          {
+            "event": "native-priority-unavailable",
+            "id": 1,
+            "pid": 54,
+            "priority": 0,
+            "error": "SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_setpriority returned EACCES (permission denied)"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-UrMajW/main.cpp"
+          },
+          {
+            "event": "join",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-UrMajW/main.cpp"
+          },
+          {
+            "event": "native-exit",
+            "pid": 54,
+            "code": 0,
+            "ms": 316.29087100000015,
+            "bytes": 41
+          },
+          {
+            "event": "complete",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-UrMajW/main.cpp",
+            "ms": 316.6059519999999,
+            "result": "ExtractionReady"
+          }
+        ]
+      },
+      "maintenance": {
+        "clearMs": 5.357567000000017,
+        "admissionRejected": true,
+        "writeDrainedBeforeClear": true,
+        "childReapedBeforeClear": true,
+        "usableAfterClear": true,
+        "events": [
+          {
+            "event": "scheduled",
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration",
+            "delayMs": 0
+          },
+          {
+            "event": "start",
+            "id": 1,
+            "priority": "background",
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "key": "maintenance-child",
+            "reason": "integration"
+          },
+          {
+            "event": "native-start",
+            "pid": 55
+          },
+          {
+            "event": "native-priority",
+            "id": 1,
+            "pid": 55,
+            "priority": 10
+          },
+          {
+            "event": "cancel",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "reason": "cache-clear"
+          },
+          {
+            "event": "native-exit",
+            "pid": 55,
+            "code": null,
+            "ms": 2.344011000000137,
+            "bytes": 0
+          },
+          {
+            "event": "cancelled",
+            "id": 1,
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "error": "Error: All fibers interrupted without error"
+          },
+          {
+            "event": "start",
+            "id": 2,
+            "priority": "foreground",
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "key": "after-clear",
+            "reason": "integration"
+          },
+          {
+            "event": "foreground",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp"
+          },
+          {
+            "event": "complete",
+            "id": 2,
+            "source": "/tmp/fsj-cache-v2-lifecycle-hAsOeW/main.cpp",
+            "ms": 0.040443999999979496,
+            "result": "ExtractionReady"
+          }
+        ]
+      }
+    }
+  ]
+}

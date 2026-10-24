@@ -2,7 +2,7 @@ import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Deferred, Effect, Ref } from 'effect';
 import { prepareAst } from '../src/analysis';
-import { invalidateAstCache, loadPreparedAst, makeAstCache, type AstCache } from '../src/ast-cache';
+import { invalidateAstCache, loadPreparedAst, makeAstCache, removeAstSources, type AstCache } from '../src/ast-cache';
 
 const prepared = prepareAst({ kind: 'TranslationUnitDecl' });
 const request = (source: string, documentVersion = 1) => ({ source, documentVersion });
@@ -12,6 +12,15 @@ const load = (cache: AstCache, source: string, astBytes = 1024) =>
   loadPreparedAst(cache, request(source), extracted(astBytes));
 
 describe('AST extraction cache', () => {
+  test('maintenance removal preserves other projects even when they include the cleared source', async () => {
+    const cache = makeAstCache();
+    await Effect.runPromise(load(cache, '/project-a/shared.h'));
+    await Effect.runPromise(loadPreparedAst(cache, request('/project-b/main.cpp'), Effect.succeed({ prepared, astBytes: 1,
+      dependencies: { schema: 2, reusable: true, paths: [{ path: '/project-a/shared.h', real: '/project-a/shared.h', sha256: 'unchanged' }], guards: [] } })));
+    await Effect.runPromise(removeAstSources(cache, ['/project-a/shared.h']));
+    assert.equal((await Effect.runPromise(loadPreparedAst(cache, request('/project-b/main.cpp'), unexpectedExtraction)))._tag, 'ExtractionReady');
+    await assert.rejects(Effect.runPromise(loadPreparedAst(cache, request('/project-a/shared.h'), unexpectedExtraction)), /Unexpected/);
+  });
   test('reuses prepared indexes when navigating between translation units', async () => {
     const cache = makeAstCache();
     await Effect.runPromise(load(cache, '/one.cpp'));

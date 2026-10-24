@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
 import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type WrappedNode, type TraceCandidate } from './analysis';
-import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, type AstCache } from './ast-cache';
+import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, removeAstSources, type AstCache } from './ast-cache';
 import { emptyCompileDatabaseCache, resolveCompileCommandCached, type CompileCommand, type CompileDatabaseCache } from './services';
 
 const isCpp = (languageId: string): boolean =>
@@ -378,8 +378,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
       const memory = Effect.runSync(Ref.get(runtime.astCache.state));
       const sources = [...new Set([...memory.entries.map((entry) => entry.source), ...memory.observed.map((entry) => entry.source)])];
       const projects = await Promise.all(sources.map(async (source) => ({ source, project: await resolveCacheProject(source, roots) })));
-      await Effect.runPromise(Effect.forEach(projects.filter((entry) => entry.project.key === project.key),
-        (entry) => invalidateAstCache(runtime.astCache, entry.source)));
+      await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
       await Effect.runPromise(Effect.forEach(caches, (entry) => clearDiskCache(entry.cache)));
       runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
     })),

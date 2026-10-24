@@ -70,6 +70,12 @@ export const invalidateAstCache = (cache: AstCache, source?: string): Effect.Eff
     }, new Map(state.revisions)), entries: state.entries.filter((entry) => !affected.has(entry.source)) };
   });
 
+// Maintenance has already closed admission and drained jobs. Clearing stored
+// data is distinct from a source edit: it must not invalidate dependent TUs in
+// other projects whose source inputs have not changed.
+export const removeAstSources = (cache: AstCache, sources: readonly string[]): Effect.Effect<void> =>
+  Ref.update(cache.state, (state) => ({ ...state, entries: state.entries.filter((entry) => !sources.includes(entry.source)) }));
+
 const retainedEntries = (entries: readonly CachedAst[]): readonly CachedAst[] =>
   entries.reduce<{ readonly entries: CachedAst[]; readonly astBytes: number }>((state, entry) => {
     if (state.entries.length >= maxEntries) return state;

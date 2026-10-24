@@ -1,0 +1,427 @@
+{
+  "environment": {
+    "date": "2026-10-24T07:59:10.675Z",
+    "bun": "1.4.3",
+    "platform": "linux",
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCpus": 18,
+    "memoryBytes": 25199718400,
+    "argv": [
+      "/home/huawei/.bun/bin/bun",
+      "/home/huawei/fold-state-jump/test/extension-events.ts"
+    ]
+  },
+  "scope": "Bun mock.module(vscode), actual activate callbacks, real tiny pipeline.h/ffn.h fixture and native Clang. No Extension Host/UI. Finite debounce exclusion waits of 80 ms; no performance claim.",
+  "samples": 1,
+  "elapsedMs": 686.019034,
+  "events": [
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "activation",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,null]",
+      "delayMs": 20
+    },
+    {
+      "event": "start",
+      "id": 1,
+      "priority": "background",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "activation",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,null]"
+    },
+    {
+      "event": "fallback-command",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-priority",
+      "id": 1,
+      "pid": 27,
+      "priority": 10
+    },
+    {
+      "event": "native-start",
+      "pid": 27,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 27,
+      "code": 0,
+      "ms": 125.78821500000004,
+      "bytes": 4308,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "disk-write",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "written": true
+    },
+    {
+      "event": "native-extraction",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "astBytes": 4308,
+      "cacheable": true
+    },
+    {
+      "event": "load",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 152.06970599999997,
+      "memory": {
+        "rss": 72069120,
+        "heapTotal": 7640064,
+        "heapUsed": 7640064,
+        "external": 95977,
+        "arrayBuffers": 95977
+      }
+    },
+    {
+      "event": "complete",
+      "id": 1,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 153.515936,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "assertion",
+      "scenario": "initial-active-file-prewarm",
+      "nativeStarts": 1
+    },
+    {
+      "event": "cache-stats",
+      "disk": {
+        "entries": 1,
+        "bytes": 7210
+      },
+      "memoryEntries": 0,
+      "serializedAstBytes": 0,
+      "scheduler": {
+        "tasks": [],
+        "cancellations": 0
+      },
+      "host": {
+        "rss": 69173248,
+        "heapTotal": 7721984,
+        "heapUsed": 7721984,
+        "external": 96105,
+        "arrayBuffers": 96105
+      }
+    },
+    {
+      "event": "assertion",
+      "scenario": "consecutive-unsaved-dependency-edits-do-not-parse",
+      "nativeStarts": 1
+    },
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,3]",
+      "delayMs": 20
+    },
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,4]",
+      "delayMs": 20
+    },
+    {
+      "event": "start",
+      "id": 2,
+      "priority": "background",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,4]"
+    },
+    {
+      "event": "fallback-command",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-priority",
+      "id": 2,
+      "pid": 35,
+      "priority": 10
+    },
+    {
+      "event": "native-start",
+      "pid": 35,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 35,
+      "code": 0,
+      "ms": 14.455412000000024,
+      "bytes": 4308,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "disk-write",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "written": true
+    },
+    {
+      "event": "native-extraction",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "astBytes": 4308,
+      "cacheable": true
+    },
+    {
+      "event": "load",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 32.295636,
+      "memory": {
+        "rss": 72712192,
+        "heapTotal": 7922688,
+        "heapUsed": 7359957,
+        "external": 2857007,
+        "arrayBuffers": 159034
+      }
+    },
+    {
+      "event": "complete",
+      "id": 2,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 32.51052099999998,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "assertion",
+      "scenario": "dependency-save-and-watcher-debounce",
+      "nativeStarts": 2
+    },
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,5]",
+      "delayMs": 20
+    },
+    {
+      "event": "start",
+      "id": 3,
+      "priority": "background",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,5]"
+    },
+    {
+      "event": "fallback-command",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-priority",
+      "id": 3,
+      "pid": 36,
+      "priority": 10
+    },
+    {
+      "event": "native-start",
+      "pid": 36,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "cancel",
+      "id": 3,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-changed"
+    },
+    {
+      "event": "native-exit",
+      "pid": 36,
+      "code": null,
+      "ms": 1.5951739999999859,
+      "bytes": 0,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "cancelled",
+      "id": 3,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "error": "Error: All fibers interrupted without error"
+    },
+    {
+      "event": "assertion",
+      "scenario": "unsaved-dependency-cancels-native-and-reaps-child",
+      "pid": 36
+    },
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,7]",
+      "delayMs": 20
+    },
+    {
+      "event": "start",
+      "id": 4,
+      "priority": "background",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,7]"
+    },
+    {
+      "event": "fallback-command",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-priority",
+      "id": 4,
+      "pid": 37,
+      "priority": 10
+    },
+    {
+      "event": "native-start",
+      "pid": 37,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 37,
+      "code": 0,
+      "ms": 13.480647999999974,
+      "bytes": 4308,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "disk-write",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "written": true
+    },
+    {
+      "event": "native-extraction",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "astBytes": 4308,
+      "cacheable": true
+    },
+    {
+      "event": "load",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 25.072550999999976,
+      "memory": {
+        "rss": 73080832,
+        "heapTotal": 8090624,
+        "heapUsed": 7359957,
+        "external": 2982882,
+        "arrayBuffers": 284909
+      }
+    },
+    {
+      "event": "complete",
+      "id": 4,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 25.27752799999996,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "assertion",
+      "scenario": "unrelated-buffer-save-and-watcher-do-not-prewarm",
+      "nativeStarts": 4
+    },
+    {
+      "event": "cache-cleared",
+      "project": "/tmp/fsj-extension-events-deGYkO"
+    },
+    {
+      "event": "assertion",
+      "scenario": "clear-blocks-event-driven-prewarm-and-removes-snapshots"
+    },
+    {
+      "event": "scheduled",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,10]",
+      "delayMs": 20
+    },
+    {
+      "event": "start",
+      "id": 5,
+      "priority": "background",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "reason": "dependency-change",
+      "key": "[\"/tmp/fsj-extension-events-deGYkO/pipeline.h\",1,0,10]"
+    },
+    {
+      "event": "fallback-command",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-priority",
+      "id": 5,
+      "pid": 38,
+      "priority": 10
+    },
+    {
+      "event": "native-start",
+      "pid": 38,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "native-exit",
+      "pid": 38,
+      "code": 0,
+      "ms": 13.371172000000001,
+      "bytes": 4308,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h"
+    },
+    {
+      "event": "disk-write",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "written": true
+    },
+    {
+      "event": "native-extraction",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "astBytes": 4308,
+      "cacheable": true
+    },
+    {
+      "event": "load",
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 23.459915999999907,
+      "memory": {
+        "rss": 73711616,
+        "heapTotal": 8666112,
+        "heapUsed": 7359957,
+        "external": 3078939,
+        "arrayBuffers": 380966
+      }
+    },
+    {
+      "event": "complete",
+      "id": 5,
+      "source": "/tmp/fsj-extension-events-deGYkO/pipeline.h",
+      "ms": 23.71412900000007,
+      "result": "ExtractionReady"
+    },
+    {
+      "event": "cache-stats",
+      "disk": {
+        "entries": 1,
+        "bytes": 7212
+      },
+      "memoryEntries": 1,
+      "serializedAstBytes": 4308,
+      "scheduler": {
+        "tasks": [],
+        "cancellations": 1
+      },
+      "host": {
+        "rss": 73711616,
+        "heapTotal": 8748032,
+        "heapUsed": 7359957,
+        "external": 3079067,
+        "arrayBuffers": 381094
+      }
+    },
+    {
+      "event": "assertion",
+      "scenario": "prewarm-resumes-after-clear-and-deactivate-drains-tasks",
+      "nativeStarts": 5
+    }
+  ]
+}
