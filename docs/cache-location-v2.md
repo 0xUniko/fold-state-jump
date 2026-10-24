@@ -45,8 +45,11 @@ directory. The ignore file contains:
 ```
 
 The generated file ignores itself. Root `.gitignore` and `.git/info/exclude`
-are untouched. Opening the generated file refuses symlinks, so an existing link
-to a source-controlled ignore file cannot be overwritten. A failed preparation
+are untouched. Creation is exclusive (no truncation): an existing, exact generated
+ignore file is reused without rewriting it. An existing custom ignore file is
+left unchanged; because its rules might expose cache artifacts to Git, project-
+local preparation fails conservatively and uses the project-scoped global fallback.
+Existing ignore-file symlinks are not followed. A failed preparation
 falls back to the per-project global directory. Runtime disk-cache instances
 should be shared by `astDirectory` so writes and clear use the same permit.
 Preparation belongs on disk restore/write paths, not valid memory hits.
