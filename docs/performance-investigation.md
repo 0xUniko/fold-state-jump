@@ -1,5 +1,12 @@
 # Performance investigation, 2026-10-23
 
+Historical first-round results. The [second investigation](performance-investigation-v2.md)
+supersedes the default cache location/capacity and adds restoration/lifecycle and
+validated-hit improvements. The [PCH follow-up](pch-investigation-v2.md) explains
+all earlier AST differences as specialization enumeration order; the first
+mismatch alone did not establish a C++ semantic change. PCH remains experimental
+because its combined dependency proof/lifecycle is not yet implemented.
+
 Baseline: `01db4437f`, measured on the existing local main; no remote update or
 push. Branch: `perf/validated-cache-prewarm`. The pre-existing README diff and
 untracked optimization plan are excluded from implementation commits.
