@@ -6,7 +6,7 @@
       "passed": 160,
       "failed": 0
     },
-    "nativeBuild": "LLVM 23.1.4 Release passed; separate LLVM 18 build passed",
+    "nativeBuild": "LLVM 23.1.4 Release passed. Supported major is 23; the initial LLVM 18 CI configuration was obsolete. A local purported LLVM 18 build had actually selected LLVM 23 and is not LLVM 18 evidence.",
     "bundle": "passed",
     "typecheck": "TypeScript 7.0.2 --noEmit passed",
     "projectTargets": {

@@ -12,7 +12,8 @@ A VS Code extension prototype for tracing a value used inside C++ `ranges::fold_
 
 ## Development
 
-Install Bun, then run:
+Install Bun and configure the [official LLVM 23 package repository](https://apt.llvm.org/)
+for your distribution, then run:
 
 ```sh
 bun install
@@ -26,6 +27,9 @@ Build the native extractor before F5. For an LLVM installation outside the defau
 
 Native CMake builds default to `Release` to optimize AST traversal. An explicitly
 selected build type is preserved; use `-DCMAKE_BUILD_TYPE=Debug` for debugging.
+The supported LibTooling build requires matching LLVM/Clang 23 development
+libraries; CMake rejects other LLVM major versions. CI uses Ubuntu 24.04 with
+the official LLVM 23 packages.
 
 To package a VSIX:
 

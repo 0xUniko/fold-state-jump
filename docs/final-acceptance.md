@@ -17,7 +17,7 @@ The starting worktree contained no uncommitted changes.
   directory. An isolated regression holds that exact window open, cancels, then
   verifies removal and writes a completion marker after the assertion.
 - Build Native before running native-dependent tests in CI, and run CI for
-  `perf/**` pushes. Runtime-image coverage accepts either a stat or hash guard,
+  `perf/**` pushes. CI and CMake require LLVM/Clang 23. Runtime-image coverage accepts either a stat or hash guard,
   preserving the conservative fallback on kernels without multigrain timestamps.
 - Align README defaults and paths with actual configuration: project-local cache,
   per-project fallback/custom namespaces, unlimited cumulative disk capacity and
@@ -32,8 +32,12 @@ was found. The existing atomic-publication and validation contracts remain.
 
 Intel Core Ultra 5 125H, WSL2 Linux 6.18 ext4, Bun 1.4.3, VS Code server Node
 24.22.1, LLVM/Clang 23.1.4 Release; the same machine as the retained comparisons.
-Heavy real-project parses ran sequentially. A separate LLVM 18 build, matching
-CI's compiler generation, also passed. This does not certify every Clang version.
+Heavy real-project parses ran sequentially. LLVM/Clang 23 is the supported
+LibTooling generation. The initial remote CI exposed an obsolete LLVM 18 setup;
+CI now installs LLVM 23 from its official repository on Ubuntu 24.04. An earlier
+local attempt to select LLVM 18 silently selected 23 because the LLVM 18 CMake
+package was absent; it is not LLVM 18 compatibility evidence. No older-version
+compatibility adapters were added.
 
 | Check | Result |
 | --- | --- |

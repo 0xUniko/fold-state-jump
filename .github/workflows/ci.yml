@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -17,8 +17,14 @@ jobs:
         with:
           node-version: 22
       - run: bun install
-      - run: sudo apt-get update && sudo apt-get install -y clang-18 llvm-18-dev libclang-18-dev
-      - run: cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-18/lib/cmake/clang
+      - name: Install LLVM 23
+        run: |
+          sudo install -d -m 0755 /etc/apt/keyrings
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/keyrings/llvm-snapshot.asc > /dev/null
+          echo 'deb [signed-by=/etc/apt/keyrings/llvm-snapshot.asc] https://apt.llvm.org/noble/ llvm-toolchain-noble-23 main' | sudo tee /etc/apt/sources.list.d/llvm23.list
+          sudo apt-get update
+          sudo apt-get install -y clang-23 llvm-23-dev libclang-23-dev
+      - run: cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang
       - run: cmake --build native/build -j 2
       - run: bun test
       - run: bun run build
