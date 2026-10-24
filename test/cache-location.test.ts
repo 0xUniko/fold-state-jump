@@ -150,7 +150,7 @@ describe('project cache location', () => {
     const cacheRoot = path.join(root, '.cache', 'fold-state-jump');
     await mkdir(cacheRoot, { recursive: true });
     const ignore = path.join(cacheRoot, '.gitignore');
-    const custom = '# User-owned; deliberately does not ignore AST files.\\n*.tmp\\n';
+    const custom = '# User-owned; deliberately does not ignore AST files.\n*.tmp\n';
     await writeFile(ignore, custom);
     const location = await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') });
     assert.equal(location._tag, 'GlobalFallbackCache');
