@@ -22,7 +22,7 @@ sudo apt install clang-23 llvm-23-dev libclang-23-dev
 bun run build:native
 ```
 
-Build the native extractor before F5. For an LLVM installation outside the default CMake prefix, configure the build using `cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm && cmake --build native/build -j 2`. F5 starts the Bun TypeScript watcher through the tracked VS Code task; the C++ executable is built separately.
+Build the native extractor before F5. For an LLVM installation outside the default CMake prefix, configure the build using `cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm && cmake --build native/build -j 10`. F5 starts the Bun TypeScript watcher through the tracked VS Code task; the C++ executable is built separately.
 
 Native CMake builds default to `Release` to optimize AST traversal. An explicitly
 selected build type is preserved; use `-DCMAKE_BUILD_TYPE=Debug` for debugging.
