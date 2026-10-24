@@ -2,12 +2,13 @@
 // processes; does not start VS Code, an Extension Host, a window or UI automation.
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, writeFile, readdir, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay, setImmediate as nextTurn } from 'node:timers/promises';
 import { Effect, Ref } from 'effect';
 import type * as VSCode from 'vscode';
+import { resolveCacheProject } from '../src/cache-location';
 
 // Keep this opt-in harness independent of production TypeScript's Node types.
 const bunTest = 'bun:test';
@@ -93,14 +94,14 @@ const edit = (file: string, text: string, dirty: boolean) => Effect.runSync(Ref.
 const output = { appendLine: (line: string) => {
   try { record(JSON.parse(line)); } catch { record({ event: 'output-text', text: line }); }
 }, show() {}, dispose() {} };
-const config = new Map<string, unknown>([['prewarm.delayMs', 20]]);
+const config = Ref.makeUnsafe<ReadonlyMap<string, unknown>>(new Map([['prewarm.delayMs', 20]]));
 mock.module('vscode', () => ({
   window: { activeTextEditor: { document: sourceDocument }, createOutputChannel: () => output,
     onDidChangeActiveTextEditor: register('active-editor') },
   workspace: {
     workspaceFolders: [{ uri: { scheme: 'file', fsPath: directory } }],
     textDocuments: [sourceDocument, dependencyDocument, unrelatedDocument],
-    getConfiguration: () => ({ get: (name: string, fallback: unknown) => config.get(name) ?? fallback }),
+    getConfiguration: () => ({ get: (name: string, fallback: unknown) => Effect.runSync(Ref.get(config)).get(name) ?? fallback }),
     createFileSystemWatcher: (pattern: string) => {
       const name = pattern.includes('compile_commands') ? 'database' : 'source';
       return { onDidChange: register(name + ':change'), onDidCreate: register(name + ':create'),
@@ -178,6 +179,12 @@ try {
   record({ event: 'assertion', scenario: 'unrelated-buffer-save-and-watcher-do-not-prewarm', nativeStarts: count('native-start') });
 
   const clearFrom = snapshot().length;
+  const project = await resolveCacheProject(source, [directory]);
+  const fallback = path.join(directory, 'global-storage', 'project-cache-v2', project.key, 'ast');
+  const otherFallback = path.join(directory, 'global-storage', 'project-cache-v2', 'other-project', 'ast');
+  await Promise.all([fallback, otherFallback].map((directory) => mkdir(directory, { recursive: true })));
+  await Promise.all([fallback, otherFallback].map((directory) => writeFile(path.join(directory, 'a'.repeat(64) + '.ast'), 'owned-clear-probe')));
+  Effect.runSync(Ref.update(config, (config) => new Map([...config, ['cache.disk.enabled', false]])));
   const clearing = invoke('clearCache');
   fire('source:change', dependencyDocument.uri);
   await clearing;
@@ -186,7 +193,9 @@ try {
   assert.equal(snapshot().slice(clearFrom).some((event) => event.event === 'scheduled'), false);
   const astDirectory = path.join(directory, '.cache', 'fold-state-jump', 'ast');
   assert.deepEqual((await readdir(astDirectory)).filter((name) => name.endsWith('.ast') || name.endsWith('.tmp')), []);
-  record({ event: 'assertion', scenario: 'clear-blocks-event-driven-prewarm-and-removes-snapshots' });
+  assert.deepEqual(await readdir(fallback), []);
+  assert.equal(await readFile(path.join(otherFallback, 'a'.repeat(64) + '.ast'), 'utf8'), 'owned-clear-probe');
+  record({ event: 'assertion', scenario: 'disabled-cache-clear-blocks-prewarm-clears-default-and-fallback-preserves-other-project' });
 
   const resumeFrom = snapshot().length;
   fire('save', dependencyDocument);

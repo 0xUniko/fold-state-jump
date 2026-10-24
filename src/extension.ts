@@ -25,6 +25,7 @@ type ExtractionRuntime = {
 };
 
 const documentDiskCache = Effect.fnUntraced(function* (document: vscode.TextDocument, runtime: ExtractionRuntime, inspectDisabled = false) {
+  if (document.uri.scheme !== 'file') return undefined;
   const config = vscode.workspace.getConfiguration('foldStateJump', document.uri);
   if (!inspectDisabled && !config.get('cache.disk.enabled', true)) return undefined;
   const location = yield* Effect.promise(() => prepareCacheLocation({
@@ -374,12 +375,17 @@ export const activate = (context: vscode.ExtensionContext): void => {
       const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
       const project = await resolveCacheProject(path.resolve(document.uri.fsPath), roots);
       await Effect.runPromise(documentDiskCache(document, runtime, true));
-      const caches = [...Effect.runSync(Ref.get(runtime.diskCaches)).values()].filter((entry) => entry.projectKey === project.key);
+      const diskCaches = Effect.runSync(Ref.get(runtime.diskCaches));
+      const directories = [...new Set([
+        path.join(runtime.globalStorage, 'project-cache-v2', project.key, 'ast'),
+        ...[...diskCaches.values()].filter((entry) => entry.projectKey === project.key).map((entry) => entry.cache.directory)
+      ])];
       const memory = Effect.runSync(Ref.get(runtime.astCache.state));
       const sources = [...new Set([...memory.entries.map((entry) => entry.source), ...memory.observed.map((entry) => entry.source)])];
       const projects = await Promise.all(sources.map(async (source) => ({ source, project: await resolveCacheProject(source, roots) })));
       await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
-      await Effect.runPromise(Effect.forEach(caches, (entry) => clearDiskCache(entry.cache)));
+      await Effect.runPromise(Effect.forEach(directories, (directory) =>
+        clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory))));
       runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
     })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
@@ -387,7 +393,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
       const cache = document ? yield* documentDiskCache(document, runtime, true) : undefined;
       const disk = cache ? yield* diskCacheStats(cache) : undefined;
       const memory = yield* Ref.get(runtime.astCache.state);
-      runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, memoryEntries: memory.entries.length,
+      runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, diskDirectory: cache?.directory,
+        diskCapacityBytes: cache?.maxBytes, memoryEntries: memory.entries.length,
         serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0),
         scheduler: { tasks: (yield* Ref.get(runtime.scheduler.state)).tasks.map((task) => ({ id: task.id, source: task.source, priority: task._tag })),
           cancellations: (yield* Ref.get(runtime.scheduler.state)).cancellations }, host: process.memoryUsage() }));

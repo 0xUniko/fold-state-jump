@@ -86,17 +86,20 @@
         },
         "foldStateJump.cache.disk.enabled": {
           "type": "boolean",
+          "scope": "resource",
           "default": true,
           "description": "Persist validated compact AST snapshots across extension reloads."
         },
         "foldStateJump.cache.disk.maxBytes": {
           "type": "number",
+          "scope": "resource",
           "default": 0,
           "minimum": 0,
           "description": "Optional soft disk AST cache capacity in bytes. 0 retains snapshots without a cumulative limit; maxAstBytes still limits each AST."
         },
         "foldStateJump.cache.disk.path": {
           "type": "string",
+          "scope": "resource",
           "default": "",
           "description": "Cache base directory, absolute or relative to each project root. Empty uses .cache/fold-state-jump. Custom bases isolate each project in its own subdirectory."
         },
