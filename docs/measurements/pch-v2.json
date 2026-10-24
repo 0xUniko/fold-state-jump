@@ -1,0 +1,1336 @@
+{
+  "environment": {
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  18\nOn-line CPU(s) list:                     0-17\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) Ultra 5 125H\nCPU family:                              6\nModel:                                   170\nThread(s) per core:                      2\nCore(s) per socket:                      9\nSocket(s):                               1\nStepping:                                4\nBogoMIPS:                                5990.39\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       Microsoft\nVirtualization type:                     full\nL1d cache:                               432 KiB (9 instances)\nL1i cache:                               576 KiB (9 instances)\nL2 cache:                                18 MiB (9 instances)\nL3 cache:                                18 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-17\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; Enhanced IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "clang": "Ubuntu clang version 23.1.4 (++20261018124056+71c76755a8ff-1~exp1~20261018124211.83)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-23/bin\n",
+    "bun": "1.4.3",
+    "memory": "MemTotal:       24609100 kB\nMemFree:        20098388 kB\nMemAvailable:   21583604 kB\nBuffers:           99904 kB\nCached:          1590676 kB\nSwapCached:            0 kB\nActive:           651076 kB\nInactive:        3104644 kB\nActive(anon):       3492 kB\nInactive(anon):  2065548 kB\nActive(file):     647584 kB\nInactive(file):  1039096 kB\nUnevictable:           0 kB\nMlocked:               0 kB\nSwapTotal:       8388608 kB\nSwapFree:        8388608 kB\nDirty:              1620 kB\nWriteback:             0 kB\nAnonPages:       2065160 kB\nMapped:           496280 kB\nShmem:              4260 kB\nKReclaimable:      86148 kB\nSlab:             201100 kB\nSReclaimable:      86148 kB\nSUnreclaim:       114952 kB\nKernelStack:        9404 kB\nPageTables:        40580 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    20693156 kB\nCommitted_AS:    3797300 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       81972 kB\nVmallocChunk:          0 kB\nPercpu:             9600 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:    354304 kB\nFilePmdMapped:         0 kB\nBalloon:               0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:       56320 kB\nDirectMap2M:     9379840 kB\nDirectMap1G:    25165824 kB\n",
+    "sourceSha256": "dffc286040436fb8ec371e1fb16cc12378d401f0b11df46f363c3e6329a44053",
+    "gitHead": "27e9252044dd180908dfc4c73a28654356d87412"
+  },
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "command": {
+    "compiler": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+    "args": [
+      "--source",
+      "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "--",
+      "-DGGML_BACKEND_SHARED",
+      "-DGGML_SHARED",
+      "-DGGML_USE_CPU",
+      "-DLLAMA_SHARED",
+      "-DLLAMA_SUBPROCESS",
+      "-I/home/huawei/nano-infer/minicpm-v-4_7",
+      "-I/home/huawei/nano-infer/shared",
+      "-I/home/huawei/nano-infer/llama.cpp/src",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor",
+      "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/common/.",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+      "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+      "-isystem",
+      "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+      "-g",
+      "-std=gnu++17",
+      "-Wall",
+      "-Wextra",
+      "-x",
+      "c++-header"
+    ],
+    "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+    "context": "inferred",
+    "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-debug\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -g -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+  },
+  "artifacts": "/tmp/fsj-pch-v2",
+  "pocBuildCommand": [
+    "/usr/lib/llvm-23/bin/clang++",
+    "-std=c++17",
+    "-O2",
+    "-I/usr/lib/llvm-23/include",
+    "native/preamble-experiment.cpp",
+    "/usr/lib/llvm-23/lib/libclang-cpp.so.23.1",
+    "-L/usr/lib/llvm-23/lib",
+    "-lLLVM",
+    "-Wl,-rpath,/usr/lib/llvm-23/lib",
+    "-o",
+    "/tmp/fsj-preamble-experiment"
+  ],
+  "cold": [
+    {
+      "name": "cold-0",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 11921.51222800021,
+      "userSeconds": 12.31,
+      "systemSeconds": 0.68,
+      "peakRssKiB": 921288,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    },
+    {
+      "name": "cold-1",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 12486.028154999076,
+      "userSeconds": 12.37,
+      "systemSeconds": 0.55,
+      "peakRssKiB": 920768,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    },
+    {
+      "name": "cold-2",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 11898.682085999098,
+      "userSeconds": 12.13,
+      "systemSeconds": 0.62,
+      "peakRssKiB": 921052,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    }
+  ],
+  "coldSummary": {
+    "n": 3,
+    "p50Ms": 11921.51222800021,
+    "p95Ms": 12486.028154999076
+  },
+  "manualBuild": {
+    "name": "manual-build",
+    "command": [
+      "/usr/lib/llvm-23/bin/clang++",
+      "-DGGML_BACKEND_SHARED",
+      "-DGGML_SHARED",
+      "-DGGML_USE_CPU",
+      "-DLLAMA_SHARED",
+      "-DLLAMA_SUBPROCESS",
+      "-I/home/huawei/nano-infer/minicpm-v-4_7",
+      "-I/home/huawei/nano-infer/shared",
+      "-I/home/huawei/nano-infer/llama.cpp/src",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor",
+      "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/common/.",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+      "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+      "-isystem",
+      "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+      "-g",
+      "-std=gnu++17",
+      "-Wall",
+      "-Wextra",
+      "-x",
+      "c++-header",
+      "/tmp/fsj-pch-v2/manual-prefix.h",
+      "-o",
+      "/tmp/fsj-pch-v2/manual-prefix.pch"
+    ],
+    "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+    "exit": 0,
+    "wallMs": 8281.967151000572,
+    "userSeconds": 8.46,
+    "systemSeconds": 0.54,
+    "peakRssKiB": 845188,
+    "inputBlocks": 0,
+    "outputBlocks": 0,
+    "preambleSamples": [],
+    "diagnosticTail": ""
+  },
+  "manualPchBytes": 107576740,
+  "manualReuse": [
+    {
+      "name": "manual-0",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header",
+        "-include-pch",
+        "/tmp/fsj-pch-v2/manual-prefix.pch"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 6362.555479001458,
+      "userSeconds": 6.38,
+      "systemSeconds": 0.28,
+      "peakRssKiB": 700088,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    },
+    {
+      "name": "manual-1",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header",
+        "-include-pch",
+        "/tmp/fsj-pch-v2/manual-prefix.pch"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 6581.880931000342,
+      "userSeconds": 6.45,
+      "systemSeconds": 0.3,
+      "peakRssKiB": 700452,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    },
+    {
+      "name": "manual-2",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-g",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra",
+        "-x",
+        "c++-header",
+        "-include-pch",
+        "/tmp/fsj-pch-v2/manual-prefix.pch"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+      "exit": 0,
+      "wallMs": 6208.348267000474,
+      "userSeconds": 6.39,
+      "systemSeconds": 0.22,
+      "peakRssKiB": 700620,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": " prior template arguments into non-type template parameter [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = true, $4 = 0]\n   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)\n      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   81 |         {\n      |         ~\n   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));\n      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n   83 |         }\n      |         ~\n/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'\n  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/\n      |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\n"
+    }
+  ],
+  "manualReuseSummary": {
+    "n": 3,
+    "p50Ms": 6362.555479001458,
+    "p95Ms": 6581.880931000342
+  },
+  "manualComparison": {
+    "allDifferences": [
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[0].type.qualType",
+        "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+        "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+        "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].type.qualType",
+        "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >",
+        "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].type.qualType",
+        "cold": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &",
+        "reused": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+        "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+        "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+        "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+        "cold": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >",
+        "reused": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+        "reused": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+        "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+        "reused": "const struct std::pair<const unsigned long, int>"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].type.qualType",
+        "cold": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const",
+        "reused": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[0].type.qualType",
+        "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+        "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+        "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].type.qualType",
+        "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>",
+        "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].type.qualType",
+        "cold": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &",
+        "reused": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+        "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+        "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+        "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+        "cold": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >",
+        "reused": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+        "cold": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+        "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+        "cold": "const struct std::pair<const unsigned long, int>",
+        "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+      },
+      {
+        "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].type.qualType",
+        "cold": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const",
+        "reused": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const"
+      }
+    ],
+    "specializationOrderNormalizedEqual": true,
+    "queries": {
+      "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "positions": 1801,
+      "queries": 3602,
+      "equal": true,
+      "differences": []
+    }
+  },
+  "preamble": {
+    "name": "preamble",
+    "command": [
+      "/tmp/fsj-preamble-experiment",
+      "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "3",
+      "--",
+      "-DGGML_BACKEND_SHARED",
+      "-DGGML_SHARED",
+      "-DGGML_USE_CPU",
+      "-DLLAMA_SHARED",
+      "-DLLAMA_SUBPROCESS",
+      "-I/home/huawei/nano-infer/minicpm-v-4_7",
+      "-I/home/huawei/nano-infer/shared",
+      "-I/home/huawei/nano-infer/llama.cpp/src",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor",
+      "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+      "-I/home/huawei/nano-infer/llama.cpp/common/.",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+      "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+      "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+      "-isystem",
+      "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+      "-g",
+      "-std=gnu++17",
+      "-Wall",
+      "-Wextra",
+      "-x",
+      "c++-header"
+    ],
+    "cwd": "/home/huawei/nano-infer/build-cpu-debug",
+    "exit": 0,
+    "wallMs": 32853.40599800111,
+    "userSeconds": 34.03,
+    "systemSeconds": 0.81,
+    "peakRssKiB": 841656,
+    "inputBlocks": 0,
+    "outputBlocks": 0,
+    "preambleSamples": [
+      {
+        "name": "build",
+        "wallMs": 8726.23113,
+        "canReuse": false,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 8.962622,
+        "cumulativeSystemSeconds": 0.558255,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "reuse-0",
+        "wallMs": 6005.958503,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 15.282759,
+        "cumulativeSystemSeconds": 0.72154,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "reuse-1",
+        "wallMs": 6086.633223,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 21.458338,
+        "cumulativeSystemSeconds": 0.73289,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "reuse-2",
+        "wallMs": 6025.437857,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 27.65626,
+        "cumulativeSystemSeconds": 0.74838,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "body-edit",
+        "wallMs": 5890.185715,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 34.013176,
+        "cumulativeSystemSeconds": 0.776983,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "preamble-edit",
+        "wallMs": 1.62665,
+        "canReuse": false,
+        "pchBytes": 107576824,
+        "boundsBytes": 80,
+        "success": true,
+        "cumulativeUserSeconds": 34.029188,
+        "cumulativeSystemSeconds": 0.776983,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "macro-edit",
+        "wallMs": 2.444035,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 34.031751,
+        "cumulativeSystemSeconds": 0.776983,
+        "peakRssKiB": 841656
+      },
+      {
+        "name": "standard-edit",
+        "wallMs": 1.617117,
+        "canReuse": true,
+        "pchBytes": 107576824,
+        "boundsBytes": 54,
+        "success": true,
+        "cumulativeUserSeconds": 34.033471,
+        "cumulativeSystemSeconds": 0.776983,
+        "peakRssKiB": 841656
+      }
+    ],
+    "diagnosticTail": "   |                           ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:922:57: note: while substituting deduced template arguments into function template 'operator()' [with Rng = zip_view<all_t<ranges::detail::index_view<unsigned long, long>>, all_t<ranges::ref_view<std::vector<minicpm::LayerGraphs, std::allocator<minicpm::LayerGraphs>>>>>, T = LayerExecution, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:925:15), CPP_true = (no value), $4 = (no value), $5 = (no value)]\n  922 |           const auto layer_execution = ranges::fold_left(\n      |                                                         ^\n/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:926:30: note: 'layer' declared here\n  926 |                 const auto &[layer, layer_graphs] = entry;\n      |                              ^\n1 warning generated.\nFSJ_PREAMBLE {\"name\":\"body-edit\",\"wallMs\":5890.1857149999996,\"canReuse\":true,\"pchBytes\":107576824,\"boundsBytes\":54,\"success\":true,\"cumulativeUserSeconds\":34.013176000000001,\"cumulativeSystemSeconds\":0.77698299999999998,\"peakRssKiB\":841656}\nFSJ_PREAMBLE {\"name\":\"preamble-edit\",\"wallMs\":1.6266499999999999,\"canReuse\":false,\"pchBytes\":107576824,\"boundsBytes\":80,\"success\":true,\"cumulativeUserSeconds\":34.029187999999998,\"cumulativeSystemSeconds\":0.77698299999999998,\"peakRssKiB\":841656}\nFSJ_PREAMBLE {\"name\":\"macro-edit\",\"wallMs\":2.444035,\"canReuse\":true,\"pchBytes\":107576824,\"boundsBytes\":54,\"success\":true,\"cumulativeUserSeconds\":34.031751,\"cumulativeSystemSeconds\":0.77698299999999998,\"peakRssKiB\":841656}\nFSJ_PREAMBLE {\"name\":\"standard-edit\",\"wallMs\":1.6171169999999999,\"canReuse\":true,\"pchBytes\":107576824,\"boundsBytes\":54,\"success\":true,\"cumulativeUserSeconds\":34.033470999999999,\"cumulativeSystemSeconds\":0.77698299999999998,\"peakRssKiB\":841656}\n"
+  },
+  "preambleComparison": [
+    {
+      "allDifferences": [
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &",
+          "reused": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >",
+          "reused": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "const struct std::pair<const unsigned long, int>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].type.qualType",
+          "cold": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const",
+          "reused": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &",
+          "reused": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >",
+          "reused": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<const unsigned long, int>",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].type.qualType",
+          "cold": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const",
+          "reused": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const"
+        }
+      ],
+      "specializationOrderNormalizedEqual": true,
+      "queries": {
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "positions": 1801,
+        "queries": 3602,
+        "equal": true,
+        "differences": []
+      }
+    },
+    {
+      "allDifferences": [
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &",
+          "reused": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >",
+          "reused": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "const struct std::pair<const unsigned long, int>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].type.qualType",
+          "cold": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const",
+          "reused": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &",
+          "reused": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >",
+          "reused": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<const unsigned long, int>",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].type.qualType",
+          "cold": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const",
+          "reused": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const"
+        }
+      ],
+      "specializationOrderNormalizedEqual": true,
+      "queries": {
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "positions": 1801,
+        "queries": 3602,
+        "equal": true,
+        "differences": []
+      }
+    },
+    {
+      "allDifferences": [
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >",
+          "reused": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &",
+          "reused": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >",
+          "reused": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type",
+          "reused": "const struct std::pair<const unsigned long, int>"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[1].type.qualType",
+          "cold": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const",
+          "reused": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &>",
+          "reused": "const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> const &",
+          "reused": "struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > const &"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].inner[0].type.qualType",
+          "cold": "std::tuple_element<0UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<0UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[2].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "__tuple_element_t<0UL, struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> >",
+          "reused": "__tuple_element_t<0UL, struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > >"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "std::tuple_element<1UL, ranges::common_pair<unsigned long, const std::pair<const unsigned long, int> &> const>::type",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].inner[1].inner[1].inner[3].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct std::pair<const unsigned long, int>",
+          "reused": "std::tuple_element<1UL, std::pair<unsigned long, std::pair<const unsigned long, int> > const>::type"
+        },
+        {
+          "path": "$.inner[60].inner[1].inner[4].inner[0].inner[3].inner[0].inner[2].type.qualType",
+          "cold": "void (const struct ranges::common_pair<unsigned long, const struct std::pair<const unsigned long, int> &> &) const",
+          "reused": "void (const struct std::pair<unsigned long, struct std::pair<const unsigned long, int> > &) const"
+        }
+      ],
+      "specializationOrderNormalizedEqual": true,
+      "queries": {
+        "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "positions": 1801,
+        "queries": 3602,
+        "equal": true,
+        "differences": []
+      }
+    }
+  ],
+  "fixture": {
+    "name": "fixture",
+    "command": [
+      "/tmp/fsj-preamble-experiment",
+      "/tmp/fsj-pch-v2/fixture.h",
+      "2",
+      "--",
+      "-std=c++17",
+      "-x",
+      "c++-header"
+    ],
+    "cwd": "/tmp/fsj-pch-v2",
+    "exit": 0,
+    "wallMs": 27.19507700021495,
+    "userSeconds": 0.0,
+    "systemSeconds": 0.01,
+    "peakRssKiB": 85004,
+    "inputBlocks": 0,
+    "outputBlocks": 0,
+    "preambleSamples": [
+      {
+        "name": "build",
+        "wallMs": 6.55955,
+        "canReuse": false,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.005009,
+        "cumulativeSystemSeconds": 0.015028,
+        "peakRssKiB": 78800
+      },
+      {
+        "name": "reuse-0",
+        "wallMs": 1.53499,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.005445,
+        "cumulativeSystemSeconds": 0.016335,
+        "peakRssKiB": 83436
+      },
+      {
+        "name": "reuse-1",
+        "wallMs": 0.867716,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.005707,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83436
+      },
+      {
+        "name": "body-edit",
+        "wallMs": 0.971958,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.006851,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      },
+      {
+        "name": "preamble-edit",
+        "wallMs": 0.382379,
+        "canReuse": false,
+        "pchBytes": 250116,
+        "boundsBytes": 82,
+        "success": true,
+        "cumulativeUserSeconds": 0.007374,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      },
+      {
+        "name": "macro-edit",
+        "wallMs": 0.257121,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.007699,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      },
+      {
+        "name": "standard-edit",
+        "wallMs": 0.245901,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.008009,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      },
+      {
+        "name": "header-size-edit",
+        "wallMs": 0.029759,
+        "canReuse": false,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.008098,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      },
+      {
+        "name": "header-same-size-restored-mtime",
+        "wallMs": 0.012181,
+        "canReuse": true,
+        "pchBytes": 250116,
+        "boundsBytes": 56,
+        "success": true,
+        "cumulativeUserSeconds": 0.008159,
+        "cumulativeSystemSeconds": 0.017121,
+        "peakRssKiB": 83628
+      }
+    ],
+    "diagnosticTail": "00002,\"cumulativeSystemSeconds\":0.016334999999999999,\"peakRssKiB\":83436}\nFSJ_PREAMBLE {\"name\":\"reuse-1\",\"wallMs\":0.86771600000000004,\"canReuse\":true,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0057070000000000003,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83436}\nFSJ_PREAMBLE {\"name\":\"body-edit\",\"wallMs\":0.97195799999999999,\"canReuse\":true,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0068510000000000003,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\nFSJ_PREAMBLE {\"name\":\"preamble-edit\",\"wallMs\":0.38237900000000002,\"canReuse\":false,\"pchBytes\":250116,\"boundsBytes\":82,\"success\":true,\"cumulativeUserSeconds\":0.0073740000000000003,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\nFSJ_PREAMBLE {\"name\":\"macro-edit\",\"wallMs\":0.25712099999999999,\"canReuse\":true,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0076990000000000001,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\nFSJ_PREAMBLE {\"name\":\"standard-edit\",\"wallMs\":0.24590100000000001,\"canReuse\":true,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0080090000000000005,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\nFSJ_PREAMBLE {\"name\":\"header-size-edit\",\"wallMs\":0.029759000000000001,\"canReuse\":false,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0080979999999999993,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\nFSJ_PREAMBLE {\"name\":\"header-same-size-restored-mtime\",\"wallMs\":0.012181000000000001,\"canReuse\":true,\"pchBytes\":250116,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.0081589999999999996,\"cumulativeSystemSeconds\":0.017121000000000001,\"peakRssKiB\":83628}\n"
+  },
+  "contextCounterexample": [
+    {
+      "name": "context-build",
+      "command": [
+        "/usr/lib/llvm-23/bin/clang++",
+        "-std=c++17",
+        "-x",
+        "c++-header",
+        "/tmp/fsj-pch-v2/context-prefix.h",
+        "-o",
+        "/tmp/fsj-pch-v2/context-prefix.pch"
+      ],
+      "cwd": "/tmp/fsj-pch-v2",
+      "exit": 0,
+      "wallMs": 21.779639000669704,
+      "userSeconds": 0.01,
+      "systemSeconds": 0.0,
+      "peakRssKiB": 87836,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": ""
+    },
+    {
+      "name": "context-cold",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/tmp/fsj-pch-v2/context.h",
+        "--",
+        "-std=c++17",
+        "-x",
+        "c++-header"
+      ],
+      "cwd": "/tmp/fsj-pch-v2",
+      "exit": 0,
+      "wallMs": 13.678930001333356,
+      "userSeconds": 0.0,
+      "systemSeconds": 0.01,
+      "peakRssKiB": 72704,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": ""
+    },
+    {
+      "name": "context-reused",
+      "command": [
+        "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "--source",
+        "/tmp/fsj-pch-v2/context.h",
+        "--",
+        "-std=c++17",
+        "-x",
+        "c++-header",
+        "-include-pch",
+        "/tmp/fsj-pch-v2/context-prefix.pch"
+      ],
+      "cwd": "/tmp/fsj-pch-v2",
+      "exit": 1,
+      "wallMs": 13.590059001217014,
+      "userSeconds": 0.01,
+      "systemSeconds": 0.0,
+      "peakRssKiB": 74020,
+      "inputBlocks": 0,
+      "outputBlocks": 0,
+      "preambleSamples": [],
+      "diagnosticTail": "/tmp/fsj-pch-v2/context.h:2:9: warning: 'MODE' macro redefined [-Wmacro-redefined]\n    2 | #define MODE 1\n      |         ^\n/tmp/fsj-pch-v2/fixture-dep.h:3:9: note: previous definition is here\n    3 | #define MODE 2\n      |         ^\n/tmp/fsj-pch-v2/context.h:4:15: error: static assertion failed due to requirement 'selected() == 1'\n    4 | static_assert(selected() == 1);\n      |               ^~~~~~~~~~~~~~~\n/tmp/fsj-pch-v2/context.h:4:26: note: expression evaluates to '2 == 1'\n    4 | static_assert(selected() == 1);\n      |               ~~~~~~~~~~~^~~~\n1 warning and 1 error generated.\nError while processing /tmp/fsj-pch-v2/context.h.\n"
+    }
+  ],
+  "minimalLambda": {
+    "header": "#pragma once\nstruct A { int value; }; struct B { int value; };\ninline int helper() { auto f = [](const auto &x) { return x.value; }; return f(A{1}) + f(B{2}); }\n",
+    "source": "#include \"lambda.h\"\nint entry() { return helper(); }\n",
+    "samples": [
+      {
+        "name": "lambda-build",
+        "command": [
+          "/usr/lib/llvm-23/bin/clang++",
+          "-std=c++17",
+          "-x",
+          "c++-header",
+          "/tmp/fsj-pch-v2/lambda.h",
+          "-o",
+          "/tmp/fsj-pch-v2/lambda.pch"
+        ],
+        "cwd": "/tmp/fsj-pch-v2",
+        "exit": 0,
+        "wallMs": 22.010283999406965,
+        "userSeconds": 0.01,
+        "systemSeconds": 0.0,
+        "peakRssKiB": 90888,
+        "inputBlocks": 0,
+        "outputBlocks": 0,
+        "preambleSamples": [],
+        "diagnosticTail": ""
+      },
+      {
+        "name": "lambda-cold",
+        "command": [
+          "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+          "--source",
+          "/tmp/fsj-pch-v2/lambda-main.cpp",
+          "--",
+          "-std=c++17"
+        ],
+        "cwd": "/tmp/fsj-pch-v2",
+        "exit": 0,
+        "wallMs": 15.088427000591764,
+        "userSeconds": 0.0,
+        "systemSeconds": 0.0,
+        "peakRssKiB": 74712,
+        "inputBlocks": 0,
+        "outputBlocks": 0,
+        "preambleSamples": [],
+        "diagnosticTail": ""
+      },
+      {
+        "name": "lambda-reused",
+        "command": [
+          "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+          "--source",
+          "/tmp/fsj-pch-v2/lambda-main.cpp",
+          "--",
+          "-std=c++17",
+          "-include-pch",
+          "/tmp/fsj-pch-v2/lambda.pch"
+        ],
+        "cwd": "/tmp/fsj-pch-v2",
+        "exit": 0,
+        "wallMs": 12.750337000397849,
+        "userSeconds": 0.0,
+        "systemSeconds": 0.0,
+        "peakRssKiB": 72840,
+        "inputBlocks": 0,
+        "outputBlocks": 0,
+        "preambleSamples": [],
+        "diagnosticTail": ""
+      }
+    ],
+    "comparison": {
+      "allDifferences": [
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[1].inner[0].type.qualType",
+          "cold": "const struct A &",
+          "reused": "const struct B &"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct A &",
+          "reused": "const struct B &"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[1].inner[1].inner[0].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct A",
+          "reused": "const struct B"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[1].type.qualType",
+          "cold": "int (const struct A &) const",
+          "reused": "int (const struct B &) const"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[2].inner[0].type.qualType",
+          "cold": "const struct B &",
+          "reused": "const struct A &"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].inner[0].referencedDecl.type.qualType",
+          "cold": "const struct B &",
+          "reused": "const struct A &"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[2].inner[1].inner[0].inner[0].inner[0].inner[0].type.qualType",
+          "cold": "const struct B",
+          "reused": "const struct A"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].inner[2].type.qualType",
+          "cold": "int (const struct B &) const",
+          "reused": "int (const struct A &) const"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[1].inner[0].inner[0].inner[0].callee.id",
+          "cold": "5",
+          "reused": "8"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[1].inner[0].inner[0].inner[0].inner[0].inner[0].referencedDecl.id",
+          "cold": "5",
+          "reused": "8"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[1].inner[0].inner[0].inner[1].callee.id",
+          "cold": "8",
+          "reused": "5"
+        },
+        {
+          "path": "$.inner[1].inner[0].inner[1].inner[0].inner[0].inner[1].inner[0].inner[0].referencedDecl.id",
+          "cold": "8",
+          "reused": "5"
+        },
+        {
+          "path": "$.inner[2].id",
+          "cold": "5",
+          "reused": "8"
+        },
+        {
+          "path": "$.inner[2].inner[0].id",
+          "cold": "6",
+          "reused": "9"
+        },
+        {
+          "path": "$.inner[2].inner[1].inner[0].inner[0].inner[0].inner[0].referencedDecl.id",
+          "cold": "6",
+          "reused": "9"
+        },
+        {
+          "path": "$.inner[2].inner[1].inner[0].inner[0].inner[0].referencedMemberDecl",
+          "cold": "7",
+          "reused": "10"
+        },
+        {
+          "path": "$.inner[3].id",
+          "cold": "8",
+          "reused": "5"
+        },
+        {
+          "path": "$.inner[3].inner[0].id",
+          "cold": "9",
+          "reused": "6"
+        },
+        {
+          "path": "$.inner[3].inner[1].inner[0].inner[0].inner[0].inner[0].referencedDecl.id",
+          "cold": "9",
+          "reused": "6"
+        },
+        {
+          "path": "$.inner[3].inner[1].inner[0].inner[0].inner[0].referencedMemberDecl",
+          "cold": "10",
+          "reused": "7"
+        }
+      ],
+      "specializationOrderNormalizedEqual": true,
+      "queries": {
+        "source": "/tmp/fsj-pch-v2/lambda-main.cpp",
+        "positions": 1,
+        "queries": 2,
+        "equal": true,
+        "differences": []
+      }
+    }
+  },
+  "limitations": [
+    "Sequential warm OS page cache, uncontrolled CPU frequency/other applications.",
+    "N=3 p95 is the maximum, not a reliable production tail.",
+    "PrecompiledPreamble RSS is whole persistent process high-water mark, including build and prior parses.",
+    "CanReuse is not a BuildIdentity/dependency proof substitute; changed compilation contexts are gated before reuse."
+  ]
+}

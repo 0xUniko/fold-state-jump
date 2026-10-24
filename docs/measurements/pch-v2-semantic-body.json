@@ -1,0 +1,146 @@
+{
+  "command": [
+    "/tmp/fsj-preamble-experiment",
+    "/tmp/fsj-preamble-final-small/fixture.h",
+    "2",
+    "--",
+    "-std=c++17",
+    "-x",
+    "c++-header"
+  ],
+  "coldCommand": [
+    "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+    "--source",
+    "/tmp/fsj-preamble-final-small/fixture.h",
+    "--",
+    "-std=c++17",
+    "-x",
+    "c++-header"
+  ],
+  "semanticCheckCommand": [
+    "/usr/lib/llvm-23/bin/clang++",
+    "-std=c++17",
+    "-x",
+    "c++",
+    "-fsyntax-only",
+    "-"
+  ],
+  "semanticCheckInput": "#include \"fixture.h\"\nstatic_assert(f()==3);\n",
+  "cwd": "/tmp/fsj-preamble-final-small",
+  "environment": {
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+  },
+  "original": "#pragma once\n#define INITIAL 1\n#include \"fixture-dep.h\"\nconstexpr int f() { return VALUE + INITIAL; }\n",
+  "modified": "#pragma once\n#define INITIAL 1\n#include \"fixture-dep.h\"\nconstexpr int f() { return VALUE + INITIAL + 1; }\n",
+  "header": "#pragma once\n#define VALUE 1\n",
+  "exit": 0,
+  "coldModifiedAstEqualsPreambleBodyEdit": true,
+  "unmodifiedReuseAstEqual": true,
+  "semanticStaticAssertExit": 0,
+  "samples": [
+    {
+      "name": "build",
+      "wallMs": 4.952566,
+      "canReuse": false,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.010957,
+      "cumulativeSystemSeconds": 0.007304,
+      "peakRssKiB": 78868
+    },
+    {
+      "name": "reuse-0",
+      "wallMs": 1.497999,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.011937,
+      "cumulativeSystemSeconds": 0.007958,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "reuse-1",
+      "wallMs": 0.85644,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.012522,
+      "cumulativeSystemSeconds": 0.008348,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "body-edit",
+      "wallMs": 0.747051,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.013034,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "preamble-edit",
+      "wallMs": 0.394735,
+      "canReuse": false,
+      "pchBytes": 250180,
+      "boundsBytes": 82,
+      "success": true,
+      "cumulativeUserSeconds": 0.013518,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "macro-edit",
+      "wallMs": 0.306569,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.013887,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "standard-edit",
+      "wallMs": 0.300216,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.014255,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "header-size-edit",
+      "wallMs": 0.035227,
+      "canReuse": false,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.014365,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    },
+    {
+      "name": "header-same-size-restored-mtime",
+      "wallMs": 0.016183,
+      "canReuse": true,
+      "pchBytes": 250180,
+      "boundsBytes": 56,
+      "success": true,
+      "cumulativeUserSeconds": 0.014438,
+      "cumulativeSystemSeconds": 0.008689,
+      "peakRssKiB": 83464
+    }
+  ],
+  "diagnostics": "FSJ_PREAMBLE {\"name\":\"build\",\"wallMs\":4.952566,\"canReuse\":false,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.010957,\"cumulativeSystemSeconds\":0.0073039999999999997,\"peakRssKiB\":78868}\nFSJ_PREAMBLE {\"name\":\"reuse-0\",\"wallMs\":1.4979990000000001,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.011937,\"cumulativeSystemSeconds\":0.0079579999999999998,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"reuse-1\",\"wallMs\":0.85643999999999998,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.012522,\"cumulativeSystemSeconds\":0.0083479999999999995,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"body-edit\",\"wallMs\":0.74705100000000002,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.013034,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"preamble-edit\",\"wallMs\":0.394735,\"canReuse\":false,\"pchBytes\":250180,\"boundsBytes\":82,\"success\":true,\"cumulativeUserSeconds\":0.013518000000000001,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"macro-edit\",\"wallMs\":0.30656899999999998,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.013887,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"standard-edit\",\"wallMs\":0.30021599999999998,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.014255,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"header-size-edit\",\"wallMs\":0.035227000000000001,\"canReuse\":false,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.014364999999999999,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\nFSJ_PREAMBLE {\"name\":\"header-same-size-restored-mtime\",\"wallMs\":0.016182999999999999,\"canReuse\":true,\"pchBytes\":250180,\"boundsBytes\":56,\"success\":true,\"cumulativeUserSeconds\":0.014437999999999999,\"cumulativeSystemSeconds\":0.0086890000000000005,\"peakRssKiB\":83464}\n",
+  "limitations": [
+    "Small semantic-body-edit fixture, N=1 session; timing is diagnostic, not a performance comparison.",
+    "Final PoC rebuilt after real pipeline run; argument-vector fold refactoring and extra fixture body-edit case changed."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "positions": 1801,
+  "queries": 3602,
+  "equal": true,
+  "differences": []
+}
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "positions": 1801,
+  "queries": 3602,
+  "equal": true,
+  "differences": []
+}
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "positions": 1801,
+  "queries": 3602,
+  "equal": true,
+  "differences": []
+}
+{
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "positions": 1801,
+  "queries": 3602,
+  "equal": true,
+  "differences": []
+}
