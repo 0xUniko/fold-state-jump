@@ -1,7 +1,7 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -127,6 +127,35 @@ describe('project cache location', () => {
       assert.equal(project._tag, 'UnreadableGitProject');
       assert.equal(project.root, nested);
     } finally { await chmod(path.join(nested, '.git'), 0o700); }
+  }));
+
+  test('reuses an existing generated cache ignore without rewriting it', () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const globalStorage = path.join(directory, 'global');
+    const first = available(await prepareCacheLocation({ source, workspaceRoots: [], globalStorage }));
+    assert.equal(first._tag, 'ProjectLocalCache');
+    const ignore = path.join(first.root, '.gitignore');
+    const old = new Date('2001-01-01T00:00:00Z');
+    await utimes(ignore, old, old);
+    const second = await prepareCacheLocation({ source, workspaceRoots: [], globalStorage });
+    assert.equal(second._tag, 'ProjectLocalCache');
+    assert.equal((await stat(ignore)).mtimeMs, old.getTime());
+    assert.equal(await readFile(ignore, 'utf8'), cacheGitignore);
+  }));
+
+  test('preserves a custom cache ignore and falls back without creating local AST artifacts', () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const cacheRoot = path.join(root, '.cache', 'fold-state-jump');
+    await mkdir(cacheRoot, { recursive: true });
+    const ignore = path.join(cacheRoot, '.gitignore');
+    const custom = '# User-owned; deliberately does not ignore AST files.\\n*.tmp\\n';
+    await writeFile(ignore, custom);
+    const location = await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') });
+    assert.equal(location._tag, 'GlobalFallbackCache');
+    assert.equal(await readFile(ignore, 'utf8'), custom);
+    await assert.rejects(stat(path.join(cacheRoot, 'ast')), { code: 'ENOENT' });
   }));
 
   test('refuses an ignore-file symlink and preserves the project root ignore content', () => fixture(async (directory) => {
