@@ -1,5 +1,11 @@
 # PCH / PrecompiledPreamble investigation, 2026-10-23
 
+Historical research record. [Production Preamble acceptance](preamble-production.md)
+supersedes the integration status below. Raw evidence and semantic conclusions
+are retained. The standalone harness and duplicate runners were replaced by
+`test/preamble.test.ts` and `test/preamble-acceptance.ts`; historical reproduction
+commands below apply to commit `8e41184b1` in a separate checkout.
+
 This investigation resolves the earlier PCH mismatch. **All 20 differences on pipeline.h are explained
 by two generic-lambda specializations exchanging enumeration order. No C++ type
 change was demonstrated.** The unchanged, unsorted cold and reused snapshots
@@ -12,10 +18,10 @@ does not yet prove the dependencies of a separately built preamble, and Clang's
 ## Artifacts and reproduction
 
 - [Raw measurements, all differences, commands, environment and query results](measurements/pch-v2.json).
-- [Standalone Clang 23 harness](../native/preamble-experiment.cpp).
-- [Sequential experiment runner](../test/pch-v2-experiments.py).
+- [Standalone Clang 23 harness](https://github.com/0xUniko/fold-state-jump/blob/8e41184b1/native/preamble-experiment.cpp).
+- [Sequential experiment runner](https://github.com/0xUniko/fold-state-jump/blob/8e41184b1/test/pch-v2-experiments.py).
 - [Exhaustive query comparator](../test/pch-query-comparison.ts).
-- [Semantic body-edit check](../test/preamble-semantic-body.py) and
+- [Semantic body-edit check](https://github.com/0xUniko/fold-state-jump/blob/8e41184b1/test/preamble-semantic-body.py) and
   [supplemental raw data](measurements/pch-v2-semantic-body.json).
 
 Build and run from the repository root:
@@ -26,7 +32,7 @@ Build and run from the repository root:
   -L/usr/lib/llvm-23/lib -lLLVM -Wl,-rpath,/usr/lib/llvm-23/lib \
   -o /tmp/fsj-preamble-experiment
 python3 test/pch-v2-experiments.py \
-  /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h \
+  /path/to/nano-infer/minicpm-v-4_7/pipeline.h \
   --samples 3 --directory /tmp/fsj-pch-v2 \
   --report docs/measurements/pch-v2.json
 ```

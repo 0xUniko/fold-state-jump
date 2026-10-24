@@ -6,7 +6,10 @@ import { Effect, Schema } from 'effect';
 import type { CompileCommand } from './services';
 
 const dependencyPath = Schema.Struct({ path: Schema.String, real: Schema.String, sha256: Schema.String });
-const nativeSchema = Schema.Struct({ schema: Schema.Literal(1), reusable: Schema.Boolean, paths: Schema.Array(dependencyPath),
+// Native observations carry the first-seen stamp to reject writes during
+// parsing. Verified manifests instead own freshly established guards.
+const nativePath = Schema.Struct({ path: Schema.String, real: Schema.String, sha256: Schema.String, stamp: Schema.optional(Schema.String) });
+const nativeSchema = Schema.Struct({ schema: Schema.Literal(1), reusable: Schema.Boolean, paths: Schema.Array(nativePath),
   runtime: Schema.Array(Schema.Struct({ path: Schema.String, stamp: Schema.String })) });
 export type NativeDependencies = typeof nativeSchema.Type;
 export const decodeNativeDependencies = Schema.decodeUnknownSync(nativeSchema);
@@ -69,19 +72,23 @@ export const verifyDependencies = Effect.fnUntraced(function* (native: NativeDep
   const files = yield* Effect.forEach(native.paths.filter((file) => file.sha256 !== ''), (file) => Effect.tryPromise({
     try: async (): Promise<Guard> => {
       const before = await metadataOf(file.path);
+      if (file.stamp !== undefined && stampOf(before) !== file.stamp) throw new Error('File changed since native observation');
       const fingerprint = await fingerprintFile(file.path);
       const after = await metadataOf(file.path);
       if (stampOf(before) !== stampOf(after) || fingerprint.real !== file.real || fingerprint.sha256 !== file.sha256) throw new Error('Changed file');
       return await hasFineFileMetadata(file.path, after)
         ? { _tag: 'StatFile', path: file.path, stamp: stampOf(after) }
-        : { _tag: 'HashFile', ...file };
+        : { _tag: 'HashFile', path: file.path, real: file.real, sha256: file.sha256 };
     }, catch: (error) => new Error(String(error))
   }), { concurrency: 32 });
   const runtime = yield* Effect.forEach(native.runtime, (file) => Effect.tryPromise({
     try: async (): Promise<readonly Guard[]> => {
       const metadata = await metadataOf(file.path);
       if (stampOf(metadata) !== file.stamp) throw new Error('Native runtime image changed');
-      return await hasFineFileMetadata(file.path, metadata) ? [{ _tag: 'StatFile', path: file.path, stamp: file.stamp }] : [];
+      if (await hasFineFileMetadata(file.path, metadata)) return [{ _tag: 'StatFile', path: file.path, stamp: file.stamp }];
+      const fingerprint = await fingerprintFile(file.path);
+      if (stampOf(await metadataOf(file.path)) !== file.stamp) throw new Error('Native runtime image changed while hashing');
+      return [{ _tag: 'HashFile', path: file.path, ...fingerprint }];
     }, catch: (error) => new Error(String(error))
   }), { concurrency: 32 });
   const directories = native.paths.filter((file) => file.sha256 === '').reduce((directories, file) => {
@@ -100,7 +107,8 @@ export const verifyDependencies = Effect.fnUntraced(function* (native: NativeDep
         : { _tag: 'ReadDirectory', path: directory, missing };
     }, catch: (error) => new Error(String(error))
   }), { concurrency: 32 });
-  return { schema: 2 as const, reusable: native.reusable && runtime.flat().length === native.runtime.length, paths: native.paths, guards: [...files, ...runtime.flat(), ...directoryGuards] };
+  return { schema: 2 as const, reusable: native.reusable && runtime.flat().length === native.runtime.length,
+    paths: native.paths.map(({ path, real, sha256 }) => ({ path, real, sha256 })), guards: [...files, ...runtime.flat(), ...directoryGuards] };
 }, Effect.orElseSucceed(() => undefined));
 
 const validateGuard = async (guard: Guard): Promise<boolean> => {

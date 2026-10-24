@@ -1,0 +1,112 @@
+{
+  "recordedAt": "2026-10-24T13:04:58.535Z",
+  "environment": {
+    "runtime": "v24.22.1",
+    "execPath": "<node>",
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCpus": 18,
+    "totalMemory": 25199718400
+  },
+  "repetitions": 1,
+  "limits": [
+    "Sequential samples on one machine with uncontrolled warm OS page cache and CPU scheduling.",
+    "Node CPU excludes child CPU; native phase durations and PCH bytes are reported in events.",
+    "N=3 p95 is the maximum sample, not a production tail estimate. No Extension Host/UI measurement.",
+    "Preamble is process owned; restart rebuilds it. No persistent PCH or disk hit claim."
+  ],
+  "emptyRuntimeStartupMs": 29.962587000001804,
+  "realProject": [],
+  "editing": {
+    "scope": "Final TypeScript lifecycle refinement: unsupported context releases its idle worker before cold extraction.",
+    "idleWorkerBuild": {
+      "ms": 17547.299702,
+      "nodeCpuMicros": {
+        "user": 468174,
+        "system": 323215
+      },
+      "events": [
+        {
+          "event": "native-start",
+          "pid": 33,
+          "worker": true
+        },
+        {
+          "event": "preamble-build",
+          "pid": 33,
+          "ms": 10323.177793,
+          "pchBytes": 107576768
+        },
+        {
+          "event": "preamble-published",
+          "pid": 33
+        },
+        {
+          "event": "preamble-parse",
+          "pid": 33,
+          "ms": 6721.631643,
+          "pchBytes": 107576768
+        },
+        {
+          "event": "native-idle",
+          "pid": 33,
+          "worker": true
+        }
+      ]
+    },
+    "fallback": {
+      "automaticCold": {
+        "ms": 13546.576149,
+        "nodeCpuMicros": {
+          "user": 244523,
+          "system": 182734
+        },
+        "events": [
+          {
+            "event": "preamble-fallback",
+            "reason": "Unsupported compilation context"
+          },
+          {
+            "event": "native-start",
+            "pid": 34
+          },
+          {
+            "event": "native-exit",
+            "pid": 34,
+            "code": 0,
+            "ms": 13253.124187000001,
+            "bytes": 5642475
+          }
+        ]
+      },
+      "directCold": {
+        "ms": 13861.548750999998,
+        "nodeCpuMicros": {
+          "user": 325494,
+          "system": 172253
+        },
+        "events": [
+          {
+            "event": "native-start",
+            "pid": 35
+          },
+          {
+            "event": "native-exit",
+            "pid": 35,
+            "code": 0,
+            "ms": 13618.122173,
+            "bytes": 5642475
+          }
+        ]
+      },
+      "retiredWorkerPid": 33,
+      "retiredWorkerReapedBeforeColdStart": true,
+      "queries": {
+        "positions": 1803,
+        "queries": 3606,
+        "differences": 0
+      }
+    }
+  },
+  "publication": "Project content fingerprints and resolved project build/include commands are omitted. Absolute project, fixture and executable paths use role names; only memory counters from process status are retained. Timing and query measurements are unchanged."
+}

@@ -27,6 +27,12 @@ jobs:
       - run: cmake -S native -B native/build -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang
       - run: cmake --build native/build -j 2
       - run: bun test
+      - name: Verify Preamble integration under the extension's Node runtime
+        run: |
+          bun build test/preamble.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-tests.mjs
+          bun build test/preamble-context.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-context-tests.mjs
+          node /tmp/fsj-preamble-tests.mjs
+          node /tmp/fsj-preamble-context-tests.mjs
       - run: bun run build
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json
