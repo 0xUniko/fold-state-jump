@@ -6,7 +6,7 @@ import path from 'node:path';
 import { Deferred, Effect } from 'effect';
 import { extractVerifiedAst } from '../src/extraction';
 import { buildIdentity, hasFineChangeTimestamps, fingerprintFile, reusableCommand, validateDependencies, verifyDependencies, type DependencyManifest } from '../src/dependencies';
-import { makeAstCache, loadPreparedAst, invalidateAstCache } from '../src/ast-cache';
+import { makeAstCache, loadPreparedAst, invalidateAstCache, affectedAstSources } from '../src/ast-cache';
 import { prepareAst } from '../src/analysis';
 import type { CompileCommand } from '../src/services';
 
@@ -97,6 +97,41 @@ describe('verified build inputs', () => {
     assert.equal(await Effect.runPromise(validateDependencies(hashDependencies)), false);
   }));
 
+  test('checks dependencies beyond multiple validation batches and treats unreadable inputs as misses', () => fixture(async (directory) => {
+    const files = Array.from({ length: 70 }, (_, index) => path.join(directory, 'header-' + index + '.h'));
+    await Promise.all(files.map((file) => writeFile(file, 'one')));
+    const paths = await Promise.all(files.map(async (file) => ({ path: file, ...await fingerprintFile(file) })));
+    const dependencies = (await Effect.runPromise(verifyDependencies({ schema: 1, reusable: true, runtime: [], paths })))!;
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
+    await writeFile(files[69], 'two');
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
+    const hashDependencies: DependencyManifest = { ...dependencies,
+      guards: paths.map((file) => ({ _tag: 'HashFile' as const, ...file })) };
+    assert.equal(await Effect.runPromise(validateDependencies(hashDependencies)), false);
+    await writeFile(files[69], 'one');
+    assert.equal(await Effect.runPromise(validateDependencies(hashDependencies)), true);
+    await rm(files[0]);
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
+    assert.equal(await Effect.runPromise(validateDependencies(hashDependencies)), false);
+    assert.equal(await Effect.runPromise(validateDependencies({ ...dependencies, guards: [] })), true);
+  }));
+
+  test('directory read fallback checks newly created include candidates after many file guards', () => fixture(async (directory) => {
+    const file = path.join(directory, 'actual.h');
+    const missing = path.join(directory, 'optional.h');
+    await writeFile(file, 'one');
+    const fingerprint = await fingerprintFile(file);
+    const dependencies: DependencyManifest = { schema: 2, reusable: true,
+      paths: [{ path: file, ...fingerprint }, { path: missing, real: '', sha256: '' }],
+      guards: [...Array.from({ length: 65 }, () => ({ _tag: 'HashFile' as const, path: file, ...fingerprint })),
+        { _tag: 'ReadDirectory', path: directory, missing: ['optional.h'] }] };
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
+    await writeFile(path.join(directory, 'unrelated.cpp'), 'irrelevant');
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), true);
+    await writeFile(missing, 'created');
+    assert.equal(await Effect.runPromise(validateDependencies(dependencies)), false);
+  }));
+
   test('identity distinguishes flags, compiler selection, cwd, extractor and configuration', () => fixture(async (directory) => {
     const source = path.join(directory, 'main.cpp');
     const extractor = path.join(directory, 'extractor');
@@ -185,6 +220,50 @@ describe('dependency-aware memory transitions', () => {
     const result = await Effect.runPromise(loadPreparedAst(cache, { source: '/a.cpp', documentVersion: 1 }, Effect.gen(function* () {
       yield* invalidateAstCache(cache, '/unrelated.cpp');
       return { prepared, astBytes: 1, dependencies: proof(['/shared.h']) };
+    })));
+    assert.equal(result._tag, 'ExtractionReady');
+  });
+
+  test('a newly created header below an absent ancestor rejects an unknown in-flight proof', async () => {
+    const cache = makeAstCache();
+    const started = Deferred.makeUnsafe<void>();
+    const released = Deferred.makeUnsafe<void>();
+    const dependencies: DependencyManifest = { schema: 2, reusable: true, guards: [],
+      paths: [{ path: '/generated', real: '', sha256: '' }] };
+    const pending = Effect.runPromise(loadPreparedAst(cache, { source: '/a.cpp', documentVersion: 1 }, Effect.gen(function* () {
+      yield* Deferred.succeed(started, undefined);
+      yield* Deferred.await(released);
+      return { prepared, astBytes: 1, dependencies };
+    })));
+    await Effect.runPromise(Deferred.await(started));
+    await Effect.runPromise(invalidateAstCache(cache, '/generated/new-header.h'));
+    await Effect.runPromise(Deferred.succeed(released, undefined));
+    assert.equal((await pending)._tag, 'AnalysisFailure');
+  });
+
+  test('retains dependency relationships after invalidation for consecutive prewarm events', async () => {
+    const cache = makeAstCache();
+    const request = { source: '/a.cpp', documentVersion: 1 };
+    const unrelated = { source: '/b.cpp', documentVersion: 1 };
+    await Effect.runPromise(loadPreparedAst(cache, request, Effect.succeed({ prepared, astBytes: 1, dependencies: proof(['/shared.h']) })));
+    await Effect.runPromise(loadPreparedAst(cache, unrelated, Effect.succeed({ prepared, astBytes: 1, dependencies: proof(['/other.h']) })));
+    assert.deepEqual(await Effect.runPromise(affectedAstSources(cache, '/shared.h')), ['/shared.h', '/a.cpp']);
+    await Effect.runPromise(invalidateAstCache(cache, '/shared.h'));
+    assert.deepEqual(await Effect.runPromise(affectedAstSources(cache, '/shared.h')), ['/shared.h', '/a.cpp']);
+    await Effect.runPromise(invalidateAstCache(cache, '/shared.h'));
+    assert.deepEqual(await Effect.runPromise(affectedAstSources(cache, '/shared.h')), ['/shared.h', '/a.cpp']);
+    assert.deepEqual(await Effect.runPromise(affectedAstSources(cache, '/unrelated.cpp')), ['/unrelated.cpp']);
+    assert.equal((await Effect.runPromise(loadPreparedAst(cache, unrelated, Effect.fail(new Error('Unexpected invalidation')))))._tag, 'ExtractionReady');
+    await assert.rejects(Effect.runPromise(loadPreparedAst(cache, request, Effect.fail(new Error('Related input invalidated')))), /Related input invalidated/);
+  });
+
+  test('an unrelated sibling of an absent include ancestor preserves in-flight work', async () => {
+    const cache = makeAstCache();
+    const dependencies: DependencyManifest = { schema: 2, reusable: true, guards: [],
+      paths: [{ path: '/generated', real: '', sha256: '' }] };
+    const result = await Effect.runPromise(loadPreparedAst(cache, { source: '/a.cpp', documentVersion: 1 }, Effect.gen(function* () {
+      yield* invalidateAstCache(cache, '/generated-other/new-header.h');
+      return { prepared, astBytes: 1, dependencies };
     })));
     assert.equal(result._tag, 'ExtractionReady');
   });

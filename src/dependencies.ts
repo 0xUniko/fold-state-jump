@@ -118,9 +118,20 @@ const validateGuard = async (guard: Guard): Promise<boolean> => {
   }
 };
 
-export const validateDependencies = (dependencies: DependencyManifest): Effect.Effect<boolean> =>
-  Effect.forEach(dependencies.guards, (guard) => Effect.tryPromise({ try: () => validateGuard(guard), catch: () => false })
-    .pipe(Effect.orElseSucceed(() => false)), { concurrency: 32 }).pipe(Effect.map((valid) => valid.every(Boolean)));
+// Each batch owns at most 32 filesystem requests. A single Effect boundary per
+// batch avoids creating a fiber for each stat, while retaining interruption
+// between batches and checking every guard on every successful lookup. No
+// validation result is retained across requests or inferred from watcher events.
+export const validateDependencies = (dependencies: DependencyManifest): Effect.Effect<boolean> => {
+  const batches = Array.from({ length: Math.ceil(dependencies.guards.length / 32) }, (_, index) =>
+    dependencies.guards.slice(index * 32, (index + 1) * 32));
+  return Effect.reduce(batches, () => true, (valid, guards) => valid
+    ? Effect.tryPromise({
+        try: async () => (await Promise.all(guards.map(validateGuard))).every(Boolean),
+        catch: () => false
+      }).pipe(Effect.orElseSucceed(() => false))
+    : Effect.succeed(false));
+};
 
 export const reusableCommand = (command: CompileCommand): boolean =>
   !command.args.some((arg) => /^(@|-fmodules|-fcxx-modules|-fmodule-|-include|-imacros|-fprebuilt-module-path|-ivfsoverlay|-vfsoverlay|-ivfsstatcache|-ivfsfrom|-working-directory|--config|-fplugin|-load)/.test(arg));

@@ -1,0 +1,3692 @@
+{
+  "environment": {
+    "date": "2026-10-23T15:00:16.050Z",
+    "platform": "linux",
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCpus": 18,
+    "memoryBytes": 25199718400,
+    "node": "v24.22.1",
+    "cwd": "/home/huawei/fold-state-jump",
+    "argv": [
+      "/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node",
+      "/tmp/fsj-validation-performance.mjs",
+      "/tmp/fsj-validation-pipeline-native.json",
+      "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "/tmp/fsj-validation-pipeline.json",
+      "51",
+      "/tmp/fsj-dependencies-v1.mjs",
+      "reverse"
+    ],
+    "limitations": "Warm OS cache. Sequential phases, uncontrolled frequency/thermal/load/GC. No Clang or VS Code UI. Subsets include manifest filtering. Memory phases include two command/identity checks and unchanged analyzer/cache; not scheduler overhead."
+  },
+  "source": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+  "repetitions": 51,
+  "phaseOrder": "reverse",
+  "nativePaths": 3921,
+  "nativeRuntimeImages": 19,
+  "guards": {
+    "StatFile": 753,
+    "StatDirectory": 51
+  },
+  "proofBytes": 633922,
+  "host": {
+    "rss": 170434560,
+    "heapTotal": 108584960,
+    "heapUsed": 65119344,
+    "external": 4230577,
+    "arrayBuffers": 376713
+  },
+  "measurements": [
+    {
+      "name": "v2:memory",
+      "samples": [
+        {
+          "ms": 14.818726000000026,
+          "cpuMicros": {
+            "user": 12274,
+            "system": 9827
+          }
+        },
+        {
+          "ms": 15.39707199999998,
+          "cpuMicros": {
+            "user": 9397,
+            "system": 13028
+          }
+        },
+        {
+          "ms": 14.933088999999995,
+          "cpuMicros": {
+            "user": 10573,
+            "system": 11201
+          }
+        },
+        {
+          "ms": 16.082190000000026,
+          "cpuMicros": {
+            "user": 15568,
+            "system": 14404
+          }
+        },
+        {
+          "ms": 17.231303000000025,
+          "cpuMicros": {
+            "user": 9491,
+            "system": 15974
+          }
+        },
+        {
+          "ms": 17.467997000000025,
+          "cpuMicros": {
+            "user": 6676,
+            "system": 19684
+          }
+        },
+        {
+          "ms": 14.287867000000006,
+          "cpuMicros": {
+            "user": 11050,
+            "system": 10276
+          }
+        },
+        {
+          "ms": 14.349206999999979,
+          "cpuMicros": {
+            "user": 6580,
+            "system": 14329
+          }
+        },
+        {
+          "ms": 15.62858,
+          "cpuMicros": {
+            "user": 9503,
+            "system": 13446
+          }
+        },
+        {
+          "ms": 16.500380000000007,
+          "cpuMicros": {
+            "user": 5728,
+            "system": 19842
+          }
+        },
+        {
+          "ms": 18.631664,
+          "cpuMicros": {
+            "user": 1539,
+            "system": 30989
+          }
+        },
+        {
+          "ms": 16.884698000000014,
+          "cpuMicros": {
+            "user": 10298,
+            "system": 13621
+          }
+        },
+        {
+          "ms": 18.183311000000003,
+          "cpuMicros": {
+            "user": 7999,
+            "system": 25163
+          }
+        },
+        {
+          "ms": 16.11709499999995,
+          "cpuMicros": {
+            "user": 16655,
+            "system": 8357
+          }
+        },
+        {
+          "ms": 11.663040000000024,
+          "cpuMicros": {
+            "user": 9233,
+            "system": 9562
+          }
+        },
+        {
+          "ms": 13.418097999999986,
+          "cpuMicros": {
+            "user": 6087,
+            "system": 14159
+          }
+        },
+        {
+          "ms": 15.116452999999979,
+          "cpuMicros": {
+            "user": 7332,
+            "system": 15388
+          }
+        },
+        {
+          "ms": 14.233058000000028,
+          "cpuMicros": {
+            "user": 4986,
+            "system": 17264
+          }
+        },
+        {
+          "ms": 13.897257999999965,
+          "cpuMicros": {
+            "user": 10497,
+            "system": 10584
+          }
+        },
+        {
+          "ms": 14.092159999999922,
+          "cpuMicros": {
+            "user": 12772,
+            "system": 8373
+          }
+        },
+        {
+          "ms": 14.62486899999999,
+          "cpuMicros": {
+            "user": 6840,
+            "system": 15336
+          }
+        },
+        {
+          "ms": 14.858331000000021,
+          "cpuMicros": {
+            "user": 9596,
+            "system": 13876
+          }
+        },
+        {
+          "ms": 13.02643999999998,
+          "cpuMicros": {
+            "user": 5158,
+            "system": 17718
+          }
+        },
+        {
+          "ms": 12.37528199999997,
+          "cpuMicros": {
+            "user": 12049,
+            "system": 7859
+          }
+        },
+        {
+          "ms": 14.466115999999943,
+          "cpuMicros": {
+            "user": 13791,
+            "system": 9582
+          }
+        },
+        {
+          "ms": 12.870953999999983,
+          "cpuMicros": {
+            "user": 9450,
+            "system": 9434
+          }
+        },
+        {
+          "ms": 14.82940199999996,
+          "cpuMicros": {
+            "user": 14607,
+            "system": 6134
+          }
+        },
+        {
+          "ms": 11.78778299999999,
+          "cpuMicros": {
+            "user": 8678,
+            "system": 8553
+          }
+        },
+        {
+          "ms": 14.974846999999954,
+          "cpuMicros": {
+            "user": 4078,
+            "system": 16811
+          }
+        },
+        {
+          "ms": 16.658231999999998,
+          "cpuMicros": {
+            "user": 8368,
+            "system": 16902
+          }
+        },
+        {
+          "ms": 12.65429400000005,
+          "cpuMicros": {
+            "user": 5376,
+            "system": 13903
+          }
+        },
+        {
+          "ms": 13.316659000000072,
+          "cpuMicros": {
+            "user": 14398,
+            "system": 5889
+          }
+        },
+        {
+          "ms": 12.229797000000076,
+          "cpuMicros": {
+            "user": 5009,
+            "system": 13478
+          }
+        },
+        {
+          "ms": 13.364790000000085,
+          "cpuMicros": {
+            "user": 3360,
+            "system": 16066
+          }
+        },
+        {
+          "ms": 12.785726000000068,
+          "cpuMicros": {
+            "user": 7111,
+            "system": 11290
+          }
+        },
+        {
+          "ms": 14.662383999999975,
+          "cpuMicros": {
+            "user": 14632,
+            "system": 6095
+          }
+        },
+        {
+          "ms": 12.852293000000031,
+          "cpuMicros": {
+            "user": 15743,
+            "system": 3076
+          }
+        },
+        {
+          "ms": 14.117680000000064,
+          "cpuMicros": {
+            "user": 8669,
+            "system": 12884
+          }
+        },
+        {
+          "ms": 13.597734999999943,
+          "cpuMicros": {
+            "user": 8622,
+            "system": 17052
+          }
+        },
+        {
+          "ms": 11.315004000000044,
+          "cpuMicros": {
+            "user": 6108,
+            "system": 10389
+          }
+        },
+        {
+          "ms": 12.876481000000013,
+          "cpuMicros": {
+            "user": 7139,
+            "system": 11309
+          }
+        },
+        {
+          "ms": 14.17813799999999,
+          "cpuMicros": {
+            "user": 12211,
+            "system": 8126
+          }
+        },
+        {
+          "ms": 14.188511999999946,
+          "cpuMicros": {
+            "user": 3603,
+            "system": 16287
+          }
+        },
+        {
+          "ms": 14.926793999999973,
+          "cpuMicros": {
+            "user": 575,
+            "system": 21456
+          }
+        },
+        {
+          "ms": 14.355647999999974,
+          "cpuMicros": {
+            "user": 5906,
+            "system": 14491
+          }
+        },
+        {
+          "ms": 16.746462000000065,
+          "cpuMicros": {
+            "user": 10261,
+            "system": 14661
+          }
+        },
+        {
+          "ms": 13.814384000000018,
+          "cpuMicros": {
+            "user": 5799,
+            "system": 14435
+          }
+        },
+        {
+          "ms": 13.010584000000108,
+          "cpuMicros": {
+            "user": 9355,
+            "system": 9447
+          }
+        },
+        {
+          "ms": 13.496548000000075,
+          "cpuMicros": {
+            "user": 13907,
+            "system": 5519
+          }
+        },
+        {
+          "ms": 13.245368999999982,
+          "cpuMicros": {
+            "user": 14937,
+            "system": 6259
+          }
+        },
+        {
+          "ms": 14.618786999999884,
+          "cpuMicros": {
+            "user": 2577,
+            "system": 19815
+          }
+        }
+      ],
+      "p50Ms": 14.287867000000006,
+      "p95Ms": 17.467997000000025,
+      "cpuP50Micros": 21196
+    },
+    {
+      "name": "v1:memory",
+      "samples": [
+        {
+          "ms": 20.510539000000108,
+          "cpuMicros": {
+            "user": 12123,
+            "system": 16757
+          }
+        },
+        {
+          "ms": 19.050870999999916,
+          "cpuMicros": {
+            "user": 15485,
+            "system": 11506
+          }
+        },
+        {
+          "ms": 18.491995000000088,
+          "cpuMicros": {
+            "user": 6053,
+            "system": 18576
+          }
+        },
+        {
+          "ms": 19.33979199999999,
+          "cpuMicros": {
+            "user": 17372,
+            "system": 8891
+          }
+        },
+        {
+          "ms": 20.962598999999955,
+          "cpuMicros": {
+            "user": 19801,
+            "system": 15809
+          }
+        },
+        {
+          "ms": 19.233553999999913,
+          "cpuMicros": {
+            "user": 178,
+            "system": 25840
+          }
+        },
+        {
+          "ms": 19.18973600000004,
+          "cpuMicros": {
+            "user": 11333,
+            "system": 14866
+          }
+        },
+        {
+          "ms": 19.220591000000013,
+          "cpuMicros": {
+            "user": 13408,
+            "system": 17742
+          }
+        },
+        {
+          "ms": 18.457974999999806,
+          "cpuMicros": {
+            "user": 8118,
+            "system": 16564
+          }
+        },
+        {
+          "ms": 20.06562000000008,
+          "cpuMicros": {
+            "user": 11369,
+            "system": 20289
+          }
+        },
+        {
+          "ms": 17.794358000000102,
+          "cpuMicros": {
+            "user": 18235,
+            "system": 5608
+          }
+        },
+        {
+          "ms": 18.027650999999878,
+          "cpuMicros": {
+            "user": 11731,
+            "system": 12147
+          }
+        },
+        {
+          "ms": 20.030176999999867,
+          "cpuMicros": {
+            "user": 19481,
+            "system": 19236
+          }
+        },
+        {
+          "ms": 18.481502999999975,
+          "cpuMicros": {
+            "user": 16304,
+            "system": 11936
+          }
+        },
+        {
+          "ms": 20.07261900000003,
+          "cpuMicros": {
+            "user": 14179,
+            "system": 14343
+          }
+        },
+        {
+          "ms": 18.38682000000017,
+          "cpuMicros": {
+            "user": 16503,
+            "system": 8355
+          }
+        },
+        {
+          "ms": 19.264151999999967,
+          "cpuMicros": {
+            "user": 10906,
+            "system": 15457
+          }
+        },
+        {
+          "ms": 18.667144000000008,
+          "cpuMicros": {
+            "user": 12832,
+            "system": 12824
+          }
+        },
+        {
+          "ms": 18.178253999999924,
+          "cpuMicros": {
+            "user": 4094,
+            "system": 20724
+          }
+        },
+        {
+          "ms": 20.143367000000126,
+          "cpuMicros": {
+            "user": 20255,
+            "system": 11559
+          }
+        },
+        {
+          "ms": 20.32753600000001,
+          "cpuMicros": {
+            "user": 12325,
+            "system": 20817
+          }
+        },
+        {
+          "ms": 18.656195000000025,
+          "cpuMicros": {
+            "user": 10090,
+            "system": 15097
+          }
+        },
+        {
+          "ms": 17.877537000000075,
+          "cpuMicros": {
+            "user": 3443,
+            "system": 20513
+          }
+        },
+        {
+          "ms": 19.12793899999997,
+          "cpuMicros": {
+            "user": 4085,
+            "system": 21230
+          }
+        },
+        {
+          "ms": 17.98105200000009,
+          "cpuMicros": {
+            "user": 3628,
+            "system": 20689
+          }
+        },
+        {
+          "ms": 19.924680999999964,
+          "cpuMicros": {
+            "user": 17928,
+            "system": 9468
+          }
+        },
+        {
+          "ms": 22.966335000000072,
+          "cpuMicros": {
+            "user": 13251,
+            "system": 17605
+          }
+        },
+        {
+          "ms": 20.58362800000009,
+          "cpuMicros": {
+            "user": 12071,
+            "system": 16233
+          }
+        },
+        {
+          "ms": 18.816868999999997,
+          "cpuMicros": {
+            "user": 12587,
+            "system": 12541
+          }
+        },
+        {
+          "ms": 19.671245,
+          "cpuMicros": {
+            "user": 19504,
+            "system": 6980
+          }
+        },
+        {
+          "ms": 26.824168999999983,
+          "cpuMicros": {
+            "user": 8785,
+            "system": 31035
+          }
+        },
+        {
+          "ms": 18.768827999999985,
+          "cpuMicros": {
+            "user": 4202,
+            "system": 21447
+          }
+        },
+        {
+          "ms": 18.802197999999862,
+          "cpuMicros": {
+            "user": 14397,
+            "system": 10336
+          }
+        },
+        {
+          "ms": 18.36459600000012,
+          "cpuMicros": {
+            "user": 9724,
+            "system": 18561
+          }
+        },
+        {
+          "ms": 18.518524999999954,
+          "cpuMicros": {
+            "user": 5297,
+            "system": 22787
+          }
+        },
+        {
+          "ms": 20.30985899999996,
+          "cpuMicros": {
+            "user": 21730,
+            "system": 7203
+          }
+        },
+        {
+          "ms": 18.3443299999999,
+          "cpuMicros": {
+            "user": 14571,
+            "system": 10564
+          }
+        },
+        {
+          "ms": 18.41246100000012,
+          "cpuMicros": {
+            "user": 19250,
+            "system": 6666
+          }
+        },
+        {
+          "ms": 19.40624200000002,
+          "cpuMicros": {
+            "user": 3127,
+            "system": 28780
+          }
+        },
+        {
+          "ms": 18.14043700000002,
+          "cpuMicros": {
+            "user": 1701,
+            "system": 22722
+          }
+        },
+        {
+          "ms": 19.778009999999995,
+          "cpuMicros": {
+            "user": 15028,
+            "system": 11972
+          }
+        },
+        {
+          "ms": 18.61223599999994,
+          "cpuMicros": {
+            "user": 14427,
+            "system": 10382
+          }
+        },
+        {
+          "ms": 17.92310099999986,
+          "cpuMicros": {
+            "user": 12546,
+            "system": 12466
+          }
+        },
+        {
+          "ms": 18.377467999999908,
+          "cpuMicros": {
+            "user": 10226,
+            "system": 14848
+          }
+        },
+        {
+          "ms": 18.132745999999997,
+          "cpuMicros": {
+            "user": 1750,
+            "system": 22867
+          }
+        },
+        {
+          "ms": 17.795503999999937,
+          "cpuMicros": {
+            "user": 7627,
+            "system": 16055
+          }
+        },
+        {
+          "ms": 19.38033200000018,
+          "cpuMicros": {
+            "user": 9117,
+            "system": 16934
+          }
+        },
+        {
+          "ms": 18.011347999999998,
+          "cpuMicros": {
+            "user": 16296,
+            "system": 7497
+          }
+        },
+        {
+          "ms": 18.15676099999996,
+          "cpuMicros": {
+            "user": 11672,
+            "system": 12295
+          }
+        },
+        {
+          "ms": 18.331316000000015,
+          "cpuMicros": {
+            "user": 5542,
+            "system": 18737
+          }
+        },
+        {
+          "ms": 19.04939400000012,
+          "cpuMicros": {
+            "user": 5394,
+            "system": 19533
+          }
+        }
+      ],
+      "p50Ms": 18.802197999999862,
+      "p95Ms": 20.962598999999955,
+      "cpuP50Micros": 25916
+    },
+    {
+      "name": "v2:dependencies",
+      "samples": [
+        {
+          "ms": 13.255079999999907,
+          "cpuMicros": {
+            "user": 182,
+            "system": 19794
+          }
+        },
+        {
+          "ms": 13.958651000000373,
+          "cpuMicros": {
+            "user": 1201,
+            "system": 18756
+          }
+        },
+        {
+          "ms": 9.440342999999757,
+          "cpuMicros": {
+            "user": 6992,
+            "system": 7678
+          }
+        },
+        {
+          "ms": 11.955748000000312,
+          "cpuMicros": {
+            "user": 2448,
+            "system": 14922
+          }
+        },
+        {
+          "ms": 14.304144000000178,
+          "cpuMicros": {
+            "user": 1825,
+            "system": 18408
+          }
+        },
+        {
+          "ms": 14.042116999999962,
+          "cpuMicros": {
+            "user": 1029,
+            "system": 18565
+          }
+        },
+        {
+          "ms": 12.428103999999621,
+          "cpuMicros": {
+            "user": 13209,
+            "system": 4658
+          }
+        },
+        {
+          "ms": 9.617533000000094,
+          "cpuMicros": {
+            "user": 2105,
+            "system": 11334
+          }
+        },
+        {
+          "ms": 10.191749000000073,
+          "cpuMicros": {
+            "user": 3693,
+            "system": 10898
+          }
+        },
+        {
+          "ms": 14.267969999999877,
+          "cpuMicros": {
+            "user": 12242,
+            "system": 8972
+          }
+        },
+        {
+          "ms": 11.924510000000282,
+          "cpuMicros": {
+            "user": 729,
+            "system": 16932
+          }
+        },
+        {
+          "ms": 13.793353000000025,
+          "cpuMicros": {
+            "user": 0,
+            "system": 21527
+          }
+        },
+        {
+          "ms": 13.450014999999894,
+          "cpuMicros": {
+            "user": 13167,
+            "system": 5938
+          }
+        },
+        {
+          "ms": 12.177459999999883,
+          "cpuMicros": {
+            "user": 11293,
+            "system": 6479
+          }
+        },
+        {
+          "ms": 13.624409999999898,
+          "cpuMicros": {
+            "user": 3216,
+            "system": 15823
+          }
+        },
+        {
+          "ms": 12.34807899999987,
+          "cpuMicros": {
+            "user": 5243,
+            "system": 12817
+          }
+        },
+        {
+          "ms": 10.544246999999814,
+          "cpuMicros": {
+            "user": 7485,
+            "system": 8469
+          }
+        },
+        {
+          "ms": 10.222739000000274,
+          "cpuMicros": {
+            "user": 9781,
+            "system": 5823
+          }
+        },
+        {
+          "ms": 12.790533000000323,
+          "cpuMicros": {
+            "user": 5155,
+            "system": 14044
+          }
+        },
+        {
+          "ms": 13.170285000000149,
+          "cpuMicros": {
+            "user": 822,
+            "system": 18352
+          }
+        },
+        {
+          "ms": 12.117954000000282,
+          "cpuMicros": {
+            "user": 10639,
+            "system": 6953
+          }
+        },
+        {
+          "ms": 12.02985499999977,
+          "cpuMicros": {
+            "user": 1938,
+            "system": 15542
+          }
+        },
+        {
+          "ms": 13.070917999999892,
+          "cpuMicros": {
+            "user": 5455,
+            "system": 14486
+          }
+        },
+        {
+          "ms": 12.451913000000332,
+          "cpuMicros": {
+            "user": 2029,
+            "system": 15714
+          }
+        },
+        {
+          "ms": 12.743978999999854,
+          "cpuMicros": {
+            "user": 8393,
+            "system": 9760
+          }
+        },
+        {
+          "ms": 11.783269000000018,
+          "cpuMicros": {
+            "user": 4821,
+            "system": 12200
+          }
+        },
+        {
+          "ms": 13.241033000000243,
+          "cpuMicros": {
+            "user": 4902,
+            "system": 13776
+          }
+        },
+        {
+          "ms": 13.142811000000165,
+          "cpuMicros": {
+            "user": 7510,
+            "system": 11444
+          }
+        },
+        {
+          "ms": 9.698617000000013,
+          "cpuMicros": {
+            "user": 3706,
+            "system": 12160
+          }
+        },
+        {
+          "ms": 13.268583999999919,
+          "cpuMicros": {
+            "user": 9747,
+            "system": 10123
+          }
+        },
+        {
+          "ms": 11.294282000000294,
+          "cpuMicros": {
+            "user": 6187,
+            "system": 11175
+          }
+        },
+        {
+          "ms": 11.567135999999664,
+          "cpuMicros": {
+            "user": 8528,
+            "system": 8473
+          }
+        },
+        {
+          "ms": 9.970784000000094,
+          "cpuMicros": {
+            "user": 0,
+            "system": 15715
+          }
+        },
+        {
+          "ms": 10.929595000000063,
+          "cpuMicros": {
+            "user": 240,
+            "system": 16151
+          }
+        },
+        {
+          "ms": 12.270750000000135,
+          "cpuMicros": {
+            "user": 3780,
+            "system": 16539
+          }
+        },
+        {
+          "ms": 11.455001999999695,
+          "cpuMicros": {
+            "user": 6804,
+            "system": 10431
+          }
+        },
+        {
+          "ms": 11.534078000000136,
+          "cpuMicros": {
+            "user": 837,
+            "system": 16749
+          }
+        },
+        {
+          "ms": 10.924517999999807,
+          "cpuMicros": {
+            "user": 1799,
+            "system": 15423
+          }
+        },
+        {
+          "ms": 10.768833000000086,
+          "cpuMicros": {
+            "user": 1559,
+            "system": 15116
+          }
+        },
+        {
+          "ms": 11.863948000000164,
+          "cpuMicros": {
+            "user": 4789,
+            "system": 13610
+          }
+        },
+        {
+          "ms": 11.929899999999634,
+          "cpuMicros": {
+            "user": 9609,
+            "system": 8259
+          }
+        },
+        {
+          "ms": 10.11907599999995,
+          "cpuMicros": {
+            "user": 4282,
+            "system": 11130
+          }
+        },
+        {
+          "ms": 12.241415999999845,
+          "cpuMicros": {
+            "user": 17533,
+            "system": 494
+          }
+        },
+        {
+          "ms": 11.738468000000012,
+          "cpuMicros": {
+            "user": 10684,
+            "system": 7201
+          }
+        },
+        {
+          "ms": 10.853050000000167,
+          "cpuMicros": {
+            "user": 10035,
+            "system": 6283
+          }
+        },
+        {
+          "ms": 13.562867000000097,
+          "cpuMicros": {
+            "user": 8213,
+            "system": 14022
+          }
+        },
+        {
+          "ms": 9.420740000000023,
+          "cpuMicros": {
+            "user": 5380,
+            "system": 10107
+          }
+        },
+        {
+          "ms": 10.20989899999995,
+          "cpuMicros": {
+            "user": 3634,
+            "system": 12004
+          }
+        },
+        {
+          "ms": 11.045110000000022,
+          "cpuMicros": {
+            "user": 0,
+            "system": 17028
+          }
+        },
+        {
+          "ms": 13.056466,
+          "cpuMicros": {
+            "user": 1438,
+            "system": 17752
+          }
+        },
+        {
+          "ms": 11.525007000000187,
+          "cpuMicros": {
+            "user": 10434,
+            "system": 6862
+          }
+        }
+      ],
+      "p50Ms": 11.955748000000312,
+      "p95Ms": 14.042116999999962,
+      "cpuP50Micros": 17743
+    },
+    {
+      "name": "v1:dependencies",
+      "samples": [
+        {
+          "ms": 17.36473100000012,
+          "cpuMicros": {
+            "user": 16492,
+            "system": 7553
+          }
+        },
+        {
+          "ms": 16.15173700000014,
+          "cpuMicros": {
+            "user": 2695,
+            "system": 19293
+          }
+        },
+        {
+          "ms": 16.88752700000032,
+          "cpuMicros": {
+            "user": 5016,
+            "system": 20021
+          }
+        },
+        {
+          "ms": 16.13078799999994,
+          "cpuMicros": {
+            "user": 10554,
+            "system": 11340
+          }
+        },
+        {
+          "ms": 16.533112000000074,
+          "cpuMicros": {
+            "user": 4713,
+            "system": 17856
+          }
+        },
+        {
+          "ms": 15.996579999999994,
+          "cpuMicros": {
+            "user": 13027,
+            "system": 8715
+          }
+        },
+        {
+          "ms": 16.535583999999744,
+          "cpuMicros": {
+            "user": 13218,
+            "system": 8985
+          }
+        },
+        {
+          "ms": 16.718722999999954,
+          "cpuMicros": {
+            "user": 7363,
+            "system": 15490
+          }
+        },
+        {
+          "ms": 17.234238000000005,
+          "cpuMicros": {
+            "user": 11585,
+            "system": 12782
+          }
+        },
+        {
+          "ms": 16.65939100000014,
+          "cpuMicros": {
+            "user": 13655,
+            "system": 9586
+          }
+        },
+        {
+          "ms": 16.98415100000011,
+          "cpuMicros": {
+            "user": 11048,
+            "system": 12000
+          }
+        },
+        {
+          "ms": 16.283546000000115,
+          "cpuMicros": {
+            "user": 13248,
+            "system": 8997
+          }
+        },
+        {
+          "ms": 16.39861400000018,
+          "cpuMicros": {
+            "user": 4634,
+            "system": 17774
+          }
+        },
+        {
+          "ms": 16.105552999999873,
+          "cpuMicros": {
+            "user": 10550,
+            "system": 11296
+          }
+        },
+        {
+          "ms": 16.23083799999995,
+          "cpuMicros": {
+            "user": 8838,
+            "system": 13242
+          }
+        },
+        {
+          "ms": 17.397293999999874,
+          "cpuMicros": {
+            "user": 8202,
+            "system": 16697
+          }
+        },
+        {
+          "ms": 16.40223900000001,
+          "cpuMicros": {
+            "user": 13214,
+            "system": 8940
+          }
+        },
+        {
+          "ms": 16.528395000000273,
+          "cpuMicros": {
+            "user": 4731,
+            "system": 17924
+          }
+        },
+        {
+          "ms": 16.030636999999842,
+          "cpuMicros": {
+            "user": 8647,
+            "system": 12975
+          }
+        },
+        {
+          "ms": 16.556241999999656,
+          "cpuMicros": {
+            "user": 6377,
+            "system": 15898
+          }
+        },
+        {
+          "ms": 18.999622000000272,
+          "cpuMicros": {
+            "user": 11209,
+            "system": 14807
+          }
+        },
+        {
+          "ms": 16.756516999999803,
+          "cpuMicros": {
+            "user": 9038,
+            "system": 13525
+          }
+        },
+        {
+          "ms": 17.50461099999984,
+          "cpuMicros": {
+            "user": 23465,
+            "system": 2402
+          }
+        },
+        {
+          "ms": 17.309609999999793,
+          "cpuMicros": {
+            "user": 4478,
+            "system": 19319
+          }
+        },
+        {
+          "ms": 16.414168999999674,
+          "cpuMicros": {
+            "user": 2103,
+            "system": 20409
+          }
+        },
+        {
+          "ms": 16.37882099999979,
+          "cpuMicros": {
+            "user": 7229,
+            "system": 15345
+          }
+        },
+        {
+          "ms": 16.19596999999976,
+          "cpuMicros": {
+            "user": 7007,
+            "system": 15023
+          }
+        },
+        {
+          "ms": 16.97413800000004,
+          "cpuMicros": {
+            "user": 1429,
+            "system": 21986
+          }
+        },
+        {
+          "ms": 16.946846000000278,
+          "cpuMicros": {
+            "user": 9654,
+            "system": 14408
+          }
+        },
+        {
+          "ms": 16.747245999999905,
+          "cpuMicros": {
+            "user": 3129,
+            "system": 20020
+          }
+        },
+        {
+          "ms": 16.120046999999886,
+          "cpuMicros": {
+            "user": 13140,
+            "system": 8823
+          }
+        },
+        {
+          "ms": 16.738460999999916,
+          "cpuMicros": {
+            "user": 10940,
+            "system": 11890
+          }
+        },
+        {
+          "ms": 20.02746799999977,
+          "cpuMicros": {
+            "user": 3113,
+            "system": 24360
+          }
+        },
+        {
+          "ms": 18.44345099999964,
+          "cpuMicros": {
+            "user": 8024,
+            "system": 18341
+          }
+        },
+        {
+          "ms": 16.088706000000002,
+          "cpuMicros": {
+            "user": 5500,
+            "system": 17160
+          }
+        },
+        {
+          "ms": 16.938877000000048,
+          "cpuMicros": {
+            "user": 6894,
+            "system": 17205
+          }
+        },
+        {
+          "ms": 16.746532000000116,
+          "cpuMicros": {
+            "user": 4757,
+            "system": 17972
+          }
+        },
+        {
+          "ms": 15.894231000000218,
+          "cpuMicros": {
+            "user": 6863,
+            "system": 14721
+          }
+        },
+        {
+          "ms": 16.834481999999753,
+          "cpuMicros": {
+            "user": 7362,
+            "system": 15439
+          }
+        },
+        {
+          "ms": 15.742815000000064,
+          "cpuMicros": {
+            "user": 12939,
+            "system": 8571
+          }
+        },
+        {
+          "ms": 17.95765900000015,
+          "cpuMicros": {
+            "user": 12400,
+            "system": 12127
+          }
+        },
+        {
+          "ms": 16.341957000000093,
+          "cpuMicros": {
+            "user": 12669,
+            "system": 10112
+          }
+        },
+        {
+          "ms": 17.626810000000205,
+          "cpuMicros": {
+            "user": 10211,
+            "system": 15234
+          }
+        },
+        {
+          "ms": 16.310329999999794,
+          "cpuMicros": {
+            "user": 3814,
+            "system": 18576
+          }
+        },
+        {
+          "ms": 15.957479000000149,
+          "cpuMicros": {
+            "user": 1860,
+            "system": 20134
+          }
+        },
+        {
+          "ms": 16.222620000000006,
+          "cpuMicros": {
+            "user": 11477,
+            "system": 10747
+          }
+        },
+        {
+          "ms": 15.91272700000036,
+          "cpuMicros": {
+            "user": 13186,
+            "system": 8886
+          }
+        },
+        {
+          "ms": 15.89366199999995,
+          "cpuMicros": {
+            "user": 0,
+            "system": 21919
+          }
+        },
+        {
+          "ms": 16.981115000000045,
+          "cpuMicros": {
+            "user": 3521,
+            "system": 20404
+          }
+        },
+        {
+          "ms": 16.12244099999998,
+          "cpuMicros": {
+            "user": 12929,
+            "system": 8514
+          }
+        },
+        {
+          "ms": 16.993275999999696,
+          "cpuMicros": {
+            "user": 11853,
+            "system": 11295
+          }
+        }
+      ],
+      "p50Ms": 16.535583999999744,
+      "p95Ms": 18.44345099999964,
+      "cpuP50Micros": 22655
+    },
+    {
+      "name": "v2:StatDirectory",
+      "samples": [
+        {
+          "ms": 0.9668169999999918,
+          "cpuMicros": {
+            "user": 523,
+            "system": 764
+          }
+        },
+        {
+          "ms": 1.156119000000217,
+          "cpuMicros": {
+            "user": 0,
+            "system": 2015
+          }
+        },
+        {
+          "ms": 1.167638999999781,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1659
+          }
+        },
+        {
+          "ms": 1.0690339999996468,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1490
+          }
+        },
+        {
+          "ms": 1.0544700000000375,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1466
+          }
+        },
+        {
+          "ms": 1.1051390000002357,
+          "cpuMicros": {
+            "user": 620,
+            "system": 948
+          }
+        },
+        {
+          "ms": 1.0644250000000284,
+          "cpuMicros": {
+            "user": 608,
+            "system": 890
+          }
+        },
+        {
+          "ms": 0.9710690000001705,
+          "cpuMicros": {
+            "user": 531,
+            "system": 779
+          }
+        },
+        {
+          "ms": 0.9919320000003609,
+          "cpuMicros": {
+            "user": 526,
+            "system": 770
+          }
+        },
+        {
+          "ms": 0.5057549999996809,
+          "cpuMicros": {
+            "user": 0,
+            "system": 827
+          }
+        },
+        {
+          "ms": 0.9653920000000653,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1436
+          }
+        },
+        {
+          "ms": 0.9947930000002998,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1312
+          }
+        },
+        {
+          "ms": 1.0240250000001652,
+          "cpuMicros": {
+            "user": 228,
+            "system": 1101
+          }
+        },
+        {
+          "ms": 1.1333890000000792,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1983
+          }
+        },
+        {
+          "ms": 0.7619549999999435,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1083
+          }
+        },
+        {
+          "ms": 0.5497290000002977,
+          "cpuMicros": {
+            "user": 0,
+            "system": 839
+          }
+        },
+        {
+          "ms": 0.7431750000000648,
+          "cpuMicros": {
+            "user": 245,
+            "system": 799
+          }
+        },
+        {
+          "ms": 0.9888390000000982,
+          "cpuMicros": {
+            "user": 542,
+            "system": 796
+          }
+        },
+        {
+          "ms": 1.007763999999952,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1445
+          }
+        },
+        {
+          "ms": 0.9836060000002362,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1327
+          }
+        },
+        {
+          "ms": 0.802103999999872,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1151
+          }
+        },
+        {
+          "ms": 1.01543300000003,
+          "cpuMicros": {
+            "user": 367,
+            "system": 961
+          }
+        },
+        {
+          "ms": 0.6945620000001327,
+          "cpuMicros": {
+            "user": 431,
+            "system": 634
+          }
+        },
+        {
+          "ms": 1.0390769999999065,
+          "cpuMicros": {
+            "user": 1385,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.9578230000001895,
+          "cpuMicros": {
+            "user": 1324,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.1097359999998844,
+          "cpuMicros": {
+            "user": 1489,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0086449999998877,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1407
+          }
+        },
+        {
+          "ms": 1.0321859999999106,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1350
+          }
+        },
+        {
+          "ms": 1.0260690000000068,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1370
+          }
+        },
+        {
+          "ms": 0.6694059999999808,
+          "cpuMicros": {
+            "user": 418,
+            "system": 617
+          }
+        },
+        {
+          "ms": 1.0138420000002952,
+          "cpuMicros": {
+            "user": 538,
+            "system": 791
+          }
+        },
+        {
+          "ms": 0.9718769999999495,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1351
+          }
+        },
+        {
+          "ms": 0.8088290000000598,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1206
+          }
+        },
+        {
+          "ms": 1.0137389999999868,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1340
+          }
+        },
+        {
+          "ms": 0.6929049999998824,
+          "cpuMicros": {
+            "user": 241,
+            "system": 808
+          }
+        },
+        {
+          "ms": 0.614643999999771,
+          "cpuMicros": {
+            "user": 381,
+            "system": 562
+          }
+        },
+        {
+          "ms": 1.056898000000274,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1502
+          }
+        },
+        {
+          "ms": 1.0519979999999123,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1505
+          }
+        },
+        {
+          "ms": 1.0035299999999552,
+          "cpuMicros": {
+            "user": 3,
+            "system": 1349
+          }
+        },
+        {
+          "ms": 0.8297840000000178,
+          "cpuMicros": {
+            "user": 503,
+            "system": 741
+          }
+        },
+        {
+          "ms": 0.8291070000000218,
+          "cpuMicros": {
+            "user": 1295,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.1394169999998667,
+          "cpuMicros": {
+            "user": 1555,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.8819300000000112,
+          "cpuMicros": {
+            "user": 1217,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0323620000003757,
+          "cpuMicros": {
+            "user": 1406,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.8489420000000791,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1262
+          }
+        },
+        {
+          "ms": 0.755692000000181,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1241
+          }
+        },
+        {
+          "ms": 0.9042170000002443,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1249
+          }
+        },
+        {
+          "ms": 1.0290279999999257,
+          "cpuMicros": {
+            "user": 492,
+            "system": 920
+          }
+        },
+        {
+          "ms": 0.8270269999998163,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1212
+          }
+        },
+        {
+          "ms": 0.8168879999998353,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1156
+          }
+        },
+        {
+          "ms": 1.0002349999999751,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1328
+          }
+        }
+      ],
+      "p50Ms": 0.9919320000003609,
+      "p95Ms": 1.1394169999998667,
+      "cpuP50Micros": 1328
+    },
+    {
+      "name": "v1:StatDirectory",
+      "samples": [
+        {
+          "ms": 1.0772719999999936,
+          "cpuMicros": {
+            "user": 1465,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.9892169999998259,
+          "cpuMicros": {
+            "user": 1360,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.15041999999994,
+          "cpuMicros": {
+            "user": 1480,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6750040000001718,
+          "cpuMicros": {
+            "user": 420,
+            "system": 556
+          }
+        },
+        {
+          "ms": 1.2146819999998115,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1590
+          }
+        },
+        {
+          "ms": 0.5759499999999207,
+          "cpuMicros": {
+            "user": 0,
+            "system": 920
+          }
+        },
+        {
+          "ms": 0.8753859999997076,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1223
+          }
+        },
+        {
+          "ms": 1.0628010000000359,
+          "cpuMicros": {
+            "user": 351,
+            "system": 1130
+          }
+        },
+        {
+          "ms": 1.1500800000003437,
+          "cpuMicros": {
+            "user": 1613,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0783739999997124,
+          "cpuMicros": {
+            "user": 1510,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0585759999999027,
+          "cpuMicros": {
+            "user": 1312,
+            "system": 126
+          }
+        },
+        {
+          "ms": 0.8848199999997632,
+          "cpuMicros": {
+            "user": 495,
+            "system": 729
+          }
+        },
+        {
+          "ms": 1.1467390000002524,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1577
+          }
+        },
+        {
+          "ms": 1.069434000000001,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1413
+          }
+        },
+        {
+          "ms": 1.1279230000000098,
+          "cpuMicros": {
+            "user": 67,
+            "system": 1460
+          }
+        },
+        {
+          "ms": 1.0366300000000592,
+          "cpuMicros": {
+            "user": 547,
+            "system": 806
+          }
+        },
+        {
+          "ms": 1.0832719999998517,
+          "cpuMicros": {
+            "user": 1446,
+            "system": 72
+          }
+        },
+        {
+          "ms": 1.0545280000001185,
+          "cpuMicros": {
+            "user": 570,
+            "system": 839
+          }
+        },
+        {
+          "ms": 0.9675139999999374,
+          "cpuMicros": {
+            "user": 649,
+            "system": 955
+          }
+        },
+        {
+          "ms": 1.0236519999998563,
+          "cpuMicros": {
+            "user": 550,
+            "system": 809
+          }
+        },
+        {
+          "ms": 0.8551330000000235,
+          "cpuMicros": {
+            "user": 1245,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0216769999997268,
+          "cpuMicros": {
+            "user": 1338,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0163649999999507,
+          "cpuMicros": {
+            "user": 1331,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0250839999998789,
+          "cpuMicros": {
+            "user": 802,
+            "system": 536
+          }
+        },
+        {
+          "ms": 1.100083000000268,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1436
+          }
+        },
+        {
+          "ms": 1.052766000000247,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1380
+          }
+        },
+        {
+          "ms": 1.0469939999998132,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1371
+          }
+        },
+        {
+          "ms": 1.1239000000000487,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1486
+          }
+        },
+        {
+          "ms": 1.1392640000003667,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1499
+          }
+        },
+        {
+          "ms": 1.0286219999998139,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1382
+          }
+        },
+        {
+          "ms": 1.902168999999958,
+          "cpuMicros": {
+            "user": 3112,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.915747999999894,
+          "cpuMicros": {
+            "user": 2615,
+            "system": 120
+          }
+        },
+        {
+          "ms": 1.298953999999867,
+          "cpuMicros": {
+            "user": 746,
+            "system": 1095
+          }
+        },
+        {
+          "ms": 1.2281370000000607,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1652
+          }
+        },
+        {
+          "ms": 0.911330999999791,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1362
+          }
+        },
+        {
+          "ms": 1.055819000000156,
+          "cpuMicros": {
+            "user": 50,
+            "system": 1406
+          }
+        },
+        {
+          "ms": 1.0925749999996697,
+          "cpuMicros": {
+            "user": 584,
+            "system": 859
+          }
+        },
+        {
+          "ms": 1.0838020000001052,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1686
+          }
+        },
+        {
+          "ms": 0.8236919999999373,
+          "cpuMicros": {
+            "user": 337,
+            "system": 1105
+          }
+        },
+        {
+          "ms": 1.1077739999996083,
+          "cpuMicros": {
+            "user": 628,
+            "system": 924
+          }
+        },
+        {
+          "ms": 1.0317689999997128,
+          "cpuMicros": {
+            "user": 554,
+            "system": 816
+          }
+        },
+        {
+          "ms": 0.674623999999767,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1010
+          }
+        },
+        {
+          "ms": 1.074757999999747,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1418
+          }
+        },
+        {
+          "ms": 1.138304000000062,
+          "cpuMicros": {
+            "user": 1,
+            "system": 1915
+          }
+        },
+        {
+          "ms": 1.263688000000002,
+          "cpuMicros": {
+            "user": 692,
+            "system": 1019
+          }
+        },
+        {
+          "ms": 1.277864999999565,
+          "cpuMicros": {
+            "user": 1860,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.0790649999999005,
+          "cpuMicros": {
+            "user": 1474,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.1307480000000396,
+          "cpuMicros": {
+            "user": 1226,
+            "system": 320
+          }
+        },
+        {
+          "ms": 1.2659050000002026,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1786
+          }
+        },
+        {
+          "ms": 1.0966169999996964,
+          "cpuMicros": {
+            "user": 0,
+            "system": 1479
+          }
+        },
+        {
+          "ms": 1.0822470000002795,
+          "cpuMicros": {
+            "user": 138,
+            "system": 1282
+          }
+        }
+      ],
+      "p50Ms": 1.0772719999999936,
+      "p95Ms": 1.298953999999867,
+      "cpuP50Micros": 1456
+    },
+    {
+      "name": "v2:StatFile",
+      "samples": [
+        {
+          "ms": 11.466038000000026,
+          "cpuMicros": {
+            "user": 5884,
+            "system": 10957
+          }
+        },
+        {
+          "ms": 11.934443000000101,
+          "cpuMicros": {
+            "user": 4370,
+            "system": 13080
+          }
+        },
+        {
+          "ms": 10.881829999999809,
+          "cpuMicros": {
+            "user": 14431,
+            "system": 2022
+          }
+        },
+        {
+          "ms": 14.117945999999847,
+          "cpuMicros": {
+            "user": 2790,
+            "system": 17407
+          }
+        },
+        {
+          "ms": 12.62087500000007,
+          "cpuMicros": {
+            "user": 6488,
+            "system": 11846
+          }
+        },
+        {
+          "ms": 10.887318999999934,
+          "cpuMicros": {
+            "user": 5582,
+            "system": 10514
+          }
+        },
+        {
+          "ms": 12.197001999999884,
+          "cpuMicros": {
+            "user": 4378,
+            "system": 13090
+          }
+        },
+        {
+          "ms": 12.431203000000096,
+          "cpuMicros": {
+            "user": 2778,
+            "system": 15064
+          }
+        },
+        {
+          "ms": 13.494975000000068,
+          "cpuMicros": {
+            "user": 9821,
+            "system": 10364
+          }
+        },
+        {
+          "ms": 9.637894999999844,
+          "cpuMicros": {
+            "user": 4657,
+            "system": 9154
+          }
+        },
+        {
+          "ms": 7.919503000000077,
+          "cpuMicros": {
+            "user": 0,
+            "system": 12473
+          }
+        },
+        {
+          "ms": 8.236603999999716,
+          "cpuMicros": {
+            "user": 4393,
+            "system": 9331
+          }
+        },
+        {
+          "ms": 12.869550999999774,
+          "cpuMicros": {
+            "user": 2335,
+            "system": 16533
+          }
+        },
+        {
+          "ms": 11.554411999999957,
+          "cpuMicros": {
+            "user": 10376,
+            "system": 6843
+          }
+        },
+        {
+          "ms": 10.468852999999854,
+          "cpuMicros": {
+            "user": 10774,
+            "system": 5304
+          }
+        },
+        {
+          "ms": 12.69926600000008,
+          "cpuMicros": {
+            "user": 335,
+            "system": 17907
+          }
+        },
+        {
+          "ms": 11.430499000000054,
+          "cpuMicros": {
+            "user": 8481,
+            "system": 8372
+          }
+        },
+        {
+          "ms": 12.254828999999972,
+          "cpuMicros": {
+            "user": 3543,
+            "system": 14002
+          }
+        },
+        {
+          "ms": 12.57190300000002,
+          "cpuMicros": {
+            "user": 10168,
+            "system": 6522
+          }
+        },
+        {
+          "ms": 9.34841299999971,
+          "cpuMicros": {
+            "user": 4996,
+            "system": 9671
+          }
+        },
+        {
+          "ms": 12.706133000000136,
+          "cpuMicros": {
+            "user": 6324,
+            "system": 13863
+          }
+        },
+        {
+          "ms": 11.188841000000139,
+          "cpuMicros": {
+            "user": 2277,
+            "system": 14312
+          }
+        },
+        {
+          "ms": 12.624841999999717,
+          "cpuMicros": {
+            "user": 11565,
+            "system": 6471
+          }
+        },
+        {
+          "ms": 11.908246999999847,
+          "cpuMicros": {
+            "user": 4371,
+            "system": 13082
+          }
+        },
+        {
+          "ms": 10.826465000000098,
+          "cpuMicros": {
+            "user": 6514,
+            "system": 9776
+          }
+        },
+        {
+          "ms": 11.006280999999944,
+          "cpuMicros": {
+            "user": 0,
+            "system": 16445
+          }
+        },
+        {
+          "ms": 12.447097999999642,
+          "cpuMicros": {
+            "user": 2430,
+            "system": 15436
+          }
+        },
+        {
+          "ms": 9.767790999999761,
+          "cpuMicros": {
+            "user": 708,
+            "system": 14103
+          }
+        },
+        {
+          "ms": 12.11899399999993,
+          "cpuMicros": {
+            "user": 10613,
+            "system": 7250
+          }
+        },
+        {
+          "ms": 11.05326100000002,
+          "cpuMicros": {
+            "user": 6065,
+            "system": 11293
+          }
+        },
+        {
+          "ms": 11.098966000000019,
+          "cpuMicros": {
+            "user": 1390,
+            "system": 15165
+          }
+        },
+        {
+          "ms": 12.59882800000014,
+          "cpuMicros": {
+            "user": 2957,
+            "system": 15290
+          }
+        },
+        {
+          "ms": 14.547232999999778,
+          "cpuMicros": {
+            "user": 1022,
+            "system": 21014
+          }
+        },
+        {
+          "ms": 11.252920000000358,
+          "cpuMicros": {
+            "user": 5790,
+            "system": 10903
+          }
+        },
+        {
+          "ms": 9.981403000000228,
+          "cpuMicros": {
+            "user": 11261,
+            "system": 3912
+          }
+        },
+        {
+          "ms": 11.917820000000575,
+          "cpuMicros": {
+            "user": 10280,
+            "system": 6748
+          }
+        },
+        {
+          "ms": 11.162684999999328,
+          "cpuMicros": {
+            "user": 564,
+            "system": 15985
+          }
+        },
+        {
+          "ms": 11.26096299999972,
+          "cpuMicros": {
+            "user": 4088,
+            "system": 12648
+          }
+        },
+        {
+          "ms": 11.037768000000142,
+          "cpuMicros": {
+            "user": 7531,
+            "system": 9219
+          }
+        },
+        {
+          "ms": 9.661890999999741,
+          "cpuMicros": {
+            "user": 9403,
+            "system": 5416
+          }
+        },
+        {
+          "ms": 12.488322000000153,
+          "cpuMicros": {
+            "user": 8982,
+            "system": 9124
+          }
+        },
+        {
+          "ms": 12.742629000000306,
+          "cpuMicros": {
+            "user": 2160,
+            "system": 16372
+          }
+        },
+        {
+          "ms": 11.15644500000053,
+          "cpuMicros": {
+            "user": 4062,
+            "system": 12622
+          }
+        },
+        {
+          "ms": 11.064807999999175,
+          "cpuMicros": {
+            "user": 10289,
+            "system": 6761
+          }
+        },
+        {
+          "ms": 11.68879300000026,
+          "cpuMicros": {
+            "user": 633,
+            "system": 18420
+          }
+        },
+        {
+          "ms": 9.917929999999615,
+          "cpuMicros": {
+            "user": 5098,
+            "system": 9856
+          }
+        },
+        {
+          "ms": 12.743757999999616,
+          "cpuMicros": {
+            "user": 6470,
+            "system": 11967
+          }
+        },
+        {
+          "ms": 12.092209999999795,
+          "cpuMicros": {
+            "user": 5508,
+            "system": 12504
+          }
+        },
+        {
+          "ms": 10.595776999999543,
+          "cpuMicros": {
+            "user": 5406,
+            "system": 10332
+          }
+        },
+        {
+          "ms": 12.010599000000184,
+          "cpuMicros": {
+            "user": 4485,
+            "system": 13279
+          }
+        },
+        {
+          "ms": 13.971501999999418,
+          "cpuMicros": {
+            "user": 7126,
+            "system": 12991
+          }
+        }
+      ],
+      "p50Ms": 11.554411999999957,
+      "p95Ms": 13.971501999999418,
+      "cpuP50Micros": 17050
+    },
+    {
+      "name": "v1:StatFile",
+      "samples": [
+        {
+          "ms": 15.329596000000492,
+          "cpuMicros": {
+            "user": 8479,
+            "system": 12706
+          }
+        },
+        {
+          "ms": 14.58976900000016,
+          "cpuMicros": {
+            "user": 10680,
+            "system": 9365
+          }
+        },
+        {
+          "ms": 16.941007999999783,
+          "cpuMicros": {
+            "user": 8488,
+            "system": 17084
+          }
+        },
+        {
+          "ms": 14.664096999999856,
+          "cpuMicros": {
+            "user": 9878,
+            "system": 10505
+          }
+        },
+        {
+          "ms": 14.82890899999984,
+          "cpuMicros": {
+            "user": 5820,
+            "system": 14940
+          }
+        },
+        {
+          "ms": 14.974583000000166,
+          "cpuMicros": {
+            "user": 2156,
+            "system": 18348
+          }
+        },
+        {
+          "ms": 15.424334000000272,
+          "cpuMicros": {
+            "user": 5918,
+            "system": 15483
+          }
+        },
+        {
+          "ms": 15.402585999999246,
+          "cpuMicros": {
+            "user": 4078,
+            "system": 16976
+          }
+        },
+        {
+          "ms": 15.749144999999771,
+          "cpuMicros": {
+            "user": 5920,
+            "system": 15500
+          }
+        },
+        {
+          "ms": 16.521230999999716,
+          "cpuMicros": {
+            "user": 10256,
+            "system": 13039
+          }
+        },
+        {
+          "ms": 15.562410999999884,
+          "cpuMicros": {
+            "user": 4379,
+            "system": 17437
+          }
+        },
+        {
+          "ms": 14.747025000000576,
+          "cpuMicros": {
+            "user": 7184,
+            "system": 13134
+          }
+        },
+        {
+          "ms": 15.893305999999939,
+          "cpuMicros": {
+            "user": 6853,
+            "system": 14509
+          }
+        },
+        {
+          "ms": 14.752384000000347,
+          "cpuMicros": {
+            "user": 8142,
+            "system": 12176
+          }
+        },
+        {
+          "ms": 15.271085000000312,
+          "cpuMicros": {
+            "user": 6731,
+            "system": 14312
+          }
+        },
+        {
+          "ms": 15.672364000000016,
+          "cpuMicros": {
+            "user": 14571,
+            "system": 6744
+          }
+        },
+        {
+          "ms": 16.479589999999916,
+          "cpuMicros": {
+            "user": 5323,
+            "system": 18916
+          }
+        },
+        {
+          "ms": 15.658856000000014,
+          "cpuMicros": {
+            "user": 7709,
+            "system": 13961
+          }
+        },
+        {
+          "ms": 15.274352000000363,
+          "cpuMicros": {
+            "user": 21501,
+            "system": 0
+          }
+        },
+        {
+          "ms": 16.996131000000787,
+          "cpuMicros": {
+            "user": 4487,
+            "system": 19136
+          }
+        },
+        {
+          "ms": 15.984562000000551,
+          "cpuMicros": {
+            "user": 462,
+            "system": 22458
+          }
+        },
+        {
+          "ms": 15.970419999999649,
+          "cpuMicros": {
+            "user": 9707,
+            "system": 12169
+          }
+        },
+        {
+          "ms": 14.670530999999755,
+          "cpuMicros": {
+            "user": 9946,
+            "system": 10657
+          }
+        },
+        {
+          "ms": 15.29026199999953,
+          "cpuMicros": {
+            "user": 5228,
+            "system": 16301
+          }
+        },
+        {
+          "ms": 14.455453999999918,
+          "cpuMicros": {
+            "user": 10617,
+            "system": 9266
+          }
+        },
+        {
+          "ms": 14.921602999999777,
+          "cpuMicros": {
+            "user": 6389,
+            "system": 13770
+          }
+        },
+        {
+          "ms": 14.483128000000761,
+          "cpuMicros": {
+            "user": 776,
+            "system": 18544
+          }
+        },
+        {
+          "ms": 14.933426999999938,
+          "cpuMicros": {
+            "user": 8072,
+            "system": 12066
+          }
+        },
+        {
+          "ms": 14.690387000000555,
+          "cpuMicros": {
+            "user": 9663,
+            "system": 10233
+          }
+        },
+        {
+          "ms": 14.32547599999998,
+          "cpuMicros": {
+            "user": 6675,
+            "system": 12342
+          }
+        },
+        {
+          "ms": 15.506140999999843,
+          "cpuMicros": {
+            "user": 11371,
+            "system": 10441
+          }
+        },
+        {
+          "ms": 15.094383999999991,
+          "cpuMicros": {
+            "user": 14159,
+            "system": 6140
+          }
+        },
+        {
+          "ms": 15.504303000000618,
+          "cpuMicros": {
+            "user": 6706,
+            "system": 14272
+          }
+        },
+        {
+          "ms": 15.952394999999342,
+          "cpuMicros": {
+            "user": 12876,
+            "system": 8474
+          }
+        },
+        {
+          "ms": 14.988553000000138,
+          "cpuMicros": {
+            "user": 2709,
+            "system": 17233
+          }
+        },
+        {
+          "ms": 14.88392500000009,
+          "cpuMicros": {
+            "user": 14167,
+            "system": 6138
+          }
+        },
+        {
+          "ms": 14.522178999999596,
+          "cpuMicros": {
+            "user": 14791,
+            "system": 4701
+          }
+        },
+        {
+          "ms": 17.881878000000142,
+          "cpuMicros": {
+            "user": 8335,
+            "system": 16820
+          }
+        },
+        {
+          "ms": 16.92109100000016,
+          "cpuMicros": {
+            "user": 4739,
+            "system": 17967
+          }
+        },
+        {
+          "ms": 15.315491000000293,
+          "cpuMicros": {
+            "user": 7419,
+            "system": 13472
+          }
+        },
+        {
+          "ms": 14.710431000000426,
+          "cpuMicros": {
+            "user": 12382,
+            "system": 7691
+          }
+        },
+        {
+          "ms": 15.20333600000049,
+          "cpuMicros": {
+            "user": 5638,
+            "system": 15035
+          }
+        },
+        {
+          "ms": 15.082244000000173,
+          "cpuMicros": {
+            "user": 5603,
+            "system": 14986
+          }
+        },
+        {
+          "ms": 14.172555999999531,
+          "cpuMicros": {
+            "user": 882,
+            "system": 18750
+          }
+        },
+        {
+          "ms": 16.15639899999951,
+          "cpuMicros": {
+            "user": 13694,
+            "system": 9720
+          }
+        },
+        {
+          "ms": 15.695068999999421,
+          "cpuMicros": {
+            "user": 4202,
+            "system": 17156
+          }
+        },
+        {
+          "ms": 15.129165999999714,
+          "cpuMicros": {
+            "user": 1316,
+            "system": 19446
+          }
+        },
+        {
+          "ms": 14.711139999999432,
+          "cpuMicros": {
+            "user": 8143,
+            "system": 12176
+          }
+        },
+        {
+          "ms": 15.260698000000048,
+          "cpuMicros": {
+            "user": 11807,
+            "system": 9222
+          }
+        },
+        {
+          "ms": 14.52476200000001,
+          "cpuMicros": {
+            "user": 15136,
+            "system": 5167
+          }
+        },
+        {
+          "ms": 14.907482000000527,
+          "cpuMicros": {
+            "user": 5514,
+            "system": 14863
+          }
+        }
+      ],
+      "p50Ms": 15.260698000000048,
+      "p95Ms": 16.941007999999783,
+      "cpuP50Micros": 20891
+    },
+    {
+      "name": "identity",
+      "samples": [
+        {
+          "ms": 0.28183200000057695,
+          "cpuMicros": {
+            "user": 109,
+            "system": 170
+          }
+        },
+        {
+          "ms": 0.2457830000003014,
+          "cpuMicros": {
+            "user": 96,
+            "system": 149
+          }
+        },
+        {
+          "ms": 0.24179800000001705,
+          "cpuMicros": {
+            "user": 95,
+            "system": 147
+          }
+        },
+        {
+          "ms": 0.23420100000021193,
+          "cpuMicros": {
+            "user": 91,
+            "system": 142
+          }
+        },
+        {
+          "ms": 0.22808200000054057,
+          "cpuMicros": {
+            "user": 88,
+            "system": 138
+          }
+        },
+        {
+          "ms": 0.23343199999999342,
+          "cpuMicros": {
+            "user": 90,
+            "system": 141
+          }
+        },
+        {
+          "ms": 0.22836800000004587,
+          "cpuMicros": {
+            "user": 88,
+            "system": 137
+          }
+        },
+        {
+          "ms": 0.22813399999995454,
+          "cpuMicros": {
+            "user": 89,
+            "system": 138
+          }
+        },
+        {
+          "ms": 0.3267040000000634,
+          "cpuMicros": {
+            "user": 327,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2781439999998838,
+          "cpuMicros": {
+            "user": 280,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.23029399999995803,
+          "cpuMicros": {
+            "user": 228,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22159499999997934,
+          "cpuMicros": {
+            "user": 220,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.29249999999956344,
+          "cpuMicros": {
+            "user": 295,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.24666000000070198,
+          "cpuMicros": {
+            "user": 246,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2314169999999649,
+          "cpuMicros": {
+            "user": 229,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.23982000000069092,
+          "cpuMicros": {
+            "user": 239,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.33934399999998277,
+          "cpuMicros": {
+            "user": 362,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.27515200000016193,
+          "cpuMicros": {
+            "user": 273,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.24064699999962613,
+          "cpuMicros": {
+            "user": 238,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22478099999989354,
+          "cpuMicros": {
+            "user": 222,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22313200000007782,
+          "cpuMicros": {
+            "user": 220,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2210930000001099,
+          "cpuMicros": {
+            "user": 219,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.21955799999977899,
+          "cpuMicros": {
+            "user": 217,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.24794099999962782,
+          "cpuMicros": {
+            "user": 246,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.9001859999998487,
+          "cpuMicros": {
+            "user": 1376,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.5929869999999937,
+          "cpuMicros": {
+            "user": 941,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.37088200000016514,
+          "cpuMicros": {
+            "user": 417,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2800250000000233,
+          "cpuMicros": {
+            "user": 276,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2313850000000457,
+          "cpuMicros": {
+            "user": 229,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.291838999999527,
+          "cpuMicros": {
+            "user": 291,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.26735699999971985,
+          "cpuMicros": {
+            "user": 268,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.23832000000038533,
+          "cpuMicros": {
+            "user": 238,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.23603499999990163,
+          "cpuMicros": {
+            "user": 234,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.23186600000008184,
+          "cpuMicros": {
+            "user": 229,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2253469999996014,
+          "cpuMicros": {
+            "user": 144,
+            "system": 79
+          }
+        },
+        {
+          "ms": 0.2959790000004432,
+          "cpuMicros": {
+            "user": 293,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2803069999999934,
+          "cpuMicros": {
+            "user": 283,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22908800000004703,
+          "cpuMicros": {
+            "user": 229,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.25389199999972334,
+          "cpuMicros": {
+            "user": 248,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.2278070000002117,
+          "cpuMicros": {
+            "user": 224,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22514200000023266,
+          "cpuMicros": {
+            "user": 222,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22452899999916553,
+          "cpuMicros": {
+            "user": 220,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22209699999984878,
+          "cpuMicros": {
+            "user": 218,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22408400000040274,
+          "cpuMicros": {
+            "user": 220,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22899799999959214,
+          "cpuMicros": {
+            "user": 226,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22462199999972654,
+          "cpuMicros": {
+            "user": 221,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22515199999998003,
+          "cpuMicros": {
+            "user": 222,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22001400000044669,
+          "cpuMicros": {
+            "user": 216,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.21899799999937386,
+          "cpuMicros": {
+            "user": 216,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22014899999976478,
+          "cpuMicros": {
+            "user": 217,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.22004299999935029,
+          "cpuMicros": {
+            "user": 216,
+            "system": 0
+          }
+        }
+      ],
+      "p50Ms": 0.23186600000008184,
+      "p95Ms": 0.37088200000016514,
+      "cpuP50Micros": 229
+    },
+    {
+      "name": "command",
+      "samples": [
+        {
+          "ms": 0.7162379999999757,
+          "cpuMicros": {
+            "user": 0,
+            "system": 814
+          }
+        },
+        {
+          "ms": 0.6641929999996137,
+          "cpuMicros": {
+            "user": 0,
+            "system": 795
+          }
+        },
+        {
+          "ms": 0.6271799999994982,
+          "cpuMicros": {
+            "user": 109,
+            "system": 666
+          }
+        },
+        {
+          "ms": 0.657680999999684,
+          "cpuMicros": {
+            "user": 331,
+            "system": 515
+          }
+        },
+        {
+          "ms": 0.7508899999993446,
+          "cpuMicros": {
+            "user": 852,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6911019999997734,
+          "cpuMicros": {
+            "user": 794,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6406560000004902,
+          "cpuMicros": {
+            "user": 769,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6649780000007013,
+          "cpuMicros": {
+            "user": 782,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7993159999996351,
+          "cpuMicros": {
+            "user": 1059,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7965189999995346,
+          "cpuMicros": {
+            "user": 408,
+            "system": 582
+          }
+        },
+        {
+          "ms": 0.8988339999996242,
+          "cpuMicros": {
+            "user": 1123,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7272929999999178,
+          "cpuMicros": {
+            "user": 923,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6435620000002018,
+          "cpuMicros": {
+            "user": 780,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.8090430000002016,
+          "cpuMicros": {
+            "user": 904,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6080390000006446,
+          "cpuMicros": {
+            "user": 650,
+            "system": 59
+          }
+        },
+        {
+          "ms": 0.6997400000000198,
+          "cpuMicros": {
+            "user": 875,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.657748999999967,
+          "cpuMicros": {
+            "user": 772,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7036869999992632,
+          "cpuMicros": {
+            "user": 836,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.630181999999877,
+          "cpuMicros": {
+            "user": 736,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.5822280000002138,
+          "cpuMicros": {
+            "user": 712,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6405279999999038,
+          "cpuMicros": {
+            "user": 564,
+            "system": 237
+          }
+        },
+        {
+          "ms": 0.7059859999999389,
+          "cpuMicros": {
+            "user": 1066,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6854800000000978,
+          "cpuMicros": {
+            "user": 1172,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6893530000006649,
+          "cpuMicros": {
+            "user": 828,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6043289999997796,
+          "cpuMicros": {
+            "user": 755,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6718620000001465,
+          "cpuMicros": {
+            "user": 836,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6443439999993643,
+          "cpuMicros": {
+            "user": 787,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7140380000000732,
+          "cpuMicros": {
+            "user": 863,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6272399999998015,
+          "cpuMicros": {
+            "user": 729,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7541360000004715,
+          "cpuMicros": {
+            "user": 881,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7062020000003031,
+          "cpuMicros": {
+            "user": 852,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6275019999993674,
+          "cpuMicros": {
+            "user": 767,
+            "system": 0
+          }
+        },
+        {
+          "ms": 1.1788800000003903,
+          "cpuMicros": {
+            "user": 1416,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.8939819999995962,
+          "cpuMicros": {
+            "user": 1018,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.9961840000005395,
+          "cpuMicros": {
+            "user": 1199,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6490960000000996,
+          "cpuMicros": {
+            "user": 778,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7142469999998866,
+          "cpuMicros": {
+            "user": 1297,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7786319999995612,
+          "cpuMicros": {
+            "user": 869,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6708069999995132,
+          "cpuMicros": {
+            "user": 773,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.8972839999996722,
+          "cpuMicros": {
+            "user": 857,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.9000809999997728,
+          "cpuMicros": {
+            "user": 1055,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.7081430000007458,
+          "cpuMicros": {
+            "user": 834,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6746499999999287,
+          "cpuMicros": {
+            "user": 795,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6446350000005623,
+          "cpuMicros": {
+            "user": 806,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6179270000002361,
+          "cpuMicros": {
+            "user": 777,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6919550000002346,
+          "cpuMicros": {
+            "user": 1249,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.633162999999513,
+          "cpuMicros": {
+            "user": 725,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6234999999996944,
+          "cpuMicros": {
+            "user": 738,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6850049999993644,
+          "cpuMicros": {
+            "user": 860,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6080460000002859,
+          "cpuMicros": {
+            "user": 704,
+            "system": 0
+          }
+        },
+        {
+          "ms": 0.6343619999997827,
+          "cpuMicros": {
+            "user": 818,
+            "system": 0
+          }
+        }
+      ],
+      "p50Ms": 0.6850049999993644,
+      "p95Ms": 0.9000809999997728,
+      "cpuP50Micros": 828
+    }
+  ]
+}
