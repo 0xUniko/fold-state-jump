@@ -2,7 +2,7 @@ import { makePrewarmScheduler, schedulePrewarm, requestForeground, cancelPrewarm
 import { prepareCacheLocation, resolveCacheProject } from './cache-location';
 import { buildIdentity, validateDependencies } from './dependencies';
 import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
-import { extractVerifiedAst } from './extraction';
+import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamblePool, type PreamblePool } from './preamble';
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
@@ -16,6 +16,7 @@ const isCpp = (languageId: string): boolean =>
 const activeDocument = (): vscode.TextDocument | undefined => vscode.window.activeTextEditor?.document;
 
 type ExtractionRuntime = {
+  readonly preamblePool: PreamblePool;
   readonly astCache: AstCache;
   readonly scheduler: PrewarmScheduler;
   readonly diskCaches: Ref.Ref<ReadonlyMap<string, { readonly projectKey: string; readonly cache: DiskCache }>>;
@@ -157,9 +158,9 @@ const extractAst = Effect.fnUntraced(function* (
       return yield* Effect.fail(new Error('Background parsing deferred because system resources are busy.'));
     }
     if (command.context === 'fallback') runtime.output.appendLine(JSON.stringify({ event: 'fallback-command', source }));
-    const extracted = yield* extractVerifiedAst(source, command, executable, configuration.maxAstBytes, signal, (event) => {
-      if (event.event === 'native-start') trackNativeProcess(runtime.scheduler, signal, event.pid as number | undefined);
-      if (event.event === 'native-exit') trackNativeProcess(runtime.scheduler, signal, undefined);
+    const extracted = yield* extractWithPreamble(runtime.preamblePool, source, command, executable, configuration.maxAstBytes, signal, (event) => {
+      if (event.event === 'native-start' || event.event === 'native-active') trackNativeProcess(runtime.scheduler, signal, event.pid as number | undefined);
+      if (event.event === 'native-exit' || event.event === 'native-idle') trackNativeProcess(runtime.scheduler, signal, undefined);
       runtime.output.appendLine(JSON.stringify({ ...event, source }));
     });
     const afterCommand = yield* resolveInput;
@@ -293,6 +294,7 @@ const activeRuntime = Ref.makeUnsafe<ExtractionRuntime | undefined>(undefined);
 export const activate = (context: vscode.ExtensionContext): void => {
   const output = vscode.window.createOutputChannel('Fold State Jump');
   const runtime: ExtractionRuntime = {
+    preamblePool: makePreamblePool(),
     astCache: makeAstCache(),
     scheduler: makePrewarmScheduler((event) => output.appendLine(JSON.stringify(event))),
     diskCaches: Ref.makeUnsafe<ReadonlyMap<string, { readonly projectKey: string; readonly cache: DiskCache }>>(new Map()),
@@ -341,7 +343,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
   const databaseWatcher = vscode.workspace.createFileSystemWatcher('**/compile_commands.json');
   context.subscriptions.push(
     runtime.output,
-    { dispose: () => { void disposePrewarm(runtime.scheduler); } },
+    { dispose: () => { void disposePrewarm(runtime.scheduler).then(() => Effect.runPromise(disposePreamblePool(runtime.preamblePool))); } },
     vscode.window.onDidChangeActiveTextEditor(() => prewarm('active-editor')),
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (vscode.workspace.getConfiguration('foldStateJump', activeDocument()?.uri).get('prewarm.onSave', true)) invalidateSource(document.uri);
@@ -372,6 +374,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     vscode.commands.registerCommand('foldStateJump.clearCache', () => withSchedulerMaintenance(runtime.scheduler, async () => {
       const document = activeDocument();
       if (!document || document.uri.scheme !== 'file') { output.appendLine('Open a project file to clear its caches.'); return; }
+      await Effect.runPromise(clearPreamblePool(runtime.preamblePool));
       const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
       const project = await resolveCacheProject(path.resolve(document.uri.fsPath), roots);
       await Effect.runPromise(documentDiskCache(document, runtime, true));
@@ -457,5 +460,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = async (): Promise<void> => {
   const runtime = Effect.runSync(Ref.get(activeRuntime));
   Effect.runSync(Ref.set(activeRuntime, undefined));
-  if (runtime) await disposePrewarm(runtime.scheduler);
+  if (runtime) {
+    await disposePrewarm(runtime.scheduler);
+    await Effect.runPromise(disposePreamblePool(runtime.preamblePool));
+  }
 };

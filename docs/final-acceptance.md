@@ -1,5 +1,10 @@
 # Final cache acceptance, 2026-10-24
 
+This records the earlier cache-only acceptance. The subsequent
+[production Preamble integration and acceptance](preamble-production.md)
+supersedes the PCH-disabled status and PCH follow-up items below; the cache
+measurements and historical evidence remain unchanged.
+
 The production cache and prewarm changes are ready for integration. PCH is
 **disabled** and remains a separate research task. The four remote ignore-file
 fix/documentation commits (`248f869`, `276d597`, `ae797b6`, `4624b56`) were fetched

@@ -4,6 +4,8 @@
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendAction.h>
+#include <clang/Frontend/PrecompiledPreamble.h>
+#include <clang/Lex/PreprocessorOptions.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Lex/HeaderSearch.h>
 #include <clang/Lex/HeaderSearchOptions.h>
@@ -30,8 +32,14 @@
 #include <map>
 #include <set>
 #include <chrono>
+#include <iostream>
+#include <iterator>
+#include <optional>
 #ifdef __linux__
+#include <csignal>
+#include <sys/prctl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 namespace {
@@ -316,7 +324,21 @@ struct DependencyState {
   std::set<std::string> attempted;
   std::map<std::string, std::pair<std::string, std::string>> paths;
   std::map<std::string, std::string> runtime;
+  std::map<std::string, std::string> stamps;
 };
+
+std::string fileStamp(llvm::StringRef pathname) {
+#ifdef __linux__
+  struct stat metadata;
+  if (::stat(pathname.str().c_str(), &metadata)) return "";
+  const auto ns = [](const timespec &time) { return int64_t(time.tv_sec) * 1000000000 + time.tv_nsec; };
+  return std::to_string(metadata.st_dev) + ":" + std::to_string(metadata.st_ino) + ":" +
+      std::to_string(metadata.st_size) + ":" + std::to_string(metadata.st_mode) + ":" +
+      std::to_string(ns(metadata.st_mtim)) + ":" + std::to_string(ns(metadata.st_ctim));
+#else
+  return "";
+#endif
+}
 
 void captureRuntime(DependencyState &state) {
 #ifdef __linux__
@@ -377,12 +399,17 @@ void capturePath(DependencyState &state, llvm::StringRef name) {
     state.paths.emplace(missing(missing, pathname), std::make_pair("", ""));
     return;
   }
-  const auto buffer = llvm::MemoryBuffer::getFile(pathname);
+  const auto stamp = fileStamp(pathname);
+  const auto buffer = llvm::MemoryBuffer::getFileAsStream(pathname);
   if (!buffer) {
     state.reusable = false;
     return;
   }
   state.paths.emplace(pathname, std::make_pair(real.str().str(), digest((*buffer)->getBuffer())));
+  if (!stamp.empty()) {
+    state.stamps.emplace(pathname, stamp);
+    if (fileStamp(pathname) != stamp) state.reusable = false;
+  }
 }
 
 class Dependencies : public PPCallbacks {
@@ -451,6 +478,56 @@ private:
   DependencyState &state;
 };
 
+// Preamble construction and remainder parsing have separate SourceManagers.
+// Compare the buffers each actually consumed with the first observed hashes.
+// Only our explicitly owned main-file remapping is permitted.
+void captureBuffers(CompilerInstance &compiler, DependencyState &dependencies,
+                    bool ownedMain, bool preamble) {
+  const auto &sm = compiler.getSourceManager();
+  const auto main = sm.getFileEntryRefForID(sm.getMainFileID());
+  const auto files = llvm::make_range(sm.fileinfo_begin(), sm.fileinfo_end());
+  fold(files, dependencies, [&](auto &dependencies, const auto &file) {
+    const bool isMain = main && file.first == *main;
+    if (isMain && preamble) return;
+    if (file.second->BufferOverridden && !(isMain && ownedMain)) dependencies.reusable = false;
+    capturePath(dependencies, file.first.getName());
+    if (const auto buffer = file.second->getBufferDataIfLoaded()) {
+      llvm::SmallString<256> requested(file.first.getName());
+      llvm::sys::fs::make_absolute(requested);
+      if (dependencies.paths[requested.str().str()].second != digest(*buffer)) dependencies.reusable = false;
+    }
+  });
+  fold(dependencies.stamps, dependencies, [](auto &dependencies, const auto &file) {
+    if (fileStamp(file.first) != file.second) dependencies.reusable = false;
+  });
+}
+
+void writeDependencies(json::OStream &output, const DependencyState &dependencies) {
+  output.object([&] {
+    output.attribute("schema", 1);
+    output.attribute("reusable", dependencies.reusable);
+    output.attributeArray("runtime", [&] {
+      fold(dependencies.runtime, output, [](auto &output, const auto &file) {
+        output.object([&] {
+          output.attribute("path", file.first);
+          output.attribute("stamp", file.second);
+        });
+      });
+    });
+    output.attributeArray("paths", [&] {
+      fold(dependencies.paths, output, [&](auto &output, const auto &file) {
+        output.object([&] {
+          output.attribute("path", file.first);
+          output.attribute("real", file.second.first);
+          output.attribute("sha256", file.second.second);
+          const auto stamp = dependencies.stamps.find(file.first);
+          if (stamp != dependencies.stamps.end()) output.attribute("stamp", stamp->second);
+        });
+      });
+    });
+  });
+}
+
 struct Timings {
   double selectionMs = 0;
   double serializationMs = 0;
@@ -512,11 +589,15 @@ private:
 
 class ExtractionAction : public ASTFrontendAction {
 public:
-  ExtractionAction(std::string source, std::string manifest)
-      : source(std::move(source)), manifest(std::move(manifest)) {}
+  ExtractionAction(std::string source, std::string manifest,
+                   std::optional<DependencyState> preambleDependencies = std::nullopt)
+      : source(std::move(source)), manifest(std::move(manifest)),
+        collect(!this->manifest.empty() || preambleDependencies.has_value()),
+        ownedMain(preambleDependencies.has_value()),
+        dependencies(preambleDependencies.value_or(DependencyState{})) {}
   bool BeginSourceFileAction(CompilerInstance &compiler) override {
     timings.started = std::chrono::steady_clock::now();
-    if (!manifest.empty()) {
+    if (collect) {
       captureRuntime(dependencies);
       capturePath(dependencies, source);
       compiler.getPreprocessor().addPPCallbacks(std::make_unique<Dependencies>(compiler, dependencies));
@@ -524,20 +605,10 @@ public:
     return true;
   }
   void EndSourceFileAction() override {
-    if (manifest.empty()) return;
+    if (!collect) return;
     const auto frontendMs = elapsedMs(timings.started);
-    const auto &sm = getCompilerInstance().getSourceManager();
-    const auto files = llvm::make_range(sm.fileinfo_begin(), sm.fileinfo_end());
-    fold(files, dependencies, [&](auto &dependencies, const auto &file) {
-      if (file.second->BufferOverridden) dependencies.reusable = false;
-      capturePath(dependencies, file.first.getName());
-      if (const auto buffer = file.second->getBufferDataIfLoaded()) {
-        llvm::SmallString<256> requested(file.first.getName());
-        llvm::sys::fs::make_absolute(requested);
-        if (dependencies.paths[requested.str().str()].second != digest(*buffer))
-          dependencies.reusable = false;
-      }
-    });
+    captureBuffers(getCompilerInstance(), dependencies, ownedMain, false);
+    if (manifest.empty()) return;
     std::error_code error;
     llvm::raw_fd_ostream stream(manifest, error);
     if (error) return;
@@ -559,11 +630,13 @@ public:
         output.attribute("serializationMs", timings.serializationMs);
       });
       output.attributeArray("paths", [&] {
-        fold(dependencies.paths, output, [](auto &output, const auto &file) {
+        fold(dependencies.paths, output, [&](auto &output, const auto &file) {
           output.object([&] {
             output.attribute("path", file.first);
             output.attribute("real", file.second.first);
             output.attribute("sha256", file.second.second);
+            const auto stamp = dependencies.stamps.find(file.first);
+            if (stamp != dependencies.stamps.end()) output.attribute("stamp", stamp->second);
           });
         });
       });
@@ -572,9 +645,12 @@ public:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &, llvm::StringRef) override {
     return std::make_unique<Extractor>(source, timings);
   }
+  const DependencyState &getDependencies() const { return dependencies; }
 private:
   std::string source;
   std::string manifest;
+  bool collect;
+  bool ownedMain;
   DependencyState dependencies;
   Timings timings;
 };
@@ -590,9 +666,151 @@ private:
   std::string source;
   std::string manifest;
 };
+
+// Required Clang interface. The dependency state is owned by the worker's
+// build fold and never shared with another request or CompilerInstance.
+class PreambleProof : public PreambleCallbacks {
+public:
+  explicit PreambleProof(DependencyState &dependencies) : dependencies(dependencies) {}
+  void BeforeExecute(CompilerInstance &compiler) override {
+    captureRuntime(dependencies);
+    compiler.getPreprocessor().addPPCallbacks(std::make_unique<Dependencies>(compiler, dependencies));
+  }
+  void AfterExecute(CompilerInstance &compiler) override {
+    captureBuffers(compiler, dependencies, true, true);
+    captureRuntime(dependencies);
+  }
+private:
+  DependencyState &dependencies;
+};
+
+struct PreambleWorkerState {
+  std::unique_ptr<PrecompiledPreamble> preamble;
+  DependencyState dependencies;
+  std::vector<std::string> invocationArgs;
+};
+
+void processPreambleRequest(PreambleWorkerState &state, const std::string &source,
+                            const std::string &request,
+                            std::shared_ptr<CompilerInvocation> invocation) {
+  const auto started = std::chrono::steady_clock::now();
+  const auto buffer = llvm::MemoryBuffer::getFileAsStream(source);
+  invocation->getFrontendOpts().DisableFree = false;
+  invocation->getCodeGenOpts().DisableFree = false;
+  // This is the complete ordered sequence generated by generateCC1CommandLine,
+  // before PCH-specific options or main-file remapping are introduced.
+  const auto invocationArgs = invocation->getCC1CommandLine();
+  auto vfs = llvm::vfs::getRealFileSystem();
+  json::OStream output(llvm::outs());
+  output.object([&] {
+    if (!buffer || !invocation) { output.attribute("ok", false); return; }
+    const auto bounds = ComputePreambleBounds(invocation->getLangOpts(), (*buffer)->getMemBufferRef(), 0);
+    if (request == "build") {
+      state.preamble.reset();
+      state.dependencies = DependencyState{};
+      state.invocationArgs = invocationArgs;
+      PreambleProof proof(state.dependencies);
+      const auto diagnostics = CompilerInstance::createDiagnostics(*vfs, invocation->getDiagnosticOpts());
+      auto preamble = PrecompiledPreamble::Build(*invocation, buffer->get(), bounds,
+          diagnostics, vfs, std::make_shared<PCHContainerOperations>(), true, "", proof);
+      if (preamble) state.preamble = std::make_unique<PrecompiledPreamble>(std::move(*preamble));
+      // Publication requires the host to verify this independent proof and
+      // the exact source prefix before it is permitted to issue `parse`.
+      output.attribute("ok", bool(state.preamble) && bounds.Size > 0);
+      output.attribute("bounds", bounds.Size);
+      output.attribute("prefixHash", digest((*buffer)->getBuffer().take_front(bounds.Size)));
+      output.attribute("sourceHash", digest((*buffer)->getBuffer()));
+      output.attributeBegin("dependencies");
+      writeDependencies(output, state.dependencies);
+      output.attributeEnd();
+    } else if (request == "parse" && state.preamble && state.invocationArgs == invocationArgs &&
+               state.preamble->CanReuse(*invocation, (*buffer)->getMemBufferRef(), bounds, *vfs)) {
+      state.preamble->AddImplicitPreamble(*invocation, vfs, buffer->get());
+      invocation->getPreprocessorOpts().RetainRemappedFileBuffers = true;
+      // The main buffer and preamble both outlive the compiler and its AST.
+      CompilerInstance compiler(std::move(invocation));
+      compiler.setVirtualFileSystem(vfs);
+      compiler.createDiagnostics();
+      ExtractionAction action(source, "", state.dependencies);
+      output.attributeBegin("ast");
+      output.rawValue([&](llvm::raw_ostream &stream) {
+        // ExtractionAction streams to the same stdout; rawValue records the
+        // envelope's JSON state without retaining a second AST in memory.
+        (void)stream;
+        const bool parsed = compiler.ExecuteAction(action);
+        if (!parsed) llvm::errs() << "Preamble extraction failed\n";
+      });
+      output.attributeEnd();
+      output.attribute("ok", !compiler.getDiagnostics().hasErrorOccurred());
+      output.attributeBegin("dependencies");
+      writeDependencies(output, action.getDependencies());
+      output.attributeEnd();
+    } else {
+      output.attribute("ok", false);
+    }
+    output.attribute("ms", elapsedMs(started));
+    output.attribute("pchBytes", static_cast<int64_t>(state.preamble ? state.preamble->getSize() : 0));
+  });
+  // A JSON string escapes all control characters. The record separator is
+  // unambiguous even for multiline JSON emitted by the existing serializer.
+  llvm::outs() << '\x1e';
+  llvm::outs().flush();
+}
+
+// Let the identical ClangTool driver choose cc1 flags, resource directory and
+// header search context for both cold and preamble extraction.
+class PreambleWorkerAction : public tooling::ToolAction {
+public:
+  PreambleWorkerAction(PreambleWorkerState &state, const std::string &source,
+                       const std::string &request)
+      : state(state), source(source), request(request) {}
+  bool runInvocation(std::shared_ptr<CompilerInvocation> invocation, FileManager *,
+                     std::shared_ptr<PCHContainerOperations>, DiagnosticConsumer *) override {
+    processPreambleRequest(state, source, request, std::move(invocation));
+    return true;
+  }
+private:
+  PreambleWorkerState &state;
+  const std::string &source;
+  const std::string &request;
+};
+
+int preambleWorker(const std::string &source, const std::vector<std::string> &args) {
+#ifdef __linux__
+  // EOF cannot interrupt an active Clang parse. Ask the kernel to terminate
+  // this worker when its host dies, including SIGKILL and extension-host crashes.
+  // A changed parent after prctl means the death raced signal registration.
+  const auto parent = ::getppid();
+  if (parent == 1 || ::prctl(PR_SET_PDEATHSIG, SIGTERM) || ::getppid() != parent) return 1;
+#endif
+  PreambleWorkerState state;
+  // No files, locks or recovery metadata survive this process. Each token
+  // gets a fresh driver and FileManager, so implicit toolchain discovery is
+  // re-evaluated even when the command, source prefix and environment match.
+  const auto requests = llvm::make_range(std::istream_iterator<std::string>(std::cin),
+                                        std::istream_iterator<std::string>());
+  fold(requests, state, [&](auto &state, const std::string &request) {
+    tooling::FixedCompilationDatabase database(".", args);
+    tooling::ClangTool tool(database, {source});
+    PreambleWorkerAction action(state, source, request);
+    if (tool.run(&action) != 0) {
+      llvm::outs() << "{\"ok\":false}\x1e";
+      llvm::outs().flush();
+    }
+  });
+  return 0;
+}
 } // namespace
 
 int main(int argc, const char **argv) {
+  if (argc >= 5 && llvm::StringRef(argv[1]) == "--preamble-worker" &&
+      llvm::StringRef(argv[2]) == "--source" && llvm::StringRef(argv[4]) == "--") {
+    const std::string source = absolutePath(argv[3]);
+    std::vector<std::string> args;
+    fold(llvm::ArrayRef<const char *>(argv + 5, argc - 5), args,
+        [](auto &args, const char *arg) { args.emplace_back(arg); });
+    return preambleWorker(source, args);
+  }
   // fold-state-jump-ast --source FILE -- [Clang compile options]
   const bool manifest = argc >= 6 && llvm::StringRef(argv[3]) == "--cache-manifest";
   const int flags = manifest ? 6 : 4;

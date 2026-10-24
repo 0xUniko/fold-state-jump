@@ -69,9 +69,19 @@ Cache reuse checks compilation settings, source/transitive include dependencies,
 negative include candidates and native runtime images. Entries do not expire
 just because 60 seconds elapsed, and unrelated file edits do not clear them.
 Nanosecond metadata guards accelerate validation on verified Linux ext4; other
-file inputs use hashes/directory reads. Unverified native runtime platforms and
+file inputs use hashes/directory reads, including runtime image hashes when
+the timestamp fast path is unavailable. Unverified native runtime platforms and
 unsupported inputs such as modules, forced includes/PCH or VFS parse cold without
 retention. Dirty included documents must be saved before navigation.
+
+On Linux with the LLVM/Clang 23 extractor, an AST cache miss can build and reuse
+the original source's precompiled preamble. Saved body edits retain the preamble
+when its prefix, compilation context and independently verified dependencies
+remain valid. One serial native worker owns one in-memory PCH (at most 256 MiB),
+released after five idle minutes, cancellation, cache clearing or shutdown.
+Restart rebuilds the preamble; the gzip AST cache still survives restart and
+valid AST hits need no native request. Unsupported contexts and failed proofs
+automatically use ordinary cold extraction. See [production PCH acceptance](docs/preamble-production.md).
 
 Memory retention remains three translation units / 16 MiB serialized AST, with
 one oversized entry retained alone. This is a soft input-size budget; decoded
@@ -173,8 +183,9 @@ for the earlier optimization measurements. The current cache/parse investigation
 raw samples, experiment decisions and platform limits are in
 [docs/performance-investigation-v2.md](docs/performance-investigation-v2.md).
 The [final acceptance record](docs/final-acceptance.md) lists release checks and
-known limits. PCH/PrecompiledPreamble remains an independent research PoC and is
-not enabled in the extension; see the [research findings](docs/pch-investigation-v2.md).
+known limits. The [production PCH acceptance](docs/preamble-production.md) records
+the current implementation and measurements; [earlier research](docs/pch-investigation-v2.md)
+preserves the API and semantic counterexamples that informed it.
 
 An earlier optimization pass, before the changes measured in PERFORMANCE.md,
 used a local `nano-infer/minicpm-v-4_7/pipeline.h` snapshot (5.42 MiB extracted JSON).
