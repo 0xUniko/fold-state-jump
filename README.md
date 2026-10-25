@@ -82,6 +82,12 @@ with no cumulative capacity limit. One serial native worker holds the active
 preamble (at most 256 MiB per artifact); switching files releases that process
 and loads the selected artifact from SSD. Idle expiry, cancellation and restart
 preserve published artifacts. `Clear AST Caches` clears both AST and PCH artifacts.
+Clearing uses the active document's `foldStateJump.extractorPath`, just like
+parsing: absolute paths are used directly, relative paths resolve against the
+extension installation, and an empty setting uses the bundled build location.
+PCH clearing requires that executable's `--pch-lock` helper. The Fold State Jump
+output channel reports AST and PCH directory results separately; a failed helper
+or disk cleanup reports incomplete clearing, even if the other caches cleared.
 Valid AST hits need no native request. Unsupported contexts and failed proofs
 automatically use ordinary cold extraction. See [SSD PCH acceptance](docs/preamble-ssd.md).
 
