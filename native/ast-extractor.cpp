@@ -126,11 +126,51 @@ public:
     });
   }
 
+  // A value parameter can still expose shared storage. This is an effect
+  // boundary, independent of whether a copy constructor preserves field values.
+  bool sharedStorage(QualType type, unsigned depth = 0) const {
+    if (depth > 16 || type->isDependentType()) return true;
+    if (type->isReferenceType() || type->isPointerType()) return true;
+    if (const auto *array = context.getAsArrayType(type))
+      return sharedStorage(array->getElementType(), depth + 1);
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return false;
+    const auto name = record->getQualifiedNameAsString();
+    if (name == "std::shared_ptr" || name == "std::unique_ptr" ||
+        name == "std::function" || name == "std::reference_wrapper" ||
+        name == "std::span" || name == "std::basic_string_view") return true;
+    if (name == "std::basic_string" || name == "std::__cxx11::basic_string") return false;
+    if (name == "std::vector" || name == "std::optional" || name == "std::set" || name == "std::map") {
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        const auto &argument = specialization->getTemplateArgs().get(0);
+        const bool shared = argument.getKind() != TemplateArgument::Type || sharedStorage(argument.getAsType(), depth + 1);
+        if (name != "std::map" || shared) return shared;
+        const auto &value = specialization->getTemplateArgs().get(1);
+        return value.getKind() != TemplateArgument::Type || sharedStorage(value.getAsType(), depth + 1);
+      }
+    }
+    if (!record->hasDefinition() || record->isUnion() || record->getNumBases()) return true;
+    const auto fields = record->fields();
+    return std::any_of(fields.begin(), fields.end(), [&](const FieldDecl *field) {
+      return field->isMutable() || sharedStorage(field->getType(), depth + 1);
+    });
+  }
+
+  const char *parameterEffect(QualType type) const {
+    if (type->isReferenceType() || type->isPointerType()) {
+      const auto pointee = type->getPointeeType();
+      if (type->isPointerType()) return !pointee.isConstQualified() || sharedStorage(pointee) ? "pointee" : "read";
+      return !pointee.isConstQualified() ? "write" : sharedStorage(pointee) ? "shared" : "read";
+    }
+    return sharedStorage(type) ? "shared" : "value";
+  }
+
   void parameter(json::OStream &output, const ParmVarDecl *parameter) const {
     output.object([&] {
       output.attribute("kind", "ParmVarDecl");
       output.attribute("id", identity(parameter));
       output.attribute("name", parameter->getNameAsString());
+      output.attribute("parameterEffect", parameterEffect(parameter->getType()));
       type(output, parameter->getType());
       output.attributeObject("loc", [&] { location(output, parameter->getLocation()); });
       output.attributeObject("range", [&] { range(output, parameter->getSourceRange()); });
@@ -223,6 +263,14 @@ public:
       if (const auto *cast = llvm::dyn_cast<CastExpr>(stmt))
         output.attribute("castKind", cast->getCastKindName());
       if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt)) {
+        output.attributeObject("construction", [&] {
+          output.attribute("name", construction->getConstructor()->getQualifiedNameAsString());
+          output.attributeArray("parameterEffects", [&] {
+            fold(construction->getConstructor()->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
+              output.value(parameterEffect(parameter->getType()));
+            });
+          });
+        });
         output.attribute("copyOrMove", construction->getConstructor()->isCopyOrMoveConstructor());
         output.attribute("fieldwiseCopy", construction->getConstructor()->isCopyOrMoveConstructor() &&
             !construction->getConstructor()->isUserProvided());
@@ -256,6 +304,16 @@ public:
             output.attribute("symbol", symbol(callee));
             output.attribute("name", callee->getNameAsString());
             output.attribute("qualifiedName", callee->getQualifiedNameAsString());
+            output.attributeArray("parameterEffects", [&] {
+              fold(callee->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
+                output.value(parameterEffect(parameter->getType()));
+              });
+            });
+            if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee)) {
+              output.attribute("receiverEffect", !method->isConst() ? "write" :
+                  sharedStorage(context.getCanonicalTagType(method->getParent())) ? "shared" : "read");
+              output.attribute("virtual", method->isVirtual());
+            }
           });
       }
       if (const auto *call = llvm::dyn_cast<CXXOperatorCallExpr>(stmt)) {
@@ -329,6 +387,11 @@ public:
                   });
                 }
               });
+            });
+            // Capture construction runs in the enclosing function, before any
+            // invocation. Preserve its constructors as effects at that time.
+            fold(lambda->capture_inits(), output, [&](json::OStream &output, const Expr *initial) {
+              if (initial) statement(output, initial, depth + 1);
             });
           });
         }

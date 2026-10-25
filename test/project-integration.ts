@@ -14,6 +14,7 @@ type ProjectCase = {
   readonly expression: string;
   readonly expected:
     | { readonly _tag: 'Mutation'; readonly file: string; readonly snippet: string }
+    | { readonly _tag: 'Boundary'; readonly reason: RegExp }
     | { readonly _tag: 'Origin'; readonly kind: 'initialization' | 'parameter' };
 };
 
@@ -36,7 +37,7 @@ const pipelineCases: readonly ProjectCase[] = [
   },
   {
     snippet: 'return LayerExecution{&session_state,', expression: 'session_state',
-    expected: { _tag: 'Mutation', file: 'ffn.h', snippet: 'bank_state =' }
+    expected: { _tag: 'Boundary', reason: /Unverified call effect on layer_execution\.session_state\.\*: finish_host_copies/ }
   }
 ];
 
@@ -45,7 +46,7 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
   const file = path.join(root, 'minicpm-v-4_7', name);
   const sourceText = await readFile(file, 'utf8');
   console.log('Extracting ' + file);
-  const command = await Effect.runPromise(resolveCompileCommand(file, [root], 'clang++'));
+  const command = await Effect.runPromise(resolveCompileCommand(file, [root], 'clang++', process.env.FSJ_PROJECT_COMPILE_COMMANDS));
   const astText = await Effect.runPromise(runClangAst(makeExtractionCommand(command, executable), 67108864, AbortSignal.timeout(120000)));
   assert.equal(await readFile(file, 'utf8'), sourceText, 'Source changed during extraction');
   const ast = JSON.parse(astText) as ClangNode;
@@ -59,6 +60,18 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
       const result = origin(offset);
       assert.equal(result._tag, 'OriginFound', name + ':' + sourceText.slice(0, offset).split('\n').length + ' ' + member);
       if (result._tag === 'OriginFound') {
+        // These four reads belong to callbacks supplied to fold/transform/
+        // for_each. A creation point cannot establish their invocation time.
+        const referenceCallbacks: Readonly<Record<string, readonly number[]>> = {
+          'ffn.h': [240, 393], 'pipeline.h': [705, 742]
+        };
+        const line = sourceText.slice(0, offset).split('\n').length;
+        if (referenceCallbacks[name]?.includes(line)) {
+          assert.equal(result.kind, 'parameter');
+          assert.equal(result.origin.node.kind, 'LambdaExpr');
+          assert.equal(result.boundary, 'Reference capture invocation is not verified; stopped at the lambda.');
+          return offset;
+        }
         // In pipeline.h, build_language_graphs is called from the execute fold;
         // these captures already reach its seed on feat/multi-funcs.
         const executeFold = name === 'pipeline.h' && offset < sourceText.indexOf('Session clear_session(');
@@ -79,6 +92,10 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
     const offset = sourceText.indexOf(projectCase.expression, start) + projectCase.expression.lastIndexOf('.') + 1;
     const result = projectCase.expected._tag === 'Origin' ? origin(offset) : analyze(offset);
     switch (projectCase.expected._tag) {
+      case 'Boundary':
+        assert.equal(result._tag, 'AnalysisFailure');
+        if (result._tag === 'AnalysisFailure') assert.match(result.reason, projectCase.expected.reason);
+        break;
       case 'Origin':
         assert.equal(result._tag, 'OriginFound', projectCase.snippet);
         if (result._tag === 'OriginFound') assert.equal(result.kind, projectCase.expected.kind);

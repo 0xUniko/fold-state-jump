@@ -1,0 +1,1151 @@
+{
+  "analyzerBaseline": "d16085eacdb4b54449b0359336df27a150f53170",
+  "nanoInferHead": "562758447a716d05dabb3173cebac489bf7daf80",
+  "scope": {
+    "applicationFiles": 26,
+    "applicationCppLines": 9129,
+    "applicationFolds": 75,
+    "testFiles": 7,
+    "testFolds": 31
+  },
+  "realSourceQueries": [
+    {
+      "file": "minicpm-v-4_7/pipeline.h",
+      "extractAndPrepareMs": 13375.568228,
+      "astBytes": 6298281,
+      "queries": [
+        {
+          "name": "batch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1079
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 1077,
+                    "text": "session_state.rope_position = next_rope;"
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-borrow",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1056
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefill-helper",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 996
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 250,
+                    "text": "bank_state.slots = std::move(plan.slots);"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 984,
+                        "text": "start_prefill_layer(bank_context, bank_state,"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 981,
+                        "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 883,
+                    "text": "++session_state.bank_state.counters.graph_builds;"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 850,
+                        "text": "[&] {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/cli.cpp",
+      "extractAndPrepareMs": 16635.400519,
+      "astBytes": 19630829,
+      "queries": [
+        {
+          "name": "generation-wrap",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 492,
+                    "text": "generation.batch_state = take_batch_state(pipeline.run_batch("
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-done",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 483,
+                    "text": "generation.done = true;"
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 471
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CallExpr.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CallExpr."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 448,
+                    "text": "auto batch_state = prefill(pipeline, std::move(chat_state.session_state),"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "chat-return",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 513
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CXXOperatorCallExpr.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CXXOperatorCallExpr."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 469,
+                    "text": "auto generation = ranges::fold_left("
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "clear-input",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 636
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 644,
+                    "text": "interactive->chat_state ="
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 625,
+                    "text": "&interactive,"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/ffn.h",
+      "extractAndPrepareMs": 10860.227043000003,
+      "astBytes": 3075673,
+      "queries": [
+        {
+          "name": "pending-reset",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 270
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 262,
+                    "text": "BankState &bank_state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "prefill-counter",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 450
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 457,
+                    "text": "ActivePrefillLayer current) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": [
+                    {
+                      "caller": "finish_prefill_layer",
+                      "call": {
+                        "file": "minicpm-v-4_7/ffn.h",
+                        "line": 458,
+                        "text": "finish_prefill_read(bank_state, std::move(current));"
+                      },
+                      "argument": [
+                        "current",
+                        []
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_prefill_layer",
+                "finish_prefill_read"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/experts.h",
+      "extractAndPrepareMs": 9253.588766,
+      "astBytes": 11134051,
+      "queries": [
+        {
+          "name": "slot-index",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 447
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/minicpm-v-4_7/experts.h:22079: Unverified call effect on plan.slots.ages: operator[]; shared storage or callback effects are not verified. Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/minicpm-v-4_7/experts.h:22079: Unverified call effect on plan.slots.ages: operator[]; shared storage or callback effects are not verified.",
+                "Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 433,
+                    "text": "Planning{bank_state.slots, {}, {}, {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefetch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 590
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 585,
+                    "text": "bank_state.pending ="
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 511,
+                    "text": "BankState bank_state, int layer,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "begin_decode_prefetch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/expert_io.h",
+      "extractAndPrepareMs": 6561.261982000004,
+      "astBytes": 2293744,
+      "queries": [
+        {
+          "name": "read-progress",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 800
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 800,
+                    "text": "--progress.remaining != 0)"
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 790,
+                    "text": "&task.batch->read_state,"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "future-result",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 502
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 497,
+                    "text": "SharedReadTicket read_ticket) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_shared_read"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "queue-count",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 727
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for take_io_task.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for take_io_task."
+              ],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 722,
+                    "text": "IoQueue &queue) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "extractAndPrepareMs": 6200.448807000001,
+      "astBytes": 4616928,
+      "queries": [
+        {
+          "name": "attention-cache",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1716
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/deepseek-v4-flash/attention_pipeline.h:72566: Unverified call effect on cache.: execute_attention; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/deepseek-v4-flash/attention_pipeline.h:72566: Unverified call effect on cache.: execute_attention; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1716,
+                    "text": "const auto &cache = state.cache->layers.at(il);"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "attention-return",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1731
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for run_batch.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for run_batch."
+              ],
+              "externalOwners": [
+                "run_batch"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1683,
+                    "text": "AttentionState state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "run_batch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "extractAndPrepareMs": 6933.091481000003,
+      "astBytes": 3221419,
+      "queries": [
+        {
+          "name": "ffn-runtime",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 492
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 476,
+                    "text": "state.banks.push_back(prepare_expert_bank(layout, model.layers.at(il)));"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "deepseek-v4-flash/ffn_service.h",
+                        "line": 491,
+                        "text": "find_or_prepare_expert_bank(state, model, il, layout);"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 484,
+                    "text": "FfnRuntime{},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "ffn-service",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 678
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified. Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified.",
+                "Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 671,
+                    "text": "State{transport.await_call(), std::move(runtime)},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "shared/ffn_rpc.h",
+      "extractAndPrepareMs": 4180.754457999996,
+      "astBytes": 1447056,
+      "queries": [
+        {
+          "name": "rpc-variant",
+          "selected": {
+            "file": "shared/ffn_rpc.h",
+            "line": 322
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for advance.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for advance."
+              ],
+              "externalOwners": [
+                "advance"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "shared/ffn_rpc.h",
+                    "line": 320,
+                    "text": "State state, const Event &event) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "advance"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_node.cpp",
+      "extractAndPrepareMs": 6656.710441000003,
+      "astBytes": 5383062,
+      "queries": [
+        {
+          "name": "deepseek-prefill",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 52
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 44,
+                    "text": "PrefillState{pipeline.start_session()},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "deepseek-generation",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 65
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. <nano-infer>/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "<nano-infer>/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 59,
+                    "text": "Generation{std::move(std::get<BatchResult>(prefill))},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "testResults": {
+    "baselineBunSandbox": {
+      "pass": 293,
+      "fail": 41
+    },
+    "finalBunSandbox": {
+      "pass": 316,
+      "fail": 41
+    },
+    "finalBunOutsideSandbox": {
+      "pass": 357,
+      "fail": 0
+    },
+    "newRegressionOnBaseline": {
+      "pass": 7,
+      "fail": 16
+    },
+    "newRegressionFinal": {
+      "pass": 23,
+      "fail": 0
+    },
+    "nodePreambleSuites": {
+      "pass": 54,
+      "fail": 0
+    }
+  },
+  "analysisPerformance": {
+    "before": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 43.47,
+        "queryUs": 2.76
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 35.51,
+        "queryUs": 2.18
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 49.9,
+        "queryUs": 4.62
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 7.73,
+        "queryUs": 17.64
+      }
+    ],
+    "after": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 41.58,
+        "queryUs": 2.86
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 26.61,
+        "queryUs": 2.06
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 48.1,
+        "queryUs": 4.59
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 3.53,
+        "queryUs": 18.84
+      }
+    ]
+  },
+  "queryPerformance": {
+    "before": [
+      {
+        "functions": 100,
+        "nodes": 601,
+        "prepareMs": 3.83,
+        "mutationUs": 3.58,
+        "originUs": 2.09
+      },
+      {
+        "functions": 1000,
+        "nodes": 6001,
+        "prepareMs": 9.79,
+        "mutationUs": 3.88,
+        "originUs": 2.48
+      },
+      {
+        "functions": 10000,
+        "nodes": 60001,
+        "prepareMs": 59.51,
+        "mutationUs": 6.05,
+        "originUs": 3.04
+      }
+    ],
+    "after": [
+      {
+        "functions": 100,
+        "nodes": 601,
+        "prepareMs": 4.22,
+        "mutationUs": 2.23,
+        "originUs": 2.6
+      },
+      {
+        "functions": 1000,
+        "nodes": 6001,
+        "prepareMs": 7.88,
+        "mutationUs": 3.5,
+        "originUs": 2.31
+      },
+      {
+        "functions": 10000,
+        "nodes": 60001,
+        "prepareMs": 61.58,
+        "mutationUs": 6.32,
+        "originUs": 3.38
+      }
+    ]
+  }
+}

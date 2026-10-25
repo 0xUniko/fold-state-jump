@@ -10,6 +10,8 @@ export type ClangLocation = {
   readonly spellingLoc?: ClangLocation;
 };
 
+type ParameterEffect = 'value' | 'read' | 'write' | 'pointee' | 'shared';
+
 export type ClangNode = {
   readonly id?: string;
   readonly kind: string;
@@ -27,11 +29,14 @@ export type ClangNode = {
   readonly symbol?: string;
   readonly dependent?: boolean;
   readonly referencedMemberDecl?: string;
-  readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string; readonly symbol?: string };
+  readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string; readonly symbol?: string;
+    readonly parameterEffects?: readonly ParameterEffect[]; readonly receiverEffect?: ParameterEffect; readonly virtual?: boolean };
   readonly captures?: readonly { readonly id: string; readonly kind: 'reference' | 'copy';
     readonly copyBoundaries?: readonly string[]; readonly copyValueBoundaries?: readonly string[] }[];
   readonly captureDefault?: 'reference' | 'copy' | 'none';
   readonly thisCapture?: 'pointer' | 'copy';
+  readonly parameterEffect?: ParameterEffect;
+  readonly construction?: { readonly name: string; readonly parameterEffects: readonly ParameterEffect[] };
   readonly type?: { readonly qualType?: string };
   readonly referencedDecl?: {
     readonly id?: string;
@@ -119,6 +124,7 @@ type AstIndex = {
   readonly writesByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly IndexedWrite[]>>;
   readonly writeBoundariesByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly IndexedBoundary[]>>;
   readonly callsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
+  readonly constructionsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly callsByCalleeId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly resolvedCalls: ReadonlyMap<ClangNode, FunctionInfo | undefined>;
   readonly identifiersByFile: ReadonlyMap<string, FileIdentifiers>;
@@ -288,6 +294,7 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     writesByFunctionId: new Map<string, Map<string, IndexedWrite[]>>(),
     writeBoundariesByFunctionId: new Map<string, Map<string, IndexedBoundary[]>>(),
     callsByCallerId: new Map<string, WrappedNode[]>(),
+    constructionsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
     resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>(),
     identifiersByFile: buildIdentifierIndex(all),
@@ -351,6 +358,11 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
       calls.push(wrapped);
       callers.set(owner.id, calls);
     }
+    if (wrapped.node.kind === 'CXXConstructExpr' && !wrapped.node.fieldwiseCopy) {
+      const constructions = index.constructionsByCallerId.get(owner.id) ?? [];
+      constructions.push(wrapped);
+      index.constructionsByCallerId.set(owner.id, constructions);
+    }
     return index;
   }, index);
 
@@ -379,6 +391,11 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   }, index);
   [...index.callsByCallerId.values()].reduce((index, calls) => {
     calls.sort((left, right) =>
+      (right.node.range?.begin?.offset ?? -1) - (left.node.range?.begin?.offset ?? -1));
+    return index;
+  }, index);
+  [...index.constructionsByCallerId.values()].reduce((index, constructions) => {
+    constructions.sort((left, right) =>
       (right.node.range?.begin?.offset ?? -1) - (left.node.range?.begin?.offset ?? -1));
     return index;
   }, index);
@@ -598,6 +615,7 @@ const appendMembers = (target: ExpressionPath, members: readonly string[]): Expr
 });
 
 const resolveFunction = (call: WrappedNode, index: AstIndex): FunctionInfo | undefined => {
+  if (call.node.callee?.virtual) return undefined;
   if (index.resolvedCalls.has(call.node)) return index.resolvedCalls.get(call.node);
   if (call.node.callee) return index.functionsById.get(call.node.callee.id);
   if (!call.children[0]) return undefined;
@@ -657,10 +675,10 @@ const lambdaFor = (fn: FunctionInfo, index: AstIndex): WrappedNode | undefined =
 };
 
 const isFoldCall = (call: WrappedNode): boolean =>
-  (call.node.callee?.name ?? '').includes('fold_left') ||
+  call.node.callee?.name === 'fold_left' ||
   call.children.slice(0, call.node.memberOperator ? 2 : 1).some((wrapped) =>
     findDescendant(wrapped, (wrapped) =>
-      (wrapped.node.referencedDecl?.name ?? wrapped.node.name ?? '').includes('fold_left')) !== undefined);
+      (wrapped.node.referencedDecl?.name ?? wrapped.node.name ?? '') === 'fold_left') !== undefined);
 
 const foldFor = (fn: FunctionInfo, index: AstIndex): { readonly call: WrappedNode; readonly initial: WrappedNode } | undefined => {
   const lambda = lambdaFor(fn, index);
@@ -753,6 +771,80 @@ const standardMutationTarget = (call: WrappedNode): WrappedNode | undefined =>
     ? receiverOf(call)
     : undefined;
 
+// Used only to stop a search. An address or callback reaching a target does
+// not prove its storage identity, invocation time, or mutation location.
+const exposesTarget = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
+  visited: readonly string[] = [], sharedValue = false): boolean => {
+  const expression = unwrap(input);
+  if (!expression) return false;
+  if (expression.node.kind === 'LambdaExpr') {
+    const exposed = !!expression.node.captures?.some((capture) => {
+      const declaration = index.declarations.get(capture.id);
+      const shared = capture.kind === 'reference' || opaqueCopy(capture, []) || !!capture.copyBoundaries?.length;
+      return shared && (captureMatches(capture, target, index) || visited.includes(capture.id) ||
+        !!declaration && exposesTarget(declaration.children[0], target, index, [...visited, capture.id]));
+    }) || target.rootId === '$this' && expression.node.thisCapture === 'pointer';
+    if (!exposed) return false;
+    const method = expression.children.flatMap((record) => record.children).find((method) =>
+      method.node.kind === 'CXXMethodDecl' && method.node.name === 'operator()');
+    const fn = method && index.functionsByNode.get(method.node);
+    // A read-only callback is harmless regardless of when it is invoked. This
+    // proves effects only; backward capture tracing still requires a call time.
+    return !fn || visited.includes(fn.id) || /[&*].*\(/.test(fn.type) ||
+      !!findPreviousMutation(fn, target, Number.POSITIVE_INFINITY, index, new Map(), [...visited]);
+  }
+  const argument = pathAt(expression, index);
+  if (argument) {
+    const members = argument.members.at(-1) === '&' ? argument.members.slice(0, -1) : argument.members;
+    if (argument.rootId === target.rootId)
+      return sameOrParent(members, target.members) || sameOrParent(target.members, members);
+    if (visited.includes(argument.rootId)) return false;
+    const declaration = index.declarations.get(argument.rootId);
+    const targetDeclaration = index.declarations.get(target.rootId);
+    const borrowedType = (declaration: WrappedNode | undefined): string | undefined => {
+      const type = declaration?.node.type?.qualType;
+      return declaration?.node.kind === 'ParmVarDecl' && type && /[&*]/.test(type)
+        ? type.replace(/\b(const|volatile|struct|class)\b|[&*\s]/g, '') : undefined;
+    };
+    const argumentType = borrowedType(declaration);
+    if (argumentType && argumentType === borrowedType(targetDeclaration)) return true;
+    return !!declaration && (sharedValue || /\*|function|lambda/.test(declaration.node.type?.qualType ?? '')) &&
+      exposesTarget(declaration.children[0], target, index, [...visited, argument.rootId], sharedValue);
+  }
+  return expression.children.some((child) => exposesTarget(child, target, index, visited, sharedValue));
+};
+
+const callEffectBoundary = (call: WrappedNode, callee: FunctionInfo | undefined,
+  target: ExpressionPath, index: AstIndex, visitedFunctionIds: readonly string[]): string | undefined => {
+  if (['std::move', 'std::forward'].includes(call.node.callee?.qualifiedName ?? '') || standardMutationTarget(call)) return undefined;
+  const argumentsExposed = argsOf(call).some((argument, parameterIndex) => {
+    const parameter = callee?.params[parameterIndex];
+    const effect = parameter?.node.parameterEffect ?? call.node.callee?.parameterEffects?.[parameterIndex];
+    if (effect === 'value' || effect === 'read') return false;
+    const argumentPath = pathAt(argument, index);
+    if (effect === 'pointee' && argumentPath?.rootId === target.rootId &&
+        argumentPath.members.at(-1) !== '&' && !target.members.slice(argumentPath.members.length).includes('*')) return false;
+    if (!exposesTarget(argument, target, index, visitedFunctionIds, effect === 'shared')) return false;
+    if (callee && parameter && argumentPath && argumentPath.rootId !== target.rootId && effect !== 'shared') {
+      const members = target.members[0] === '*' ? target.members.slice(1) : target.members;
+      return visitedFunctionIds.includes(callee.id) || !!findPreviousMutation(callee, {
+        rootId: parameter.node.id ?? '', rootName: parameter.node.name ?? '',
+        members: effect === 'pointee' ? ['*', ...members] : members
+      }, Number.POSITIVE_INFINITY, index, new Map(), visitedFunctionIds);
+    }
+    // A known plain borrow is handled by recursive effect tracing. Aggregate
+    // and callable arguments still need a boundary when no path is expressible.
+    return !callee || call.node.callee?.virtual || effect === 'shared' || !argumentPath || argumentPath.rootId !== target.rootId ||
+      !!findDescendant(argument, (expression) => expression.node.kind === 'LambdaExpr');
+  });
+  const receiverExposed = (!callee || call.node.callee?.virtual) && call.node.callee?.receiverEffect !== 'read' &&
+    exposesTarget(receiverOf(call), target, index, visitedFunctionIds);
+  return argumentsExposed || receiverExposed
+    ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') +
+      ': ' + (call.node.callee?.name ?? 'indirect call') + '; shared storage or callback effects are not verified.'
+    : undefined;
+};
+
 // Balanced searches keep stack usage logarithmic while preserving the first
 // matching AST occurrence. Neither skipped prefixes nor successful suffixes
 // need to be copied or linearly visited on each cursor query.
@@ -806,7 +898,14 @@ const findPreviousMutation = (
   const candidate = findFirstMapped(calls, (call): PreviousMutation | undefined => {
     const callRange = nodeRange(call, sourceTextByFile);
     if (!callRange || callRange.end > beforeOffset) return undefined;
+    // A completed assignment takes effect after its RHS calls. A call nested
+    // in that write cannot replace the write as the most recent transition.
+    const directRange = directWrite && nodeRange(directWrite.mutation, sourceTextByFile);
+    if (directRange && directRange.start <= callRange.start && directRange.end >= callRange.end) return undefined;
     const callee = resolveFunction(call, index);
+    const boundary = callEffectBoundary(call, callee, target, index, nextVisited);
+    if (boundary) return { _tag: 'MutationBoundary', orderOffset: callRange.start,
+      reason: call.file + ':' + callRange.start + ': ' + boundary };
     if (!callee) return undefined;
     const args = argsOf(call);
     const parameterTargets = callee.params.flatMap((parameter, parameterIndex) => {
@@ -815,14 +914,20 @@ const findPreviousMutation = (
       if (!argument || argument.rootId !== target.rootId) return [];
       const address = argument.members.at(-1) === '&';
       const argumentMembers = address ? argument.members.slice(0, -1) : argument.members;
+      // Rebinding a pointer passed by value changes only the callee's pointer.
+      if (!address && /\*/.test(parameter.node.type?.qualType ?? '') &&
+          !/&/.test(parameter.node.type?.qualType ?? '') &&
+          !target.members.slice(argumentMembers.length).includes('*')) return [];
       if (!sameOrParent(argumentMembers, target.members) &&
           !(sameOrParent(target.members, argumentMembers) && !argumentMembers.slice(target.members.length).includes('*'))) return [];
-      return [{ rootId: parameter.node.id ?? '', rootName: parameter.node.name ?? '',
-        members: [...(address ? ['*'] : []), ...target.members.slice(argumentMembers.length)] }];
+      const pointerValue = /\*/.test(parameter.node.type?.qualType ?? '') && !/&/.test(parameter.node.type?.qualType ?? '');
+      return [{ _tag: pointerValue ? 'PointerValueTarget' as const : 'BorrowedTarget' as const,
+        target: { rootId: parameter.node.id ?? '', rootName: parameter.node.name ?? '',
+          members: [...(address ? ['*'] : []), ...target.members.slice(argumentMembers.length)] } }];
     });
     const receiver = receiverPath(call, index);
     const receiverTargets = receiver?.rootId === target.rootId && affects(receiver.members, target.members)
-      ? [{ rootId: '$this', rootName: 'this', members: target.members.slice(receiver.members.length) }]
+      ? [{ _tag: 'BorrowedTarget' as const, target: { rootId: '$this', rootName: 'this', members: target.members.slice(receiver.members.length) } }]
       : [];
     const lambda = lambdaFor(callee, index);
     const capture = lambda?.node.captures?.find((capture) => captureMatches(capture, target, index));
@@ -830,19 +935,47 @@ const findPreviousMutation = (
     const owner = declaration && enclosingFunction(declaration, index);
     const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
       callee.wrapped.ancestors.some((node) => node.id === owner.id);
-    const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [target] : [];
-    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce<PreviousMutation | undefined>((latest, target) => {
+    const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [{ _tag: 'BorrowedTarget' as const, target }] : [];
+    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce<PreviousMutation | undefined>((latest, mapped) => {
       if (latest?.orderOffset === callRange.start) return latest;
+      const target = mapped.target;
+      if (mapped._tag === 'PointerValueTarget') {
+        const binding = findPreviousMutation(callee, { ...target, members: [] }, Number.POSITIVE_INFINITY,
+          index, sourceTextByFile, nextVisited);
+        if (binding) {
+          const writes = index.writesByFunctionId.get(callee.id)?.get(target.rootId) ?? [];
+          const pointeeEffect = writes.some((write) => write.target.members.includes('*')) ||
+            !!index.writeBoundariesByFunctionId.get(callee.id)?.get(target.rootId)?.length ||
+            !!index.callsByCallerId.get(callee.id)?.length || !!index.constructionsByCallerId.get(callee.id)?.length;
+          return pointeeEffect ? { _tag: 'MutationBoundary', orderOffset: callRange.start,
+            reason: 'Pointer was rebound inside a value parameter; caller pointee identity is not verified.' } : latest;
+        }
+      }
       const nested = findPreviousMutation(callee, target, Number.POSITIVE_INFINITY, index, sourceTextByFile, nextVisited);
       if (!nested) return latest;
       return nested._tag === 'MutationBoundary' ? { ...nested, orderOffset: callRange.start }
         : { ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] };
     }, undefined);
   }, firstAtMost(calls, beforeOffset, callStart), direct ? firstAtMost(calls, direct.orderOffset, callStart) : calls.length) ?? direct;
-  const barrier = mutationBarrier(fn, target, beforeOffset, index, candidate?.orderOffset);
-  return barrier && (!candidate || candidate.orderOffset <= barrier.start)
+  const constructions = index.constructionsByCallerId.get(fn.id) ?? [];
+  const construction = findFirstMapped(constructions, (construction): MutationBoundary | undefined => {
+    const range = nodeRange(construction, sourceTextByFile);
+    if (!range || range.end > beforeOffset) return undefined;
+    const directRange = directWrite && nodeRange(directWrite.mutation, sourceTextByFile);
+    if (directRange && directRange.start <= range.start && directRange.end >= range.end) return undefined;
+    const exposed = construction.children.some((argument, parameterIndex) => {
+      const effect = construction.node.construction?.parameterEffects[parameterIndex];
+      return effect !== 'read' && effect !== 'value' && exposesTarget(argument, target, index, nextVisited, effect === 'shared');
+    });
+    return exposed ? { _tag: 'MutationBoundary', orderOffset: range.start,
+      reason: construction.file + ':' + range.start + ': Unverified call effect in constructor ' +
+        (construction.node.construction?.name ?? '(unknown)') + '; shared storage or callback effects are not verified.' } : undefined;
+  }, firstAtMost(constructions, beforeOffset, callStart), candidate ? firstAtMost(constructions, candidate.orderOffset, callStart) : constructions.length);
+  const latest = construction ?? candidate;
+  const barrier = mutationBarrier(fn, target, beforeOffset, index, latest?.orderOffset);
+  return barrier && (!latest || latest.orderOffset <= barrier.start)
     ? { _tag: 'MutationBoundary', orderOffset: barrier.start, reason: fn.file + ':' + barrier.start + ': ' + barrier.reason }
-    : candidate;
+    : latest;
 };
 
 // A query exposes only unresolved parameter owners to the editor adapter. Each
@@ -923,6 +1056,32 @@ const mappedReceiver = (link: CallerLink, target: ExpressionPath): ExpressionPat
   return receiver && appendMembers(receiver, target.members);
 };
 
+type CaptureSource =
+  | { readonly _tag: 'Snapshot'; readonly parent: FunctionInfo; readonly lambda: WrappedNode; readonly beforeOffset: number }
+  | { readonly _tag: 'Invocations'; readonly parent: FunctionInfo; readonly calls: readonly WrappedNode[] }
+  | { readonly _tag: 'Boundary'; readonly lambda: WrappedNode; readonly reason: string };
+
+const captureSource = (fn: FunctionInfo, target: ExpressionPath, index: AstIndex): CaptureSource | undefined => {
+  const lambda = lambdaFor(fn, index);
+  const declaration = index.declarations.get(target.rootId);
+  if (!lambda || !declaration || enclosingFunction(declaration, index)?.id === fn.id) return undefined;
+  const parent = enclosingFunction(lambda, index);
+  if (!parent) return undefined;
+  const capture = lambda.node.captures?.find((capture) => captureMatches(capture, target, index));
+  if (capture?.kind === 'copy') {
+    if (opaqueCopy(capture, target.members) || target.members.includes('*')) return { _tag: 'Boundary', lambda,
+      reason: 'Copy capture field or pointee preservation is not verified; stopped at the lambda.' };
+    const range = nodeRange(lambda);
+    return range ? { _tag: 'Snapshot', parent, lambda, beforeOffset: range.start }
+      : { _tag: 'Boundary', lambda, reason: 'Copy capture construction position is unavailable.' };
+  }
+  if (capture?.kind !== 'reference' && lambda.node.captureDefault !== 'reference') return undefined;
+  const calls = (index.callsByCalleeId.get(fn.id) ?? []).filter((call) =>
+    enclosingFunction(call, index)?.id === parent.id && !!nodeRange(call));
+  return calls.length > 0 ? { _tag: 'Invocations', parent, calls }
+    : { _tag: 'Boundary', lambda, reason: 'Reference capture invocation is not verified; stopped at the lambda.' };
+};
+
 // Language-service ranges identify candidates; the caller's Clang symbol proves
 // the semantic call target, including overloads. A missing symbol is a boundary.
 export const callerLinksAt = (
@@ -935,7 +1094,7 @@ export const callerLinksAt = (
   const calls = (prepared.index.callsByFile.get(normalized(file)) ?? []).filter((callsite) => {
     const range = nodeRange(callsite);
     const calleeRange = callsite.children[0] && nodeRange(callsite.children[0]);
-    return callsite.file === normalized(file) && callsite.node.callee?.symbol === symbol &&
+    return callsite.file === normalized(file) && !callsite.node.callee?.virtual && callsite.node.callee?.symbol === symbol &&
       range && range.start <= start && range.end >= end &&
       // A function reference used as an argument is not a call to that reference.
       !!calleeRange && calleeRange.start < Math.max(end, start + 1) && calleeRange.end > start;
@@ -957,7 +1116,7 @@ export const callerLinksAt = (
 };
 
 // Backward tracing follows the value at call entry, including copies. Forward
-// effects in findPreviousMutation still require reference/pointer parameters.
+// Effects use explicit borrows; unverified shared value parameters are barriers.
 const traceMutations = (
   fn: FunctionInfo, target: ExpressionPath, beforeOffset: number, index: AstIndex,
   sourceTextByFile: ReadonlyMap<string, string>, options: AnalysisOptions,
@@ -1041,14 +1200,11 @@ const traceMutations = (
         })) };
       }));
     }
-    const capture = lambda.node.captures?.find((capture) => captureMatches(capture, target, index));
-    if (capture?.kind === 'copy' && (opaqueCopy(capture, target.members) || target.members.includes('*'))) return {
-      candidates: [], boundaries: [], diagnostics: ['Copy capture field or pointee preservation is not verified; stopped at the lambda.']
-    };
-    const reference = capture?.kind === 'reference' || (!capture && lambda.node.captureDefault === 'reference');
-    const invocations = reference ? (index.callsByCalleeId.get(fn.id) ?? []).filter((call) =>
-      enclosingFunction(call, index)?.id === parent.id) : [];
-    if (invocations.length > 0) return combineSearches(invocations.map((call) => {
+    const source = captureSource(fn, target, index);
+    if (!source || source._tag === 'Boundary') return { candidates: [], boundaries: [], diagnostics: [
+      source?.reason ?? 'Lambda capture source is not verified.'
+    ] };
+    if (source._tag === 'Invocations') return combineSearches(source.calls.map((call) => {
       const range = nodeRange(call, sourceTextByFile);
       if (!range) return { candidates: [], boundaries: [] };
       const search = traceMutations(parent, target, range.start, index, sourceTextByFile, options, nextVisited);
@@ -1056,7 +1212,7 @@ const traceMutations = (
         ...candidate, frames: [{ callsite: call, caller: parent }, ...candidate.frames]
       })) };
     }));
-    const search = traceMutations(parent, target, range.start, index, sourceTextByFile, options, nextVisited);
+    const search = traceMutations(source.parent, target, source.beforeOffset, index, sourceTextByFile, options, nextVisited);
     return search.candidates.length > 0 ? search : { ...search, candidates: wrap().candidates };
   }
   if (declaration?.node.kind === 'VarDecl' && declaration.children.length > 0) {
@@ -1127,15 +1283,20 @@ const originFor = (
   }
   const declaration = index.declarations.get(target.rootId);
   if (!declaration) return { candidates: [], boundaries: [] };
-  const lambda = lambdaFor(fn, index);
-  const capture = lambda?.node.captures?.find((capture) => captureMatches(capture, target, index));
-  if (lambda && capture?.kind === 'copy' && (opaqueCopy(capture, target.members) || target.members.includes('*'))) return {
-    candidates: [{ origin: lambda, kind: 'parameter', frames: [], boundary:
-      'Copy capture field or pointee preservation is not verified; stopped at the lambda.' }], boundaries: []
-  };
-  if (lambda && capture?.kind === 'reference' && target.members.includes('*') && enclosingFunction(declaration, index)?.id !== fn.id)
-    return { candidates: [{ origin: lambda, kind: 'parameter', frames: [], boundary:
-      'Captured pointee binding is not verified; stopped at the lambda.' }], boundaries: [] };
+  const source = captureSource(fn, target, index);
+  if (source) {
+    const key = functionKey(fn);
+    if (source._tag === 'Boundary' || visited.includes(key)) return {
+      candidates: [{ origin: source._tag === 'Invocations' ? declaration : source.lambda, kind: 'parameter', frames: [],
+        boundary: source._tag === 'Boundary' ? source.reason : 'Recursive capture path; stopped at the lambda.' }], boundaries: []
+    };
+    if (source._tag === 'Snapshot') return originFor(source.parent, target, index, options, [...visited, key], source.beforeOffset);
+    return combineSearches(source.calls.map((call) => {
+      const search = originFor(source.parent, target, index, options, [...visited, key], nodeRange(call)!.start);
+      return { ...search, candidates: search.candidates.map((candidate) => ({ ...candidate,
+        frames: [{ callsite: call, caller: source.parent }, ...candidate.frames] })) };
+    }));
+  }
   if (declaration.node.kind === 'VarDecl') {
     if (target.members.includes('*')) {
       const barrier = mutationBarrier(fn, target, beforeOffset, index);
