@@ -1,4 +1,5 @@
 #include <clang/AST/ASTConsumer.h>
+#include <clang/UnifiedSymbolResolution/USRGeneration.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -88,6 +89,14 @@ std::string identity(const Decl *declaration) {
   return llvm::utohexstr(reinterpret_cast<uintptr_t>(declaration));
 }
 
+std::string symbol(const FunctionDecl *function) {
+  llvm::SmallString<128> symbol;
+  if (index::generateUSRForDecl(function->getCanonicalDecl(), symbol)) return "";
+  if (function->hasExternalFormalLinkage()) return symbol.str().str();
+  const auto &sm = function->getASTContext().getSourceManager();
+  return absolutePath(sm.getFilename(sm.getExpansionLoc(function->getCanonicalDecl()->getLocation()))) + ":" + symbol.str().str();
+}
+
 class Serializer {
 public:
   explicit Serializer(ASTContext &context)
@@ -155,10 +164,13 @@ public:
         type(output, expression->getType());
         output.attribute("dependent", expression->isTypeDependent());
       }
+      if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt))
+        output.attribute("copyOrMove", construction->getConstructor()->isCopyOrMoveConstructor());
       if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
         if (const auto *callee = call->getDirectCallee())
           output.attributeObject("callee", [&] {
             output.attribute("id", identity(callee));
+            output.attribute("symbol", symbol(callee));
             output.attribute("name", callee->getNameAsString());
             output.attribute("qualifiedName", callee->getQualifiedNameAsString());
           });
@@ -244,6 +256,7 @@ public:
           llvm::isa<CXXConversionDecl>(function) ? "CXXConversionDecl" :
           llvm::isa<CXXMethodDecl>(function) ? "CXXMethodDecl" : "FunctionDecl");
       output.attribute("id", identity(function));
+      output.attribute("symbol", symbol(function));
       output.attribute("name", function->getNameAsString());
       output.attribute("dependent", function->isDependentContext());
       type(output, function->getType());

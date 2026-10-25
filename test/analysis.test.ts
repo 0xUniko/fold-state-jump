@@ -153,6 +153,17 @@ describe('fold mutation analysis', () => {
     }
   });
 
+  test('preserves wrap-around for a local state inside the fold', () => {
+    const mutation = increment('local-state', 'local', 70);
+    const ast = foldAst([
+      { kind: 'VarDecl', id: 'local-state', name: 'local', inner: [{ kind: 'InitListExpr' }] },
+      member('local-state', 'local', 10), mutation
+    ]);
+    const result = analyze(ast, 16);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') { assert.equal(result.mutation.node, mutation); assert.equal(result.wrapped, true); }
+  });
+
   test('wraps to an invoked reference helper mutation inside the fold', () => {
     const mutation = increment('parameter', 'value', 10);
     const helper: ClangNode = {
@@ -466,5 +477,85 @@ describe('reference path indexes', () => {
       assert.equal(result._tag, 'OriginFound');
       if (result._tag === 'OriginFound') assert.equal(result.origin.node, declaration);
     });
+  });
+});
+
+describe('caller origin and fold context', () => {
+  const helper = (id: string, body: readonly ClangNode[], qualType = 'State &'): ClangNode => ({
+    kind: 'FunctionDecl', id, name: id, loc: { file: '/fixture.cpp' },
+    inner: [{ kind: 'ParmVarDecl', id: id + '-state', name: 'value', type: { qualType } }, { kind: 'CompoundStmt', inner: body }]
+  });
+  const call = (callee: string, root: string, offset: number): ClangNode => ({
+    kind: 'CallExpr', callee: { id: callee, name: callee },
+    range: { begin: { offset }, end: { offset: offset + 9, tokLen: 1 } },
+    inner: [reference(callee, callee, offset), reference(root, 'value', offset + 2)]
+  });
+  test('traces three helper parameter mappings to a fold seed', () => {
+    const ast = foldAst([call('outer', 'state', 50)], [
+      helper('leaf', [member('leaf-state', 'value', 100)]),
+      helper('middle', [call('leaf', 'middle-state', 30)]),
+      helper('outer', [call('middle', 'outer-state', 20)])
+    ]);
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.equal(result.origin.node.kind, 'CXXConstructExpr');
+  });
+  test('preserves every intermediate call frame', () => {
+    const mutation = increment('state', 'state', 10);
+    const ast = foldAst([mutation, call('outer', 'state', 50), call('outer', 'state', 70)], [
+      helper('leaf', [member('leaf-state', 'value', 100)]),
+      helper('middle', [call('leaf', 'middle-state', 30)]),
+      helper('outer', [call('middle', 'outer-state', 20)])
+    ]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'CandidatesFound');
+    if (result._tag === 'CandidatesFound') assert.deepEqual(result.candidates.map((candidate) => candidate.frames.map((frame) => frame.caller.name)),
+      [['middle', 'outer', 'operator()'], ['middle', 'outer', 'operator()']]);
+  });
+  test('maps a member argument without dropping the callee member suffix', () => {
+    const write: ClangNode = { ...increment('state', 'state', 10), inner: [{ ...member('state', 'state', 10),
+      inner: [member('state', 'state', 10)] }] };
+    const mappedCall = { ...call('leaf', 'state', 50), inner: [reference('leaf', 'leaf', 50), member('state', 'state', 52)] };
+    const ast = foldAst([write, mappedCall], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, write);
+  });
+  test('keeps origin paths distinct even when they reach the same seed', () => {
+    const ast = foldAst([call('leaf', 'state', 30), call('leaf', 'state', 60)], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginCandidatesFound');
+    if (result._tag === 'OriginCandidatesFound') {
+      assert.equal(result.candidates.length, 2);
+      assert.equal(result.candidates[0].origin, result.candidates[1].origin);
+      assert.notEqual(result.candidates[0].frames[0].callsite, result.candidates[1].frames[0].callsite);
+    }
+  });
+  test('wraps in the calling fold through an independent helper', () => {
+    const mutation = increment('state', 'state', 70);
+    const ast = foldAst([call('leaf', 'state', 30), mutation], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') { assert.equal(result.mutation.node, mutation); assert.equal(result.wrapped, true); }
+  });
+  ['State', 'State &', 'State *'].map((qualType) => test('traces origin and entry value for ' + qualType, () => {
+    const mutation = increment('state', 'state', 10);
+    const ast = foldAst([mutation, call('leaf', 'state', 30)], [helper('leaf', [member('leaf-state', 'value', 100)], qualType)]);
+    assert.equal(origin(ast)._tag, 'OriginFound');
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+  }));
+  test('terminates recursive calls at an explicit parameter boundary', () => {
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [helper('leaf', [call('leaf', 'leaf-state', 30), member('leaf-state', 'value', 100)])] };
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.match(result.boundary ?? '', /Recursive/);
+    assert.equal(analyze(ast)._tag, 'AnalysisFailure');
+  });
+  test('does not resolve an unknown declaration ID using a matching name', () => {
+    const ast = foldAst([{ ...call('leaf', 'state', 30), callee: undefined,
+      inner: [reference('unresolved', 'leaf', 30), reference('state', 'value', 32)] }], [helper('leaf', [increment('leaf-state', 'value', 10)])]);
+    assert.equal(analyze(ast)._tag, 'AnalysisFailure');
   });
 });

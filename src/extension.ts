@@ -8,7 +8,9 @@ import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamb
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
-import { analyzeAst, analyzeOriginAst, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type WrappedNode, type TraceCandidate } from './analysis';
+import { analyzeQuery, callerLinksAt, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type AnalysisOptions, type AnalysisResult, type ClangNode, type CallerLink, type FunctionInfo, type PreparedAst, type WrappedNode, type TraceCandidate, type OriginCandidate } from './analysis';
+import { discoverCallerLocations, type CallerLocation } from './caller-discovery';
+import type { DependencyManifest } from './dependencies';
 import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, removeAstSources, type AstCache } from './ast-cache';
 import { emptyCompileDatabaseCache, resolveCompileCommandCached, type CompileCommand, type CompileDatabaseCache } from './services';
 
@@ -92,28 +94,41 @@ const showFailure = (reason: string): Effect.Effect<void> =>
     void vscode.window.showInformationMessage(reason);
   });
 
-const chooseCandidate = (
-  candidates: readonly TraceCandidate[]
-): Effect.Effect<TraceCandidate | undefined> =>
-  Effect.promise(() => vscode.window.showQuickPick(
-    candidates.map((candidate, index) => ({
-      label: (index + 1) + '. ' + candidate.frames.map((frame) => frame.caller.name || 'fold lambda').join(' → '),
-      description: path.basename(candidate.mutation.file) + ':' + ((candidate.mutation.node.range?.begin?.offset ?? 0) + 1),
-      candidate
-    })),
-    { placeHolder: 'Choose a call path to trace' }
-  )).pipe(Effect.map((picked) => picked?.candidate));
+const candidateTarget = (candidate: TraceCandidate | OriginCandidate): WrappedNode =>
+  'mutation' in candidate ? candidate.mutation : candidate.origin;
 
-const navigateTo = (document: vscode.TextDocument, mutation: WrappedNode): Effect.Effect<void, Error> =>
+const chooseCandidate = (
+  candidates: readonly TraceCandidate[] | readonly OriginCandidate[]
+): Effect.Effect<TraceCandidate | OriginCandidate | undefined, Error> =>
+  Effect.tryPromise({ try: async () => {
+    const items = await Promise.all(candidates.map(async (candidate, index) => {
+      const target = candidateTarget(candidate);
+      const location = async (wrapped: WrappedNode): Promise<string> => {
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.file(wrapped.file));
+        const line = document.positionAt(utf16OffsetFromByte(document.getText(), wrapped.node.range?.begin?.offset ?? 0)).line + 1;
+        return vscode.workspace.asRelativePath(document.uri) + ':' + line;
+      };
+      const calls = await Promise.all(candidate.frames.map(async (frame) =>
+        (frame.caller.name || 'fold lambda') + ' (' + await location(frame.callsite) + ')'));
+      const targetLocation = await location(target);
+      return { label: (index + 1) + '. ' + (calls.join(' → ') || 'State source'),
+        description: targetLocation,
+        detail: ('mutation' in candidate ? 'Previous mutation' : 'Origin: ' + candidate.kind) +
+          ' → ' + targetLocation, candidate };
+    }));
+    return (await vscode.window.showQuickPick(items, { placeHolder: 'Choose a call path to trace' }))?.candidate;
+  }, catch: (error) => new Error('Could not display caller candidates: ' + String(error)) });
+
+const navigateTo = (document: vscode.TextDocument, target: WrappedNode): Effect.Effect<void, Error> =>
   Effect.tryPromise({
     try: async () => {
-      const target = path.resolve(mutation.file) === path.resolve(document.uri.fsPath)
+      const targetDocument = path.resolve(target.file) === path.resolve(document.uri.fsPath)
         ? document
-        : await vscode.workspace.openTextDocument(vscode.Uri.file(mutation.file));
-      const range = sourceRange(target, mutation);
-      if (!range) throw new Error('Found a mutation but could not map its source range.');
-      const position = target.positionAt(utf16OffsetFromByte(target.getText(), range.start));
-      const targetEditor = await vscode.window.showTextDocument(target, { preview: true });
+        : await vscode.workspace.openTextDocument(vscode.Uri.file(target.file));
+      const range = sourceRange(targetDocument, target);
+      if (!range) throw new Error('Found a state source but could not map its source range.');
+      const position = targetDocument.positionAt(utf16OffsetFromByte(targetDocument.getText(), range.start));
+      const targetEditor = await vscode.window.showTextDocument(targetDocument, { preview: true });
       targetEditor.selection = new vscode.Selection(position, position);
       targetEditor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenterIfOutsideViewport);
     },
@@ -223,49 +238,127 @@ const requestAst = (document: vscode.TextDocument, signal: AbortSignal, extensio
   });
 };
 
-const runMutationAnalysis = Effect.fnUntraced(function* (
-  document: vscode.TextDocument,
-  signal: AbortSignal,
-  extensionPath: string,
-  runtime: ExtractionRuntime
-) {
+type AnalysisInput = {
+  readonly document: vscode.TextDocument;
+  readonly version: number;
+  readonly prepared: PreparedAst;
+  readonly dependencies?: DependencyManifest;
+};
+
+type AnalysisRun = { readonly result: AnalysisResult; readonly validate: Effect.Effect<boolean> };
+
+const runAnalysis = Effect.fnUntraced(function* (
+  mode: 'mutation' | 'origin', document: vscode.TextDocument, signal: AbortSignal,
+  extensionPath: string, runtime: ExtractionRuntime
+): Effect.fn.Return<AnalysisRun, Error> {
   const options = analysisOptions(document);
+  const before = yield* Ref.get(runtime.astCache.state);
   const documentVersion = document.version;
   const extraction = yield* requestAst(document, signal, extensionPath, runtime);
-  if (document.version !== documentVersion) return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis.' };
-  return extraction._tag === 'AnalysisFailure'
-    ? extraction
-    : analyzeAst(extraction.prepared.ast, options, extraction.prepared);
+  const failed = (result: AnalysisResult): AnalysisRun => ({ result, validate: Effect.succeed(false) });
+  if (extraction._tag === 'AnalysisFailure') return failed(extraction);
+  if (document.version !== documentVersion) return failed({ _tag: 'AnalysisFailure', reason: 'The document changed during analysis.' });
+  const initial: AnalysisInput = { document, version: documentVersion, prepared: extraction.prepared, dependencies: extraction.dependencies };
+  type SearchState = {
+    readonly inputs: ReadonlyMap<string, AnalysisInput>;
+    readonly externalCallers: ReadonlyMap<ClangNode, readonly CallerLink[]>;
+  };
+  const loadInput = Effect.fnUntraced(function* (file: string, state: SearchState) {
+    const previous = state.inputs.get(path.resolve(file));
+    if (previous) return { input: previous, state };
+    const document = yield* Effect.tryPromise({
+      try: () => vscode.workspace.openTextDocument(vscode.Uri.file(file)), catch: (error) => new Error('Could not open caller: ' + String(error))
+    });
+    const version = document.version;
+    const extraction = yield* requestAst(document, signal, extensionPath, runtime);
+    if (extraction._tag === 'AnalysisFailure') return yield* Effect.fail(new Error(extraction.reason));
+    const input = { document, version, prepared: extraction.prepared, dependencies: extraction.dependencies };
+    return { input, state: { ...state, inputs: new Map([...state.inputs, [path.resolve(file), input]]) } };
+  });
+  const validateLocations = (fn: FunctionInfo, locations: readonly CallerLocation[], state: SearchState) =>
+    locations.reduce<Effect.Effect<{ readonly links: readonly CallerLink[]; readonly state: SearchState }, Error>>(
+      (work, location) => work.pipe(Effect.flatMap(({ links, state }) => Effect.gen(function* () {
+        if (location.uri.scheme !== 'file') return { links, state };
+        const loaded = yield* loadInput(location.uri.fsPath, state);
+        const text = loaded.input.document.getText();
+        const start = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.start));
+        const end = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.end));
+        return { links: [...links, ...callerLinksAt(loaded.input.prepared, location.uri.fsPath, start, end, fn)], state: loaded.state };
+      }))), Effect.succeed({ links: [], state }));
+  const expand = (state: SearchState): Effect.Effect<{ readonly result: AnalysisResult; readonly state: SearchState }, Error> =>
+    Effect.gen(function* () {
+      yield* Effect.sync(() => signal.throwIfAborted());
+      const queryOptions: AnalysisOptions = { ...options, externalCallers: state.externalCallers,
+        sourceTextByFile: new Map([...state.inputs].map(([file, input]) => [file, input.document.getText()])) };
+      const query = analyzeQuery(mode, extraction.prepared.ast, queryOptions, extraction.prepared);
+      if (query.boundaries.length === 0) return { result: query.result, state };
+      const expanded = yield* query.boundaries.reduce<Effect.Effect<SearchState, Error>>((work, fn) =>
+        work.pipe(Effect.flatMap((state) => Effect.gen(function* () {
+          if (state.externalCallers.has(fn.wrapped.node)) return state;
+          if (!fn.wrapped.node.symbol || fn.wrapped.node.loc?.offset === undefined) {
+            runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Native AST has no stable function symbol or declaration position.' }));
+            return { ...state, externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
+          }
+          const loaded = yield* loadInput(fn.file, state);
+          const locations = yield* Effect.tryPromise({
+            try: () => discoverCallerLocations(fn, loaded.input.document, signal), catch: (error) => new Error(String(error))
+          });
+          locations.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
+          const validated = yield* validateLocations(fn, locations.locations, loaded.state);
+          const fallback = validated.links.length === 0 && locations.locations.length > 0
+            ? yield* Effect.tryPromise({ try: () => discoverCallerLocations(fn, loaded.input.document, signal, true), catch: (error) => new Error(String(error)) })
+            : undefined;
+          fallback?.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
+          const final = fallback ? yield* validateLocations(fn, fallback.locations, validated.state) : validated;
+          if (final.links.length === 0) runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'No direct caller passed Clang symbol and call-range validation.' }));
+          return { ...final.state, externalCallers: new Map([...final.state.externalCallers, [fn.wrapped.node, final.links]]) };
+        }))), Effect.succeed(state));
+      return yield* expand(expanded);
+    });
+  const expanded = yield* expand({ inputs: new Map([[path.resolve(document.uri.fsPath), initial]]), externalCallers: new Map() });
+  // Retain guards for every AST, even after memory-cache eviction and while the
+  // QuickPick is open. Revalidate dependencies before any navigation.
+  const validate = Effect.gen(function* () {
+    const after = yield* Ref.get(runtime.astCache.state);
+    if (before.generation !== after.generation) return false;
+    const inputs = [...expanded.state.inputs.values()];
+    if (inputs.some((input) => input.document.version !== input.version || input.document.isDirty || input.document.isClosed ||
+      vscode.workspace.textDocuments.some((document) => document.isDirty && input.dependencies &&
+        dependencyIncludes(input.dependencies.paths, path.resolve(document.uri.fsPath))))) return false;
+    if ([...after.revisions].some(([file, revision]) => revision !== (before.revisions.get(file) ?? 0) && inputs.some((input) =>
+      path.resolve(input.document.uri.fsPath) === file || input.dependencies && dependencyIncludes(input.dependencies.paths, file)))) return false;
+    return (yield* Effect.forEach(inputs, (input) => input.dependencies ? validateDependencies(input.dependencies) : Effect.succeed(true))).every(Boolean);
+  });
+  return { result: expanded.result, validate };
 });
 
-const runOriginAnalysis = Effect.fnUntraced(function* (
-  document: vscode.TextDocument,
-  signal: AbortSignal,
-  extensionPath: string,
-  runtime: ExtractionRuntime
-) {
-  const options = analysisOptions(document);
-  const documentVersion = document.version;
-  const extraction = yield* requestAst(document, signal, extensionPath, runtime);
-  if (document.version !== documentVersion) return { _tag: 'AnalysisFailure' as const, reason: 'The document changed during analysis.' };
-  return extraction._tag === 'AnalysisFailure'
-    ? extraction
-    : analyzeOriginAst(extraction.prepared.ast, options, extraction.prepared);
-});
+const runMutationAnalysis = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) =>
+  runAnalysis('mutation', document, signal, extensionPath, runtime);
+const runOriginAnalysis = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) =>
+  runAnalysis('origin', document, signal, extensionPath, runtime);
 
 // User interaction happens after the progress promise has settled. VS Code
 // message and QuickPick promises may remain pending until the user acts.
 const presentAnalysis = (
   document: vscode.TextDocument,
-  result: ReturnType<typeof analyzeAst>
+  run: AnalysisRun
 ): Effect.Effect<void, Error> =>
   Effect.gen(function* () {
+    const { result } = run;
+    const navigate = Effect.fnUntraced(function* (target: WrappedNode) {
+      if (!(yield* run.validate)) {
+        yield* showFailure('An analyzed document or dependency changed. Run the command again.');
+        return false;
+      }
+      yield* navigateTo(document, target);
+      return true;
+    });
     switch (result._tag) {
       case 'AnalysisFailure':
         yield* showFailure(result.reason);
         return;
       case 'MutationFound':
-        yield* navigateTo(document, result.mutation);
+        if (!(yield* navigate(result.mutation))) return;
         if (result.wrapped) {
           yield* Effect.sync(() => {
             vscode.window.setStatusBarMessage('Fold State Jump: wrapped to the last mutation in this fold.', 5000);
@@ -273,16 +366,21 @@ const presentAnalysis = (
         }
         return;
       case 'OriginFound':
-        yield* navigateTo(document, result.origin);
+        if (!(yield* navigate(result.origin))) return;
         yield* Effect.sync(() => {
           void vscode.window.showInformationMessage(result.kind === 'initialization'
             ? 'Fold State Jump: showing the initialization source.'
-            : 'Fold State Jump: showing the parameter source.');
+            : 'Fold State Jump: ' + (result.boundary ?? 'showing the parameter source.'));
         });
         return;
+      case 'OriginCandidatesFound':
       case 'CandidatesFound': {
         const candidate = yield* chooseCandidate(result.candidates);
-        if (candidate) yield* navigateTo(document, candidate.mutation);
+        if (candidate) {
+          if (!(yield* navigate(candidateTarget(candidate)))) return;
+          if ('mutation' in candidate && candidate.wrapped) vscode.window.setStatusBarMessage('Fold State Jump: wrapped to the last mutation in this fold.', 5000);
+          if ('origin' in candidate && candidate.boundary) yield* showFailure(candidate.boundary);
+        }
         return;
       }
     }

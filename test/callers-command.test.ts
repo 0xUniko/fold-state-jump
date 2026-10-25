@@ -1,0 +1,9 @@
+import { it as test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+
+test('cross-file caller command adapter with real native ASTs and mocked VS Code', { skip: !existsSync('native/build/fold-state-jump-ast') }, () => {
+  const result = spawnSync(process.execPath, ['test/callers-command.ts'], { encoding: 'utf8', timeout: 60000 });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});

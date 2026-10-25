@@ -200,3 +200,109 @@ void capture_timing(SessionState &session_state) {
   session_state.bank_state.bank.records = 3;
   read_copy();
 }
+
+// Independent helpers are deliberately not lexical children of either fold.
+void origin_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-leaf
+}
+void origin_middle(BankState &bank_state) {
+  auto &bank = bank_state.bank;
+  origin_leaf(bank);
+}
+void origin_outer(SessionState &session_state) { origin_middle(session_state.bank_state); }
+SessionState backward_fold() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    session_state.bank_state.bank.records = 10; // @write backward-entry
+    origin_outer(session_state);
+    return session_state;
+  });
+}
+void wrap_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-wrap
+}
+void wrap_middle(BankState &bank_state) { wrap_leaf(bank_state.bank); }
+SessionState wrap_fold_a() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    wrap_middle(session_state.bank_state);
+    session_state.bank_state.bank.records = 11; // @write wrap-a
+    return session_state;
+  });
+}
+SessionState wrap_fold_b() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    wrap_middle(session_state.bank_state);
+    session_state.bank_state.bank.records = 22; // @write wrap-b
+    return session_state;
+  });
+}
+void copy_leaf(Bank bank) {
+  consume(bank.records); // @case backward-copy
+  bank.records = 99;
+}
+void copy_entry() {
+  Bank bank{}; // @origin copy-entry
+  bank.records = 42; // @write copy-entry
+  copy_leaf(bank);
+  consume(bank.records); // @case backward-copy-isolation
+}
+void pointer_leaf(Bank *bank) {
+  consume(bank->records); // @case backward-pointer
+}
+void pointer_entry() {
+  Bank bank{}; // @origin pointer-entry
+  auto &alias = bank;
+  alias.records = 7; // @write pointer-entry
+  pointer_leaf(&alias);
+}
+void overload_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-overload
+}
+void overload_leaf(int &records) { ++records; }
+namespace other {
+void overload_leaf(Bank &bank) { bank.records = 999; }
+}
+void overload_entry() {
+  Bank bank{}; // @origin overload-entry
+  bank.records = 8; // @write overload-entry
+  overload_leaf(bank);
+  int records = 0;
+  overload_leaf(records);
+  other::overload_leaf(bank);
+}
+template <typename T> void template_leaf(T &bank) {
+  consume(bank.records); // @case backward-template
+}
+void template_entry() {
+  Bank bank{}; // @origin template-entry
+  bank.records = 9; // @write template-entry
+  template_leaf(bank);
+}
+void recursive_leaf(Bank &bank) {
+  recursive_leaf(bank);
+  consume(bank.records); // @case backward-recursive
+}
+
+void indexed_leaf(int unused, Bank &bank) {
+  consume(bank.records); // @case backward-parameter-index
+}
+void indexed_entry() {
+  Bank bank{}; // @origin indexed-entry
+  bank.records = 12; // @write indexed-entry
+  indexed_leaf(0, bank);
+}
+
+void specialization_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-specializations
+}
+template <typename T> void specialization_middle(T &state) { specialization_leaf(state.bank); }
+void specialization_a() {
+  BankState state{};
+  state.bank.records = 13;
+  specialization_middle(state);
+}
+struct OtherBankState { Bank bank; };
+void specialization_b() {
+  OtherBankState state{};
+  state.bank.records = 14;
+  specialization_middle(state);
+}
