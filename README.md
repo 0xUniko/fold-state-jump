@@ -77,16 +77,19 @@ retention. Dirty included documents must be saved before navigation.
 On Linux with the LLVM/Clang 23 extractor, an AST cache miss can build and reuse
 the original source's precompiled preamble. Saved body edits retain the preamble
 when its prefix, compilation context and independently verified dependencies
-remain valid. One serial native worker owns one in-memory PCH (at most 256 MiB),
-released after five idle minutes, cancellation, cache clearing or shutdown.
-Restart rebuilds the preamble; the gzip AST cache still survives restart and
-valid AST hits need no native request. Unsupported contexts and failed proofs
-automatically use ordinary cold extraction. See [production PCH acceptance](docs/preamble-production.md).
+remain valid. Validated PCH artifacts persist in the sibling `pch/` directory,
+with no cumulative capacity limit. One serial native worker holds the active
+preamble (at most 256 MiB per artifact); switching files releases that process
+and loads the selected artifact from SSD. Idle expiry, cancellation and restart
+preserve published artifacts. `Clear AST Caches` clears both AST and PCH artifacts.
+Valid AST hits need no native request. Unsupported contexts and failed proofs
+automatically use ordinary cold extraction. See [SSD PCH acceptance](docs/preamble-ssd.md).
 
 Memory retention remains three translation units / 16 MiB serialized AST, with
 one oversized entry retained alone. This is a soft input-size budget; decoded
 nodes and indexes consume extra memory. Cumulative disk capacity defaults to
-unlimited (`0`); a positive byte budget enables soft LRU eviction. The single-AST
+unlimited (`0`); a positive byte budget enables soft LRU eviction for AST snapshots.
+PCH storage remains unlimited. The single-AST
 limit still applies. Invalid, truncated, oversized or outdated snapshots rebuild.
 
 ```json
@@ -183,7 +186,7 @@ for the earlier optimization measurements. The current cache/parse investigation
 raw samples, experiment decisions and platform limits are in
 [docs/performance-investigation-v2.md](docs/performance-investigation-v2.md).
 The [final acceptance record](docs/final-acceptance.md) lists release checks and
-known limits. The [production PCH acceptance](docs/preamble-production.md) records
+known limits. The [SSD PCH acceptance](docs/preamble-ssd.md) records
 the current implementation and measurements; [earlier research](docs/pch-investigation-v2.md)
 preserves the API and semantic counterexamples that informed it.
 

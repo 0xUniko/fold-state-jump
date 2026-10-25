@@ -35,8 +35,12 @@
 #include <iostream>
 #include <iterator>
 #include <optional>
+#include <variant>
+#include <limits>
 #ifdef __linux__
 #include <csignal>
+#include <fcntl.h>
+#include <sys/file.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -684,58 +688,312 @@ private:
   DependencyState &dependencies;
 };
 
-struct PreambleWorkerState {
+// Open every directory component without following symlinks. Keep the selected
+// directory inode alive while Clang owns its temporary PCH beneath that inode.
+using OwnedDirectory = std::shared_ptr<const int>;
+OwnedDirectory openPreambleDirectory(llvm::StringRef path) {
+#ifdef __linux__
+  if (!llvm::sys::path::is_absolute(path)) return {};
+  llvm::SmallVector<llvm::StringRef> components;
+  path.split(components, '/', -1, false);
+  int directory = ::open("/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+  fold(components, directory, [](int &directory, llvm::StringRef component) {
+    if (directory < 0) return;
+    const int next = component == ".." ? -1 : ::openat(directory,
+        component.str().c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    ::close(directory);
+    directory = next;
+  });
+  if (directory < 0) return {};
+  return OwnedDirectory(new int(directory), [](const int *directory) {
+    ::close(*directory);
+    delete directory;
+  });
+#else
+  return {};
+#endif
+}
+
+struct BuiltPreamble {
+  OwnedDirectory storageDirectory;
   std::unique_ptr<PrecompiledPreamble> preamble;
+  std::unique_ptr<llvm::MemoryBuffer> diskPch;
+  std::string pchHash;
   DependencyState dependencies;
   std::vector<std::string> invocationArgs;
 };
 
+struct LoadedPreamble {
+  std::unique_ptr<llvm::MemoryBuffer> pch;
+  std::string pchPath;
+  std::string pchHash;
+  PreambleBounds bounds;
+  std::string prefixHash;
+  DependencyState dependencies;
+  std::vector<std::string> invocationArgs;
+};
+
+// Both paths give Clang exactly the independently verified, immutable bytes.
+// The caller owns pch until its CompilerInstance and AST have been destroyed.
+llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> preambleFileSystem(
+    llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs,
+    llvm::StringRef pchPath, const llvm::MemoryBuffer &pch) {
+  auto pchFS = llvm::makeIntrusiveRefCnt<llvm::vfs::InMemoryFileSystem>();
+  pchFS->addFile(pchPath, 0, llvm::MemoryBuffer::getMemBuffer(pch.getBuffer(), pchPath, false));
+  auto overlay = llvm::makeIntrusiveRefCnt<llvm::vfs::OverlayFileSystem>(vfs);
+  overlay->pushOverlay(pchFS);
+  return overlay;
+}
+
+struct PreambleWorkerState {
+  std::variant<std::monostate, BuiltPreamble, LoadedPreamble> artifact;
+  // The kernel owns lock release on every exit, including SIGKILL. Never unlink
+  // the persistent lock pathname: another waiter may already hold its inode.
+  int lock = -1;
+};
+
+std::string invocationHash(const std::vector<std::string> &invocationArgs) {
+  std::string encoded;
+  llvm::raw_string_ostream stream(encoded);
+  json::OStream output(stream);
+  output.array([&] {
+    fold(invocationArgs, output, [](auto &output, const auto &arg) { output.value(arg); });
+  });
+  stream.flush();
+  return digest(encoded);
+}
+
+struct RestoredPreambleDependencies {
+  DependencyState dependencies;
+  std::string reason;
+  std::set<std::string> expectedRuntime;
+};
+RestoredPreambleDependencies restorePreambleDependencies(const json::Object &request) {
+  const auto *proof = request.getObject("dependencies");
+  if (!proof || proof->getInteger("schema") != 1 || proof->getBoolean("reusable") != true)
+    return {{}, "dependency-schema"};
+  const auto *paths = proof->getArray("paths");
+  const auto *runtime = proof->getArray("runtime");
+  if (!paths || paths->empty() || !runtime || runtime->empty()) return {{}, "dependency-empty"};
+  RestoredPreambleDependencies restored;
+  fold(*paths, restored, [](auto &restored, const auto &value) {
+    if (!restored.reason.empty()) return;
+    const auto *file = value.getAsObject();
+    if (!file) { restored.reason = "dependency-path-schema"; return; }
+    const auto path = file->getString("path");
+    const auto real = file->getString("real");
+    const auto sha256 = file->getString("sha256");
+    if (!path || !real || !sha256) { restored.reason = "dependency-path-schema"; return; }
+    capturePath(restored.dependencies, *path);
+    const auto captured = restored.dependencies.paths.find(path->str());
+    if (!restored.dependencies.reusable) restored.reason = "dependency-path-observation:" + path->str();
+    else if (captured == restored.dependencies.paths.end()) restored.reason = "dependency-path-missing:" + path->str();
+    else if (captured->second.first != *real) restored.reason = "dependency-path-real:" + path->str();
+    else if (captured->second.second != *sha256) restored.reason = "dependency-path-content:" + path->str();
+  });
+  if (!restored.reason.empty()) return restored;
+  captureRuntime(restored.dependencies);
+  if (!restored.dependencies.reusable) return {std::move(restored.dependencies), "runtime-observation"};
+  fold(*runtime, restored, [](auto &restored, const auto &value) {
+    if (!restored.reason.empty()) return;
+    const auto *file = value.getAsObject();
+    if (!file) { restored.reason = "runtime-schema"; return; }
+    const auto path = file->getString("path");
+    const auto stamp = file->getString("stamp");
+    if (!path || !stamp) { restored.reason = "runtime-schema"; return; }
+    restored.expectedRuntime.insert(path->str());
+    const auto captured = restored.dependencies.runtime.find(path->str());
+    if (captured != restored.dependencies.runtime.end()) {
+      if (captured->second != *stamp) restored.reason = "runtime-stamp:" + path->str();
+      return;
+    }
+    // captureRuntime also observes file-backed header/data mappings. A fresh
+    // process need not have mapped those yet, but their old proof must remain
+    // intact. Require exactly the original observation stamp before restoring.
+    if (fileStamp(*path) != *stamp) { restored.reason = "runtime-unmapped-stamp:" + path->str(); return; }
+    restored.dependencies.runtime.emplace(path->str(), stamp->str());
+  });
+  // Every image currently mapped by the fresh process must also be covered by
+  // the build proof. A new DSO/runtime mapping cannot silently change context.
+  fold(restored.dependencies.runtime, restored, [](auto &restored, const auto &file) {
+    if (restored.reason.empty() && !restored.expectedRuntime.count(file.first))
+      restored.reason = "runtime-new:" + file.first;
+  });
+  return restored;
+}
+
 void processPreambleRequest(PreambleWorkerState &state, const std::string &source,
-                            const std::string &request,
+                            const json::Object &request,
                             std::shared_ptr<CompilerInvocation> invocation) {
   const auto started = std::chrono::steady_clock::now();
   const auto buffer = llvm::MemoryBuffer::getFileAsStream(source);
   invocation->getFrontendOpts().DisableFree = false;
   invocation->getCodeGenOpts().DisableFree = false;
-  // This is the complete ordered sequence generated by generateCC1CommandLine,
-  // before PCH-specific options or main-file remapping are introduced.
   const auto invocationArgs = invocation->getCC1CommandLine();
   auto vfs = llvm::vfs::getRealFileSystem();
+  const auto operation = request.getString("operation");
   json::OStream output(llvm::outs());
   output.object([&] {
-    if (!buffer || !invocation) { output.attribute("ok", false); return; }
+    if (!buffer || !operation) { output.attribute("ok", false); return; }
     const auto bounds = ComputePreambleBounds(invocation->getLangOpts(), (*buffer)->getMemBufferRef(), 0);
-    if (request == "build") {
-      state.preamble.reset();
-      state.dependencies = DependencyState{};
-      state.invocationArgs = invocationArgs;
-      PreambleProof proof(state.dependencies);
+    const auto reject = [&](llvm::StringRef reason) {
+      output.attribute("ok", false);
+      output.attribute("reason", reason);
+    };
+    if (*operation == "unlock") {
+#ifdef __linux__
+      if (state.lock >= 0) ::close(state.lock);
+      state.lock = -1;
+#endif
+      output.attribute("ok", true);
+    } else if (*operation == "lock") {
+#ifdef __linux__
+      const auto lockPath = request.getString("lockPath");
+      if (state.lock >= 0 || !lockPath) { output.attribute("ok", false); return; }
+      const auto directory = openPreambleDirectory(llvm::sys::path::parent_path(*lockPath));
+      if (!directory) { output.attribute("ok", false); return; }
+      const int lock = ::openat(*directory, llvm::sys::path::filename(*lockPath).str().c_str(),
+          O_RDWR | O_CREAT | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC, 0600);
+      struct stat metadata;
+      if (lock < 0) { output.attribute("ok", false); return; }
+      if (::fstat(lock, &metadata) || !S_ISREG(metadata.st_mode) || metadata.st_nlink != 1 ||
+          metadata.st_uid != ::geteuid() || ::flock(lock, LOCK_EX)) {
+        ::close(lock);
+        output.attribute("ok", false);
+        return;
+      }
+      state.lock = lock;
+      output.attribute("ok", true);
+#else
+      output.attribute("ok", false);
+#endif
+    } else if (*operation == "describe") {
+      output.attribute("ok", bounds.Size > 0);
+    } else if (*operation == "build") {
+      state.artifact = std::monostate{};
+      BuiltPreamble built;
+      built.invocationArgs = invocationArgs;
+      PreambleProof proof(built.dependencies);
       const auto diagnostics = CompilerInstance::createDiagnostics(*vfs, invocation->getDiagnosticOpts());
+      const auto storagePath = request.getString("storagePath");
+      built.storageDirectory = storagePath ? openPreambleDirectory(*storagePath) : OwnedDirectory{};
+      if (storagePath && !built.storageDirectory) { output.attribute("ok", false); return; }
+      const auto anchoredStorage = built.storageDirectory ?
+          "/proc/self/fd/" + std::to_string(*built.storageDirectory) : "";
       auto preamble = PrecompiledPreamble::Build(*invocation, buffer->get(), bounds,
-          diagnostics, vfs, std::make_shared<PCHContainerOperations>(), true, "", proof);
-      if (preamble) state.preamble = std::make_unique<PrecompiledPreamble>(std::move(*preamble));
-      // Publication requires the host to verify this independent proof and
-      // the exact source prefix before it is permitted to issue `parse`.
-      output.attribute("ok", bool(state.preamble) && bounds.Size > 0);
-      output.attribute("bounds", bounds.Size);
-      output.attribute("prefixHash", digest((*buffer)->getBuffer().take_front(bounds.Size)));
-      output.attribute("sourceHash", digest((*buffer)->getBuffer()));
+          diagnostics, vfs, std::make_shared<PCHContainerOperations>(), !storagePath,
+          anchoredStorage, proof);
+      if (preamble) built.preamble = std::make_unique<PrecompiledPreamble>(std::move(*preamble));
+      if (built.preamble && storagePath) {
+        // Ask the public API for its selected temporary path. The original
+        // invocation remains unchanged, and the preamble retains ownership.
+        CompilerInvocation configured(*invocation);
+        built.preamble->AddImplicitPreamble(configured, vfs, buffer->get());
+        const auto pchPath = configured.getPreprocessorOpts().ImplicitPCHInclude;
+#ifdef __linux__
+        const int pchFile = ::openat(*built.storageDirectory,
+            llvm::sys::path::filename(pchPath).str().c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+        struct stat metadata;
+        if (pchFile < 0) { reject("build-pch-path"); return; }
+        if (::fstat(pchFile, &metadata) || !S_ISREG(metadata.st_mode) || metadata.st_nlink != 1 ||
+            metadata.st_size <= 0 || metadata.st_size > 256 * 1024 * 1024) {
+          ::close(pchFile);
+          reject("build-pch-metadata"); return;
+        }
+        auto diskPch = llvm::MemoryBuffer::getOpenFile(pchFile, pchPath, metadata.st_size, true, true);
+        ::close(pchFile);
+#else
+        auto diskPch = llvm::MemoryBuffer::getFileAsStream(pchPath);
+#endif
+        if (!diskPch || (*diskPch)->getBufferSize() > 256 * 1024 * 1024) {
+          reject("build-pch-read"); return;
+        }
+        built.diskPch = std::move(*diskPch);
+        built.pchHash = digest(built.diskPch->getBuffer());
+        output.attribute("pchPath", storagePath->str() + "/" + llvm::sys::path::filename(pchPath).str());
+      }
+      output.attribute("ok", bool(built.preamble) && bounds.Size > 0);
       output.attributeBegin("dependencies");
-      writeDependencies(output, state.dependencies);
+      writeDependencies(output, built.dependencies);
       output.attributeEnd();
-    } else if (request == "parse" && state.preamble && state.invocationArgs == invocationArgs &&
-               state.preamble->CanReuse(*invocation, (*buffer)->getMemBufferRef(), bounds, *vfs)) {
-      state.preamble->AddImplicitPreamble(*invocation, vfs, buffer->get());
+      state.artifact = std::move(built);
+    } else if (*operation == "load") {
+      state.artifact = std::monostate{};
+      const auto pchPath = request.getString("pchPath");
+      const auto pchHash = request.getString("pchHash");
+      const auto prefixHash = request.getString("prefixHash");
+      const auto expectedInvocation = request.getString("invocationHash");
+      const auto expectedBounds = request.getInteger("bounds");
+      const auto expectedEnds = request.getBoolean("endsAtStartOfLine");
+      if (!pchPath || !pchHash || !prefixHash || !expectedInvocation || !expectedBounds ||
+          !expectedEnds || bounds.Size == 0 || *expectedBounds != bounds.Size ||
+          *expectedEnds != bounds.PreambleEndsAtStartOfLine ||
+          *prefixHash != digest((*buffer)->getBuffer().take_front(bounds.Size)) ||
+          *expectedInvocation != invocationHash(invocationArgs)) {
+        reject("load-identity"); return;
+      }
+      // Volatile, null-terminated getOpenFile deliberately copies instead of
+      // mmap: later mutation cannot alter the checksum-verified VFS bytes.
+#ifdef __linux__
+      const auto directory = openPreambleDirectory(llvm::sys::path::parent_path(*pchPath));
+      const int pchFile = directory ? ::openat(*directory,
+          llvm::sys::path::filename(*pchPath).str().c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC) : -1;
+      struct stat metadata;
+      if (pchFile < 0) { reject("load-path"); return; }
+      if (::fstat(pchFile, &metadata) || !S_ISREG(metadata.st_mode) || metadata.st_nlink != 1 ||
+          metadata.st_size <= 0 || metadata.st_size > 256 * 1024 * 1024) {
+        ::close(pchFile);
+        reject("load-file-metadata"); return;
+      }
+      auto pch = llvm::MemoryBuffer::getOpenFile(pchFile, *pchPath, metadata.st_size, true, true);
+      ::close(pchFile);
+#else
+      auto pch = llvm::MemoryBuffer::getFileAsStream(*pchPath);
+#endif
+      if (!pch || (*pch)->getBufferSize() > 256 * 1024 * 1024) { reject("load-read"); return; }
+      if (digest((*pch)->getBuffer()) != *pchHash) { reject("load-checksum"); return; }
+      auto restored = restorePreambleDependencies(request);
+      if (!restored.reason.empty()) { reject(restored.reason); return; }
+      state.artifact = LoadedPreamble{std::move(*pch), pchPath->str(), pchHash->str(), bounds,
+          prefixHash->str(), std::move(restored.dependencies), invocationArgs};
+      output.attribute("ok", true);
+      output.attributeBegin("dependencies");
+      writeDependencies(output, std::get<LoadedPreamble>(state.artifact).dependencies);
+      output.attributeEnd();
+    } else if (*operation == "parse") {
+      const auto *built = std::get_if<BuiltPreamble>(&state.artifact);
+      const auto *loaded = std::get_if<LoadedPreamble>(&state.artifact);
+      const auto dependencies = [&]() -> std::optional<DependencyState> {
+        if (built && built->preamble && built->invocationArgs == invocationArgs &&
+            built->preamble->CanReuse(*invocation, (*buffer)->getMemBufferRef(), bounds, *vfs)) {
+          built->preamble->AddImplicitPreamble(*invocation, vfs, buffer->get());
+          if (built->diskPch) vfs = preambleFileSystem(vfs,
+              invocation->getPreprocessorOpts().ImplicitPCHInclude, *built->diskPch);
+          return built->dependencies;
+        }
+        if (loaded && loaded->invocationArgs == invocationArgs &&
+            loaded->bounds.Size == bounds.Size &&
+            loaded->bounds.PreambleEndsAtStartOfLine == bounds.PreambleEndsAtStartOfLine &&
+            loaded->prefixHash == digest((*buffer)->getBuffer().take_front(bounds.Size))) {
+          auto &options = invocation->getPreprocessorOpts();
+          options.addRemappedFile(invocation->getFrontendOpts().Inputs[0].getFile(), buffer->get());
+          options.PrecompiledPreambleBytes = {bounds.Size, bounds.PreambleEndsAtStartOfLine};
+          options.DisablePCHOrModuleValidation = DisableValidationForModuleKind::PCH;
+          options.UsePredefines = false;
+          options.ImplicitPCHInclude = loaded->pchPath;
+          vfs = preambleFileSystem(vfs, loaded->pchPath, *loaded->pch);
+          return loaded->dependencies;
+        }
+        return std::nullopt;
+      }();
+      if (!dependencies) { output.attribute("ok", false); return; }
       invocation->getPreprocessorOpts().RetainRemappedFileBuffers = true;
-      // The main buffer and preamble both outlive the compiler and its AST.
       CompilerInstance compiler(std::move(invocation));
       compiler.setVirtualFileSystem(vfs);
       compiler.createDiagnostics();
-      ExtractionAction action(source, "", state.dependencies);
+      ExtractionAction action(source, "", *dependencies);
       output.attributeBegin("ast");
       output.rawValue([&](llvm::raw_ostream &stream) {
-        // ExtractionAction streams to the same stdout; rawValue records the
-        // envelope's JSON state without retaining a second AST in memory.
         (void)stream;
         const bool parsed = compiler.ExecuteAction(action);
         if (!parsed) llvm::errs() << "Preamble extraction failed\n";
@@ -749,10 +1007,19 @@ void processPreambleRequest(PreambleWorkerState &state, const std::string &sourc
       output.attribute("ok", false);
     }
     output.attribute("ms", elapsedMs(started));
-    output.attribute("pchBytes", static_cast<int64_t>(state.preamble ? state.preamble->getSize() : 0));
+    output.attribute("bounds", bounds.Size);
+    output.attribute("endsAtStartOfLine", bounds.PreambleEndsAtStartOfLine);
+    output.attribute("prefixHash", digest((*buffer)->getBuffer().take_front(bounds.Size)));
+    output.attribute("sourceHash", digest((*buffer)->getBuffer()));
+    output.attribute("invocationHash", invocationHash(invocationArgs));
+    const auto *built = std::get_if<BuiltPreamble>(&state.artifact);
+    const auto *loaded = std::get_if<LoadedPreamble>(&state.artifact);
+    output.attribute("pchBytes", static_cast<int64_t>(built && built->diskPch ?
+        built->diskPch->getBufferSize() : built && built->preamble ?
+        built->preamble->getSize() : loaded ? loaded->pch->getBufferSize() : 0));
+    if (built && built->diskPch) output.attribute("pchHash", built->pchHash);
+    if (loaded) output.attribute("pchHash", loaded->pchHash);
   });
-  // A JSON string escapes all control characters. The record separator is
-  // unambiguous even for multiline JSON emitted by the existing serializer.
   llvm::outs() << '\x1e';
   llvm::outs().flush();
 }
@@ -762,7 +1029,7 @@ void processPreambleRequest(PreambleWorkerState &state, const std::string &sourc
 class PreambleWorkerAction : public tooling::ToolAction {
 public:
   PreambleWorkerAction(PreambleWorkerState &state, const std::string &source,
-                       const std::string &request)
+                       const json::Object &request)
       : state(state), source(source), request(request) {}
   bool runInvocation(std::shared_ptr<CompilerInvocation> invocation, FileManager *,
                      std::shared_ptr<PCHContainerOperations>, DiagnosticConsumer *) override {
@@ -772,7 +1039,7 @@ public:
 private:
   PreambleWorkerState &state;
   const std::string &source;
-  const std::string &request;
+  const json::Object &request;
 };
 
 int preambleWorker(const std::string &source, const std::vector<std::string> &args) {
@@ -783,20 +1050,39 @@ int preambleWorker(const std::string &source, const std::vector<std::string> &ar
   const auto parent = ::getppid();
   if (parent == 1 || ::prctl(PR_SET_PDEATHSIG, SIGTERM) || ::getppid() != parent) return 1;
 #endif
-  PreambleWorkerState state;
-  // No files, locks or recovery metadata survive this process. Each token
-  // gets a fresh driver and FileManager, so implicit toolchain discovery is
-  // re-evaluated even when the command, source prefix and environment match.
-  const auto requests = llvm::make_range(std::istream_iterator<std::string>(std::cin),
-                                        std::istream_iterator<std::string>());
-  fold(requests, state, [&](auto &state, const std::string &request) {
-    tooling::FixedCompilationDatabase database(".", args);
-    tooling::ClangTool tool(database, {source});
-    PreambleWorkerAction action(state, source, request);
-    if (tool.run(&action) != 0) {
+  struct RequestState { PreambleWorkerState worker; std::string line; bool oversized = false; };
+  RequestState state;
+  // Newline framing also admits spaces inside JSON paths. Bound accumulation
+  // before parsing so a corrupt host cannot retain an unbounded request.
+  std::cin >> std::noskipws;
+  const auto requests = llvm::make_range(std::istream_iterator<char>(std::cin),
+                                        std::istream_iterator<char>());
+  fold(requests, state, [&](auto &state, char character) {
+    if (character != '\n') {
+      if (state.line.size() < 16 * 1024 * 1024) state.line.push_back(character);
+      else state.oversized = true;
+      return;
+    }
+    auto parsed = [&]() -> llvm::Expected<json::Value> {
+      if (state.line == "build" || state.line == "parse")
+        return json::Object{{"operation", state.line}};
+      return json::parse(state.line);
+    }();
+    if (!parsed || !parsed->getAsObject() || state.oversized) {
+      if (!parsed) llvm::consumeError(parsed.takeError());
       llvm::outs() << "{\"ok\":false}\x1e";
       llvm::outs().flush();
+    } else {
+      tooling::FixedCompilationDatabase database(".", args);
+      tooling::ClangTool tool(database, {source});
+      PreambleWorkerAction action(state.worker, source, *parsed->getAsObject());
+      if (tool.run(&action) != 0) {
+        llvm::outs() << "{\"ok\":false}\x1e";
+        llvm::outs().flush();
+      }
     }
+    state.line.clear();
+    state.oversized = false;
   });
   return 0;
 }

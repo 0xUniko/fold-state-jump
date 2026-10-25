@@ -2,6 +2,7 @@ import { makePrewarmScheduler, schedulePrewarm, requestForeground, cancelPrewarm
 import { prepareCacheLocation, resolveCacheProject } from './cache-location';
 import { buildIdentity, validateDependencies } from './dependencies';
 import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
+import { clearPchStorage, pchStorageStats } from './pch-storage';
 import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamblePool, type PreamblePool } from './preamble';
 import * as vscode from 'vscode';
 import path from 'node:path';
@@ -158,17 +159,17 @@ const extractAst = Effect.fnUntraced(function* (
       return yield* Effect.fail(new Error('Background parsing deferred because system resources are busy.'));
     }
     if (command.context === 'fallback') runtime.output.appendLine(JSON.stringify({ event: 'fallback-command', source }));
+    const disk = yield* diskCache;
     const extracted = yield* extractWithPreamble(runtime.preamblePool, source, command, executable, configuration.maxAstBytes, signal, (event) => {
       if (event.event === 'native-start' || event.event === 'native-active') trackNativeProcess(runtime.scheduler, signal, event.pid as number | undefined);
       if (event.event === 'native-exit' || event.event === 'native-idle') trackNativeProcess(runtime.scheduler, signal, undefined);
       runtime.output.appendLine(JSON.stringify({ ...event, source }));
-    });
+    }, disk ? path.join(path.dirname(disk.directory), 'pch') : undefined);
     const afterCommand = yield* resolveInput;
     if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
         identity !== (yield* identify(afterCommand))) {
       return yield* Effect.fail(new Error('An input changed during analysis. Run the command again.'));
     }
-    const disk = yield* diskCache;
     if (disk) {
       const written = yield* writeDiskAst(disk, identity, extracted, signal);
       yield* Effect.sync(() => runtime.output.appendLine(JSON.stringify({ event: 'disk-write', source, written })));
@@ -389,14 +390,16 @@ export const activate = (context: vscode.ExtensionContext): void => {
       await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
       await Effect.runPromise(Effect.forEach(directories, (directory) =>
         clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory))));
+      await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'))));
       runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
     })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
       const document = activeDocument();
       const cache = document ? yield* documentDiskCache(document, runtime, true) : undefined;
       const disk = cache ? yield* diskCacheStats(cache) : undefined;
+      const pch = cache ? yield* Effect.promise(() => pchStorageStats(path.join(path.dirname(cache.directory), 'pch'))) : undefined;
       const memory = yield* Ref.get(runtime.astCache.state);
-      runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, diskDirectory: cache?.directory,
+      runtime.output.appendLine(JSON.stringify({ event: 'cache-stats', disk, pch, diskDirectory: cache?.directory,
         diskCapacityBytes: cache?.maxBytes, memoryEntries: memory.entries.length,
         serializedAstBytes: memory.entries.reduce((bytes, entry) => bytes + entry.astBytes, 0),
         scheduler: { tasks: (yield* Ref.get(runtime.scheduler.state)).tasks.map((task) => ({ id: task.id, source: task.source, priority: task._tag })),

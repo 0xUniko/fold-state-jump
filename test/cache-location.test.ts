@@ -1,7 +1,7 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -169,6 +169,47 @@ describe('project cache location', () => {
     const location = await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') });
     assert.equal(location._tag, 'GlobalFallbackCache');
     assert.equal(await readFile(ignore, 'utf8'), 'user-owned\n');
+  }));
+
+  test('rejects a .cache directory symlink before creating anything in its target', () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const target = path.join(directory, 'user-cache');
+    await mkdir(target);
+    await writeFile(path.join(target, 'user-data'), 'keep');
+    await symlink(target, path.join(root, '.cache'), 'dir');
+    const location = available(await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') }));
+    assert.equal(location._tag, 'GlobalFallbackCache');
+    assert.equal(location.root, path.join(directory, 'global', 'project-cache-v2', location.project.key));
+    assert.deepEqual(await readdir(target), ['user-data']);
+    assert.equal(await readFile(path.join(target, 'user-data'), 'utf8'), 'keep');
+  }));
+
+  test('rejects a cache-root symlink without creating ignore or AST files behind it', () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const target = path.join(directory, 'user-cache');
+    await mkdir(target);
+    await mkdir(path.join(root, '.cache'));
+    await symlink(target, path.join(root, '.cache', 'fold-state-jump'), 'dir');
+    const location = available(await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') }));
+    assert.equal(location._tag, 'GlobalFallbackCache');
+    assert.deepEqual(await readdir(target), []);
+  }));
+
+  test('rejects an AST-directory symlink and leaves its target unchanged', () => fixture(async (directory) => {
+    const root = path.join(directory, 'project');
+    const source = await repository(root);
+    const target = path.join(directory, 'user-ast');
+    await mkdir(target);
+    await writeFile(path.join(target, 'user-data'), 'keep');
+    const cacheRoot = path.join(root, '.cache', 'fold-state-jump');
+    await mkdir(cacheRoot, { recursive: true });
+    await symlink(target, path.join(cacheRoot, 'ast'), 'dir');
+    const location = available(await prepareCacheLocation({ source, workspaceRoots: [], globalStorage: path.join(directory, 'global') }));
+    assert.equal(location._tag, 'GlobalFallbackCache');
+    assert.deepEqual(await readdir(target), ['user-data']);
+    assert.equal(await readFile(path.join(target, 'user-data'), 'utf8'), 'keep');
   }));
 
   test('rejects a FIFO ignore without waiting for a writer', { skip: process.platform === 'win32', timeout: 5000 }, () => fixture(async (directory) => {

@@ -3,8 +3,9 @@
 Updated 2026-10-24. [Second-round results](performance-investigation-v2.md),
 [project-root selection details](cache-location-v2.md),
 [validation profiling](validation-performance-v2.md), and
-[PCH research](pch-investigation-v2.md) accompany this design. PCH is experimental
-and no `pch/` directory is created in production.
+[PCH research](pch-investigation-v2.md) accompany this AST-cache design.
+[SSD PCH production caching](preamble-ssd.md) adds a sibling `pch/` directory,
+independent prefix identities and cross-process recovery.
 
 ## Ownership and lookup
 

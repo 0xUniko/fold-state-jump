@@ -1,0 +1,58 @@
+{
+  "kind": "small semantic fixture; N=1 native phase evidence, not real-project performance",
+  "date": "2026-10-24",
+  "clang": "Ubuntu clang 23.1.4 (++20261018124056+71c76755a8ff)",
+  "fixture": {
+    "main": "#define ORDER 1\n#include \"state.h\"\n#if ORDER\nvoid f(State &s) { s.value = VALUE; s.value++; }\n#endif\n",
+    "header": "#if __INCLUDE_LEVEL__ != 1\n#error include level changed\n#endif\n#define VALUE 3\nstruct State { int value; };\n",
+    "changedBody": "void f(State &s) { s.value = VALUE; s.value += 4; s.value++; }",
+    "flags": [
+      "-std=c++17",
+      "fixture include directory"
+    ]
+  },
+  "workflow": [
+    "first process: lock; build StoreInMemory=false in owned stage directory",
+    "copy complete artifact while the first process owns Clang's temporary file",
+    "unlock; close first process stdin; wait for exit 0",
+    "edit main-file body without changing its preamble",
+    "second process: load persisted artifact and dependency proof; parse; exit 0",
+    "third process: ordinary cold parse of the same edited main file",
+    "normalize process-address IDs while preserving declaration-reference relationships; compare complete compact AST"
+  ],
+  "events": [
+    {
+      "process": 1,
+      "operation": "build",
+      "ok": true,
+      "ms": 6.436992,
+      "pchBytes": 250820,
+      "bounds": 45,
+      "endsAtStartOfLine": true
+    },
+    {
+      "process": 2,
+      "operation": "load",
+      "ok": true,
+      "ms": 1.22912,
+      "pchBytes": 250820,
+      "bounds": 45,
+      "endsAtStartOfLine": true
+    },
+    {
+      "process": 2,
+      "operation": "parse",
+      "ok": true,
+      "ms": 2.034219,
+      "pchBytes": 250820
+    }
+  ],
+  "buildCount": 1,
+  "loadCount": 1,
+  "bodyHashChanged": true,
+  "prefixHashUnchanged": true,
+  "dependencyProofReusable": true,
+  "completeCompactAstEqualsEditedColdParse": true,
+  "reproduction": "test/preamble-native.test.ts (the first test retains the same semantics and asserts process exit before load)",
+  "implementationStage": "Initial native cross-process proof; final hardening subsequently pins disk-build bytes and independently preserves unmapped header runtime guards. Final real-project measurements are recorded separately."
+}

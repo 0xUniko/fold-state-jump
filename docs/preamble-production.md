@@ -1,5 +1,9 @@
 # Production Preamble acceptance, 2026-10-24
 
+This records PR #14's in-memory implementation and its original measurements.
+The subsequent [SSD PCH implementation and acceptance](preamble-ssd.md)
+supersedes its one-file ownership, restart and artifact-lifecycle limitations.
+
 The extension enables original-source Clang 23 `PrecompiledPreamble` reuse on
 Linux for saved C++ sources and headers with a complete dependency proof.
 `src/extension.ts` calls `extractWithPreamble` only after both AST cache tiers

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { lstat, mkdir, mkdtemp, open, readFile, realpath, rm, stat } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, open, readFile, realpath, rmdir, stat, type FileHandle } from 'node:fs/promises';
 import path from 'node:path';
 
 export type CacheProject =
@@ -90,8 +90,7 @@ export const resolveCacheProject = async (source: string, workspaceRoots: readon
 
 const projectKey = (root: string): string => createHash('sha256').update(root).digest('hex');
 
-const prepareDirectory = async (root: string): Promise<void> => {
-  await mkdir(root, { recursive: true, mode: 0o700 });
+const prepareIgnore = async (root: string): Promise<void> => {
   // Create only when absent; never truncate an existing (possibly user-owned) file.
   // A nonstandard ignore file could expose AST artifacts to Git, so use the
   // project-scoped global fallback instead of modifying it or trusting its rules.
@@ -110,11 +109,53 @@ const prepareDirectory = async (root: string): Promise<void> => {
         throw new Error('Existing cache .gitignore has custom contents; leaving it unchanged');
     } finally { await ignore.close(); }
   }
+};
+const makeDirectory = (directory: string): Promise<void> => mkdir(directory, { mode: 0o700 }).catch((error: NodeJS.ErrnoException) => {
+  if (error.code !== 'EEXIST') throw error;
+});
+const linuxDirectoryPath = (root: FileHandle): string => '/proc/self/fd/' + root.fd;
+const openLinuxDirectory = (root: string): Promise<FileHandle> =>
+  absolute(root).split(path.sep).filter(Boolean).reduce<Promise<FileHandle>>(async (root, component) => {
+    const rootHandle = await root;
+    try {
+      const rootPath = path.join(linuxDirectoryPath(rootHandle), component);
+      await makeDirectory(rootPath);
+      return await open(rootPath, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
+    } finally { await rootHandle.close(); }
+  }, open('/', constants.O_RDONLY | constants.O_DIRECTORY));
+const prepareDirectory = async (root: string): Promise<void> => {
+  if (process.platform === 'linux') {
+    const rootHandle = await openLinuxDirectory(root);
+    try {
+      const rootPath = linuxDirectoryPath(rootHandle);
+      await prepareIgnore(rootPath);
+      await makeDirectory(path.join(rootPath, 'ast'));
+      const astHandle = await open(path.join(rootPath, 'ast'), constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
+      try {
+        // The probe stays relative to the held directory even if another
+        // process replaces a cache path while preparation is in flight.
+        const probe = await mkdtemp(path.join(linuxDirectoryPath(astHandle), '.write-probe-'));
+        await rmdir(probe);
+      } finally { await astHandle.close(); }
+    } finally { await rootHandle.close(); }
+    return;
+  }
+  // Other platforms keep the existing AST support and reject directory
+  // symlinks at preparation. Unlike Linux's fd anchors, these checks cannot
+  // exclude a concurrent parent-directory replacement after lstat.
+  await [...ancestors(absolute(root))].reverse().reduce<Promise<void>>(async (prepared, root) => {
+    await prepared;
+    await makeDirectory(root);
+    const metadata = await lstat(root);
+    if (!metadata.isDirectory() || metadata.isSymbolicLink()) throw new Error('Unsafe cache directory');
+  }, Promise.resolve());
+  await prepareIgnore(root);
   const astDirectory = path.join(root, 'ast');
-  await mkdir(astDirectory, { recursive: true, mode: 0o700 });
-  // Check the actual destination, including existing read-only directories.
+  await makeDirectory(astDirectory);
+  const metadata = await lstat(astDirectory);
+  if (!metadata.isDirectory() || metadata.isSymbolicLink()) throw new Error('Unsafe AST cache directory');
   const probe = await mkdtemp(path.join(astDirectory, '.write-probe-'));
-  await rm(probe, { recursive: true, force: true });
+  await rmdir(probe);
 };
 
 /** Custom/global bases are namespaced by canonical project root, including worktrees. */

@@ -165,6 +165,26 @@ describe('verified build inputs', () => {
     assert.equal(reusableCommand({ ...command, args: ['-include-pch', 'state.pch', source] }), false);
   }));
 
+  test('runtime loader environment participates in artifact identity', () => fixture(async (directory) => {
+    const source = path.join(directory, 'main.cpp');
+    const extractor = path.join(directory, 'extractor');
+    await writeFile(source, 'int main() {}');
+    await writeFile(extractor, 'runtime identity');
+    const command: CompileCommand = { compiler: 'clang++', cwd: directory, args: [source] };
+    await ['LD_LIBRARY_PATH', 'LD_PRELOAD', 'LD_AUDIT', 'LD_BIND_NOW'].reduce(async (previous, name) => {
+      await previous;
+      const before = process.env[name];
+      const identity = await buildIdentity(source, command, extractor, {});
+      try {
+        process.env[name] = 'changed-loader-context';
+        assert.notEqual(await buildIdentity(source, command, extractor, {}), identity);
+      } finally {
+        if (before === undefined) delete process.env[name];
+        else process.env[name] = before;
+      }
+    }, Promise.resolve());
+  }));
+
   test('tracks native runtime image replacement separately from the extractor command', () => fixture(async (directory) => {
     const source = path.join(directory, 'main.cpp');
     const runtime = path.join(directory, 'libclang-test.so');

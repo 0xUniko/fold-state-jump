@@ -31,8 +31,14 @@ jobs:
         run: |
           bun build test/preamble.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-tests.mjs
           bun build test/preamble-context.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-context-tests.mjs
+          bun build test/preamble-ssd.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-ssd-tests.mjs
+          bun build test/preamble-native.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-native-tests.mjs
+          bun build test/pch-storage.test.ts --target=node --format=esm --outfile=/tmp/fsj-pch-storage-tests.mjs
           node /tmp/fsj-preamble-tests.mjs
           node /tmp/fsj-preamble-context-tests.mjs
+          node /tmp/fsj-preamble-ssd-tests.mjs
+          node /tmp/fsj-preamble-native-tests.mjs
+          node /tmp/fsj-pch-storage-tests.mjs
       - run: bun run build
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json

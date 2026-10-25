@@ -1,0 +1,1532 @@
+{
+  "recordedAt": "2026-10-24T14:14:41.521Z",
+  "environment": {
+    "runtime": "v24.22.1",
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCpus": 18
+  },
+  "method": [
+    "Sequential real nano-infer header parses with semantic state mutation edits; direct extraction bypasses the complete AST cache.",
+    "Independent mode repeats the five-request sequence twice, then restarts Node. The first and warm five are reported separately.",
+    "Independent mode gives each main header its own directory and uses original read-only headers as recursive dependencies. It isolates file switching from legitimate dependency changes.",
+    "Coupled mode copies pipeline.h, ffn.h and experts.h together. Editing ffn.h invalidates pipeline.h and editing experts.h invalidates ffn.h; those rebuilds are required.",
+    "Each PCH result is compared against ordinary Clang parsing of that exact version at every supported mutation/origin cursor position. Candidate order is preserved.",
+    "Warm OS filesystem caches, uncontrolled CPU scheduling, one machine. Node CPU excludes child CPU. No Extension Host/UI timing is claimed."
+  ],
+  "independent": {
+    "mode": "independent",
+    "samples": [
+      {
+        "step": 1,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 17813.812952,
+          "nodeCpuMicros": {
+            "user": 691624,
+            "system": 612328
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420480,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 420480,
+              "ms": 10254.258881,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73",
+              "written": true,
+              "pchBytes": 107576856
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420480,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420480,
+              "ms": 6682.108827,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420480,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 14047.019994000002,
+          "nodeCpuMicros": {
+            "user": 218078,
+            "system": 148212
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420536
+            },
+            {
+              "event": "native-exit",
+              "pid": 420536,
+              "code": 0,
+              "ms": 13833.996485,
+              "bytes": 6051895
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420480,
+          "VmSize": "735808 kB",
+          "VmHWM": "834696 kB",
+          "VmRSS": "569752 kB",
+          "RssAnon": "495676 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 2,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 15338.459385000002,
+          "nodeCpuMicros": {
+            "user": 532958,
+            "system": 509339
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420579,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 420579,
+              "ms": 9281.182988,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8",
+              "written": true,
+              "pchBytes": 97622336
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420579,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420579,
+              "ms": 5289.464043,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420579,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 11729.686253,
+          "nodeCpuMicros": {
+            "user": 91466,
+            "system": 142544
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420623
+            },
+            {
+              "event": "native-exit",
+              "pid": 420623,
+              "code": 0,
+              "ms": 11561.495870000006,
+              "bytes": 2913201
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420579,
+          "VmSize": "736028 kB",
+          "VmHWM": "777652 kB",
+          "VmRSS": "563608 kB",
+          "RssAnon": "489776 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      },
+      {
+        "step": 3,
+        "name": "experts.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 13381.612073999997,
+          "nodeCpuMicros": {
+            "user": 779113,
+            "system": 527100
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420662,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 420662,
+              "ms": 6906.075615,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a",
+              "written": true,
+              "pchBytes": 75322024
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420662,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420662,
+              "ms": 5639.65058,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420662,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10036.30838799999,
+          "nodeCpuMicros": {
+            "user": 274291,
+            "system": 168587
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420717
+            },
+            {
+              "event": "native-exit",
+              "pid": 420717,
+              "code": 0,
+              "ms": 9779.760081,
+              "bytes": 11386002
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420662,
+          "VmSize": "688916 kB",
+          "VmHWM": "619712 kB",
+          "VmRSS": "522064 kB",
+          "RssAnon": "448784 kB"
+        },
+        "jumpTargets": 3,
+        "queries": {
+          "positions": 1117,
+          "queries": 2234,
+          "differences": 0
+        }
+      },
+      {
+        "step": 4,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 7877.885922000001,
+          "nodeCpuMicros": {
+            "user": 506766,
+            "system": 414328
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420805,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 420805,
+              "ms": 397.811658,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420805,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420805,
+              "ms": 6782.211896,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420805,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 13325.188035000014,
+          "nodeCpuMicros": {
+            "user": 315198,
+            "system": 128195
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420830
+            },
+            {
+              "event": "native-exit",
+              "pid": 420830,
+              "code": 0,
+              "ms": 13095.122475000011,
+              "bytes": 6051895
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420805,
+          "VmSize": "696960 kB",
+          "VmHWM": "707060 kB",
+          "VmRSS": "528776 kB",
+          "RssAnon": "456040 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 5,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 6430.327520999999,
+          "nodeCpuMicros": {
+            "user": 457314,
+            "system": 350654
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420867,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 420867,
+              "ms": 386.418985,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420867,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420867,
+              "ms": 5411.218059,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420867,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10866.137048999997,
+          "nodeCpuMicros": {
+            "user": 127022,
+            "system": 125251
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420920
+            },
+            {
+              "event": "native-exit",
+              "pid": 420920,
+              "code": 0,
+              "ms": 10699.307028999989,
+              "bytes": 2913201
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420867,
+          "VmSize": "683784 kB",
+          "VmHWM": "614208 kB",
+          "VmRSS": "515184 kB",
+          "RssAnon": "442708 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      },
+      {
+        "step": 6,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 7766.531241999997,
+          "nodeCpuMicros": {
+            "user": 473048,
+            "system": 382965
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420958,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 420958,
+              "ms": 407.344041,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 420958,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 420958,
+              "ms": 6681.72801,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "native-idle",
+              "pid": 420958,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 13521.713534999988,
+          "nodeCpuMicros": {
+            "user": 179647,
+            "system": 158289
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 420984
+            },
+            {
+              "event": "native-exit",
+              "pid": 420984,
+              "code": 0,
+              "ms": 13322.005769999989,
+              "bytes": 6051895
+            }
+          ]
+        },
+        "memory": {
+          "pid": 420958,
+          "VmSize": "696956 kB",
+          "VmHWM": "706948 kB",
+          "VmRSS": "528516 kB",
+          "RssAnon": "456032 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 7,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 6412.574513999978,
+          "nodeCpuMicros": {
+            "user": 330311,
+            "system": 465758
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421032,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421032,
+              "ms": 378.75837,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421032,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421032,
+              "ms": 5399.685383,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421032,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10573.475382999983,
+          "nodeCpuMicros": {
+            "user": 101124,
+            "system": 125654
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421051
+            },
+            {
+              "event": "native-exit",
+              "pid": 421051,
+              "code": 0,
+              "ms": 10419.614189999993,
+              "bytes": 2913201
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421032,
+          "VmSize": "683788 kB",
+          "VmHWM": "614136 kB",
+          "VmRSS": "515144 kB",
+          "RssAnon": "442724 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      },
+      {
+        "step": 8,
+        "name": "experts.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 6783.73547699998,
+          "nodeCpuMicros": {
+            "user": 526141,
+            "system": 445269
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421082,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421082,
+              "ms": 309.416333,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421082,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421082,
+              "ms": 5769.89272,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421082,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 9364.20174399999,
+          "nodeCpuMicros": {
+            "user": 330220,
+            "system": 162547
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421107
+            },
+            {
+              "event": "native-exit",
+              "pid": 421107,
+              "code": 0,
+              "ms": 9103.330025000003,
+              "bytes": 11386002
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421082,
+          "VmSize": "742192 kB",
+          "VmHWM": "593584 kB",
+          "VmRSS": "572848 kB",
+          "RssAnon": "500272 kB"
+        },
+        "jumpTargets": 3,
+        "queries": {
+          "positions": 1117,
+          "queries": 2234,
+          "differences": 0
+        }
+      },
+      {
+        "step": 9,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 7776.36454000001,
+          "nodeCpuMicros": {
+            "user": 495733,
+            "system": 380568
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421140,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421140,
+              "ms": 402.048093,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421140,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421140,
+              "ms": 6684.35588,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421140,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 12878.073678000015,
+          "nodeCpuMicros": {
+            "user": 258236,
+            "system": 131142
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421168
+            },
+            {
+              "event": "native-exit",
+              "pid": 421168,
+              "code": 0,
+              "ms": 12670.958321999991,
+              "bytes": 6051895
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421140,
+          "VmSize": "696956 kB",
+          "VmHWM": "706984 kB",
+          "VmRSS": "528776 kB",
+          "RssAnon": "456060 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 10,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 6560.4084420000145,
+          "nodeCpuMicros": {
+            "user": 362480,
+            "system": 401729
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421205,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421205,
+              "ms": 367.746426,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421205,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421205,
+              "ms": 5545.065544,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421205,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10668.513703000004,
+          "nodeCpuMicros": {
+            "user": 143208,
+            "system": 116059
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421230
+            },
+            {
+              "event": "native-exit",
+              "pid": 421230,
+              "code": 0,
+              "ms": 10498.68530100002,
+              "bytes": 2913201
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421205,
+          "VmSize": "683788 kB",
+          "VmHWM": "614292 kB",
+          "VmRSS": "515244 kB",
+          "RssAnon": "442724 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      }
+    ],
+    "initialFive": {
+      "requests": 5,
+      "totalPchMs": 60842.097854,
+      "totalColdMs": 60004.339719,
+      "builds": 3,
+      "loads": 2,
+      "reuses": 0
+    },
+    "warmFive": {
+      "requests": 5,
+      "totalPchMs": 35299.61421499998,
+      "totalColdMs": 57005.97804299998,
+      "builds": 0,
+      "loads": 5,
+      "reuses": 0
+    },
+    "restart": [
+      {
+        "name": "pipeline.h",
+        "restored": {
+          "ms": 7744.220714,
+          "nodeCpuMicros": {
+            "user": 650461,
+            "system": 410783
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421273,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421273,
+              "ms": 399.239955,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421273,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421273,
+              "ms": 6601.437202,
+              "pchBytes": 107576856,
+              "identity": "9a1b0593a20ab8e7609b555ed1c276e83ff6e5878ad6a30fd24a175a28466c73"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421273,
+              "worker": true
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421273,
+          "VmSize": "696956 kB",
+          "VmHWM": "706864 kB",
+          "VmRSS": "528792 kB",
+          "RssAnon": "456056 kB"
+        },
+        "cold": {
+          "ms": 12996.618598000001,
+          "nodeCpuMicros": {
+            "user": 261520,
+            "system": 125432
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421298
+            },
+            {
+              "event": "native-exit",
+              "pid": 421298,
+              "code": 0,
+              "ms": 12776.815101,
+              "bytes": 6051895
+            }
+          ]
+        },
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        },
+        "jumpTargets": 8
+      },
+      {
+        "name": "ffn.h",
+        "restored": {
+          "ms": 6369.645053,
+          "nodeCpuMicros": {
+            "user": 466158,
+            "system": 424102
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421335,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421335,
+              "ms": 372.170635,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421335,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421335,
+              "ms": 5340.720181,
+              "pchBytes": 97622336,
+              "identity": "f35e645f60852c3384b001a1b2163733e1d0a799f7ee63c81b6bd4d8ce28f8a8"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421335,
+              "worker": true
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421335,
+          "VmSize": "683784 kB",
+          "VmHWM": "614064 kB",
+          "VmRSS": "515088 kB",
+          "RssAnon": "442704 kB"
+        },
+        "cold": {
+          "ms": 10835.249616999998,
+          "nodeCpuMicros": {
+            "user": 168052,
+            "system": 107272
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421356
+            },
+            {
+              "event": "native-exit",
+              "pid": 421356,
+              "code": 0,
+              "ms": 10656.704847,
+              "bytes": 2913201
+            }
+          ]
+        },
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        },
+        "jumpTargets": 14
+      },
+      {
+        "name": "experts.h",
+        "restored": {
+          "ms": 6744.168211000004,
+          "nodeCpuMicros": {
+            "user": 640429,
+            "system": 405946
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421393,
+              "worker": true
+            },
+            {
+              "event": "preamble-load",
+              "pid": 421393,
+              "ms": 317.832215,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421393,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421393,
+              "ms": 5699.149012,
+              "pchBytes": 75322024,
+              "identity": "101f15344d2e7f7fb923cc8f1f893bf550dbc41bf7085bf0bdcd02092cef6f3a"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421393,
+              "worker": true
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421393,
+          "VmSize": "742196 kB",
+          "VmHWM": "593756 kB",
+          "VmRSS": "572952 kB",
+          "RssAnon": "500280 kB"
+        },
+        "cold": {
+          "ms": 9398.976112999997,
+          "nodeCpuMicros": {
+            "user": 395199,
+            "system": 132327
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421412
+            },
+            {
+              "event": "native-exit",
+              "pid": 421412,
+              "code": 0,
+              "ms": 9138.089582,
+              "bytes": 11386002
+            }
+          ]
+        },
+        "queries": {
+          "positions": 1117,
+          "queries": 2234,
+          "differences": 0
+        },
+        "jumpTargets": 3
+      }
+    ],
+    "nativePidsReaped": true,
+    "pchDiskBytes": 284045952,
+    "totalPchMs": 96141.71206899997,
+    "totalColdMs": 117010.31776199999,
+    "builds": 3,
+    "loads": 7,
+    "reuses": 0
+  },
+  "coupled": {
+    "mode": "coupled",
+    "samples": [
+      {
+        "step": 1,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 16870.602209000033,
+          "nodeCpuMicros": {
+            "user": 575993,
+            "system": 550591
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421443,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 421443,
+              "ms": 9756.853559,
+              "pchBytes": 107576884,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6",
+              "written": true,
+              "pchBytes": 107576884
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421443,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421443,
+              "ms": 6319.572303,
+              "pchBytes": 107576884,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421443,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 13500.785453999997,
+          "nodeCpuMicros": {
+            "user": 165019,
+            "system": 119073
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421495
+            },
+            {
+              "event": "native-exit",
+              "pid": 421495,
+              "code": 0,
+              "ms": 13301.933149999997,
+              "bytes": 5977845
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421443,
+          "VmSize": "737552 kB",
+          "VmHWM": "834500 kB",
+          "VmRSS": "571280 kB",
+          "RssAnon": "497420 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 2,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 14807.298048999975,
+          "nodeCpuMicros": {
+            "user": 482171,
+            "system": 463292
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421538,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 421538,
+              "ms": 8959.97383,
+              "pchBytes": 97622332,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d",
+              "written": true,
+              "pchBytes": 97622332
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421538,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421538,
+              "ms": 5121.044482,
+              "pchBytes": 97622332,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421538,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10797.161492999992,
+          "nodeCpuMicros": {
+            "user": 214330,
+            "system": 140517
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421583
+            },
+            {
+              "event": "native-exit",
+              "pid": 421583,
+              "code": 0,
+              "ms": 10611.764530999993,
+              "bytes": 2884381
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421538,
+          "VmSize": "740124 kB",
+          "VmHWM": "777632 kB",
+          "VmRSS": "567744 kB",
+          "RssAnon": "493872 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      },
+      {
+        "step": 3,
+        "name": "experts.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 12629.196242000035,
+          "nodeCpuMicros": {
+            "user": 742195,
+            "system": 434258
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421621,
+              "worker": true
+            },
+            {
+              "event": "preamble-miss",
+              "reason": "No complete verified artifact for build identity",
+              "identity": "cc6ab622b6b2092cdefeedb03f52edaf88ba90d675761aa235f69012a061a0a6"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 421621,
+              "ms": 6522.880169,
+              "pchBytes": 75321984,
+              "identity": "cc6ab622b6b2092cdefeedb03f52edaf88ba90d675761aa235f69012a061a0a6"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "cc6ab622b6b2092cdefeedb03f52edaf88ba90d675761aa235f69012a061a0a6",
+              "written": true,
+              "pchBytes": 75321984
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421621,
+              "identity": "cc6ab622b6b2092cdefeedb03f52edaf88ba90d675761aa235f69012a061a0a6"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421621,
+              "ms": 5333.492593,
+              "pchBytes": 75321984,
+              "identity": "cc6ab622b6b2092cdefeedb03f52edaf88ba90d675761aa235f69012a061a0a6"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421621,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 9523.08363399998,
+          "nodeCpuMicros": {
+            "user": 304679,
+            "system": 116951
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421658
+            },
+            {
+              "event": "native-exit",
+              "pid": 421658,
+              "code": 0,
+              "ms": 9260.266332999978,
+              "bytes": 11251882
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421621,
+          "VmSize": "688912 kB",
+          "VmHWM": "619428 kB",
+          "VmRSS": "522552 kB",
+          "RssAnon": "448780 kB"
+        },
+        "jumpTargets": 3,
+        "queries": {
+          "positions": 1117,
+          "queries": 2234,
+          "differences": 0
+        }
+      },
+      {
+        "step": 4,
+        "name": "pipeline.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 17579.570141000033,
+          "nodeCpuMicros": {
+            "user": 610806,
+            "system": 730102
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421689,
+              "worker": true
+            },
+            {
+              "event": "preamble-invalidated",
+              "reason": "Prefix or dependency proof changed",
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 421689,
+              "ms": 9950.775279,
+              "pchBytes": 107577052,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6",
+              "written": true,
+              "pchBytes": 107577052
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421689,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421689,
+              "ms": 6590.246774,
+              "pchBytes": 107577052,
+              "identity": "d8641543786c85b4573fd806bf93750db76b78af996789682b2cb557b0f622a6"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421689,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 13107.771849000012,
+          "nodeCpuMicros": {
+            "user": 151887,
+            "system": 169660
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421740
+            },
+            {
+              "event": "native-exit",
+              "pid": 421740,
+              "code": 0,
+              "ms": 12906.135773999966,
+              "bytes": 5981805
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421689,
+          "VmSize": "737548 kB",
+          "VmHWM": "834308 kB",
+          "VmRSS": "571168 kB",
+          "RssAnon": "497416 kB"
+        },
+        "jumpTargets": 8,
+        "queries": {
+          "positions": 1803,
+          "queries": 3606,
+          "differences": 0
+        }
+      },
+      {
+        "step": 5,
+        "name": "ffn.h",
+        "astChanged": true,
+        "astCacheUsed": false,
+        "pch": {
+          "ms": 15120.975237999985,
+          "nodeCpuMicros": {
+            "user": 564848,
+            "system": 549489
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421783,
+              "worker": true
+            },
+            {
+              "event": "preamble-invalidated",
+              "reason": "Prefix or dependency proof changed",
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-build",
+              "pid": 421783,
+              "ms": 8898.087057,
+              "pchBytes": 97622412,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-disk-write",
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d",
+              "written": true,
+              "pchBytes": 97622412
+            },
+            {
+              "event": "preamble-published",
+              "pid": 421783,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "preamble-parse",
+              "pid": 421783,
+              "ms": 5310.677862,
+              "pchBytes": 97622412,
+              "identity": "255d2ed5826c56dc7ea11ed6b57c9e1cfc99301b0d10e2f4e8b4f72bc9a30a1d"
+            },
+            {
+              "event": "native-idle",
+              "pid": 421783,
+              "worker": true
+            }
+          ]
+        },
+        "cold": {
+          "ms": 10959.440522999968,
+          "nodeCpuMicros": {
+            "user": 125680,
+            "system": 136884
+          },
+          "events": [
+            {
+              "event": "native-start",
+              "pid": 421826
+            },
+            {
+              "event": "native-exit",
+              "pid": 421826,
+              "code": 0,
+              "ms": 10788.141298000002,
+              "bytes": 2886384
+            }
+          ]
+        },
+        "memory": {
+          "pid": 421783,
+          "VmSize": "740840 kB",
+          "VmHWM": "777480 kB",
+          "VmRSS": "568448 kB",
+          "RssAnon": "494588 kB"
+        },
+        "jumpTargets": 14,
+        "queries": {
+          "positions": 1070,
+          "queries": 2140,
+          "differences": 0
+        }
+      }
+    ],
+    "initialFive": {
+      "requests": 5,
+      "totalPchMs": 77007.64187900006,
+      "totalColdMs": 57888.24295299995,
+      "builds": 5,
+      "loads": 0,
+      "reuses": 0
+    },
+    "nativePidsReaped": true,
+    "pchDiskBytes": 284045481,
+    "totalPchMs": 77007.64187900006,
+    "totalColdMs": 57888.24295299995,
+    "builds": 5,
+    "loads": 0,
+    "reuses": 0
+  }
+}
