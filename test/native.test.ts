@@ -201,6 +201,40 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
     assert.ok(initializations.some((candidate) => within(candidate.origin.node.range?.begin?.offset, markerRange('origin', 'this-caller-b'))));
     assert.ok(initializations.every((candidate) => candidate.frames[0].receiver !== undefined));
   });
+  ['stored', 'immediate', 'default-copy', 'default-reference', 'nested', 'algorithm', 'generic']
+    .map((name) => test('traces captured this origin: ' + name, () => {
+      const result = analyzeCase('lambda-this-' + name, 'records', 'origin');
+      assert.equal(result._tag, 'OriginCandidatesFound');
+      if (result._tag !== 'OriginCandidatesFound') return;
+      const ranges = ['lambda-this-a', 'lambda-this-b'].map((marker) => markerRange('origin', marker));
+      assert.equal(result.candidates.length, 2);
+      assert.ok(result.candidates.every((candidate) => candidate.kind === 'initialization' && !candidate.boundary));
+      assert.deepEqual(result.candidates.map((candidate) => ranges.findIndex((range) =>
+        within(candidate.origin.node.range?.begin?.offset, range))).sort(), [0, 1]);
+      assert.ok(result.candidates.every((candidate) => candidate.frames.length === 1 && candidate.frames[0].receiver?.rootName === 'account'));
+    }));
+  test('uses captured pointer construction context across an unrelated invoking object', () => {
+    const result = analyzeCase('lambda-this-escaped', 'records', 'origin');
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag !== 'OriginFound') return;
+    assert.equal(result.kind, 'initialization');
+    assert.ok(within(result.origin.node.range?.begin?.offset, markerRange('origin', 'lambda-this-a')));
+    assert.equal(result.frames?.[0].caller.name, 'lambda_bank_a');
+    assert.equal(result.frames?.[0].receiver?.rootName, 'account');
+  });
+  ['copy', 'nested-copy', 'unavailable'].map((name) => test('stops at captured receiver boundary: ' + name, () => {
+    const result = analyzeCase('lambda-this-' + name, 'records', 'origin');
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag !== 'OriginFound') return;
+    assert.equal(result.kind, 'parameter');
+    assert.match(result.boundary ?? '', name === 'unavailable' ? /No verified caller/ : /Object copy capture/);
+    assert.equal(analyzeCase('lambda-this-' + name, 'records')._tag, 'AnalysisFailure');
+  }));
+  test('observes invocation-time mutation for a stored this pointer capture', () => {
+    const result = analyzeCase('lambda-this-stored', 'records');
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.ok(within(result.mutation.node.range?.begin?.offset, markerRange('write', 'lambda-this-invocation')));
+  });
   test('preserves this-member suffixes through the receiver object', () => {
     const result = analyzeCase('this-nested', 'bank.records');
     assert.equal(result._tag, 'MutationFound');

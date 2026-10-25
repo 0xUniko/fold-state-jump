@@ -213,6 +213,10 @@ public:
         output.attribute("captureDefault", lambda->getCaptureDefault() == LCD_ByRef ? "reference" :
             lambda->getCaptureDefault() == LCD_ByCopy ? "copy" : "none");
         const auto captureRange = lambda->captures();
+        fold(captureRange, output, [](json::OStream &output, const LambdaCapture &capture) {
+          if (capture.capturesThis())
+            output.attribute("thisCapture", capture.getCaptureKind() == LCK_StarThis ? "copy" : "pointer");
+        });
         output.attributeArray("captures", [&] {
           fold(captureRange, output, [](json::OStream &output, const LambdaCapture &capture) {
             if (capture.capturesVariable()) output.object([&] {

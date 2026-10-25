@@ -363,3 +363,77 @@ SessionState audited_fold_entry() {
     return session_state;
   });
 }
+
+template<class F> void invoke_reader(F read) { read(); }
+struct LambdaBank {
+  int records = 0;
+  void stored() {
+    auto read = [this] { consume(records); }; // @case lambda-this-stored
+    ++records; // @write lambda-this-invocation
+    read();
+  }
+  void immediate() {
+    [this] { consume(records); }(); // @case lambda-this-immediate
+  }
+  void implicit_copy() {
+    [=] { consume(records); }(); // @case lambda-this-default-copy
+  }
+  void implicit_reference() {
+    [&] { consume(records); }(); // @case lambda-this-default-reference
+  }
+  void copied() {
+    [*this] { consume(records); }(); // @case lambda-this-copy
+  }
+  void nested() {
+    [this] { [&] { consume(records); }(); }(); // @case lambda-this-nested
+  }
+  void nested_copy() {
+    [*this] { [this] { consume(records); }(); }(); // @case lambda-this-nested-copy
+  }
+  void algorithm() {
+    fold_left(0, [this](int value) {
+      consume(records); // @case lambda-this-algorithm
+      return value;
+    });
+  }
+  void generic_algorithm() {
+    fold_left(0, [this](auto value) {
+      consume(records); // @case lambda-this-generic
+      return value;
+    });
+  }
+  auto reader() {
+    return [this] { consume(records); }; // @case lambda-this-escaped
+  }
+  template<class F> void invoke(F read) { invoke_reader(read); }
+  void unavailable() {
+    [this] { consume(records); }(); // @case lambda-this-unavailable
+  }
+};
+void lambda_bank_a() {
+  LambdaBank account{}; // @origin lambda-this-a
+  account.stored();
+  account.immediate();
+  account.implicit_copy();
+  account.implicit_reference();
+  account.copied();
+  account.nested();
+  account.nested_copy();
+  account.algorithm();
+  account.generic_algorithm();
+  auto read = account.reader();
+  LambdaBank unrelated{};
+  unrelated.invoke(read);
+}
+void lambda_bank_b() {
+  LambdaBank account{}; // @origin lambda-this-b
+  account.stored();
+  account.immediate();
+  account.implicit_copy();
+  account.implicit_reference();
+  account.copied();
+  account.nested();
+  account.nested_copy();
+  account.algorithm();
+  account.generic_algorithm();
+}

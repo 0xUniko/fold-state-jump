@@ -23,6 +23,7 @@ export type ClangNode = {
   readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string; readonly symbol?: string };
   readonly captures?: readonly { readonly id: string; readonly kind: 'reference' | 'copy' }[];
   readonly captureDefault?: 'reference' | 'copy' | 'none';
+  readonly thisCapture?: 'pointer' | 'copy';
   readonly type?: { readonly qualType?: string };
   readonly referencedDecl?: {
     readonly id?: string;
@@ -877,6 +878,21 @@ const traceMutations = (
   const range = lambda && nodeRange(lambda, sourceTextByFile);
   const declaration = index.declarations.get(target.rootId);
   if (parent && lambda && range && enclosingFunction(declaration ?? fn.wrapped, index)?.id !== fn.id) {
+    // A captured this pointer observes invocation-time mutations. Only a call
+    // in this parent supplies that time; *this owns a separate object copy.
+    if (target.rootId === '$this') {
+      if (lambda.node.thisCapture !== 'pointer') return { candidates: [], boundaries: [] };
+      const invocations = (index.callsByCalleeId.get(fn.id) ?? []).filter((call) =>
+        enclosingFunction(call, index)?.id === parent.id);
+      return combineSearches(invocations.map((call) => {
+        const range = nodeRange(call, sourceTextByFile);
+        if (!range) return { candidates: [], boundaries: [] };
+        const search = traceMutations(parent, target, range.start, index, sourceTextByFile, options, nextVisited);
+        return { ...search, candidates: search.candidates.map((candidate) => ({
+          ...candidate, frames: [{ callsite: call, caller: parent }, ...candidate.frames]
+        })) };
+      }));
+    }
     const capture = lambda.node.captures?.find((capture) => captureMatches(capture, target, index));
     const reference = capture?.kind === 'reference' || (!capture && lambda.node.captureDefault === 'reference');
     const invocations = reference ? (index.callsByCalleeId.get(fn.id) ?? []).filter((call) =>
@@ -931,7 +947,23 @@ const originFor = (
   fn: FunctionInfo, target: ExpressionPath, index: AstIndex, options: AnalysisOptions,
   visited: readonly string[] = []
 ): TraceSearch<OriginCandidate> => {
-  if (target.rootId === '$this' && !lambdaFor(fn, index)) return receiverOriginFor(fn, target, index, options, visited);
+  if (target.rootId === '$this') {
+    const lambda = lambdaFor(fn, index);
+    if (!lambda) return receiverOriginFor(fn, target, index, options, visited);
+    // Clang records actual captures, including implicit `this` under [=]/[&].
+    // The captured pointer belongs to the object at closure construction, not
+    // to the closure receiver at operator() invocation (which may be elsewhere).
+    // Follow each enclosing capture in turn, then verified member callers; never
+    // infer a capture from the default or treat a *this copy as the original.
+    const parent = enclosingFunction(lambda, index);
+    const key = functionKey(fn);
+    if (lambda.node.thisCapture !== 'pointer' || !parent || visited.includes(key)) return {
+      candidates: [{ origin: lambda, kind: 'parameter', frames: [], boundary:
+        lambda.node.thisCapture === 'copy' ? 'Object copy capture; stopped at the lambda.'
+          : 'Captured receiver source could not be verified; stopped at the lambda.' }], boundaries: []
+    };
+    return originFor(parent, target, index, options, [...visited, key]);
+  }
   const declaration = index.declarations.get(target.rootId);
   if (!declaration) return { candidates: [], boundaries: [] };
   if (declaration.node.kind === 'VarDecl') return {
