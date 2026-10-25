@@ -87,6 +87,14 @@ describe('persistent PCH storage', () => {
       assert.throws(() => process.kill(child.pid!, 0), { code: 'ESRCH' });
     } finally { child.kill(); await closed; await lock.close().catch(() => undefined); }
   }));
+  test('failed lock acquisition reports incomplete clear and preserves the artifact', () => fixture(async (_root, directory, source) => {
+    const published = await publishPchEntry(directory, entry, source);
+    assert.ok(published);
+    assert.equal(await clearPchStorage(directory, '/bin/false'), false);
+    assert.deepEqual(await readPchEntry(directory, entry.identity), published);
+    assert.equal(await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast')), true);
+    assert.equal(await readPchEntry(directory, entry.identity), undefined);
+  }));
   test('publishes a complete copied pair and retains the native-owned source', () => fixture(async (_root, directory, source) => {
     const published = await publishPchEntry(directory, entry, source);
     assert.ok(published);

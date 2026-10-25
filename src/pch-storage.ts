@@ -236,7 +236,7 @@ const withArtifactLock = async (handle: FileHandle, identity: string, executable
     constants.O_RDWR | constants.O_CREAT | constants.O_NOFOLLOW | constants.O_NONBLOCK, 0o600);
   try {
     const metadata = await lock.stat();
-    if (!metadata.isFile() || metadata.nlink !== 1 || metadata.uid !== process.getuid?.()) return;
+    if (!metadata.isFile() || metadata.nlink !== 1 || metadata.uid !== process.getuid?.()) throw new Error('Unsafe PCH clear lock');
     const child = spawn(executable, ['--pch-lock'], { stdio: ['pipe', 'pipe', 'ignore', lock.fd] });
     const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
     child.on('error', () => {});
@@ -261,20 +261,24 @@ const withArtifactLock = async (handle: FileHandle, identity: string, executable
     }
   } finally { await lock.close(); }
 };
-export const clearPchStorage = async (directory: string, executable: string): Promise<void> => {
-  await withDirectory(directory, false, async (handle) => {
+export const clearPchStorage = async (directory: string, executable: string): Promise<boolean> => {
+  return withDirectory(directory, false, async (handle) => {
     const names = await readdir(directoryPath(handle));
     const identities = [...new Set(names.filter((name) => /^[a-f0-9]{64}\.(?:pch|json|lock)$/.test(name)).map((name) => name.slice(0, 64)))];
     await identities.reduce<Promise<void>>(async (previous, identity) => {
       await previous;
       await withArtifactLock(handle, identity, executable, async () => {
-        await unlink(path.join(directoryPath(handle), identity + '.json')).catch(() => undefined);
-        await unlink(path.join(directoryPath(handle), identity + '.pch')).catch(() => undefined);
+        await unlink(path.join(directoryPath(handle), identity + '.json')).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== 'ENOENT') throw error;
+        });
+        await unlink(path.join(directoryPath(handle), identity + '.pch')).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== 'ENOENT') throw error;
+        });
       });
     }, Promise.resolve());
     // Staging belongs to a live worker or an unproven abandoned request. Clear
     // cannot establish ownership of that request, so only its owner reaps it.
-  }).catch(() => undefined);
+  }).then(() => true).catch((error: NodeJS.ErrnoException) => error.code === 'ENOENT');
 };
 export const pchStorageStats = async (directory: string): Promise<{ readonly entries: number; readonly bytes: number }> => {
   return withDirectory(directory, false, async (handle) => {

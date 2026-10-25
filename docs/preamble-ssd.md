@@ -8,8 +8,8 @@ admission-policy comparison is recorded separately below.
 
 ## Architecture and Clang recovery
 
-The host retains at most one Native Worker. Switching files releases that
-process, including its Clang allocator high-water memory, while independently
+The host retains at most one Native Worker. Starting extraction for another file
+releases that process, including its Clang allocator high-water memory, while independently
 validated PCH artifacts remain on SSD. A subsequent request opens the appropriate
 artifact in a new Native process. The same path works after idle expiry or an
 extension restart. There is no per-file resident Native process or unlimited
@@ -133,7 +133,8 @@ and tied to host death; it does not schedule background work. Clear takes the
 same artifact lock for every observed artifact or persistent lock name, then
 removes the commit record and PCH. Lock inodes survive. In-progress builds already
 represented by a lock therefore finish before Clear removes their publication.
-New identities created after Clear's directory snapshot may survive it. Clear
+New identities created after Clear's directory snapshot may survive it. Lock
+acquisition failure reports an incomplete clear instead of claiming success. Clear
 leaves staging directories to their owning request: it cannot prove that an
 arbitrary stage belongs to an abandoned rather than live cross-process build.
 Normal exit, worker crash, timeout and cancellation still reap request-owned
@@ -167,6 +168,8 @@ There was no prior reuse-value history. The new conservative rule is:
   restart starts empty. The history holds at most 32 namespaces with two
   identities each, and is pruned on requests. No permanent per-file ban exists.
 
+This construction policy applies to prepared SSD cache namespaces; the existing
+memory-only path remains eager when persistent storage is disabled or unavailable.
 Foreground admission is fixed when extraction starts; promoting an already
 started prewarm preserves its work. There is no extra timer or second scheduler.
 An AST cache hit naturally bypasses extraction entirely; after an intentional
@@ -214,6 +217,105 @@ and CPU scheduling. Native phase timings, end-to-end host timings, Worker RSS an
 high-water RSS, committed SSD bytes and process reaping are reported separately.
 Node CPU excludes child CPU. No Extension Host/UI, physical cold-storage or
 production-session hit-rate result is claimed.
+
+## Recovery/admission measurements, 2026-10-25
+
+The new [raw measurements](measurements/preamble-ssd-recovery.json) retain the
+original ten independent-source edits, five coupled-source edits, restart check
+and complete query comparisons. Both policies include the same correctness,
+checksum and Native format checks; eager only disables foreground construction
+suppression. The coupled benchmark was repeated three times, with policy order
+reversed in the middle trial. Post-edit prewarming is a separate phase and does
+not change the original edit sequences. All calls bypass the AST cache.
+
+Environment: Node 24.22.1, LLVM/Clang 23.1.4, Intel Core Ultra 5 125H, 18 logical
+CPUs, WSL2 Linux 6.18.54.1. Warm OS caches and CPU scheduling remain uncontrolled.
+These are serial observations, not confidence intervals or Extension Host/UI
+measurements. Historical observations below remain separate.
+
+| Independent workflow | Eager PCH / cold | Adaptive PCH / cold | Builds / loads / skips, each policy |
+| --- | ---: | ---: | ---: |
+| First five edits | 61.262 / 60.562 s | 64.743 / 62.832 s | 3 / 2 / 0 |
+| Next five edits | 36.814 / 59.861 s | 38.144 / 63.073 s | 0 / 5 / 0 |
+| All ten edits | 98.076 / 120.423 s | 102.887 / 125.905 s | 3 / 7 / 0 |
+
+Independent reuse is preserved: both policies have three builds, seven SSD loads
+and no skips or fallbacks. The adaptive total is 18.3% below its paired cold
+parses, versus 18.6% for eager. Its warm five are 39.5% below paired cold parsing.
+The difference between the two policy totals tracks variation in their paired
+cold times; no independent-source policy speedup is claimed. Both separate Node
+restarts load all three artifacts, build none and pass all 25 distinct targets.
+The adaptive restart request times are 8.193 / 7.363 / 6.458 s for pipeline / ffn /
+experts, including body parsing and verification.
+
+| Coupled five-edit trial | Eager / paired cold | Adaptive / paired cold | Eager → adaptive time reduction |
+| --- | ---: | ---: | ---: |
+| 1: eager first | 82.111 / 61.313 s | 66.614 / 56.897 s | 18.9% |
+| 2: adaptive first | 85.269 / 63.813 s | 74.861 / 61.973 s | 12.2% |
+| 3: eager first | 90.131 / 67.341 s | 73.206 / 63.755 s | 18.8% |
+
+Every eager trial performs five builds, zero loads and zero skips. Every adaptive
+trial performs two builds, zero loads and three deliberate cold policy skips.
+There are **zero exceptional fallbacks**. First-invalidated active-prefix proofs
+provide the evidence before the third request; duplicate later observations of
+the same disk artifact do not manufacture a second failure. The adaptive excess
+over its paired cold time is 14.8–20.8%, compared with eager's 33.6–33.9%.
+Construction of the first two prefixes still costs real time. This is a stable
+reduction in foreground construction cost across these trials, not a claim that
+a changing dependency tree becomes faster than pure cold parsing.
+
+After edits stop, each policy prewarms pipeline, ffn and experts, then makes three
+foreground requests without changing dependencies:
+
+| Separate stabilization phase | Eager | Adaptive |
+| --- | ---: | ---: |
+| Three prewarms, time | 32.730 s | 45.283 s |
+| Prewarm builds / loads | 1 / 2 | 3 / 0 |
+| Next three foreground requests, time | 21.910 s | 21.919 s |
+| Foreground builds / loads / skips | 0 / 3 / 0 | 0 / 3 / 0 |
+| Original five edits plus all six stabilization requests | 136.752 s | 133.816 s |
+
+Suppression recovers; it does not permanently disable PCH. It also moves work to
+later prewarming: the combined eleven-request observation improves only 2.1%
+absolutely, and its paired cold totals differ (131.131 versus 124.903 s). That
+combined phase was measured once, so **no stable overall throughput gain is
+claimed for edit-plus-stabilization**. The supported benefit is reducing repeated
+foreground construction during churn while retaining useful SSD reuse once
+inputs are stable. There is no new background scheduling system.
+
+Memory remains bounded by one PCH Worker, not by a lower Clang peak. On the ten
+independent requests, immediate post-request Worker RSS is 510.54–675.50 MiB
+(eager) and 510.16–675.88 MiB (adaptive); maximum Worker VmHWM is 815.40 versus
+815.14 MiB. Coupled trials peak around 815 MiB for both policies. A skipped
+request stops its provisional PCH Worker before ordinary extraction and retains
+no idle PCH Worker. Cold-process peak RSS was not separately sampled, so those
+skips are not evidence of a lower total peak. These RSS snapshots are taken
+before the paired cold parse; historical snapshots below were taken afterwards
+and are not directly comparable at the same elapsed idle time. Independent
+committed SSD footprints are 284,047,346 / 284,047,862 bytes for eager/adaptive.
+
+All **68 comparisons passed 185,140 complete mutation/origin queries** with zero
+differences; candidate order and reference relationships are preserved. The
+original **25 distinct jump targets** were checked throughout, totalling 620
+assertions. Every observed parent-workflow Native PID was absent after disposal;
+separate restart processes await pool disposal before exiting. Original nano-infer
+fingerprints are unchanged. Successful isolated fixtures were removed.
+
+Final local checks pass: Native build; **233 Bun tests**; **69 direct Node tests**
+(Preamble 19, context 1, SSD 27, Native 7, storage 13, policy 2); TypeScript 7.0.2
+`tsc --noEmit`; extension build; `git diff --check`. CI also covers the new policy
+suite and type checking. Actual remote runs are tracked on
+[PR #15](https://github.com/0xUniko/fold-state-jump/pull/15); local results are not
+reported as remote CI results.
+
+The admission rule intentionally needs two distinct artifact identities in one
+prepared SSD namespace. A single repeatedly invalidated identity alone does not
+trigger suppression. Memory-only mode, an already-started promoted prewarm,
+physical cold-storage behavior, long-session hit rates and adversarial filesystem
+changes outside the advisory-lock protocol are not claimed to be optimized by
+these measurements. Input proofs remain guarded observations rather than a
+filesystem snapshot. Unknown transport/crash failures do not justify deleting an
+otherwise verified artifact; those requests take the ordinary safe path.
 
 ## Historical SSD results and limits
 

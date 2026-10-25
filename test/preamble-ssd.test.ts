@@ -243,7 +243,7 @@ describe('persistent SSD preamble integration', { skip: !existsSync(executable) 
     const inode = (await stat(lock)).ino;
     const userFile = path.join(input.pchDirectory, 'notes.txt');
     await writeFile(userFile, 'keep');
-    const clearing = Ref.makeUnsafe<Promise<void> | undefined>(undefined);
+    const clearing = Ref.makeUnsafe<Promise<boolean> | undefined>(undefined);
     const recovered = await input.run({ onEvent: (event) => {
       if (event.event === 'preamble-native-rejected') Effect.runSync(Ref.set(clearing, clearPchStorage(input.pchDirectory, executable)));
     } });
@@ -328,6 +328,31 @@ finally:
     await input.run(); assert.ok(has(input.take(), 'preamble-policy-skip'));
     const loaded = await input.run({ source: stable });
     expectLoad(input.take()); equalAst(await input.cold(stable), loaded);
+  }));
+
+  test('Native identity rejection recovers only when fresh request observations remain stable', () => fixture(async (input) => {
+    await input.run(); input.take(); await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const filename = (await readdir(input.pchDirectory)).find((name) => name.endsWith('.json'))!;
+    const metadata = path.join(input.pchDirectory, filename);
+    const manifest = JSON.parse(await readFile(metadata, 'utf8'));
+    await writeFile(metadata, JSON.stringify({ ...manifest, invocationHash: '0'.repeat(64) }));
+    assert.ok(await readPchEntry(input.pchDirectory, manifest.identity));
+    const recovered = await input.run();
+    const recoveredEvents = input.take();
+    assert.ok(recoveredEvents.some((event) => event.event === 'preamble-native-rejected' && event.kind === 'InputsChanged'));
+    assert.ok(has(recoveredEvents, 'preamble-recovery'));
+    equalAst(await input.cold(), recovered);
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const changed = await input.run({ onEvent: (event) => {
+      if (event.event === 'preamble-load-attempt') writeFileSync(input.source, '#define CHANGED_PREFIX 1\n' + sourceText);
+    } });
+    const events = input.take();
+    assert.ok(events.some((event) => event.event === 'preamble-native-rejected' && event.kind === 'InputsChanged'));
+    assert.equal(has(events, 'preamble-recovery'), false);
+    assert.equal(has(events, 'preamble-disk-write'), false);
+    assert.ok(has(events, 'preamble-fallback'));
+    equalAst(await input.cold(), changed);
+    assert.ok(await readPchEntry(input.pchDirectory, manifest.identity), 'Changed request must preserve the valid old-prefix artifact');
   }));
 
   test('switches files and reloads the first artifact without rebuilding after a body edit', () => fixture(async (input) => {

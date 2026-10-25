@@ -390,8 +390,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
       await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
       await Effect.runPromise(Effect.forEach(directories, (directory) =>
         clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory))));
-      await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'), path.join(context.extensionPath, 'native', 'build', 'fold-state-jump-ast'))));
-      runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
+      const pchCleared = await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'), path.join(context.extensionPath, 'native', 'build', 'fold-state-jump-ast'))));
+      runtime.output.appendLine(JSON.stringify({ event: pchCleared.every(Boolean) ? 'cache-cleared' : 'cache-clear-incomplete', project: project.root }));
     })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
       const document = activeDocument();
