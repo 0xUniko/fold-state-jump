@@ -2,8 +2,9 @@
 
 This supersedes the process-owned Preamble architecture in
 [preamble-production.md](preamble-production.md). The original measurements remain
-historical evidence; current measurements are in
-[measurements/preamble-ssd.json](measurements/preamble-ssd.json).
+historical evidence. The 2026-10-24 SSD baseline remains in
+[measurements/preamble-ssd.json](measurements/preamble-ssd.json); the recovery and
+admission-policy comparison is recorded separately below.
 
 ## Architecture and Clang recovery
 
@@ -85,9 +86,10 @@ it cannot bless a build temporary damaged after construction with a fresh hash.
 A regression truncates that temporary immediately after build, verifies parsing
 still uses the fixed valid bytes and confirms damaged bytes are not published. Readers
 accept only a matching artifact/manifest pair. Prefix and complete-AST validation
-finish before publication. Truncated bytes, missing metadata, incompatible
-schemas or Native deserialization failure trigger rebuilding or ordinary cold
-Clang extraction.
+finish before publication. Truncated bytes, missing metadata and incompatible schemas are host rejections,
+separate from a legitimate absent entry. Native additionally checks Clang's AST
+control block against its pinned bytes during `load`. A host checksum alone
+cannot establish Clang format compatibility.
 
 Native build temporaries live in a request-owned staging directory. Cancellation,
 timeout, worker disposal and ordinary process exit reap the child and remove its
@@ -97,6 +99,89 @@ file opens reject symlinks, and cleanup does not recursively delete unknown user
 content. Clear AST Caches stops local work, clears both owned AST and PCH entries
 for the selected project and preserves persistent lock inodes and custom files.
 Unsupported contexts retain ordinary cold parsing.
+
+## Recovery and build admission (2026-10-25)
+
+Disk lookup returns an explicit absent, host-rejected or verified observation.
+The verified observation carries both file stamps. A Native rejection is a
+structured response, while timeout, exit, cancellation, malformed transport and
+communication failure leave through the failure path. Native `load` does not
+leave a partially loaded artifact after rejection.
+
+The request keeps its artifact advisory lock throughout lookup, load, optional
+invalidation, recovery, parse and publication. For an explicit artifact
+rejection, the host decommits only the observed manifest/PCH pair: held directory
+FDs reject parent symlinks; regular-file, single-link, owner and exact stamp
+checks reject substituted files. Manifest removal precedes PCH removal; no
+recursive deletion participates. A different identity or replacement observation
+is untouched. An identity rejection first requires fresh observations to establish
+that the request inputs are unchanged before deleting the inconsistent entry.
+
+Recovery rechecks the complete source hash and real path, host compilation
+identity, exact Native prefix/boundary/cc1 description and recursive dependency
+proof. A live worker may then build once. This is an explicit `RecoveryNeeded`
+case, not a loop or a fresh request on a dead process. The rejected dependency
+proof must still validate before construction and after remainder parsing, in
+addition to all ordinary new-build and complete-AST proofs. Changes, recovery
+failure, process failure or unclassified rejection stop the worker, remove its
+owned stage, release the kernel lock and select ordinary verified Clang parsing.
+Cancellation remains cancellation. No unverified AST or partial PCH is returned.
+
+Cross-process Clear uses the bundled Native `--pch-lock` helper on a safely
+opened inherited descriptor. Its lifetime is awaited, bounded during acquisition,
+and tied to host death; it does not schedule background work. Clear takes the
+same artifact lock for every observed artifact or persistent lock name, then
+removes the commit record and PCH. Lock inodes survive. In-progress builds already
+represented by a lock therefore finish before Clear removes their publication.
+New identities created after Clear's directory snapshot may survive it. Clear
+leaves staging directories to their owning request: it cannot prove that an
+arbitrary stage belongs to an abandoned rather than live cross-process build.
+Normal exit, worker crash, timeout and cancellation still reap request-owned
+stages. Host SIGKILL can leave uncommitted stages for manual investigation;
+Clear deliberately no longer deletes another runtime's temporary build.
+
+The existing scheduler remains unchanged: a foreground request with the same
+source/version/generation key promotes and awaits an already running prewarm;
+other background work is cancelled. Completion populates the normal validated
+memory/disk AST cache. Editor switches schedule the active saved document after
+debounce. Save, text and filesystem dependency events invalidate affected AST
+sources and cancel affected tasks; configuration events invalidate globally.
+PCH dependency validation runs independently of watcher delivery. Body-only main
+file edits do not invalidate a prefix unless that file is genuinely included as
+a header. The pool still owns at most one Native Worker.
+
+There was no prior reuse-value history. The new conservative rule is:
+
+- Prefer a valid retained or SSD PCH on every request.
+- Independently validate the last active prefix's dependencies even on a file
+  switch. A failed recursive proof records its artifact identity in that cache
+  namespace; disk dependency failures provide the same evidence. Reobserving the
+  same invalidated identity does not add another failure.
+- One distinct invalidation permits the existing eager behavior. Two distinct
+  invalidated artifacts within ten minutes defer *construction* on subsequent
+  foreground misses to ordinary verified extraction. This is `preamble-policy-skip`,
+  not `preamble-fallback`. No header checks are relaxed.
+- The existing debounce prewarm may construct despite suppression. A fully
+  validated prewarm, or successful retained/SSD reuse, clears that namespace's
+  history. Idle time expires it after ten minutes. Clear/disposal clears history;
+  restart starts empty. The history holds at most 32 namespaces with two
+  identities each, and is pruned on requests. No permanent per-file ban exists.
+
+Foreground admission is fixed when extraction starts; promoting an already
+started prewarm preserves its work. There is no extra timer or second scheduler.
+An AST cache hit naturally bypasses extraction entirely; after an intentional
+cold request, another unchanged AST request need not manufacture a PCH. A later
+saved edit that requires extraction supplies the next normal prewarm opportunity.
+The test-only eager pool option permits comparison against the same implementation
+with construction suppression disabled.
+
+Regression coverage includes host-valid/native-invalid runtime proof and Clang
+bytes, one-worker recovery and subsequent SSD loading, complete normalized AST
+and query differences, recovery failure, source/prefix/dependency/argument changes,
+two-pool recovery, replacement-safe invalidation, Clear racing recovery,
+cancellation/crash after rejection and timeout during the recovery build. Events
+separate `Absent`, `HostRejected`, `DependenciesChanged`, Native rejection,
+`InputsChanged`, transport `NativeFailure`, policy skip and ordinary fallback.
 
 ## Real-project measurement method
 
@@ -115,7 +200,9 @@ inputs. The independent scenario gives each main file its own directory while
 using the original read-only include roots. It measures file switching with
 unchanged PCH dependencies. A separate coupled scenario copies the three files
 together and verifies that their actual recursive dependency changes cause the
-required rebuilds. Avoiding those rebuilds would violate correctness.
+semantic invalidations. Reusing those stale artifacts would violate correctness;
+ordinary verified parsing is also valid. The historical eager policy rebuilt on
+every miss.
 
 After the independent scenario, every Native process is reaped. A separate Node
 process loads all three SSD artifacts, compares complete query results against
@@ -128,7 +215,7 @@ high-water RSS, committed SSD bytes and process reaping are reported separately.
 Node CPU excludes child CPU. No Extension Host/UI, physical cold-storage or
 production-session hit-rate result is claimed.
 
-## Results and limits
+## Historical SSD results and limits
 
 The [raw final measurements](measurements/preamble-ssd.json) were recorded on
 2026-10-24 with Node 24.22.1, LLVM/Clang 23.1.4, an Intel Core Ultra 5 125H
@@ -209,7 +296,7 @@ bun test
 bun build test/preamble-ssd.test.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-ssd-tests.mjs
 node /tmp/fsj-preamble-ssd-tests.mjs
 bun build test/preamble-ssd-acceptance.ts --target=node --format=esm --outfile=/tmp/fsj-preamble-ssd-acceptance.mjs
-node /tmp/fsj-preamble-ssd-acceptance.mjs /path/to/nano-infer docs/measurements/preamble-ssd.json
+node /tmp/fsj-preamble-ssd-acceptance.mjs /path/to/nano-infer docs/measurements/preamble-ssd-recovery.json
 bun run build
 git diff --check
 ```

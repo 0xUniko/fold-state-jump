@@ -39,6 +39,9 @@ jobs:
           node /tmp/fsj-preamble-ssd-tests.mjs
           node /tmp/fsj-preamble-native-tests.mjs
           node /tmp/fsj-pch-storage-tests.mjs
+          bun build test/pch-policy.test.ts --target=node --format=esm --outfile=/tmp/fsj-pch-policy-tests.mjs
+          node /tmp/fsj-pch-policy-tests.mjs
+      - run: bunx -p typescript tsc --noEmit
       - run: bun run build
       - run: |
           ./native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json

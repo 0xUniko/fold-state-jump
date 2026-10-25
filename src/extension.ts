@@ -164,7 +164,7 @@ const extractAst = Effect.fnUntraced(function* (
       if (event.event === 'native-start' || event.event === 'native-active') trackNativeProcess(runtime.scheduler, signal, event.pid as number | undefined);
       if (event.event === 'native-exit' || event.event === 'native-idle') trackNativeProcess(runtime.scheduler, signal, undefined);
       runtime.output.appendLine(JSON.stringify({ ...event, source }));
-    }, disk ? path.join(path.dirname(disk.directory), 'pch') : undefined);
+    }, disk ? path.join(path.dirname(disk.directory), 'pch') : undefined, task?._tag === 'Background' ? 'prewarm' : 'foreground');
     const afterCommand = yield* resolveInput;
     if (document.version !== documentVersion || generation !== (yield* Ref.get(runtime.astCache.state)).generation ||
         identity !== (yield* identify(afterCommand))) {
@@ -390,7 +390,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
       await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
       await Effect.runPromise(Effect.forEach(directories, (directory) =>
         clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory))));
-      await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'))));
+      await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'), path.join(context.extensionPath, 'native', 'build', 'fold-state-jump-ast'))));
       runtime.output.appendLine(JSON.stringify({ event: 'cache-cleared', project: project.root }));
     })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
