@@ -152,6 +152,62 @@ public:
     });
   }
 
+  void copyBoundaries(json::OStream &output, QualType type, bool move,
+                      const std::string &prefix, bool wholeValue, unsigned depth = 0) const {
+    if (depth > 16) { output.value(prefix); return; }
+    if (type->isReferenceType()) { output.value(prefix); return; }
+    if (type->isPointerType()) {
+      if (!wholeValue) output.value(prefix.empty() ? "*" : prefix + ".*");
+      return;
+    }
+    if (const auto *array = context.getAsArrayType(type)) {
+      copyBoundaries(output, array->getElementType(), move, prefix, wholeValue, depth + 1);
+      return;
+    }
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return;
+    const auto name = record->getQualifiedNameAsString();
+    const bool storageTransfer = name == "std::shared_ptr" || (move &&
+        (name == "std::vector" || name == "std::map" || name == "std::unique_ptr" ||
+         name == "std::future" || name == "std::basic_string" || name == "std::__cxx11::basic_string"));
+    // Classify public value semantics before inspecting implementation fields:
+    // libstdc++ may default these moves through private tuple/tree helpers.
+    if (storageTransfer) {
+      if (!wholeValue) output.value(prefix);
+      return;
+    }
+    // Optional/variant invoke the contained value's constructor.
+    if (name == "std::optional" || name == "std::variant") {
+      if (!wholeValue) { output.value(prefix); return; }
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        const auto arguments = specialization->getTemplateArgs().asArray();
+        const auto visit = [&](auto &&self, const TemplateArgument &argument) -> void {
+          if (argument.getKind() == TemplateArgument::Type)
+            copyBoundaries(output, argument.getAsType(), move, prefix, true, depth + 1);
+          else if (argument.getKind() == TemplateArgument::Pack)
+            fold(argument.pack_elements(), output, [&](json::OStream &, const TemplateArgument &argument) { self(self, argument); });
+        };
+        fold(arguments, output, [&](json::OStream &, const TemplateArgument &argument) { visit(visit, argument); });
+        return;
+      }
+    }
+    const auto constructors = record->ctors();
+    const bool hasMove = std::any_of(constructors.begin(), constructors.end(),
+        [](const CXXConstructorDecl *constructor) { return constructor->isMoveConstructor(); });
+    const bool opaque = !record->hasDefinition() || record->isUnion() || record->getNumBases() != 0 ||
+        std::any_of(constructors.begin(), constructors.end(), [&](const CXXConstructorDecl *constructor) {
+          return (move && hasMove ? constructor->isMoveConstructor() : constructor->isCopyConstructor()) && constructor->isUserProvided();
+        });
+    if (opaque) {
+      output.value(prefix);
+      return;
+    }
+    fold(record->fields(), output, [&](json::OStream &output, const FieldDecl *field) {
+      copyBoundaries(output, field->getType(), move,
+          prefix.empty() ? field->getNameAsString() : prefix + "." + field->getNameAsString(), wholeValue, depth + 1);
+    });
+  }
+
   void statement(json::OStream &output, const Stmt *stmt, unsigned depth = 0) const {
     output.object([&] {
       if (depth > 256) {
@@ -164,8 +220,35 @@ public:
         type(output, expression->getType());
         output.attribute("dependent", expression->isTypeDependent());
       }
-      if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt))
+      if (const auto *cast = llvm::dyn_cast<CastExpr>(stmt))
+        output.attribute("castKind", cast->getCastKindName());
+      if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt)) {
         output.attribute("copyOrMove", construction->getConstructor()->isCopyOrMoveConstructor());
+        output.attribute("fieldwiseCopy", construction->getConstructor()->isCopyOrMoveConstructor() &&
+            !construction->getConstructor()->isUserProvided());
+        if (construction->getConstructor()->isCopyOrMoveConstructor())
+          output.attributeArray("copyBoundaries", [&] {
+            copyBoundaries(output, construction->getType(), construction->getConstructor()->isMoveConstructor(), "", false);
+          });
+        if (construction->getConstructor()->isCopyOrMoveConstructor())
+          output.attributeArray("copyValueBoundaries", [&] {
+            copyBoundaries(output, construction->getType(), construction->getConstructor()->isMoveConstructor(), "", true);
+          });
+      }
+      if (const auto *initial = llvm::dyn_cast<InitListExpr>(stmt)) {
+        const auto *record = initial->getType()->getAsCXXRecordDecl();
+        if (record && record->isAggregate() && !record->isUnion() && record->getNumBases() == 0 &&
+            initial->isSemanticForm())
+          output.attributeArray("aggregateFields", [&] {
+            fold(record->fields(), output, [](json::OStream &output, const FieldDecl *field) {
+              if (!field->isUnnamedBitField()) output.value(field->getNameAsString());
+            });
+          });
+      }
+      if (const auto *member = llvm::dyn_cast<MemberExpr>(stmt))
+        output.attribute("arrow", member->isArrow());
+      if (const auto *literal = llvm::dyn_cast<IntegerLiteral>(stmt))
+        output.attribute("value", llvm::toString(literal->getValue(), 10, false));
       if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
         if (const auto *callee = call->getDirectCallee())
           output.attributeObject("callee", [&] {
@@ -218,10 +301,18 @@ public:
             output.attribute("thisCapture", capture.getCaptureKind() == LCK_StarThis ? "copy" : "pointer");
         });
         output.attributeArray("captures", [&] {
-          fold(captureRange, output, [](json::OStream &output, const LambdaCapture &capture) {
+          fold(captureRange, output, [&](json::OStream &output, const LambdaCapture &capture) {
             if (capture.capturesVariable()) output.object([&] {
               output.attribute("id", identity(capture.getCapturedVar()));
               output.attribute("kind", capture.getCaptureKind() == LCK_ByRef ? "reference" : "copy");
+              if (capture.getCaptureKind() == LCK_ByCopy) {
+                output.attributeArray("copyBoundaries", [&] {
+                  copyBoundaries(output, capture.getCapturedVar()->getType().getNonReferenceType(), false, "", false);
+                });
+                output.attributeArray("copyValueBoundaries", [&] {
+                  copyBoundaries(output, capture.getCapturedVar()->getType().getNonReferenceType(), false, "", true);
+                });
+              }
             });
           });
         });

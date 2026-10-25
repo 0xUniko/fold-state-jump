@@ -8,8 +8,8 @@ void run() {
   other.inspect(); // @call B
 }
 void pointer_run() {
-  State state{};
-  State *pointer = &state; // @origin C
+  State state{}; // @origin C
+  State *pointer = &state;
   pointer->records++; // @write C
   pointer->inspect(); // @call C
 }

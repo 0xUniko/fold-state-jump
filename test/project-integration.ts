@@ -59,8 +59,17 @@ await ['ffn.h', 'experts.h', 'pipeline.h'].reduce(async (previous, name) => {
       const result = origin(offset);
       assert.equal(result._tag, 'OriginFound', name + ':' + sourceText.slice(0, offset).split('\n').length + ' ' + member);
       if (result._tag === 'OriginFound') {
-        assert.equal(result.kind, 'parameter');
-        assert.equal(result.origin.node.kind, 'ParmVarDecl');
+        // In pipeline.h, build_language_graphs is called from the execute fold;
+        // these captures already reach its seed on feat/multi-funcs.
+        const executeFold = name === 'pipeline.h' && offset < sourceText.indexOf('Session clear_session(');
+        assert.equal(result.kind, executeFold ? 'initialization' : 'parameter');
+        assert.equal(result.origin.node.kind, executeFold ? 'CXXFunctionalCastExpr' : 'ParmVarDecl');
+        if (executeFold) {
+          assert.equal(result.origin.file, file);
+          assert.equal(result.origin.node.range?.begin?.offset,
+            byteOffsetFromUtf16(sourceText, sourceText.indexOf('BatchState{std::move(session.session_state), {}}')));
+          assert.deepEqual(result.frames?.map((frame) => frame.argument?.members), [['session_state', 'bank_state', 'bank']]);
+        }
       }
       return offset;
     }));

@@ -113,7 +113,7 @@ const chooseCandidate = (
       const targetLocation = await location(target);
       return { label: (index + 1) + '. ' + (calls.join(' → ') || 'State source'),
         description: targetLocation,
-        detail: ('mutation' in candidate ? 'Previous mutation' : 'Origin: ' + candidate.kind) +
+        detail: ('mutation' in candidate ? 'Source-order mutation candidate' : 'Origin: ' + candidate.kind) +
           ' → ' + targetLocation, candidate };
     }));
     return (await vscode.window.showQuickPick(items, { placeHolder: 'Choose a call path to trace' }))?.candidate;
@@ -275,6 +275,7 @@ const runAnalysis = Effect.fnUntraced(function* (
   type SearchState = {
     readonly inputs: ReadonlyMap<string, AnalysisInput>;
     readonly externalCallers: ReadonlyMap<ClangNode, readonly CallerLink[]>;
+    readonly diagnostics: readonly string[];
   };
   const loadInput = Effect.fnUntraced(function* (file: string, state: SearchState) {
     const previous = state.inputs.get(path.resolve(file));
@@ -302,44 +303,56 @@ const runAnalysis = Effect.fnUntraced(function* (
           Effect.catch(skipOrRethrow((error) =>
             runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: location.uri.fsPath, reason: 'Could not prepare caller: ' + error.message }))))
         );
-        if (!loaded) return { links, state };
+        if (!loaded) return { links, state: { ...state, diagnostics: [...state.diagnostics,
+          'Could not prepare caller: ' + location.uri.fsPath + '. Caller set is incomplete.'] } };
         const text = loaded.input.document.getText();
         const start = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.start));
         const end = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.end));
-        return { links: [...links, ...callerLinksAt(loaded.input.prepared, location.uri.fsPath, start, end, fn)], state: loaded.state };
+        const verified = callerLinksAt(loaded.input.prepared, location.uri.fsPath, start, end, fn);
+        return { links: [...links, ...verified], state: verified.length > 0 ? loaded.state : {
+          ...loaded.state, diagnostics: [...loaded.state.diagnostics,
+            location.uri.fsPath + ':' + start + ': reference did not pass Clang symbol and call-range validation.']
+        } };
       }))), Effect.succeed({ links: [], state }));
   const expand = (state: SearchState): Effect.Effect<{ readonly result: AnalysisResult; readonly state: SearchState }, Error> =>
     Effect.gen(function* () {
       yield* Effect.sync(() => signal.throwIfAborted());
       const queryOptions: AnalysisOptions = { ...options, externalCallers: state.externalCallers,
+        callerDiagnostics: state.diagnostics,
         sourceTextByFile: new Map([...state.inputs].map(([file, input]) => [file, input.document.getText()])) };
       const query = analyzeQuery(mode, extraction.prepared.ast, queryOptions, extraction.prepared);
-      if (query.boundaries.length === 0) return { result: query.result, state };
+      if (query.boundaries.length === 0) {
+        (query.diagnostics ?? []).map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'analysis-boundary', reason })));
+        return { result: query.result, state };
+      }
       const expanded = yield* query.boundaries.reduce<Effect.Effect<SearchState, Error>>((work, fn) =>
         work.pipe(Effect.flatMap((state) => Effect.gen(function* () {
           if (state.externalCallers.has(fn.wrapped.node)) return state;
           if (!fn.wrapped.node.symbol || fn.wrapped.node.loc?.offset === undefined) {
             runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Native AST has no stable function symbol or declaration position.' }));
-            return { ...state, externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
+            return { ...state, diagnostics: [...state.diagnostics, fn.name + ': Native AST has no stable function symbol or declaration position.'],
+              externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
           }
           const loaded = yield* loadInput(fn.file, state).pipe(
             Effect.catch(skipOrRethrow((error) =>
               runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Could not prepare the declaring file for caller discovery: ' + error.message }))))
           );
           if (!loaded) {
-            return { ...state, externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
+            return { ...state, diagnostics: [...state.diagnostics, fn.name + ': Could not prepare the declaring file for caller discovery.'],
+              externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
           }
           const locations = yield* Effect.tryPromise({
             try: () => discoverCallerLocations(fn, loaded.input.document, signal), catch: (error) => new Error(String(error))
           });
           locations.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
-          const final = yield* validateLocations(fn, locations.locations, loaded.state);
+          const final = yield* validateLocations(fn, locations.locations, { ...loaded.state,
+            diagnostics: [...loaded.state.diagnostics, ...locations.diagnostics.map((reason) => fn.name + ': ' + reason)] });
           if (final.links.length === 0) runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'No direct caller passed Clang symbol and call-range validation.' }));
           return { ...final.state, externalCallers: new Map([...final.state.externalCallers, [fn.wrapped.node, final.links]]) };
         }))), Effect.succeed(state));
       return yield* expand(expanded);
     });
-  const expanded = yield* expand({ inputs: new Map([[path.resolve(document.uri.fsPath), initial]]), externalCallers: new Map() });
+  const expanded = yield* expand({ inputs: new Map([[path.resolve(document.uri.fsPath), initial]]), externalCallers: new Map(), diagnostics: [] });
   // Retain guards for every AST, even after memory-cache eviction and while the
   // QuickPick is open. Revalidate dependencies before any navigation.
   const validate = Effect.gen(function* () {
@@ -383,11 +396,9 @@ const presentAnalysis = (
         return;
       case 'MutationFound':
         if (!(yield* navigate(result.mutation))) return;
-        if (result.wrapped) {
-          yield* Effect.sync(() => {
-            vscode.window.setStatusBarMessage('Fold State Jump: wrapped to the last mutation in this fold.', 5000);
-          });
-        }
+        yield* Effect.sync(() => vscode.window.setStatusBarMessage(result.wrapped
+          ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
+          : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000));
         return;
       case 'OriginFound':
         if (!(yield* navigate(result.origin))) return;
@@ -402,7 +413,9 @@ const presentAnalysis = (
         const candidate = yield* chooseCandidate(result.candidates);
         if (candidate) {
           if (!(yield* navigate(candidateTarget(candidate)))) return;
-          if ('mutation' in candidate && candidate.wrapped) vscode.window.setStatusBarMessage('Fold State Jump: wrapped to the last mutation in this fold.', 5000);
+          if ('mutation' in candidate) vscode.window.setStatusBarMessage(candidate.wrapped
+            ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
+            : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000);
           if ('origin' in candidate && candidate.boundary) yield* showFailure(candidate.boundary);
         }
         return;

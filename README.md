@@ -71,7 +71,32 @@ mutation analysis reports failure if no supported mutation is found.
 
 Origin navigation is intentionally separate from mutation navigation. A reference capture reads its source at a known invocation; a value capture uses the snapshot at lambda construction. Mutations in an uncalled lambda or a by-value copy do not count as changes to the original object.
 
+Both commands resolve aggregate arguments by Clang's semantic field order,
+including nested aggregates, `std::move` and no-op aggregate casts. They share
+the same argument-source rules. Custom constructors, unverified copy/move
+fields and factory return values stop at an explicit boundary. A local value
+copy is traced at its initialization time. Rebuild the native extractor for
+field and copy metadata; older JSON cannot prove these mappings.
+
+Mutation results are **source-order candidates**, not control-flow or runtime
+reachability proofs. A seed is evaluated outside its fold lambda; it cannot
+wrap into that lambda. A traced fold parameter can wrap within its own fold.
+When a fold has no indexed mutation, returned-state transformations remain an
+explicit boundary; Origin can still show its seed. Pointer bindings and
+pointees have different paths. Constant array subscripts retain their identity;
+unknown subscripts, pointer arithmetic/indexing, rebinding and unverified copy
+captures stop conservatively. Standard-library subobjects are opaque internally.
+Unsupported write identities also block older candidates through helper calls.
+Detailed mapping and caller-completeness diagnostics are retained as
+`analysis-boundary` events, including when another verified path succeeds.
+
 `bun test` includes deterministic cross-AST analysis tests and a command harness with real native extraction and mocked VS Code APIs. The harness covers candidate selection, reference fallback, provider failure, cancellation, dirty documents, and stale results; it does not test an actual Extension Host or C++ language server. It also includes native AST regression tests when the extractor has been built. To check the actual `nano-infer` member paths and cross-header targets, run `bun test/project-integration.ts /path/to/nano-infer` after building the native tool.
+
+Run `bun test/project-state-sources.ts /path/to/nano-infer` to verify the actual
+`execute` seed, CLI aggregate mappings, generation wrap-around and each CLI
+fold seed with fresh native ASTs. This opt-in harness uses two explicitly named
+source files and Clang USR validation; it does not exercise language-service
+discovery. See [the investigation and validation report](docs/cross-function-state-tracing.md).
 
 The extension searches for `compile_commands.json` in source ancestors, workspace roots, and common CMake build folders. For headers, it inherits flags from a nearby C++ source entry (preferably with the same basename) and explicitly uses `-x c++-header`. Set `foldStateJump.compileCommandsPath` if the build database lives elsewhere, or build the native LibTooling extractor against the desired Clang version. When no compile command is found it records the fallback in the Fold State Jump output channel and uses a minimal `-std=c++17` fallback; project includes such as `gguf.h` may then be missing.
 

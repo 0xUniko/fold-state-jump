@@ -65,7 +65,8 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
     const start = lineOffset('// @case ' + name + '\n');
     const offset = sourceText.indexOf(expression, start);
     assert.ok(offset >= start && offset < sourceText.indexOf('// @case', start), 'Missing expression: ' + expression);
-    const options = { file: source, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText, offset + expression.lastIndexOf('.') + 1) };
+    const options = { file: source, sourceText, cursorByteOffset: byteOffsetFromUtf16(sourceText,
+      offset + Math.max(expression.lastIndexOf('.') + 1, expression.lastIndexOf('->') >= 0 ? expression.lastIndexOf('->') + 2 : 0)) };
     return target === 'origin' ? analyzeOriginAst(ast, options) : analyzeAst(ast, options);
   };
   cases.map(([name, expression, mutation]) => test(name, () => {
