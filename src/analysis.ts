@@ -56,6 +56,9 @@ export type TraceFrame = {
   readonly caller: FunctionInfo;
   readonly parameterIndex?: number;
   readonly argument?: ExpressionPath;
+  // Member-function traces map the implicit object to the call-site receiver
+  // instead of fabricating a parameterIndex for `this`.
+  readonly receiver?: ExpressionPath;
 };
 
 export type TraceCandidate = {
@@ -108,6 +111,7 @@ type AstIndex = {
   readonly callsByCalleeId: ReadonlyMap<string, readonly WrappedNode[]>;
   readonly resolvedCalls: ReadonlyMap<ClangNode, FunctionInfo | undefined>;
   readonly identifiersByFile: ReadonlyMap<string, FileIdentifiers>;
+  readonly callsByFile: ReadonlyMap<string, readonly WrappedNode[]>;
 };
 
 type IndexedWrite = {
@@ -268,7 +272,8 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     callsByCallerId: new Map<string, WrappedNode[]>(),
     callsByCalleeId: new Map<string, WrappedNode[]>(),
     resolvedCalls: new Map<ClangNode, FunctionInfo | undefined>(),
-    identifiersByFile: buildIdentifierIndex(all)
+    identifiersByFile: buildIdentifierIndex(all),
+    callsByFile: new Map<string, WrappedNode[]>()
   });
 
   // Thread ownership through the wrapper tree, including AST inputs that reuse
@@ -325,6 +330,10 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   index.calls.reduce((index, call) => {
     const callee = resolveFunction(call, index);
     index.resolvedCalls.set(call.node, callee);
+    const byFile = index.callsByFile;
+    const fileCalls = byFile.get(call.file) ?? [];
+    fileCalls.push(call);
+    byFile.set(call.file, fileCalls);
     if (!callee) return index;
     const callsByCalleeId = index.callsByCalleeId;
     const calls = callsByCalleeId.get(callee.id) ?? [];
@@ -778,6 +787,14 @@ const mappedArgument = (link: CallerLink, parameterIndex: number, target: Expres
   return argument && { ...argument, members: [...argument.members, ...target.members] };
 };
 
+// A member function's implicit object maps to the receiver expression of each
+// verified call site, keeping the traced member suffix: `this->bank.records`
+// becomes `<receiver>.bank.records` in the caller.
+const mappedReceiver = (link: CallerLink, target: ExpressionPath): ExpressionPath | null => {
+  const receiver = pathAt(receiverOf(link.callsite), link.prepared.index);
+  return receiver && { ...receiver, members: [...receiver.members, ...target.members] };
+};
+
 // Language-service ranges identify candidates; the caller's Clang symbol proves
 // the semantic call target, including overloads. A missing symbol is a boundary.
 export const callerLinksAt = (
@@ -785,7 +802,9 @@ export const callerLinksAt = (
 ): readonly CallerLink[] => {
   const symbol = fn.wrapped.node.symbol;
   if (!symbol) return [];
-  const calls = prepared.index.calls.filter((callsite) => {
+  // Reuse the per-file call index prepared once for this AST; many reference
+  // locations can share it within a single analysis request.
+  const calls = (prepared.index.callsByFile.get(normalized(file)) ?? []).filter((callsite) => {
     const range = nodeRange(callsite);
     const calleeRange = callsite.children[0] && nodeRange(callsite.children[0]);
     return callsite.file === normalized(file) && callsite.node.callee?.symbol === symbol &&
@@ -828,20 +847,30 @@ const traceMutations = (
     return { candidates: last ? [{ ...last, wrapped: true }] : [], boundaries: [] };
   };
   if (fold && parameterIndex === 0) return wrap();
-  if (parameterIndex >= 0) {
+  // Local call sites never prove caller completeness: another translation unit
+  // can hold additional callers of the same function. A traced parameter (or
+  // implicit member receiver) therefore stays in the external-discovery set
+  // until the editor adapter has queried the language service for it, while
+  // the verified local links keep contributing their own candidate paths.
+  const receiverTrace = parameterIndex < 0 && target.rootId === '$this' && !lambdaFor(fn, index);
+  if (parameterIndex >= 0 || receiverTrace) {
     const links = callerLinks(fn, index, options);
     const search = combineSearches(links.map((link) => {
-      const argument = mappedArgument(link, parameterIndex, target);
+      const argument = receiverTrace ? mappedReceiver(link, target) : mappedArgument(link, parameterIndex, target);
       const range = nodeRange(link.callsite, sourceTextByFile);
       if (!argument || !range) return { candidates: [], boundaries: [] };
+      const frame = receiverTrace
+        ? { callsite: link.callsite, caller: link.caller, receiver: argument }
+        : { callsite: link.callsite, caller: link.caller, parameterIndex, argument };
       const search = traceMutations(link.caller, argument, range.start, link.prepared.index, sourceTextByFile, options, nextVisited);
       return { ...search, candidates: search.candidates.map((candidate) => ({
-        ...candidate, frames: [{ callsite: link.callsite, caller: link.caller, parameterIndex, argument }, ...candidate.frames]
+        ...candidate, frames: [frame, ...candidate.frames]
       })) };
     }));
     const resolved = search.candidates.length > 0 ? search : { ...search, candidates: wrap().candidates };
-    return resolved.candidates.length === 0 && resolved.boundaries.length === 0 && !options.externalCallers?.has(fn.wrapped.node)
-      ? { ...resolved, boundaries: [...resolved.boundaries, fn] } : resolved;
+    return options.externalCallers?.has(fn.wrapped.node)
+      ? resolved
+      : { ...resolved, boundaries: [...resolved.boundaries, fn] };
   }
   const parent = enclosingFunction(fn.wrapped, index);
   const lambda = lambdaFor(fn, index);
@@ -866,10 +895,43 @@ const traceMutations = (
   return wrap();
 };
 
+// The implicit object of a member function has no ParmVarDecl. Trace it like a
+// parameter, but map it to the receiver expression at each verified call site
+// and record that receiver on the frame instead of a fabricated parameterIndex.
+const receiverOriginFor = (
+  fn: FunctionInfo, target: ExpressionPath, index: AstIndex, options: AnalysisOptions,
+  visited: readonly string[]
+): TraceSearch<OriginCandidate> => {
+  const fallback = (boundary: string): TraceSearch<OriginCandidate> => ({
+    candidates: [{ origin: fn.wrapped, kind: 'parameter', frames: [], boundary }], boundaries: []
+  });
+  const key = functionKey(fn);
+  if (visited.includes(key)) return fallback('Recursive caller path; stopped at the receiver.');
+  const links = callerLinks(fn, index, options);
+  if (links.length === 0) return {
+    ...fallback('No verified caller is available; stopped at the receiver.'),
+    boundaries: options.externalCallers?.has(fn.wrapped.node) ? [] : [fn]
+  };
+  const search = combineSearches(links.map((link): TraceSearch<OriginCandidate> => {
+    const argument = mappedReceiver(link, target);
+    const search = argument
+      ? originFor(link.caller, argument, link.prepared.index, options, [...visited, key])
+      : fallback('Unsupported receiver expression; stopped at the receiver.');
+    const resolved = search.candidates.length > 0 ? search : fallback('Receiver source could not be resolved; stopped at the receiver.');
+    return { ...resolved, candidates: resolved.candidates.map((candidate) => ({
+      ...candidate, frames: [{ callsite: link.callsite, caller: link.caller, receiver: argument ?? undefined }, ...candidate.frames]
+    })) };
+  }));
+  return options.externalCallers?.has(fn.wrapped.node)
+    ? search
+    : { ...search, boundaries: [...search.boundaries, fn] };
+};
+
 const originFor = (
   fn: FunctionInfo, target: ExpressionPath, index: AstIndex, options: AnalysisOptions,
   visited: readonly string[] = []
 ): TraceSearch<OriginCandidate> => {
+  if (target.rootId === '$this' && !lambdaFor(fn, index)) return receiverOriginFor(fn, target, index, options, visited);
   const declaration = index.declarations.get(target.rootId);
   if (!declaration) return { candidates: [], boundaries: [] };
   if (declaration.node.kind === 'VarDecl') return {
@@ -903,15 +965,15 @@ const originFor = (
       ...candidate, frames: [{ callsite: link.callsite, caller: link.caller, parameterIndex, argument: argument ?? undefined }, ...candidate.frames]
     })) };
   }));
-  return search.boundaries.length === 0 && search.candidates.every((candidate) => candidate.kind === 'parameter') &&
-    !options.externalCallers?.has(owner.wrapped.node)
-    ? { ...search, boundaries: [owner] } : search;
+  return options.externalCallers?.has(owner.wrapped.node)
+    ? search
+    : { ...search, boundaries: [...search.boundaries, owner] };
 };
 
 const uniqueByPath = <A>(candidates: readonly A[], target: (candidate: A) => WrappedNode,
   frames: (candidate: A) => readonly TraceFrame[]): readonly A[] =>
   candidates.reduce((state, candidate) => {
-    const key = callKey(target(candidate)) + '|' + frames(candidate).map((frame) => [callKey(frame.callsite), functionKey(frame.caller), frame.parameterIndex, frame.argument?.rootName, frame.argument?.members.join('.')].join(':')).join('>');
+    const key = callKey(target(candidate)) + '|' + frames(candidate).map((frame) => [callKey(frame.callsite), functionKey(frame.caller), frame.parameterIndex, frame.argument?.rootName, frame.argument?.members.join('.'), frame.receiver?.rootName, frame.receiver?.members.join('.')].join(':')).join('>');
     if (state.keys.has(key)) return state;
     state.keys.add(key);
     state.unique.push(candidate);

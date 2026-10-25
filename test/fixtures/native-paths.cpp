@@ -306,3 +306,60 @@ void specialization_b() {
   state.bank.records = 14;
   specialization_middle(state);
 }
+
+struct AuditedBank {
+  int records = 0;
+  void audit() { consume(records); } // @case this-mutation
+};
+void audited_run() {
+  AuditedBank account{}; // @origin this-caller
+  account.records++; // @write this-caller
+  account.audit();
+}
+void audited_run_b() {
+  AuditedBank account{}; // @origin this-caller-b
+  account.records = 5; // @write this-caller-b
+  account.audit();
+}
+void audited_pointer() {
+  AuditedBank account{};
+  AuditedBank *pointer = &account;
+  pointer->records += 2; // @write this-pointer
+  pointer->audit();
+}
+void audited_forward(AuditedBank &account) {
+  account.records += 3; // @write this-forward
+  account.audit();
+}
+struct AuditedSession {
+  AuditedBank bank;
+  void audit() { consume(bank.records); } // @case this-nested
+};
+void audited_session_run() {
+  AuditedSession session{}; // @origin this-nested
+  session.bank.records++; // @write this-nested-caller
+  session.audit();
+}
+struct AuditedMulti {
+  int records = 0;
+  void ping() { consume(records); } // @case this-overload
+  void ping(int) { records = 77; }
+};
+void audited_multi_run() {
+  AuditedMulti multi{};
+  multi.records++; // @write this-overload-caller
+  multi.ping();
+  multi.ping(0);
+}
+struct AuditedFold {
+  Bank bank;
+  void audit() { consume(bank.records); } // @case this-fold
+};
+SessionState audited_fold_entry() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    AuditedFold member{}; // @origin this-fold
+    member.bank.records = 31; // @write this-fold-caller
+    member.audit();
+    return session_state;
+  });
+}

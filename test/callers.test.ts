@@ -84,3 +84,135 @@ describe('cross-AST continuation', () => {
     if (query.result._tag === 'OriginFound') assert.match(query.result.boundary ?? '', /Unsupported argument/);
   });
 });
+
+describe('local and external caller merging', () => {
+  const reference = (id: string, offset: number): ClangNode => ({ kind: 'DeclRefExpr', referencedDecl: { id, name: id }, range: range(offset, offset + id.length - 1) });
+  const increment = (id: string, name: string, offset: number): ClangNode => ({
+    kind: 'UnaryOperator', opcode: '++', inner: [member(reference(id, offset), 'records', offset)],
+    range: range(offset, offset + name.length + 2)
+  });
+  const call = (id: string, symbol: string, argument: ClangNode, start = 50): ClangNode => ({
+    kind: 'CallExpr', callee: { id, name: id, symbol },
+    inner: [reference(id, start), argument], range: range(start, start + 30)
+  });
+  const leafFn = (statements: readonly ClangNode[]): ClangNode => ({
+    kind: 'FunctionDecl', id: 'leaf', name: 'leaf', symbol: 'leaf-symbol', loc: { file: '/leaf.cpp', offset: 5 },
+    inner: [{ kind: 'ParmVarDecl', id: 'state', name: 'state', type: { qualType: 'State &' } },
+      { kind: 'CompoundStmt', inner: statements }]
+  });
+  const callerFn = (id: string, file: string, symbol: string, statements: readonly ClangNode[]): ClangNode => ({
+    kind: 'FunctionDecl', id, name: id, symbol, loc: { file, offset: 5 },
+    inner: [{ kind: 'CompoundStmt', inner: statements }]
+  });
+  const declaration = (id: string, offset: number): ClangNode => ({
+    kind: 'VarDecl', id, name: id, inner: [{ kind: 'InitListExpr' }], range: range(offset, offset + 1)
+  });
+  const preparedAst = (...functions: readonly ClangNode[]) => prepareAst({ kind: 'TranslationUnitDecl', inner: functions });
+  const options = { file: '/leaf.cpp', sourceText: '', cursorByteOffset: 101 };
+
+  test('keeps local candidate paths while still reporting the function for external discovery', () => {
+    // Regression: a verified local caller used to suppress the boundary, so
+    // callers in other translation units were never discovered.
+    const localWrite = increment('local', 'local', 30);
+    const local = preparedAst(
+      leafFn([member(reference('state', 90), 'records', 101)]),
+      callerFn('local_run', '/leaf.cpp', 'local-symbol', [declaration('local', 10), localWrite, call('leaf', 'leaf-symbol', reference('local', 60))]));
+    const first = analyzeQuery('mutation', local.ast, options, local);
+    assert.equal(first.result._tag, 'MutationFound');
+    if (first.result._tag === 'MutationFound') assert.equal(first.result.mutation.node, localWrite);
+    assert.equal(first.boundaries.length, 1, 'local callers must not suppress external discovery');
+    // Once the language service has been queried, the boundary resolves away.
+    const settled = analyzeQuery('mutation', local.ast, { ...options, externalCallers: new Map([[first.boundaries[0].wrapped.node, []]]) }, local);
+    assert.equal(settled.boundaries.length, 0);
+    assert.equal(settled.result._tag, 'MutationFound');
+  });
+
+  test('unions local and external mutation paths instead of choosing one', () => {
+    const localWrite = increment('local', 'local', 30);
+    const local = preparedAst(
+      leafFn([member(reference('state', 90), 'records', 101)]),
+      callerFn('local_run', '/leaf.cpp', 'local-symbol', [declaration('local', 10), localWrite, call('leaf', 'leaf-symbol', reference('local', 60))]));
+    const externalWrite = increment('external', 'external', 30);
+    const external = preparedAst(callerFn('external_run', '/external.cpp', 'external-symbol',
+      [declaration('external', 10), externalWrite, call('leaf', 'leaf-symbol', reference('external', 60))]));
+    const first = analyzeQuery('mutation', local.ast, options, local);
+    const externalLinks = callerLinksAt(external, '/external.cpp', 50, 56, first.boundaries[0]);
+    assert.equal(externalLinks.length, 1);
+    const merged = analyzeQuery('mutation', local.ast, {
+      ...options, externalCallers: new Map([[first.boundaries[0].wrapped.node, externalLinks]])
+    }, local);
+    assert.equal(merged.result._tag, 'CandidatesFound');
+    if (merged.result._tag === 'CandidatesFound') {
+      assert.equal(merged.result.candidates.length, 2);
+      const mutations = merged.result.candidates.map((candidate) => candidate.mutation.node);
+      assert.ok(mutations.includes(localWrite) && mutations.includes(externalWrite));
+      assert.ok(merged.result.candidates.some((candidate) => candidate.frames[0].caller.file === '/external.cpp'));
+      assert.ok(merged.result.candidates.some((candidate) => candidate.frames[0].caller.file === '/leaf.cpp'));
+    }
+    assert.equal(merged.boundaries.length, 0);
+  });
+
+  test('unions local and external origin paths to distinct initializations', () => {
+    const localDeclaration = declaration('local', 10);
+    const local = preparedAst(
+      leafFn([member(reference('state', 90), 'records', 101)]),
+      callerFn('local_run', '/leaf.cpp', 'local-symbol', [localDeclaration, call('leaf', 'leaf-symbol', reference('local', 60))]));
+    const externalDeclaration = declaration('external', 10);
+    const external = preparedAst(callerFn('external_run', '/external.cpp', 'external-symbol',
+      [externalDeclaration, call('leaf', 'leaf-symbol', reference('external', 60))]));
+    const first = analyzeQuery('origin', local.ast, options, local);
+    assert.equal(first.boundaries.length, 1);
+    const externalLinks = callerLinksAt(external, '/external.cpp', 50, 56, first.boundaries[0]);
+    const merged = analyzeQuery('origin', local.ast, {
+      ...options, externalCallers: new Map([[first.boundaries[0].wrapped.node, externalLinks]])
+    }, local);
+    assert.equal(merged.result._tag, 'OriginCandidatesFound');
+    if (merged.result._tag === 'OriginCandidatesFound') {
+      assert.equal(merged.result.candidates.length, 2);
+      assert.deepEqual(merged.result.candidates.map((candidate) => candidate.origin.node).sort((a, b) =>
+        (a.id ?? '').localeCompare(b.id ?? '')), [externalDeclaration, localDeclaration].sort((a, b) =>
+        (a.id ?? '').localeCompare(b.id ?? '')));
+    }
+    assert.equal(merged.boundaries.length, 0);
+  });
+
+  test('traces a middle helper with a local caller out to an external outer caller', () => {
+    const middle: ClangNode = {
+      kind: 'FunctionDecl', id: 'middle', name: 'middle', symbol: 'middle-symbol', loc: { file: '/leaf.cpp', offset: 5 },
+      inner: [
+        { kind: 'ParmVarDecl', id: 'middle-state', name: 'state', type: { qualType: 'State &' } },
+        { kind: 'CompoundStmt', inner: [call('leaf', 'leaf-symbol', reference('middle-state', 60))] }
+      ]
+    };
+    const local = preparedAst(
+      leafFn([member(reference('state', 90), 'records', 101)]),
+      middle,
+      callerFn('local_run', '/leaf.cpp', 'local-symbol', [declaration('local', 10), call('middle', 'middle-symbol', reference('local', 60))]));
+    const externalWrite = increment('outer', 'outer', 30);
+    const external = preparedAst(callerFn('outer_run', '/outer.cpp', 'outer-symbol',
+      [declaration('outer', 10), externalWrite, call('middle', 'middle-symbol', reference('outer', 60))]));
+    const leaf = analyzeQuery('mutation', local.ast, options, local);
+    const leafFunction = leaf.boundaries.find((boundary) => boundary.name === 'leaf')!;
+    assert.ok(leafFunction);
+    assert.ok(leaf.boundaries.some((boundary) => boundary.name === 'middle'));
+    const leafLinks = callerLinksAt(external, '/outer.cpp', 50, 56, leafFunction);
+    const second = analyzeQuery('mutation', local.ast, {
+      ...options, externalCallers: new Map([[leafFunction.wrapped.node, leafLinks]])
+    }, local);
+    const middleFunction = second.boundaries.find((boundary) => boundary.name === 'middle')!;
+    assert.ok(middleFunction);
+    const merged = analyzeQuery('mutation', local.ast, {
+      ...options,
+      externalCallers: new Map([
+        [leafFunction.wrapped.node, leafLinks],
+        [middleFunction.wrapped.node, callerLinksAt(external, '/outer.cpp', 50, 56, middleFunction)]
+      ])
+    }, local);
+    assert.equal(merged.boundaries.length, 0);
+    assert.equal(merged.result._tag, 'MutationFound');
+    if (merged.result._tag === 'MutationFound') {
+      assert.equal(merged.result.mutation.node, externalWrite);
+      assert.deepEqual(merged.result.frames?.map((frame) => frame.caller.name), ['middle', 'outer_run']);
+    }
+  });
+});

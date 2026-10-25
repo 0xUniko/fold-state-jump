@@ -245,6 +245,19 @@ type AnalysisInput = {
   readonly dependencies?: DependencyManifest;
 };
 
+// Mid-analysis input changes invalidate the whole request, while a candidate
+// caller that merely cannot be prepared only loses its own path.
+type InputChangedError = Error & { readonly inputChanged: true };
+const tagInputChanged = (error: Error): InputChangedError =>
+  Object.assign(error, { inputChanged: true as const });
+const isInputChanged = (error: Error): error is InputChangedError =>
+  (error as Partial<InputChangedError>).inputChanged === true;
+
+// A changed or unsaved input must abort the request; an unloadable candidate
+// caller is reported as a boundary and the remaining verified paths survive.
+const skipOrRethrow = (report: (error: Error) => void) => (error: Error) =>
+  isInputChanged(error) ? Effect.fail(error) : (report(error), Effect.succeed(undefined));
+
 type AnalysisRun = { readonly result: AnalysisResult; readonly validate: Effect.Effect<boolean> };
 
 const runAnalysis = Effect.fnUntraced(function* (
@@ -271,7 +284,11 @@ const runAnalysis = Effect.fnUntraced(function* (
     });
     const version = document.version;
     const extraction = yield* requestAst(document, signal, extensionPath, runtime);
-    if (extraction._tag === 'AnalysisFailure') return yield* Effect.fail(new Error(extraction.reason));
+    if (extraction._tag === 'AnalysisFailure') {
+      // Validity failures (changed or unsaved documents) make every result of
+      // this request untrustworthy; candidate-file failures stay skippable.
+      return yield* Effect.fail(tagInputChanged(new Error(extraction.reason)));
+    }
     const input = { document, version, prepared: extraction.prepared, dependencies: extraction.dependencies };
     return { input, state: { ...state, inputs: new Map([...state.inputs, [path.resolve(file), input]]) } };
   });
@@ -279,7 +296,13 @@ const runAnalysis = Effect.fnUntraced(function* (
     locations.reduce<Effect.Effect<{ readonly links: readonly CallerLink[]; readonly state: SearchState }, Error>>(
       (work, location) => work.pipe(Effect.flatMap(({ links, state }) => Effect.gen(function* () {
         if (location.uri.scheme !== 'file') return { links, state };
-        const loaded = yield* loadInput(location.uri.fsPath, state);
+        // A caller file that cannot be prepared must not discard the paths
+        // already verified from other files.
+        const loaded = yield* loadInput(location.uri.fsPath, state).pipe(
+          Effect.catch(skipOrRethrow((error) =>
+            runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: location.uri.fsPath, reason: 'Could not prepare caller: ' + error.message }))))
+        );
+        if (!loaded) return { links, state };
         const text = loaded.input.document.getText();
         const start = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.start));
         const end = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.end));
@@ -299,17 +322,18 @@ const runAnalysis = Effect.fnUntraced(function* (
             runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Native AST has no stable function symbol or declaration position.' }));
             return { ...state, externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
           }
-          const loaded = yield* loadInput(fn.file, state);
+          const loaded = yield* loadInput(fn.file, state).pipe(
+            Effect.catch(skipOrRethrow((error) =>
+              runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Could not prepare the declaring file for caller discovery: ' + error.message }))))
+          );
+          if (!loaded) {
+            return { ...state, externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
+          }
           const locations = yield* Effect.tryPromise({
             try: () => discoverCallerLocations(fn, loaded.input.document, signal), catch: (error) => new Error(String(error))
           });
           locations.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
-          const validated = yield* validateLocations(fn, locations.locations, loaded.state);
-          const fallback = validated.links.length === 0 && locations.locations.length > 0
-            ? yield* Effect.tryPromise({ try: () => discoverCallerLocations(fn, loaded.input.document, signal, true), catch: (error) => new Error(String(error)) })
-            : undefined;
-          fallback?.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
-          const final = fallback ? yield* validateLocations(fn, fallback.locations, validated.state) : validated;
+          const final = yield* validateLocations(fn, locations.locations, loaded.state);
           if (final.links.length === 0) runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'No direct caller passed Clang symbol and call-range validation.' }));
           return { ...final.state, externalCallers: new Map([...final.state.externalCallers, [fn.wrapped.node, final.links]]) };
         }))), Effect.succeed(state));

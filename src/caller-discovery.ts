@@ -7,10 +7,18 @@ export type CallerLocations = {
   readonly diagnostics: readonly string[];
 };
 
-// Provider failures are observable boundaries, not proof that no callers exist.
-// Cancellation is checked on both sides because command APIs have no token arg.
+const locationKey = (location: CallerLocation): string =>
+  [location.uri.toString(), location.range.start.line, location.range.start.character,
+    location.range.end.line, location.range.end.character].join(':');
+
+// Incoming Calls and References are independent providers: either can be
+// missing, unsupported, or incomplete while the other still yields verified
+// candidates. Query both in parallel and union the results, keeping one entry
+// per call site when both providers report it. Clang symbol validation in the
+// analyzer decides which locations are real calls, so name-only matches from
+// references can never create edges by themselves.
 export const discoverCallerLocations = async (
-  fn: FunctionInfo, document: vscode.TextDocument, signal: AbortSignal, referencesOnly = false
+  fn: FunctionInfo, document: vscode.TextDocument, signal: AbortSignal
 ): Promise<CallerLocations> => {
   signal.throwIfAborted();
   const position = document.positionAt(utf16OffsetFromByte(document.getText(), fn.wrapped.node.loc?.offset ?? 0));
@@ -29,16 +37,28 @@ export const discoverCallerLocations = async (
       return { locations: [], diagnostics: ['Incoming call provider failed: ' + String(error)] };
     }
   };
-  const found = referencesOnly ? { locations: [], diagnostics: [] } : await incoming();
-  if (found.locations.length > 0) return found;
-  try {
-    const references = await vscode.commands.executeCommand<vscode.Location[]>(
-      'vscode.executeReferenceProvider', document.uri, position);
-    signal.throwIfAborted();
-    return { locations: (references ?? []).map(({ uri, range }) => ({ uri, range })),
-      diagnostics: [...found.diagnostics, ...(references?.length ? [] : ['Language service returned no caller locations.'])] };
-  } catch (error) {
-    signal.throwIfAborted();
-    return { locations: [], diagnostics: [...found.diagnostics, 'Reference provider failed: ' + String(error)] };
-  }
+  const references = async (): Promise<CallerLocations> => {
+    try {
+      const found = await vscode.commands.executeCommand<vscode.Location[]>(
+        'vscode.executeReferenceProvider', document.uri, position);
+      signal.throwIfAborted();
+      return { locations: (found ?? []).map(({ uri, range }) => ({ uri, range })), diagnostics: [] };
+    } catch (error) {
+      signal.throwIfAborted();
+      return { locations: [], diagnostics: ['Reference provider failed: ' + String(error)] };
+    }
+  };
+  const [fromIncoming, fromReferences] = await Promise.all([incoming(), references()]);
+  const seen = new Set<string>();
+  const locations = [...fromIncoming.locations, ...fromReferences.locations].filter((location) => {
+    const key = locationKey(location);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const diagnostics = [...fromIncoming.diagnostics, ...fromReferences.diagnostics];
+  return {
+    locations,
+    diagnostics: locations.length === 0 ? [...diagnostics, 'Incoming calls and references returned no caller locations.'] : diagnostics
+  };
 };

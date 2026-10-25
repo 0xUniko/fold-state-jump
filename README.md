@@ -44,14 +44,19 @@ The command palette provides two independent commands:
 
 Place the cursor on the identifier whose value you want to trace. For example, clicking `bank`, `records`, or `session_state` selects that member or whole object. The analyzer follows simple reference aliases, direct function/member calls, assignment operators, and reference captures in called lambdas, including generic lambdas. Both commands offer distinct caller paths in a QuickPick showing caller functions, files, line numbers, and the final destination. Canceling the picker leaves the editor in place.
 
-When a parameter has no caller in the current AST, the extension asks
-`vscode.prepareCallHierarchy` and `vscode.provideIncomingCalls` for incoming call
-locations. If those return no usable calls, it tries
-`vscode.executeReferenceProvider`. Each location is checked against a direct call
+When a parameter or member-function receiver must be traced across a call
+boundary, the extension asks `vscode.prepareCallHierarchy`,
+`vscode.provideIncomingCalls`, and `vscode.executeReferenceProvider` in
+parallel and unions the verified results, even when the current AST already
+contains local callers; a local call path never proves the caller set
+complete. Each location is checked against a direct call
 in that caller file's own Clang AST, using a stable Clang USR rather than a
 function name or process-local declaration address. Only provider-returned files
 are opened; the workspace is never scanned for C++ callers. Caller files use the
 existing compilation-command resolver, extraction scheduler, and AST caches.
+Member functions trace their implicit `this` object back to the receiver
+expression of each verified call site, preserving member suffixes such as
+`this->bank.records` → `session.bank.records`.
 Multi-hop mappings preserve member suffixes and every call frame. Each independent
 fold path retains its own seed and wrap-around context. Source and dependency
 guards are checked again after candidate selection. Save modified caller files

@@ -165,6 +165,79 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
       assert.notEqual(result.candidates[0].mutation.node.range?.begin?.offset, result.candidates[1].mutation.node.range?.begin?.offset);
     }
   });
+  const markerRange = (prefix: string, marker: string): readonly [number, number] => [
+    byteOffsetFromUtf16(sourceText, lineOffset('// @' + prefix + ' ' + marker + '\n')),
+    byteOffsetFromUtf16(sourceText, sourceText.indexOf('// @' + prefix + ' ' + marker + '\n'))
+  ];
+  const within = (offset: number | undefined, range: readonly [number, number]) =>
+    offset !== undefined && offset >= range[0] && offset < range[1];
+  test('maps implicit this mutations back to every calling object', () => {
+    const result = analyzeCase('this-mutation', 'records');
+    assert.equal(result._tag, 'CandidatesFound');
+    if (result._tag !== 'CandidatesFound') return;
+    const markers = ['this-caller', 'this-caller-b', 'this-pointer', 'this-forward'];
+    const ranges = markers.map((marker) => markerRange('write', marker));
+    assert.equal(result.candidates.length, markers.length);
+    assert.ok(result.candidates.every((candidate) => candidate.frames.length === 1));
+    assert.ok(result.candidates.every((candidate) => candidate.frames[0].parameterIndex === undefined));
+    assert.ok(result.candidates.every((candidate) => candidate.frames[0].receiver !== undefined));
+    assert.deepEqual(result.candidates.map((candidate) => ranges.findIndex((range) =>
+      within(candidate.mutation.node.range?.begin?.offset, range))).sort(), ranges.map((_, index) => index));
+    const pointer = result.candidates.find((candidate) =>
+      within(candidate.mutation.node.range?.begin?.offset, ranges[2]));
+    assert.equal(pointer?.frames[0].receiver?.rootName, 'pointer');
+  });
+  test('maps implicit this origins to initializations and parameter boundaries', () => {
+    const result = analyzeCase('this-mutation', 'records', 'origin');
+    assert.equal(result._tag, 'OriginCandidatesFound');
+    if (result._tag !== 'OriginCandidatesFound') return;
+    assert.equal(result.candidates.length, 4);
+    const initializations = result.candidates.filter((candidate) => candidate.kind === 'initialization');
+    const parameters = result.candidates.filter((candidate) => candidate.kind === 'parameter');
+    assert.equal(initializations.length, 3);
+    assert.equal(parameters.length, 1);
+    assert.match(parameters[0].boundary ?? '', /No verified caller/);
+    assert.ok(initializations.some((candidate) => within(candidate.origin.node.range?.begin?.offset, markerRange('origin', 'this-caller'))));
+    assert.ok(initializations.some((candidate) => within(candidate.origin.node.range?.begin?.offset, markerRange('origin', 'this-caller-b'))));
+    assert.ok(initializations.every((candidate) => candidate.frames[0].receiver !== undefined));
+  });
+  test('preserves this-member suffixes through the receiver object', () => {
+    const result = analyzeCase('this-nested', 'bank.records');
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.ok(within(result.mutation.node.range?.begin?.offset, markerRange('write', 'this-nested-caller')));
+      assert.equal(result.frames?.[0].receiver?.rootName, 'session');
+      assert.deepEqual(result.frames?.[0].receiver?.members, ['bank', 'records']);
+    }
+    const origin = analyzeCase('this-nested', 'bank.records', 'origin');
+    assert.equal(origin._tag, 'OriginFound');
+    if (origin._tag === 'OriginFound') {
+      assert.equal(origin.kind, 'initialization');
+      assert.ok(within(origin.origin.node.range?.begin?.offset, markerRange('origin', 'this-nested')));
+    }
+  });
+  test('resolves overloaded member functions by their semantic identity', () => {
+    const result = analyzeCase('this-overload', 'records');
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.ok(within(result.mutation.node.range?.begin?.offset, markerRange('write', 'this-overload-caller')));
+      assert.equal(result.frames?.[0].caller.name, 'audited_multi_run');
+    }
+  });
+  test('traces member receivers into fold lambdas', () => {
+    const result = analyzeCase('this-fold', 'bank.records');
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.ok(within(result.mutation.node.range?.begin?.offset, markerRange('write', 'this-fold-caller')));
+      assert.equal(result.via, 'call');
+    }
+    const origin = analyzeCase('this-fold', 'bank.records', 'origin');
+    assert.equal(origin._tag, 'OriginFound');
+    if (origin._tag === 'OriginFound') {
+      assert.equal(origin.kind, 'initialization');
+      assert.ok(within(origin.origin.node.range?.begin?.offset, markerRange('origin', 'this-fold')));
+    }
+  });
   [['session_state', 'whole object'], ['session_state.bank_state', 'intermediate member']]
     .map(([expression, name]) => test('selects the clicked path: ' + name, () => {
       const result = analyzeCase('counters', expression);
