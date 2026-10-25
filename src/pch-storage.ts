@@ -1,7 +1,9 @@
+import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { constants, createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, open, readdir, rename, rmdir, unlink, type FileHandle } from 'node:fs/promises';
 import path from 'node:path';
+import { createInterface } from 'node:readline';
 import { pipeline } from 'node:stream/promises';
 import { Schema } from 'effect';
 import { decodeDependencies, decodeNativeDependencies, sha256, type DependencyManifest, type NativeDependencies } from './dependencies';
@@ -83,14 +85,14 @@ const openFile = async (filename: string): Promise<FileHandle> => {
   const handle = await open(filename, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
     const metadata = await handle.stat();
-    if (!metadata.isFile() || metadata.nlink !== 1) throw new Error('Unsafe PCH cache file');
+    if (!metadata.isFile() || metadata.nlink !== 1 || metadata.uid !== process.getuid?.()) throw new Error('Unsafe PCH cache file');
     return handle;
   } catch (error) { await handle.close(); throw error; }
 };
 const fileMetadata = (file: FileHandle) => file.stat({ bigint: true });
 const stamp = (metadata: Awaited<ReturnType<typeof fileMetadata>>): string =>
   [metadata.dev, metadata.ino, metadata.size, metadata.mode, metadata.mtimeNs, metadata.ctimeNs].join(':');
-const hashPch = async (filename: string): Promise<{ readonly pchHash: string; readonly pchBytes: number }> => {
+const hashPch = async (filename: string): Promise<{ readonly pchHash: string; readonly pchBytes: number; readonly pchStamp: string }> => {
   const handle = await openFile(filename);
   try {
     const before = await fileMetadata(handle);
@@ -99,29 +101,39 @@ const hashPch = async (filename: string): Promise<{ readonly pchHash: string; re
     await pipeline(createReadStream('', { fd: handle.fd, autoClose: false, end: Number(before.size) - 1 }), hash);
     const after = await fileMetadata(handle);
     if (stamp(before) !== stamp(after)) throw new Error('PCH artifact changed while hashing');
-    return { pchHash: hash.digest('hex'), pchBytes: Number(before.size) };
+    return { pchHash: hash.digest('hex'), pchBytes: Number(before.size), pchStamp: stamp(after) };
   } finally { await handle.close(); }
 };
 const proofHash = (entry: Pick<PchEntry, 'dependencies' | 'nativeDependencies'>): string =>
   sha256(JSON.stringify([entry.dependencies, entry.nativeDependencies]));
 
+export type PchLookup =
+  | { readonly _tag: 'Miss' }
+  | { readonly _tag: 'Invalid'; readonly reason: string }
+  | { readonly _tag: 'Verified'; readonly entry: PchEntry; readonly manifestStamp: string; readonly pchStamp: string };
+
 // Callers hold the native advisory lock from lookup through parsing/publication.
 // The artifact checksum is verified independently of Clang's format checks.
-export const readPchEntry = async (directory: string, identity: string): Promise<PchEntry | undefined> => {
-  if (!digestPattern.test(identity)) return undefined;
+export const inspectPchEntry = async (directory: string, identity: string): Promise<PchLookup> => {
+  if (!digestPattern.test(identity)) return { _tag: 'Invalid', reason: 'Invalid artifact identity' };
   try {
     return await withDirectory(directory, false, async (handle) => {
-      const file = await openFile(path.join(directoryPath(handle), identity + '.json'));
-      const manifest = await (async () => {
+      const file = await openFile(path.join(directoryPath(handle), identity + '.json')).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') return undefined;
+        throw error;
+      });
+      if (!file) return { _tag: 'Miss' as const };
+      const observed = await (async () => {
         try {
           const before = await fileMetadata(file);
           if (before.size <= 0n || before.size > BigInt(manifestLimit)) throw new Error('Invalid PCH manifest size');
           const buffer = Buffer.alloc(Number(before.size) + 1);
           const { bytesRead } = await file.read(buffer, 0, buffer.length, 0);
           if (bytesRead !== Number(before.size) || stamp(before) !== stamp(await fileMetadata(file))) throw new Error('Incomplete PCH manifest');
-          return decodeManifest(JSON.parse(buffer.subarray(0, bytesRead).toString('utf8')));
+          return { manifest: decodeManifest(JSON.parse(buffer.subarray(0, bytesRead).toString('utf8'))), manifestStamp: stamp(before) };
         } finally { await file.close(); }
       })();
+      const { manifest, manifestStamp } = observed;
       if (manifest.identity !== identity || !digestPattern.test(manifest.prefixHash) ||
           !digestPattern.test(manifest.pchHash) || !digestPattern.test(manifest.invocationHash) ||
           !Number.isSafeInteger(manifest.bounds) || manifest.bounds <= 0) throw new Error('Invalid PCH identity');
@@ -129,14 +141,39 @@ export const readPchEntry = async (directory: string, identity: string): Promise
       const nativeDependencies = decodeNativeDependencies(manifest.nativeDependencies);
       if (!dependencies.reusable || !nativeDependencies.reusable || dependencies.paths.length > 100000 ||
           manifest.proofHash !== proofHash({ dependencies, nativeDependencies })) throw new Error('Invalid PCH proof');
-      const pch = await hashPch(path.join(directoryPath(handle), identity + '.pch'));
+      const pchPath = path.join(directoryPath(handle), identity + '.pch');
+      const { pchStamp, ...pch } = await hashPch(pchPath);
       if (pch.pchBytes !== manifest.pchBytes || pch.pchHash !== manifest.pchHash) throw new Error('Damaged PCH artifact');
-      return { identity, prefixHash: manifest.prefixHash, bounds: manifest.bounds,
+      return { _tag: 'Verified' as const, manifestStamp, pchStamp, entry: { identity, prefixHash: manifest.prefixHash, bounds: manifest.bounds,
         endsAtStartOfLine: manifest.endsAtStartOfLine, invocationHash: manifest.invocationHash,
-        dependencies, nativeDependencies, pchPath: path.join(directory, identity + '.pch'), ...pch };
+        dependencies, nativeDependencies, pchPath: path.join(directory, identity + '.pch'), ...pch } };
     });
-  } catch { return undefined; }
+  } catch (error) { return { _tag: 'Invalid', reason: String(error) }; }
 };
+
+export const readPchEntry = async (directory: string, identity: string): Promise<PchEntry | undefined> => {
+  const lookup = await inspectPchEntry(directory, identity);
+  return lookup._tag === 'Verified' ? lookup.entry : undefined;
+};
+
+// The caller still holds the same artifact lock. Compare the exact observed
+// files before decommitting; a replaced pair belongs to a different observation.
+export const invalidatePchEntry = async (directory: string, lookup: Extract<PchLookup, { readonly _tag: 'Verified' }>): Promise<boolean> =>
+  !digestPattern.test(lookup.entry.identity) ? false : withDirectory(directory, false, async (handle) => {
+    const names = [lookup.entry.identity + '.json', lookup.entry.identity + '.pch'];
+    const expected = [lookup.manifestStamp, lookup.pchStamp];
+    const observed = await Promise.all(names.map(async (name, index) => {
+      const file = await openFile(path.join(directoryPath(handle), name)).catch(() => undefined);
+      if (!file) return false;
+      try { return stamp(await fileMetadata(file)) === expected[index]; } finally { await file.close(); }
+    }));
+    if (!observed.every(Boolean)) return false;
+    // Remove the commit record first. Never recurse or follow filename links.
+    await unlink(path.join(directoryPath(handle), names[0]));
+    await unlink(path.join(directoryPath(handle), names[1]));
+    await handle.sync();
+    return true;
+  }).catch(() => false);
 
 export const publishPchEntry = async (directory: string,
   entry: Omit<PchEntry, 'pchPath' | 'pchBytes' | 'pchHash'>, stagedPchPath: string, expectedPchHash?: string
@@ -166,7 +203,7 @@ export const publishPchEntry = async (directory: string,
           } finally { await stagedFile.close(); }
           if (stamp(before) !== stamp(await fileMetadata(source))) throw new Error('PCH changed while publishing');
         } finally { await source.close(); }
-        const pch = await hashPch(staged);
+        const { pchStamp: _pchStamp, ...pch } = await hashPch(staged);
         // The expected digest comes from the bytes pinned by the native build,
         // before remainder parsing. Rehashing a damaged staging file must not
         // turn its new contents into an apparently valid persistent artifact.
@@ -191,19 +228,57 @@ export const publishPchEntry = async (directory: string,
   } catch { return undefined; }
 };
 
-const ownedName = (name: string): boolean => /^(?:[a-f0-9]{64}\.(?:pch|json)|stage-[a-f0-9-]+\.(?:pch|json))$/.test(name);
-export const clearPchStorage = async (directory: string): Promise<void> => {
-  await withDirectory(directory, false, async (handle) => {
+// A small, synchronous-lifetime Native helper takes flock on the inherited,
+// safely opened descriptor. Its stdin lifetime is the lock lifetime. No shell,
+// polling lock, replaceable lock inode or detached task participates.
+const withArtifactLock = async (handle: FileHandle, identity: string, executable: string, action: () => Promise<void>): Promise<void> => {
+  const lock = await open(path.join(directoryPath(handle), identity + '.lock'),
+    constants.O_RDWR | constants.O_CREAT | constants.O_NOFOLLOW | constants.O_NONBLOCK, 0o600);
+  try {
+    const metadata = await lock.stat();
+    if (!metadata.isFile() || metadata.nlink !== 1 || metadata.uid !== process.getuid?.()) throw new Error('Unsafe PCH clear lock');
+    const child = spawn(executable, ['--pch-lock'], { stdio: ['pipe', 'pipe', 'ignore', lock.fd] });
+    const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
+    child.on('error', () => {});
+    child.stdin!.on('error', () => {});
+    child.stdout!.on('error', () => {});
+    const lines = createInterface({ input: child.stdout! });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const cleanup = () => { clearTimeout(deadline); lines.removeListener('line', ready); child.removeListener('error', failed); child.removeListener('close', failed); };
+        const failed = () => { cleanup(); reject(new Error('PCH clear lock unavailable')); };
+        const ready = (line: string) => { cleanup(); line === 'locked' ? resolve() : reject(new Error('Invalid PCH lock response')); };
+        const deadline = setTimeout(failed, 120000);
+        lines.once('line', ready);
+        child.once('error', failed);
+        child.once('close', failed);
+      });
+      await action();
+    } finally {
+      lines.close();
+      child.kill();
+      await closed;
+    }
+  } finally { await lock.close(); }
+};
+export const clearPchStorage = async (directory: string, executable: string): Promise<boolean> => {
+  return withDirectory(directory, false, async (handle) => {
     const names = await readdir(directoryPath(handle));
-    // unlink never follows a filename symlink and never recursively removes a
-    // user directory. Persistent .lock inodes must survive cache clearing.
-    await Promise.all(names.filter(ownedName).map((name) => unlink(path.join(directoryPath(handle), name))
-      .catch(() => undefined)));
-    // Explicit Clear also removes abandoned native build directories. Another
-    // runtime may lose its in-progress temporary PCH and safely parse cold;
-    // final publication remains protected by its checksum and commit record.
-    await Promise.all(names.filter((name) => stageName.test(name)).map((name) => removeStage(handle, name)));
-  }).catch(() => undefined);
+    const identities = [...new Set(names.filter((name) => /^[a-f0-9]{64}\.(?:pch|json|lock)$/.test(name)).map((name) => name.slice(0, 64)))];
+    await identities.reduce<Promise<void>>(async (previous, identity) => {
+      await previous;
+      await withArtifactLock(handle, identity, executable, async () => {
+        await unlink(path.join(directoryPath(handle), identity + '.json')).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== 'ENOENT') throw error;
+        });
+        await unlink(path.join(directoryPath(handle), identity + '.pch')).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== 'ENOENT') throw error;
+        });
+      });
+    }, Promise.resolve());
+    // Staging belongs to a live worker or an unproven abandoned request. Clear
+    // cannot establish ownership of that request, so only its owner reaps it.
+  }).then(() => true).catch((error: NodeJS.ErrnoException) => error.code === 'ENOENT');
 };
 export const pchStorageStats = async (directory: string): Promise<{ readonly entries: number; readonly bytes: number }> => {
   return withDirectory(directory, false, async (handle) => {

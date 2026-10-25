@@ -6,11 +6,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
 import { extractVerifiedAst } from '../src/extraction';
-import { validateDependencies } from '../src/dependencies';
-import { disposePreamblePool, extractWithPreamble, makePreamblePool } from '../src/preamble';
+import { sha256, validateDependencies } from '../src/dependencies';
+import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamblePool } from '../src/preamble';
 import { type CompileCommand } from '../src/services';
-import { clearPchStorage, pchStorageStats } from '../src/pch-storage';
-import { compareQueries } from './preamble-query-checks';
+import { clearPchStorage, pchStorageStats, readPchEntry } from '../src/pch-storage';
+import { compareQueries, normalizeAst } from './preamble-query-checks';
 
 const executable = path.resolve('native/build/fold-state-jump-ast');
 type Event = Readonly<Record<string, unknown>>;
@@ -21,7 +21,7 @@ const fixture = async (action: (input: {
   readonly directory: string; readonly pchDirectory: string; readonly source: string; readonly alternate: string;
   readonly header: string; readonly transitive: string; readonly command: CompileCommand; readonly pool: Pool;
   readonly run: (options?: { readonly pool?: Pool; readonly source?: string; readonly command?: CompileCommand;
-    readonly signal?: AbortSignal; readonly onEvent?: (event: Event) => void }) => Promise<Effect.Success<ReturnType<typeof extractVerifiedAst>>>;
+    readonly executable?: string; readonly intent?: 'foreground' | 'prewarm'; readonly signal?: AbortSignal; readonly onEvent?: (event: Event) => void }) => Promise<Effect.Success<ReturnType<typeof extractVerifiedAst>>>;
   readonly cold: (source?: string, command?: CompileCommand) => Promise<Effect.Success<ReturnType<typeof extractVerifiedAst>>>;
   readonly take: () => readonly Event[];
 }) => Promise<void>) => {
@@ -35,12 +35,12 @@ const fixture = async (action: (input: {
   const events = Ref.makeUnsafe<readonly Event[]>([]);
   const command: CompileCommand = { compiler: '/usr/lib/llvm-23/bin/clang++', cwd: directory,
     args: ['-std=c++17', '-I' + path.join(directory, 'generated'), '-I' + directory, source] };
-  const run = (options: { readonly pool?: Pool; readonly source?: string; readonly command?: CompileCommand; readonly signal?: AbortSignal; readonly onEvent?: (event: Event) => void } = {}) => {
+  const run = (options: { readonly pool?: Pool; readonly source?: string; readonly command?: CompileCommand; readonly executable?: string; readonly intent?: 'foreground' | 'prewarm'; readonly signal?: AbortSignal; readonly onEvent?: (event: Event) => void } = {}) => {
     const selected = options.source ?? source;
     const signal = options.signal ?? AbortSignal.timeout(30000);
     return Effect.runPromise(extractWithPreamble(options.pool ?? pool, selected,
-      options.command ?? { ...command, args: [...command.args.slice(0, -1), selected] }, executable, 67108864, signal,
-      (event) => { Effect.runSync(Ref.update(events, (events) => [...events, event])); options.onEvent?.(event); }, pchDirectory), { signal });
+      options.command ?? { ...command, args: [...command.args.slice(0, -1), selected] }, options.executable ?? executable, 67108864, signal,
+      (event) => { Effect.runSync(Ref.update(events, (events) => [...events, event])); options.onEvent?.(event); }, pchDirectory, options.intent), { signal });
   };
   const cold = (selected = source, selectedCommand: CompileCommand = { ...command, args: [...command.args.slice(0, -1), selected] }) =>
     Effect.runPromise(extractVerifiedAst(selected, selectedCommand, executable, 67108864, AbortSignal.timeout(30000)));
@@ -69,7 +69,292 @@ const expectRebuild = (events: readonly Event[]) => {
   assert.ok(has(events, 'preamble-build') || has(events, 'preamble-fallback'), JSON.stringify(events));
 };
 
+// This is a host-VALID manifest and checksum pair. Only the Native runtime
+// observation is inconsistent; readPchEntry must accept it before each injection.
+const rejectNativeProof = async (directory: string) => {
+  const name = (await readdir(directory)).find((name) => name.endsWith('.json'))!;
+  const filename = path.join(directory, name);
+  const manifest = JSON.parse(await readFile(filename, 'utf8'));
+  manifest.nativeDependencies.runtime[0].stamp = 'native-rejection-injected';
+  manifest.proofHash = sha256(JSON.stringify([manifest.dependencies, manifest.nativeDependencies]));
+  await writeFile(filename, JSON.stringify(manifest));
+  assert.ok(await readPchEntry(directory, manifest.identity), 'Host must accept the injected Native-only rejection');
+  return manifest.identity as string;
+};
+const equalAst = (plain: Effect.Success<ReturnType<typeof extractVerifiedAst>>, recovered: Effect.Success<ReturnType<typeof extractVerifiedAst>>) =>
+  assert.deepEqual(normalizeAst(JSON.parse(recovered.astText)), normalizeAst(JSON.parse(plain.astText)));
+
 describe('persistent SSD preamble integration', { skip: !existsSync(executable) || process.platform !== 'linux' }, () => {
+  test('host-accepted Native rejection invalidates and rebuilds once in the same healthy worker', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const identity = await rejectNativeProof(input.pchDirectory);
+    const recovered = await input.run();
+    const events = input.take();
+    assert.equal(events.filter((event) => event.event === 'preamble-native-rejected').length, 1, JSON.stringify(events));
+    assert.equal(events.filter((event) => event.event === 'preamble-recovery').length, 1);
+    assert.equal(events.filter((event) => event.event === 'preamble-build').length, 1);
+    assert.equal(events.filter((event) => event.event === 'native-start').length, 1, 'Recovery must use the healthy original worker');
+    assert.ok(events.some((event) => event.event === 'preamble-artifact-invalidated' && event.invalidated));
+    assert.equal(has(events, 'preamble-fallback'), false);
+    assert.ok(await readPchEntry(input.pchDirectory, identity));
+    const plain = await input.cold(); equalAst(plain, recovered);
+    await compareQueries(input.source, plain, recovered);
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const next = await input.run();
+    expectLoad(input.take()); equalAst(plain, next);
+  }));
+
+  test('failed recovery builds only once, parses cold and never reloads the rejected pair', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    await rejectNativeProof(input.pchDirectory);
+    const recovered = await input.run({ onEvent: (event) => {
+      if (event.event === 'preamble-recovery') writeFileSync(input.source, sourceText.replace('s.value++;', 's.value += 7;'));
+    } });
+    const events = input.take();
+    assert.equal(events.filter((event) => event.event === 'preamble-recovery').length, 1);
+    assert.equal(events.filter((event) => event.event === 'preamble-build').length, 1);
+    assert.ok(has(events, 'preamble-fallback'));
+    assert.equal((await pchStorageStats(input.pchDirectory)).entries, 0);
+    equalAst(await input.cold(), recovered);
+    await input.run();
+    const next = input.take();
+    assert.equal(has(next, 'preamble-native-rejected'), false);
+    assert.ok(has(next, 'preamble-build'));
+  }));
+
+  test('source, prefix, dependency and command changes during rejection prevent recovery publication', () => fixture(async (input) => {
+    await ['source', 'prefix', 'dependency', 'command'].reduce(async (previous, change) => {
+      await previous;
+      await input.run(); input.take();
+      await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+      await rejectNativeProof(input.pchDirectory);
+      const command = { ...input.command, args: [...input.command.args] };
+      const recovered = await input.run({ command, onEvent: (event) => {
+        if (event.event !== 'preamble-native-rejected') return;
+        if (change === 'source') writeFileSync(input.source, sourceText.replace('s.value++;', 's.value += 8;'));
+        if (change === 'prefix') writeFileSync(input.source, '#define NEW_PREFIX 1\n' + sourceText);
+        if (change === 'dependency') writeFileSync(input.transitive, '#define VALUE 8\n');
+        if (change === 'command') command.args.unshift('-DCONTEXT_CHANGED=1');
+      } });
+      const events = input.take();
+      assert.ok(has(events, 'preamble-native-rejected'));
+      assert.ok(has(events, 'preamble-fallback'));
+      assert.equal(has(events, 'preamble-recovery'), false, JSON.stringify(events));
+      assert.equal(has(events, 'preamble-build'), false);
+      assert.equal(has(events, 'preamble-disk-write'), false);
+      equalAst(await input.cold(input.source, command), recovered);
+    }, Promise.resolve());
+  }));
+
+  test('cancellation and crash after rejection reap the lock owner without recovery on a dead worker', () => fixture(async (input) => {
+    await ['cancel', 'crash'].reduce(async (previous, fault) => {
+      await previous;
+      await input.run(); input.take();
+      await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+      await rejectNativeProof(input.pchDirectory);
+      const controller = new AbortController();
+      const observed = Ref.makeUnsafe<readonly Event[]>([]);
+      const running = input.run({ signal: controller.signal, onEvent: (event) => {
+        Effect.runSync(Ref.update(observed, (events) => [...events, event]));
+        if (event.event !== 'preamble-native-rejected') return;
+        if (fault === 'cancel') controller.abort();
+        else {
+          const pid = Effect.runSync(Ref.get(observed)).find((event) => event.event === 'native-start')!.pid as number;
+          process.kill(pid, 'SIGKILL');
+        }
+      } });
+      if (fault === 'cancel') await assert.rejects(running);
+      else equalAst(await input.cold(), await running);
+      const events = input.take();
+      assert.equal(has(events, 'preamble-build'), false);
+      assert.equal(has(events, 'preamble-disk-write'), false);
+      const pid = events.find((event) => event.event === 'native-start')!.pid as number;
+      assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
+      assert.equal((await readdir(input.pchDirectory)).some((name) => name.startsWith('stage-')), false);
+      // Acquiring the same identity again also proves the kernel lock was released.
+      await input.run(); input.take();
+    }, Promise.resolve());
+  }));
+
+  test('two independent pools recover one rejected artifact without racing publication', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    await rejectNativeProof(input.pchDirectory);
+    const other = makePreamblePool();
+    try {
+      const recovered = await Promise.all([input.run(), input.run({ pool: other })]);
+      const events = input.take();
+      assert.equal(events.filter((event) => event.event === 'preamble-native-rejected').length, 1);
+      assert.equal(events.filter((event) => event.event === 'preamble-build').length, 1);
+      assert.equal(events.filter((event) => event.event === 'preamble-load').length, 1);
+      const plain = await input.cold(); recovered.map((sample) => equalAst(plain, sample));
+    } finally { await Effect.runPromise(disposePreamblePool(other)); }
+  }));
+
+  test('repeated confirmed dependency invalidation suppresses foreground builds and prewarm restores them', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await writeFile(input.transitive, '#define VALUE 2\n');
+    await input.run({ source: input.alternate });
+    assert.ok(has(input.take(), 'preamble-build'), 'First invalidation does not suppress construction');
+    await writeFile(input.transitive, '#define VALUE 3\n');
+    const skipped = await input.run();
+    const events = input.take();
+    assert.ok(has(events, 'preamble-policy-skip'), JSON.stringify(events));
+    assert.equal(has(events, 'preamble-build'), false);
+    assert.equal(has(events, 'preamble-fallback'), false);
+    equalAst(await input.cold(), skipped);
+    await input.run();
+    assert.ok(has(input.take(), 'preamble-policy-skip'));
+    const warmed = await input.run({ intent: 'prewarm' });
+    const warmEvents = input.take();
+    assert.ok(has(warmEvents, 'preamble-build'));
+    assert.equal(has(warmEvents, 'preamble-policy-skip'), false);
+    equalAst(await input.cold(), warmed);
+    await input.run();
+    assert.ok(has(input.take(), 'preamble-reuse'));
+    await input.run({ source: input.alternate });
+    assert.ok(has(input.take(), 'preamble-build'), 'A successful prewarm resets suppression');
+  }));
+
+  test('host-verified invalid Clang bytes are rejected by load and replaced after one recovery', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const filename = (await readdir(input.pchDirectory)).find((name) => name.endsWith('.json'))!;
+    const manifest = JSON.parse(await readFile(path.join(input.pchDirectory, filename), 'utf8'));
+    const bytes = Buffer.from('invalid serialized Clang PCH');
+    await writeFile(path.join(input.pchDirectory, manifest.identity + '.pch'), bytes);
+    await writeFile(path.join(input.pchDirectory, filename), JSON.stringify({ ...manifest, pchBytes: bytes.length, pchHash: sha256(bytes) }));
+    assert.ok(await readPchEntry(input.pchDirectory, manifest.identity));
+    const recovered = await input.run();
+    const events = input.take();
+    assert.ok(events.some((event) => event.event === 'preamble-native-rejected' && event.reason === 'load-format'), JSON.stringify(events));
+    assert.equal(events.filter((event) => event.event === 'preamble-build').length, 1);
+    assert.equal(has(events, 'preamble-fallback'), false);
+    equalAst(await input.cold(), recovered);
+  }));
+
+  test('clear waits for recovery publication and preserves user files and persistent lock inodes', () => fixture(async (input) => {
+    await input.run(); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const identity = await rejectNativeProof(input.pchDirectory);
+    const lock = path.join(input.pchDirectory, identity + '.lock');
+    const inode = (await stat(lock)).ino;
+    const userFile = path.join(input.pchDirectory, 'notes.txt');
+    await writeFile(userFile, 'keep');
+    const clearing = Ref.makeUnsafe<Promise<boolean> | undefined>(undefined);
+    const recovered = await input.run({ onEvent: (event) => {
+      if (event.event === 'preamble-native-rejected') Effect.runSync(Ref.set(clearing, clearPchStorage(input.pchDirectory, executable)));
+    } });
+    const pending = Effect.runSync(Ref.get(clearing));
+    assert.ok(pending); await pending;
+    assert.equal((await pchStorageStats(input.pchDirectory)).entries, 0);
+    assert.equal(await readFile(userFile, 'utf8'), 'keep');
+    assert.equal((await stat(lock)).ino, inode);
+    equalAst(await input.cold(), recovered);
+  }));
+
+  test('timeout during the one recovery build reaps worker, temporary directory and advisory lock', () => fixture(async (input) => {
+    const wrapper = path.join(input.directory, 'recovery-timeout.py');
+    const nativePid = path.join(input.directory, 'native-pid');
+    const fault = path.join(input.directory, 'fault');
+    await writeFile(wrapper, `#!/usr/bin/python3
+import functools, json, os, signal, subprocess, sys, time
+native = ${JSON.stringify(executable)}
+if '--preamble-worker' not in sys.argv:
+    os.execv(native, [native] + sys.argv[1:])
+child = subprocess.Popen([native] + sys.argv[1:], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+with open(${JSON.stringify(nativePid)}, 'w') as pid:
+    pid.write(str(child.pid))
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+def request(line):
+    operation = json.loads(line) if line.startswith('{') else {'operation': line.strip()}
+    if os.path.exists(${JSON.stringify(fault)}) and operation['operation'] == 'build':
+        time.sleep(30)
+    child.stdin.write(line.encode()); child.stdin.flush()
+    response = b''.join(iter(lambda: child.stdout.read(1) or sys.exit(1), b'\\x1e')) + b'\\x1e'
+    sys.stdout.buffer.write(response); sys.stdout.buffer.flush()
+try:
+    functools.reduce(lambda _, line: request(line), sys.stdin, None)
+finally:
+    child.terminate(); child.wait()
+`);
+    await chmod(wrapper, 0o700);
+    await input.run({ executable: wrapper }); input.take();
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    await rejectNativeProof(input.pchDirectory);
+    await writeFile(fault, 'timeout');
+    const pool = makePreamblePool(300000, 1000);
+    try {
+      const recovered = await input.run({ pool, executable: wrapper });
+      const events = input.take();
+      assert.equal(events.filter((event) => event.event === 'preamble-recovery').length, 1, JSON.stringify(events));
+      assert.ok(events.some((event) => event.event === 'preamble-fallback' && event.kind === 'NativeFailure' && /timed out/.test(String(event.reason))));
+      const pid = events.find((event) => event.event === 'native-start')!.pid as number;
+      assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
+      const actualNativePid = Number(await readFile(nativePid, 'utf8'));
+      assert.throws(() => process.kill(actualNativePid, 0), { code: 'ESRCH' });
+      assert.equal((await readdir(input.pchDirectory)).some((name) => name.startsWith('stage-')), false);
+      equalAst(await input.cold(), recovered);
+      await rm(fault);
+      await input.run({ pool, executable: wrapper });
+      assert.ok(has(input.take(), 'preamble-build'), 'Lock released after timeout');
+    } finally { await Effect.runPromise(disposePreamblePool(pool)); }
+  }));
+
+  test('dependency changes after recovery admission still prevent publication', () => fixture(async (input) => {
+    await input.run(); input.take(); await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    await rejectNativeProof(input.pchDirectory);
+    const recovered = await input.run({ onEvent: (event) => {
+      if (event.event === 'preamble-recovery') writeFileSync(input.transitive, '#define VALUE 9\n');
+    } });
+    const events = input.take();
+    assert.ok(has(events, 'preamble-fallback'));
+    assert.equal(has(events, 'preamble-disk-write'), false);
+    assert.equal((await pchStorageStats(input.pchDirectory)).entries, 0);
+    equalAst(await input.cold(), recovered);
+  }));
+
+  test('valid SSD artifacts take priority over suppression in the same namespace', () => fixture(async (input) => {
+    const stable = path.join(input.directory, 'stable.cpp');
+    await writeFile(path.join(input.directory, 'stable.h'), '#define VALUE 7\nstruct State { int value; };\n');
+    await writeFile(stable, '#include "stable.h"\nvoid f(State &s) { s.value = VALUE; s.value++; }\n');
+    await input.run({ source: stable }); input.take();
+    await input.run(); input.take();
+    await writeFile(input.transitive, '#define VALUE 2\n');
+    await input.run({ source: input.alternate }); input.take();
+    await writeFile(input.transitive, '#define VALUE 3\n');
+    await input.run(); assert.ok(has(input.take(), 'preamble-policy-skip'));
+    const loaded = await input.run({ source: stable });
+    expectLoad(input.take()); equalAst(await input.cold(stable), loaded);
+  }));
+
+  test('Native identity rejection recovers only when fresh request observations remain stable', () => fixture(async (input) => {
+    await input.run(); input.take(); await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const filename = (await readdir(input.pchDirectory)).find((name) => name.endsWith('.json'))!;
+    const metadata = path.join(input.pchDirectory, filename);
+    const manifest = JSON.parse(await readFile(metadata, 'utf8'));
+    await writeFile(metadata, JSON.stringify({ ...manifest, invocationHash: '0'.repeat(64) }));
+    assert.ok(await readPchEntry(input.pchDirectory, manifest.identity));
+    const recovered = await input.run();
+    const recoveredEvents = input.take();
+    assert.ok(recoveredEvents.some((event) => event.event === 'preamble-native-rejected' && event.kind === 'InputsChanged'));
+    assert.ok(has(recoveredEvents, 'preamble-recovery'));
+    equalAst(await input.cold(), recovered);
+    await clearPreamblePool(input.pool).pipe(Effect.runPromise);
+    const changed = await input.run({ onEvent: (event) => {
+      if (event.event === 'preamble-load-attempt') writeFileSync(input.source, '#define CHANGED_PREFIX 1\n' + sourceText);
+    } });
+    const events = input.take();
+    assert.ok(events.some((event) => event.event === 'preamble-native-rejected' && event.kind === 'InputsChanged'));
+    assert.equal(has(events, 'preamble-recovery'), false);
+    assert.equal(has(events, 'preamble-disk-write'), false);
+    assert.ok(has(events, 'preamble-fallback'));
+    equalAst(await input.cold(), changed);
+    assert.ok(await readPchEntry(input.pchDirectory, manifest.identity), 'Changed request must preserve the valid old-prefix artifact');
+  }));
+
   test('switches files and reloads the first artifact without rebuilding after a body edit', () => fixture(async (input) => {
     await input.run();
     assert.ok(has(input.take(), 'preamble-build'));
@@ -249,7 +534,7 @@ describe('persistent SSD preamble integration', { skip: !existsSync(executable) 
     await writeFile(userFile, 'retain user content');
     const lockNames = (await readdir(input.pchDirectory)).filter((name) => name.endsWith('.lock'));
     const locks = await Promise.all(lockNames.map(async (name) => ({ name, inode: (await stat(path.join(input.pchDirectory, name))).ino })));
-    await clearPchStorage(input.pchDirectory);
+    await clearPchStorage(input.pchDirectory, executable);
     assert.deepEqual(await pchStorageStats(input.pchDirectory), { entries: 0, bytes: 0 });
     assert.equal(await readFile(userFile, 'utf8'), 'retain user content');
     await Promise.all(locks.map(async (lock) => assert.equal((await stat(path.join(input.pchDirectory, lock.name))).ino, lock.inode)));

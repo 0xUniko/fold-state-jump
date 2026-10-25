@@ -10,7 +10,7 @@ import { sha256 } from '../src/dependencies';
 import { Ref, Effect } from 'effect';
 
 const executable = path.resolve('native/build/fold-state-jump-ast');
-type Response = { readonly ok: boolean; readonly pchPath: string; readonly pchBytes: number; readonly pchHash: string;
+type Response = { readonly ok: boolean; readonly loadFailure?: 'ArtifactRejected' | 'InputsChanged'; readonly pchPath: string; readonly pchBytes: number; readonly pchHash: string;
   readonly bounds: number; readonly endsAtStartOfLine: boolean; readonly prefixHash: string;
   readonly invocationHash: string; readonly dependencies: unknown; readonly ast: unknown };
 const native = (source: string, flags: readonly string[] = []) => {
@@ -147,11 +147,16 @@ describe('native persistent preamble protocol', { skip: process.platform !== 'li
     await writeFile(load.pchPath, 'invalid PCH bytes');
     const worker = native(source);
     try {
-      assert.equal((await worker.request({ ...load, pchHash: sha256(await readFile(load.pchPath)) })).ok, true);
-      // Clang may reject before emitting an AST, resulting in a deliberately
-      // rejected response envelope. The host must then perform a cold parse.
-      const result = await worker.request({ operation: 'parse' }).catch(() => undefined);
-      assert.ok(!result?.ok);
+      const rejected = await worker.request({ ...load, pchHash: sha256(await readFile(load.pchPath)) });
+      assert.equal(rejected.ok, false);
+      assert.equal(rejected.loadFailure, 'ArtifactRejected');
+      assert.equal((await worker.request({ operation: 'parse' })).ok, false);
+      // A rejection leaves this worker available for one explicit host recovery.
+      assert.equal((await worker.request({ operation: 'build', storagePath: directory })).ok, true);
+      const recovered = await worker.request({ operation: 'parse' });
+      assert.equal(recovered.ok, true);
+      const cold = await promisify(execFile)(executable, ['--source', source, '--', '-std=c++17']);
+      assert.deepEqual(normalized(recovered.ast), normalized(JSON.parse(cold.stdout)));
     } finally { await worker.stop(); }
   }));
   it('rejects symlinked cache parents and artifact leaves', () => fixture(async ({ source, directory }) => {

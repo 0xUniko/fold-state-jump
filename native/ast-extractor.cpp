@@ -5,6 +5,7 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Frontend/PrecompiledPreamble.h>
+#include <clang/Serialization/ASTReader.h>
 #include <clang/Lex/PreprocessorOptions.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Lex/HeaderSearch.h>
@@ -836,9 +837,10 @@ void processPreambleRequest(PreambleWorkerState &state, const std::string &sourc
   output.object([&] {
     if (!buffer || !operation) { output.attribute("ok", false); return; }
     const auto bounds = ComputePreambleBounds(invocation->getLangOpts(), (*buffer)->getMemBufferRef(), 0);
-    const auto reject = [&](llvm::StringRef reason) {
+    const auto reject = [&](llvm::StringRef reason, llvm::StringRef loadFailure = "ArtifactRejected") {
       output.attribute("ok", false);
       output.attribute("reason", reason);
+      if (*operation == "load") output.attribute("loadFailure", loadFailure);
     };
     if (*operation == "unlock") {
 #ifdef __linux__
@@ -930,7 +932,7 @@ void processPreambleRequest(PreambleWorkerState &state, const std::string &sourc
           *expectedEnds != bounds.PreambleEndsAtStartOfLine ||
           *prefixHash != digest((*buffer)->getBuffer().take_front(bounds.Size)) ||
           *expectedInvocation != invocationHash(invocationArgs)) {
-        reject("load-identity"); return;
+        reject("load-identity", "InputsChanged"); return;
       }
       // Volatile, null-terminated getOpenFile deliberately copies instead of
       // mmap: later mutation cannot alter the checksum-verified VFS bytes.
@@ -954,6 +956,18 @@ void processPreambleRequest(PreambleWorkerState &state, const std::string &sourc
       if (digest((*pch)->getBuffer()) != *pchHash) { reject("load-checksum"); return; }
       auto restored = restorePreambleDependencies(request);
       if (!restored.reason.empty()) { reject(restored.reason); return; }
+      // Validate Clang's control block against the same pinned bytes that parse
+      // will consume. A matching host checksum does not prove an AST format.
+      CompilerInstance validation(std::make_shared<CompilerInvocation>(*invocation));
+      validation.setVirtualFileSystem(preambleFileSystem(vfs, *pchPath, **pch));
+      validation.createDiagnostics();
+      validation.createFileManager();
+      if (!ASTReader::isAcceptableASTFile(*pchPath, validation.getFileManager(),
+          validation.getModuleCache(), validation.getPCHContainerReader(),
+          invocation->getLangOpts(), invocation->getCodeGenOpts(), invocation->getTargetOpts(),
+          invocation->getPreprocessorOpts(), invocation->getHeaderSearchOpts(), "")) {
+        reject("load-format"); return;
+      }
       state.artifact = LoadedPreamble{std::move(*pch), pchPath->str(), pchHash->str(), bounds,
           prefixHash->str(), std::move(restored.dependencies), invocationArgs};
       output.attribute("ok", true);
@@ -1089,6 +1103,20 @@ int preambleWorker(const std::string &source, const std::vector<std::string> &ar
 } // namespace
 
 int main(int argc, const char **argv) {
+#ifdef __linux__
+  if (argc == 2 && llvm::StringRef(argv[1]) == "--pch-lock") {
+    const auto parent = ::getppid();
+    if (parent == 1 || ::prctl(PR_SET_PDEATHSIG, SIGTERM) || ::getppid() != parent) return 1;
+    struct stat metadata;
+    if (::fstat(3, &metadata) || !S_ISREG(metadata.st_mode) || metadata.st_nlink != 1 ||
+        metadata.st_uid != ::geteuid() || ::flock(3, LOCK_EX)) return 1;
+    llvm::outs() << "locked\n";
+    llvm::outs().flush();
+    // stdin EOF or host disposal releases the inherited lock descriptor.
+    (void)std::cin.get();
+    return 0;
+  }
+#endif
   if (argc >= 5 && llvm::StringRef(argv[1]) == "--preamble-worker" &&
       llvm::StringRef(argv[2]) == "--source" && llvm::StringRef(argv[4]) == "--") {
     const std::string source = absolutePath(argv[3]);

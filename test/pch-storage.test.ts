@@ -1,9 +1,10 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { link, mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { open, link, mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { clearPchStorage, createPchStage, pchStorageStats, preparePchStorage, publishPchEntry, readPchEntry, removePchStage, type PchEntry } from '../src/pch-storage';
+import { clearPchStorage, createPchStage, pchStorageStats, preparePchStorage, publishPchEntry, readPchEntry, inspectPchEntry, invalidatePchEntry, removePchStage, type PchEntry } from '../src/pch-storage';
 
 const entry: Omit<PchEntry, 'pchPath' | 'pchBytes' | 'pchHash'> = {
   identity: 'a'.repeat(64), prefixHash: 'b'.repeat(64), invocationHash: 'c'.repeat(64), bounds: 2,
@@ -22,6 +23,78 @@ const fixture = async (action: (root: string, directory: string, source: string)
 };
 
 describe('persistent PCH storage', () => {
+  test('invalidation removes exactly the observed pair and preserves replacements and other artifacts', () => fixture(async (_root, directory, source) => {
+    assert.ok(await publishPchEntry(directory, entry, source));
+    const observed = await inspectPchEntry(directory, entry.identity);
+    assert.equal(observed._tag, 'Verified');
+    if (observed._tag !== 'Verified') throw new Error('Missing observed artifact');
+    const other = { ...entry, identity: 'd'.repeat(64) };
+    const publishedOther = await publishPchEntry(directory, other, source);
+    await writeFile(path.join(directory, 'notes.txt'), 'user data');
+    assert.equal(await invalidatePchEntry(directory, observed), true);
+    assert.equal(await readPchEntry(directory, entry.identity), undefined);
+    assert.deepEqual(await readPchEntry(directory, other.identity), publishedOther);
+    assert.equal(await readFile(path.join(directory, 'notes.txt'), 'utf8'), 'user data');
+    assert.ok(await publishPchEntry(directory, entry, source));
+    const prior = await inspectPchEntry(directory, entry.identity);
+    assert.equal(prior._tag, 'Verified');
+    if (prior._tag !== 'Verified') throw new Error('Missing prior artifact');
+    await writeFile(source, 'replacement serialized PCH');
+    const replacement = await publishPchEntry(directory, entry, source);
+    assert.ok(replacement);
+    assert.equal(await invalidatePchEntry(directory, prior), false);
+    assert.deepEqual(await readPchEntry(directory, entry.identity), replacement);
+  }));
+  test('invalidation refuses a substituted symlink, hardlink or parent directory', () => fixture(async (root, directory, source) => {
+    const target = path.join(root, 'user-data');
+    await writeFile(target, 'keep');
+    await ['symlink', 'hardlink'].reduce(async (previous, kind) => {
+      await previous;
+      assert.ok(await publishPchEntry(directory, entry, source));
+      const observed = await inspectPchEntry(directory, entry.identity);
+      if (observed._tag !== 'Verified') throw new Error('Missing observed artifact');
+      const pch = path.join(directory, entry.identity + '.pch');
+      await unlink(pch);
+      if (kind === 'symlink') await symlink(target, pch);
+      else await link(target, pch);
+      assert.equal(await invalidatePchEntry(directory, observed), false);
+      const alias = path.join(root, 'alias-' + kind);
+      await symlink(directory, alias, 'dir');
+      assert.equal(await invalidatePchEntry(alias, observed), false);
+      assert.equal(await readFile(target, 'utf8'), 'keep');
+      await unlink(pch);
+    }, Promise.resolve());
+  }));
+  test('clear waits for an in-progress identity with only a persistent lock, then removes its publication', () => fixture(async (_root, directory, source) => {
+    const lock = await open(path.join(directory, entry.identity + '.lock'), 'w', 0o600);
+    const child = spawn(path.resolve('native/build/fold-state-jump-ast'), ['--pch-lock'], { stdio: ['pipe', 'pipe', 'ignore', lock.fd] });
+    const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
+    child.on('error', () => {}); child.stdin!.on('error', () => {});
+    try {
+      await new Promise<void>((resolve, reject) => {
+        child.stdout!.once('data', (chunk: Buffer) => chunk.toString() === 'locked\n' ? resolve() : reject(new Error('Lock unavailable')));
+        child.once('error', reject);
+        child.once('close', () => reject(new Error('Lock helper exited')));
+      });
+      const clearing = clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast'));
+      assert.equal(await Promise.race([clearing.then(() => 'cleared'), new Promise((resolve) => setTimeout(() => resolve('waiting'), 40))]), 'waiting');
+      assert.ok(await publishPchEntry(directory, entry, source));
+      // Parent and child share this open-file description. Close both references.
+      child.stdin!.end(); await closed; await lock.close();
+      await clearing;
+      assert.equal(await readPchEntry(directory, entry.identity), undefined);
+      assert.ok((await readdir(directory)).includes(entry.identity + '.lock'));
+      assert.throws(() => process.kill(child.pid!, 0), { code: 'ESRCH' });
+    } finally { child.kill(); await closed; await lock.close().catch(() => undefined); }
+  }));
+  test('failed lock acquisition reports incomplete clear and preserves the artifact', () => fixture(async (_root, directory, source) => {
+    const published = await publishPchEntry(directory, entry, source);
+    assert.ok(published);
+    assert.equal(await clearPchStorage(directory, '/bin/false'), false);
+    assert.deepEqual(await readPchEntry(directory, entry.identity), published);
+    assert.equal(await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast')), true);
+    assert.equal(await readPchEntry(directory, entry.identity), undefined);
+  }));
   test('publishes a complete copied pair and retains the native-owned source', () => fixture(async (_root, directory, source) => {
     const published = await publishPchEntry(directory, entry, source);
     assert.ok(published);
@@ -61,7 +134,7 @@ describe('persistent PCH storage', () => {
     await symlink(path.dirname(directory), alias, 'dir');
     assert.equal(await preparePchStorage(path.join(alias, 'pch')), undefined);
     assert.equal(await readPchEntry(path.join(alias, 'pch'), entry.identity), undefined);
-    await clearPchStorage(path.join(alias, 'pch'));
+    await clearPchStorage(path.join(alias, 'pch'), path.resolve('native/build/fold-state-jump-ast'));
     assert.ok(await readPchEntry(directory, entry.identity));
   }));
   test('rejects symlink and hardlink artifacts and never changes their targets', () => fixture(async (root, directory, source) => {
@@ -72,13 +145,13 @@ describe('persistent PCH storage', () => {
     await unlink(artifact);
     await symlink(target, artifact);
     assert.equal(await readPchEntry(directory, entry.identity), undefined);
-    await clearPchStorage(directory);
+    await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast'));
     assert.equal(await readFile(target, 'utf8'), 'serialized-pch');
     assert.ok(await publishPchEntry(directory, entry, source));
     await unlink(artifact);
     await link(target, artifact);
     assert.equal(await readPchEntry(directory, entry.identity), undefined);
-    await clearPchStorage(directory);
+    await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast'));
     assert.equal(await readFile(target, 'utf8'), 'serialized-pch');
   }));
   test('rejects unsafe publication sources and clears only owned artifact names', () => fixture(async (root, directory, source) => {
@@ -89,7 +162,7 @@ describe('persistent PCH storage', () => {
     await writeFile(path.join(directory, 'notes.txt'), 'keep');
     await writeFile(path.join(directory, entry.identity + '.lock'), '');
     await mkdir(path.join(directory, 'user-directory'));
-    await clearPchStorage(directory);
+    await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast'));
     assert.equal(await readFile(path.join(directory, 'notes.txt'), 'utf8'), 'keep');
     assert.ok((await readdir(directory)).includes(entry.identity + '.lock'));
     assert.ok((await readdir(directory)).includes('user-directory'));
@@ -116,13 +189,15 @@ describe('persistent PCH storage', () => {
     await removePchStage(stage);
     assert.equal(await readFile(path.join(root, 'preamble-123.pch'), 'utf8'), 'user-data');
   }));
-  test('explicit clear removes abandoned owned staging files without recursion', () => fixture(async (_root, directory) => {
+  test('clear preserves request-owned staging until its owner reaps it', () => fixture(async (_root, directory) => {
     const stage = await createPchStage(directory);
     const protectedStage = await createPchStage(directory);
     assert.ok(stage && protectedStage);
     await writeFile(path.join(stage, 'preamble-abc123.pch'), 'abandoned');
     await writeFile(path.join(protectedStage, 'user-data'), 'keep');
-    await clearPchStorage(directory);
+    await clearPchStorage(directory, path.resolve('native/build/fold-state-jump-ast'));
+    assert.equal(await readFile(path.join(stage, 'preamble-abc123.pch'), 'utf8'), 'abandoned');
+    await removePchStage(stage);
     assert.equal((await readdir(directory)).includes(path.basename(stage)), false);
     assert.equal(await readFile(path.join(protectedStage, 'user-data'), 'utf8'), 'keep');
   }));

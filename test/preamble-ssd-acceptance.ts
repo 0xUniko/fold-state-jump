@@ -31,8 +31,8 @@ const measure = async (run: (report: (event: Event) => void) => Promise<Extracte
 const compact = ({ ms, events, nodeCpuMicros }: Awaited<ReturnType<typeof measure>>) => ({ ms, nodeCpuMicros, events });
 const cold = (input: Input) => measure((report) => Effect.runPromise(extractVerifiedAst(input.source, input.command,
   executable, maxAstBytes, AbortSignal.timeout(180000), report)));
-const run = (pool: ReturnType<typeof makePreamblePool>, input: Input) => measure((report) => Effect.runPromise(
-  extractWithPreamble(pool, input.source, input.command, executable, maxAstBytes, AbortSignal.timeout(180000), report, input.pchDirectory)));
+const run = (pool: ReturnType<typeof makePreamblePool>, input: Input, intent: 'foreground' | 'prewarm' = 'foreground') => measure((report) => Effect.runPromise(
+  extractWithPreamble(pool, input.source, input.command, executable, maxAstBytes, AbortSignal.timeout(180000), report, input.pchDirectory, intent)));
 const memory = async (events: readonly Event[]) => {
   const pid = [...events].reverse().find((event) => ['native-start', 'native-active', 'native-idle'].includes(String(event.event)))?.pid;
   if (typeof pid !== 'number') return {};
@@ -84,19 +84,19 @@ if (process.argv[2] === '--restore') {
     return text.replace(needle, (name === 'pipeline.h' ? 'session_state.rope_position' : 'bank_state.counters.prefetch_experts') +
       ' += ' + revision + ';\n  ' + needle);
   };
-  const prepareInputs = async (mode: 'independent' | 'coupled'): Promise<readonly Input[]> => Promise.all(originals.map(async (original) => {
-    const sourceDirectory = path.join(directory, mode, ...(mode === 'independent' ? [original.name] : []));
+  const prepareInputs = async (mode: 'independent' | 'coupled', policy: 'eager' | 'adaptive', trial: number): Promise<readonly Input[]> => Promise.all(originals.map(async (original) => {
+    const sourceDirectory = path.join(directory, mode + '-' + policy + '-' + trial, ...(mode === 'independent' ? [original.name] : []));
     await mkdir(sourceDirectory, { recursive: true });
     const source = path.join(sourceDirectory, original.name);
     await writeFile(source, original.text);
     const command = await Effect.runPromise(resolveCompileCommand(original.source, [root], 'clang++'));
     assert.equal(command.args.at(-1), original.source);
-    return { name: original.name, source, pchDirectory: path.join(directory, mode, '.cache', 'fold-state-jump', 'pch'),
+    return { name: original.name, source, pchDirectory: path.join(directory, mode + '-' + policy + '-' + trial, '.cache', 'fold-state-jump', 'pch'),
       command: { ...command, args: [...command.args.slice(0, -1), '-I' + path.dirname(original.source), source] } };
   }));
-  const workflow = async (mode: 'independent' | 'coupled') => {
-    const inputs = await prepareInputs(mode);
-    const pool = makePreamblePool();
+  const workflow = async (mode: 'independent' | 'coupled', policy: 'eager' | 'adaptive', trial = 0) => {
+    const inputs = await prepareInputs(mode, policy, trial);
+    const pool = makePreamblePool(300000, 120000, policy);
     const steps: readonly string[] = mode === 'independent' ? [...sequence, ...sequence] : sequence;
     try {
       const samples = await steps.reduce<Promise<readonly { readonly pch: ReturnType<typeof compact>; readonly cold: ReturnType<typeof compact>; readonly [key: string]: unknown }[]>>(
@@ -108,24 +108,46 @@ if (process.argv[2] === '--restore') {
           await writeFile(input.source, editedText(name, original.text, index + 1));
           const after = await fingerprintFile(input.source);
           assert.notEqual(before.sha256, after.sha256, 'Full AST must be invalidated by every semantic body edit');
-          console.error('SSD acceptance ' + mode + ': ' + (index + 1) + '/' + steps.length + ' ' + name);
+          console.error('SSD acceptance ' + policy + ' ' + mode + ': ' + (index + 1) + '/' + steps.length + ' ' + name);
           const sample = await run(pool, input);
           assert.equal(sample.events.some((event) => event.event === 'preamble-fallback'), false, JSON.stringify(sample.events));
           if (mode === 'independent' && index >= 3) assertNoBuild(sample.events);
-          else assert.equal(sample.events.filter((event) => event.event === 'preamble-build').length, 1, JSON.stringify(sample.events));
+          else if (mode === 'coupled' && policy === 'adaptive' && index >= 2) {
+            assert.ok(sample.events.some((event) => event.event === 'preamble-policy-skip'), JSON.stringify(sample.events));
+            assert.equal(sample.events.some((event) => event.event === 'preamble-build'), false);
+          } else assert.equal(sample.events.filter((event) => event.event === 'preamble-build').length, 1, JSON.stringify(sample.events));
+          const workerMemory = await memory(sample.events);
           const plain = await cold(input);
           const jumpTargets = await checkTargets(input.source, sample.extracted);
           assert.equal(jumpTargets, name === 'pipeline.h' ? 8 : name === 'ffn.h' ? 14 : 3);
           const completed = [...previous, { step: index + 1, name, astChanged: true, astCacheUsed: false,
-            pch: compact(sample), cold: compact(plain), memory: await memory(sample.events), jumpTargets,
+            pch: compact(sample), cold: compact(plain), memory: workerMemory, jumpTargets,
             queries: await compareQueries(input.source, plain.extracted, sample.extracted) }];
-          await writeFile(path.join(directory, mode + '-samples.json'), JSON.stringify(completed));
+          await writeFile(path.join(directory, mode + '-' + policy + '-' + trial + '-samples.json'), JSON.stringify(completed));
           return completed;
         }, Promise.resolve([]));
+      // Once edits stop, existing debounce prewarm is allowed to rebuild.
+      // Do not change the five-request benchmark to manufacture reuse.
+      const stable = mode === 'coupled' && trial === 0 ? await ['prewarm', 'foreground'].reduce<Promise<readonly unknown[]>>(async (samples, intent) => {
+        const previous = await samples;
+        return inputs.reduce<Promise<readonly unknown[]>>(async (samples, input) => {
+          const previous = await samples;
+          console.error('SSD stable ' + policy + ': ' + intent + ' ' + input.name);
+          const sample = await run(pool, input, intent as 'prewarm' | 'foreground');
+          assert.equal(sample.events.some((event) => ['preamble-fallback', 'preamble-policy-skip'].includes(String(event.event))), false, JSON.stringify(sample.events));
+          if (intent === 'foreground') assertNoBuild(sample.events);
+          const workerMemory = await memory(sample.events);
+          const plain = await cold(input);
+          return [...previous, { name: input.name, intent, pch: compact(sample), cold: compact(plain), memory: workerMemory,
+            queries: await compareQueries(input.source, plain.extracted, sample.extracted), jumpTargets: await checkTargets(input.source, sample.extracted) }];
+        }, Promise.resolve(previous));
+      }, Promise.resolve([])) : [];
       const pids = samples.flatMap((sample) => sample.pch.events.filter((event) => event.event === 'native-start').map((event) => event.pid))
         .filter((pid): pid is number => typeof pid === 'number');
+      const stablePids = (stable as readonly { pch: ReturnType<typeof compact> }[]).flatMap((sample) => sample.pch.events.filter((event) => event.event === 'native-start').map((event) => event.pid))
+        .filter((pid): pid is number => typeof pid === 'number');
       await Effect.runPromise(disposePreamblePool(pool));
-      pids.map((pid) => assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' }));
+      [...pids, ...stablePids].map((pid) => assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' }));
       const restore = mode === 'independent' ? await (async () => {
         const inputFile = path.join(directory, 'restore-inputs.json');
         await writeFile(inputFile, JSON.stringify(inputs));
@@ -141,11 +163,14 @@ if (process.argv[2] === '--restore') {
         totalColdMs: selected.reduce((total, sample) => total + sample.cold.ms, 0),
         builds: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-build').length, 0),
         loads: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-load').length, 0),
+        skips: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-policy-skip').length, 0),
+        fallbacks: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-fallback').length, 0),
+        invalidations: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-invalidated').length, 0),
         reuses: selected.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-reuse').length, 0)
       });
-      return { mode, samples, initialFive: summary(samples.slice(0, 5)),
+      return { mode, policy, trial, samples, stable, initialFive: summary(samples.slice(0, 5)),
         ...(mode === 'independent' ? { warmFive: summary(samples.slice(5)) } : {}),
-        restart: restore, nativePidsReaped: true, pchDiskBytes: await bytesUnder(path.join(directory, mode, '.cache', 'fold-state-jump', 'pch')),
+        summary: summary(samples), restart: restore, nativePidsReaped: true, pchDiskBytes: await bytesUnder(path.join(directory, mode + '-' + policy + '-' + trial, '.cache', 'fold-state-jump', 'pch')),
         totalPchMs: samples.reduce((total, sample) => total + sample.pch.ms, 0),
         totalColdMs: samples.reduce((total, sample) => total + sample.cold.ms, 0),
         builds: samples.reduce((total, sample) => total + sample.pch.events.filter((event) => event.event === 'preamble-build').length, 0),
@@ -154,9 +179,18 @@ if (process.argv[2] === '--restore') {
     } finally { await Effect.runPromise(disposePreamblePool(pool)); }
   };
   try {
-    const independent = await workflow('independent');
-    await writeFile(path.join(directory, 'independent-report.json'), JSON.stringify(independent));
-    const coupled = await workflow('coupled');
+    const eagerIndependent = await workflow('independent', 'eager');
+    const eagerCoupled = await workflow('coupled', 'eager');
+    const independent = await workflow('independent', 'adaptive');
+    const coupled = await workflow('coupled', 'adaptive');
+    const coupledRepeats = await [1, 2].reduce<Promise<readonly unknown[]>>(async (samples, trial) => {
+      const previous = await samples;
+      // Alternate order to expose gross order/cache-temperature bias.
+      const policies = trial === 1 ? ['adaptive', 'eager'] as const : ['eager', 'adaptive'] as const;
+      const first = await workflow('coupled', policies[0], trial);
+      const second = await workflow('coupled', policies[1], trial);
+      return [...previous, { trial, first, second }];
+    }, Promise.resolve([]));
     await Promise.all(originals.map(async (original) => assert.deepEqual(await fingerprintFile(original.source), original.fingerprint,
       'Original nano-infer source changed')));
     const report = { recordedAt: new Date().toISOString(), environment: { runtime: process.version, kernel: release(),
@@ -164,10 +198,11 @@ if (process.argv[2] === '--restore') {
       method: ['Sequential real nano-infer header parses with semantic state mutation edits; direct extraction bypasses the complete AST cache.',
         'Independent mode repeats the five-request sequence twice, then restarts Node. The first and warm five are reported separately.',
         'Independent mode gives each main header its own directory and uses original read-only headers as recursive dependencies. It isolates file switching from legitimate dependency changes.',
-        'Coupled mode copies pipeline.h, ffn.h and experts.h together. Editing ffn.h invalidates pipeline.h and editing experts.h invalidates ffn.h; those rebuilds are required.',
+        'Both eager and adaptive policies run the identical original independent/coupled edit sequences. Coupled changes require invalidation, but foreground construction may be deliberately skipped.',
+        'After each original coupled benchmark completes, edits stop. Three explicit prewarm requests rebuild as needed, then three foreground requests must reuse valid artifacts.',
         'Each PCH result is compared against ordinary Clang parsing of that exact version at every supported mutation/origin cursor position. Candidate order is preserved.',
         'Warm OS filesystem caches, uncontrolled CPU scheduling, one machine. Node CPU excludes child CPU. No Extension Host/UI timing is claimed.'],
-      independent, coupled };
+      baseline: { independent: eagerIndependent, coupled: eagerCoupled }, independent, coupled, coupledRepeats };
     const reportText = JSON.stringify(report, (key, value) => key === 'command' ? undefined : value, 2)
       .replaceAll(root, '<nano-infer>').replaceAll(directory, '<isolated-fixture>').replaceAll(process.cwd(), '<fold-state-jump>') + '\n';
     if (process.argv[3]) await writeFile(process.argv[3], reportText);
