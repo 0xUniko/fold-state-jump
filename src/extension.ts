@@ -3,6 +3,7 @@ import { prepareCacheLocation, resolveCacheProject } from './cache-location';
 import { buildIdentity, validateDependencies } from './dependencies';
 import { makeDiskCache, readDiskAst, writeDiskAst, clearDiskCache, diskCacheStats, type DiskCache } from './disk-cache';
 import { clearPchStorage, pchStorageStats } from './pch-storage';
+import { resolveExtractorPath } from './extractor-path';
 import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamblePool, type PreamblePool } from './preamble';
 import * as vscode from 'vscode';
 import path from 'node:path';
@@ -143,10 +144,7 @@ const extractAst = Effect.fnUntraced(function* (
     return resolved.command;
   });
   const command = yield* resolveInput;
-  const configuredExtractor = config.get('extractorPath', '');
-  const executable = configuredExtractor
-    ? (path.isAbsolute(configuredExtractor) ? configuredExtractor : path.resolve(extensionPath, configuredExtractor))
-    : path.join(extensionPath, 'native', 'build', 'fold-state-jump-ast');
+  const executable = resolveExtractorPath(extensionPath, config.get('extractorPath', ''));
   const configuration = { roots, config: config.get('compileCommandsPath', ''), maxAstBytes: config.get('maxAstBytes', 67108864) };
   const identify = (command: CompileCommand) => Effect.tryPromise({
     try: () => buildIdentity(source, command, executable, configuration), catch: (error) => new Error(String(error))
@@ -375,6 +373,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
     vscode.commands.registerCommand('foldStateJump.clearCache', () => withSchedulerMaintenance(runtime.scheduler, async () => {
       const document = activeDocument();
       if (!document || document.uri.scheme !== 'file') { output.appendLine('Open a project file to clear its caches.'); return; }
+      const config = vscode.workspace.getConfiguration('foldStateJump', document.uri);
+      const executable = resolveExtractorPath(context.extensionPath, config.get('extractorPath', ''));
       await Effect.runPromise(clearPreamblePool(runtime.preamblePool));
       const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
       const project = await resolveCacheProject(path.resolve(document.uri.fsPath), roots);
@@ -388,10 +388,21 @@ export const activate = (context: vscode.ExtensionContext): void => {
       const sources = [...new Set([...memory.entries.map((entry) => entry.source), ...memory.observed.map((entry) => entry.source)])];
       const projects = await Promise.all(sources.map(async (source) => ({ source, project: await resolveCacheProject(source, roots) })));
       await Effect.runPromise(removeAstSources(runtime.astCache, projects.filter((entry) => entry.project.key === project.key).map((entry) => entry.source)));
-      await Effect.runPromise(Effect.forEach(directories, (directory) =>
-        clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory))));
-      const pchCleared = await Promise.all(directories.map((directory) => clearPchStorage(path.join(path.dirname(directory), 'pch'), path.join(context.extensionPath, 'native', 'build', 'fold-state-jump-ast'))));
-      runtime.output.appendLine(JSON.stringify({ event: pchCleared.every(Boolean) ? 'cache-cleared' : 'cache-clear-incomplete', project: project.root }));
+      const astCleared = await Effect.runPromise(Effect.forEach(directories, (directory) =>
+        clearDiskCache(diskCaches.get(directory)?.cache ?? makeDiskCache(directory)).pipe(
+          Effect.map((cleared) => ({ directory, cleared })))));
+      const pchCleared = await Promise.all(directories.map(async (directory) => {
+        const pchDirectory = path.join(path.dirname(directory), 'pch');
+        return { directory: pchDirectory, cleared: await clearPchStorage(pchDirectory, executable) };
+      }));
+      const failures = [
+        ...astCleared.filter((result) => !result.cleared).map((result) => 'AST disk cache cleanup failed: ' + result.directory + '.'),
+        ...pchCleared.filter((result) => !result.cleared).map((result) =>
+          'PCH cache cleanup failed: ' + result.directory + '. Check cache access and Native extractor ' + executable + ' (--pch-lock).')
+      ];
+      runtime.output.appendLine(JSON.stringify({ event: failures.length === 0 ? 'cache-cleared' : 'cache-clear-incomplete', project: project.root,
+        ast: { memoryCleared: true, directories: astCleared }, pch: { executable, directories: pchCleared },
+        message: failures.length === 0 ? 'AST and PCH caches cleared.' : 'Cache clearing incomplete. ' + failures.join(' ') }));
     })),
     vscode.commands.registerCommand('foldStateJump.cacheStats', () => Effect.runPromise(Effect.gen(function* () {
       const document = activeDocument();

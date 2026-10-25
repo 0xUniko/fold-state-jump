@@ -1,6 +1,6 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, readdir, writeFile, rm, utimes } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, writeFile, rm, utimes } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Effect } from 'effect';
@@ -98,7 +98,7 @@ describe('persistent compact AST', () => {
     assert.ok(await Effect.runPromise(readDiskAst(cache, 'second')));
     assert.equal(await write({ ...cache, maxBytes: 1 }, source), false);
     await writeFile(path.join(cache.directory, 'unrelated.txt'), 'keep');
-    await Effect.runPromise(clearDiskCache(cache));
+    assert.equal(await Effect.runPromise(clearDiskCache(cache)), true);
     assert.deepEqual(await Effect.runPromise(diskCacheStats(cache)), { entries: 0, bytes: 0 });
     assert.equal(await readFile(path.join(cache.directory, 'unrelated.txt'), 'utf8'), 'keep');
   }));
@@ -137,5 +137,17 @@ describe('persistent compact AST', () => {
     await writeFile(cache.directory, 'not a directory');
     assert.equal(await write(cache, source), false);
     assert.equal(await Effect.runPromise(readDiskAst(cache, 'config-1')), undefined);
+  }));
+
+  test('clear accepts an absent cache but reports directory and deletion failures', () => fixture(async (cache, source) => {
+    assert.equal(await Effect.runPromise(clearDiskCache(cache)), true);
+    await writeFile(cache.directory, 'user file');
+    assert.equal(await Effect.runPromise(clearDiskCache(cache)), false);
+    assert.equal(await readFile(cache.directory, 'utf8'), 'user file');
+    await rm(cache.directory);
+    await write(cache, source);
+    await rm(file(cache));
+    await mkdir(file(cache));
+    assert.equal(await Effect.runPromise(clearDiskCache(cache)), false);
   }));
 });

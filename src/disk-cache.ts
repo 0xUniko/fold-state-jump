@@ -125,12 +125,18 @@ export const writeDiskAst = (cache: DiskCache, identity: string,
   }, catch: () => false
 }).pipe(Effect.orElseSucceed(() => false), Effect.uninterruptible));
 
-export const clearDiskCache = (cache: DiskCache): Effect.Effect<void> =>
-  cache.writes.withPermit(Effect.promise(async () => {
-    const names = await readdir(cache.directory).catch(() => [] as string[]);
-    await Promise.all(names.filter((name) => /^(?:[a-f0-9]{64}\.ast|[a-f0-9-]+\.tmp)$/.test(name))
-      .map((name) => rm(path.join(cache.directory, name), { force: true })));
-  }));
+export const clearDiskCache = (cache: DiskCache): Effect.Effect<boolean> =>
+  cache.writes.withPermit(Effect.tryPromise({
+    try: async () => {
+      const names = await readdir(cache.directory).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ENOENT') throw error;
+        return [] as string[];
+      });
+      await Promise.all(names.filter((name) => /^(?:[a-f0-9]{64}\.ast|[a-f0-9-]+\.tmp)$/.test(name))
+        .map((name) => rm(path.join(cache.directory, name), { force: true })));
+      return true;
+    }, catch: () => false
+  }).pipe(Effect.orElseSucceed(() => false)));
 
 export const diskCacheStats = (cache: DiskCache): Effect.Effect<{ readonly entries: number; readonly bytes: number }> =>
   Effect.promise(async () => {
