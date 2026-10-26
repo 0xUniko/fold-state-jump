@@ -1,8 +1,114 @@
-# 2026-10-26：容器存储身份与引用别名复核
+# 当前审计：显式存储关系与类型图（2026-10-26）
 
-本节是当前验证结果；下方 2026-10-25 内容是历史审计。当前分析器基线为 `db9d7c2d2aa3a62bce0563faf42a4118cde6cfb9`，分支 `feat/multi-funcs`，验证对象是该 HEAD 上的**未提交工作区修改**，不是已发布的新提交。nano-infer 固定为 `562758447a716d05dabb3173cebac489bf7daf80`，工作区干净。本次通过 GitHub connector 的 commit API 再次核对两个远端分支，均与上述本地 HEAD 一致。没有提交、推送、合并或修改 nano-infer。
+被测分析器提交为 `b1dadf40182c54dcd78e3ff491b1c4930eefa4d3`（`feat/multi-funcs`），运行最终验证和本节基准时工作区 **干净**。本节及 JSON 是随后单独提交的报告；报告提交不改变被测分析器源码。shell 的 HTTPS/SSH 身份无法写入，最终通过 GitHub 应用发布；远端实现和原本地已测实现的 Git 树逐字节一致，随后在实际远端 SHA 的干净工作区重跑验证。修改前基线为 `c2b728f086d74337fcc7954bffa614d636107979`；开始时实际 `git fetch origin` 确认基线；发布前再次核对远端 HEAD，并以预期 HEAD 校验进行非强制快进。nano-infer 为 `562758447a716d05dabb3173cebac489bf7daf80`，工作区干净，未修改该项目。
 
-[当前结果 JSON](nano-infer-audit-results.json) 的 `analyzerRevision` 记录 HEAD、dirty 状态、分析器/Native 源码 SHA256 和 extractor SHA256；`realSourceQueries` 已用本轮真实提取结果全部替换。历史基线另行标记，不能将旧性能或旧查询结果算成本轮验证。[可复现性能原始数据](measurements/storage-alias-2026-10-26.json) 使用相同源码 SHA256，并分别记录 Native 提取、JSON 解码、索引准备和 query 时间。
+[结果 JSON](nano-infer-audit-results.json) 和 [原始测量](measurements/storage-relations-2026-10-26.json) 包含分析器/Native/测试源码、extractor、九个被测文件及编译数据库 SHA256，以及实际命令和逐查询结果。[存储关系契约](storage-relations.md) 定义支持范围和剩余假设。下方旧审计是历史记录，不能作为本轮测量。
+
+## 设计和共同根因
+
+- 用 `complete / incomplete` 类型图和 `reachable / unrelated / possible / incomplete` 对象关系替代 `reachable: string[]` 中的 `"?"` 约定。未知身份缺失不再等于无关；类型兼容仍不能生成精确导航路径。
+- Native 通过 canonical 类型已访问集合闭合环，取消 64 层可达遍历截断；字段改为类型表引用，取消 16 层字段序列化截断。继承基类参与可达性；值拷贝保真和潜在共享效果仍保留不同契约。
+- `storageAt` 从声明类型投影字段/指针/数组；观测 lvalue 只作为补充，转换临时类型不能覆盖其存储身份。receiver 携带类型身份，修复不同类 `$this` 同名路径互相污染。类型证据在 AST 准备阶段固定，不缓存随查询时点变化的对象来源。
+- 未知指针的直接写入、通过潜在别名调用已知 mutator 均保留边界。已知函数按内部顺序检查；更晚可靠写入可以覆盖更早未知回调，后续未知效果不能被跳过。实参构造先于函数体效果；无法证明时保留原有调用位置边界。
+- Native 将 `std::get_if` 标为借用投影：投影不调用存储的回调，返回借用的来源仍供后续消费者使用。这里建模标准操作语义，TS 不加入库类型名称正则。空/已知无关回调与未知回调有真实 AST 对照；保留 `finish_host_copies` 等原有边界。
+- Origin 保留对象的已知起点；重绑定 pointee 的边界记录真实文件和偏移。内部格式改变由 extractor 指纹隔离旧 AST 缓存。
+
+关键实现：`src/storage.ts` 的关系 ADT/合并规则，`src/analysis.ts` 的 `storageAt`、`storedPathRelation`、`callEffectBoundary`、`findPreviousMutation` 和 receiver 路径，`native/ast-extractor.cpp` 的 `reachableStorage`、`storage`、`StorageTypes`。`AGENTS.md` 的 Bun 类型检查规则按用户确认一起提交。
+
+## 真实证据与回归
+
+最初新增 10 个查询后，真实 Clang 基线为 **69 pass / 6 fail**，实际复现未知回调、嵌套回调、直接 void*、继承字段、混合未知字段和回调调用漏报。最终 storage 套件从原有 65 项增至 **95/95**，净增 30 项；原有断言全部保留。使用 c2b728f 模块和 extractor 跑同一最终套件为 **80 pass / 15 fail**，其中两项明确是新元数据契约检查，不能算作 15 个导航缺陷。
+
+新增覆盖还包括：70 层聚合及循环类型图、不同类 receiver 缓存隔离、未知指针直接写入与无关局部对象对照、已知方法的潜在别名/无关/只读对照、helper 内未知回调前后的可靠写入、variant 投影与后续回调调用、空回调、Origin 起点及重绑定位置。已有 span/string_view、ref/cref/get、shared_ptr/unique_ptr、聚合复制/移动、指针重绑定/快照的精确结果继续通过。`test/project-state-audit.ts` 只提前保存可选 AST 以便失败复核，未改变任何原有预期。
+
+| 检查 | 本轮结果 |
+|---|---|
+| Native 构建、native integration | 通过；LLVM/Clang 23.1.4 |
+| 存储 + 容器 + semantic-boundaries | 131/131 |
+| 干净实现上的完整 Bun | **465 pass / 0 fail，23 文件，15.38 s** |
+| `bun check` | 67 文件通过，Bun 1.4.3 |
+| Extension build | 通过 |
+| nano-infer 状态审计 | **9 文件、23 选择位置、46 次原精确断言通过** |
+| 既有项目导航 | **25/25**：ffn.h 14、experts.h 3、pipeline.h 8 |
+| seed/caller sources | CLI mappings、generation wrap、3 个 Origin、生产 discovery/USR 校验通过；provider 为 mock |
+| `git diff --check`、最终源码/diff 审查 | 通过 |
+
+开发中一次沙箱内完整运行有 41 项 Native preamble worker 通信失败（404 pass / 41 fail）；保留断言并在允许通信的环境运行同一完整命令，最终 465 项通过。未跳过测试。没有启动真实 Extension Host/C++ 语言服务，也没有执行模型推理、GPU 或 gRPC 运行时，不能把这些标为通过。
+
+## 性能与体积
+
+旧 `storage-alias-2026-10-26.json` 的 32.02→104.59 μs、29.09→80.10 μs 和合成 AST +29% 来自 db9d7c2 与其当时 dirty 工作区，来源/哈希已核对。c2b728f 已包含那次膨胀；本节重新比较 c2b728f 与 b1dadf401，不能套用旧数值。
+
+相同 C++ SHA256 `5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7`、路径、光标和 `-std=c++20`。干净工作区串行执行 before-a / after-a / after-b / before-b，每版本 10 次提取、每类每次 100 次预热与 1000 次查询。以下为中位数（min–max）；正确性断言在计时批次外执行。
+
+| 查询 μs | c2b728f | b1dadf401 |
+|---|---:|---:|
+| aggregate | 106.56 (100.76–123.55) | 106.66 (97.02–121.26) |
+| pointer | 64.83 (58.35–80.70) | 63.80 (61.00–72.51) |
+| view | 79.25 (74.63–91.14) | 81.53 (77.52–96.23) |
+| value | 16.98 (15.69–19.96) | 17.92 (16.05–21.32) |
+
+| 同一合成 AST | c2b728f | b1dadf401 |
+|---|---:|---:|
+| Native 提取 ms | 262.033 (257.637–291.695) | 258.237 (244.770–285.310) |
+| JSON parse ms | 1.729 (1.517–2.236) | 1.905 (1.565–4.795) |
+| 索引 prepare ms | 6.703 (4.764–19.136) | 7.152 (4.231–22.017) |
+| AST bytes | 1780891 | 1780904 |
+| 类型表 bytes | 6369 | 6382 |
+
+小型合成输入原本已使用类型表，字段引用没有显著压缩收益；完整 AST 只增加 13 bytes。查询差异处在这些样本的波动范围内，不宣称普遍加速或零开销。一次优化前的中间测量显示重复的类型预筛选与多次 find 合并有开销，最终移除已知来源路径上的预筛选，以单次 fold 合并关系，未删减未知边界。
+
+| 真实 AST | 原 bytes | 新 bytes | 原类型表 bytes | 新类型表 bytes |
+|---|---:|---:|---:|---:|
+| pipeline | 10615640 | 9551763 | 2720282 | 1622207 |
+| cli | 28361136 | 26478541 | 4323166 | 2379278 |
+
+| 真实 AST prepare ms，5 次 | c2b728f | b1dadf401 |
+|---|---:|---:|
+| pipeline | 22.51 (19.42–40.15) | 27.74 (21.88–45.53) |
+| cli | 65.89 (49.51–98.84) | 73.48 (65.50–109.17) |
+
+pipeline 总 AST 约减少 10.02%，CLI 约减少 6.64%；类型表分别减少约 40.37% 和 44.96%。索引准备的中位数增加：pipeline 约 5.23 ms，CLI 约 7.59 ms，需继续观察准备成本；各次样本范围重叠，不宣称稳定速度改善。逐样本 parse/prepare、合成查询和逐文件单次 extraction+prepare 均在原始 JSON。真实提取计时只有每文件一个 audit 样本，非受控多次提取对比；未测常驻内存和真实语言服务 provider 时延。
+
+## 可复核命令与剩余边界
+
+```sh
+# 在修改前保存 c2b728f 的源码模块和已核对的 extractor；两者哈希见 JSON。
+cp src/analysis.ts /tmp/fsj-storage-current-baseline.ts
+cp native/build/fold-state-jump-ast /tmp/fsj-storage-current-baseline-ast
+bun run build:native
+bun check
+bun run build
+bun run test/native-integration.ts
+bun test
+FSJ_ANALYSIS_MODULE=/tmp/fsj-storage-current-baseline.ts \
+FSJ_AST_EXTRACTOR=/tmp/fsj-storage-current-baseline-ast \
+  bun test test/storage-alias.test.ts
+FSJ_AUDIT_AST_DIRECTORY=/tmp/fsj-storage-contract-final-asts \
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-state-audit.ts /home/huawei/nano-infer
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-integration.ts /home/huawei/nano-infer
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-state-sources.ts /home/huawei/nano-infer
+bun test/storage-alias-performance.ts /tmp/fsj-storage-current-baseline.ts /tmp/fsj-storage-current-baseline-ast 5 1000
+bun test/storage-alias-performance.ts ../src/analysis native/build/fold-state-jump-ast 5 1000
+# 按上述 batch 顺序各执行两次；真实 AST benchmark 参数及原始结果见 JSON。
+bun test/storage-ast-performance.ts /tmp/fsj-storage-contract-final-asts/minicpm-v-4_7-pipeline.h.json ../src/analysis 5
+git diff --check
+```
+
+保留的范围限制不是完成的功能：没有完整 CFG/分支可达性、任意返回值字段解释、容器元素/异步完成身份和完整 caller 集合证明。foreign typed pointer 内部的任意隐藏类型擦除/全局保留仍不建模；直接 void* 值有边界。不同引用根仍沿用仓库的对象身份约定，不宣称已证明任意引用参数之间不别名。详见契约文档，后续扩大语义范围必须增加调用上下文/escape 证据和精确回归。此次未修改 nano-infer、vendored 仓库、main 或缓存失效策略。
+
+---
+
+# 历史审计 2026-10-26：容器存储身份与引用别名复核
+
+以下保留 c2b728f 中的历史原文；其中“当前/本次/本轮”均指当时的工作区。旧 JSON 应从 c2b728f 读取，当前 JSON 顶层对应上方 b1dadf401 验证，旧版本元数据保存在 `historical.previousReport`。
+
+本节是当时验证结果；下方 2026-10-25 内容是历史审计。当前分析器基线为 `db9d7c2d2aa3a62bce0563faf42a4118cde6cfb9`，分支 `feat/multi-funcs`，验证对象是该 HEAD 上的**未提交工作区修改**，不是已发布的新提交。nano-infer 固定为 `562758447a716d05dabb3173cebac489bf7daf80`，工作区干净。本次通过 GitHub connector 的 commit API 再次核对两个远端分支，均与上述本地 HEAD 一致。没有提交、推送、合并或修改 nano-infer。
+
+[历史结果 JSON（c2b728f）](https://github.com/0xUniko/fold-state-jump/blob/c2b728f086d74337fcc7954bffa614d636107979/docs/nano-infer-audit-results.json) 的 `analyzerRevision` 记录 HEAD、dirty 状态、分析器/Native 源码 SHA256 和 extractor SHA256；`realSourceQueries` 已用本轮真实提取结果全部替换。历史基线另行标记，不能将旧性能或旧查询结果算成本轮验证。[可复现性能原始数据](measurements/storage-alias-2026-10-26.json) 使用相同源码 SHA256，并分别记录 Native 提取、JSON 解码、索引准备和 query 时间。
 
 ## 已复现的基线缺陷
 
