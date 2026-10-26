@@ -1,4 +1,5 @@
 #include <clang/AST/ASTConsumer.h>
+#include <clang/UnifiedSymbolResolution/USRGeneration.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -88,6 +89,14 @@ std::string identity(const Decl *declaration) {
   return llvm::utohexstr(reinterpret_cast<uintptr_t>(declaration));
 }
 
+std::string symbol(const FunctionDecl *function) {
+  llvm::SmallString<128> symbol;
+  if (index::generateUSRForDecl(function->getCanonicalDecl(), symbol)) return "";
+  if (function->hasExternalFormalLinkage()) return symbol.str().str();
+  const auto &sm = function->getASTContext().getSourceManager();
+  return absolutePath(sm.getFilename(sm.getExpansionLoc(function->getCanonicalDecl()->getLocation()))) + ":" + symbol.str().str();
+}
+
 class Serializer {
 public:
   explicit Serializer(ASTContext &context)
@@ -111,10 +120,181 @@ public:
     output.attributeObject("end", [&] { location(output, span.getEnd()); });
   }
 
+  std::string storageIdentity(QualType type) const {
+    llvm::SmallString<128> usr;
+    if (index::generateUSRForType(type.getCanonicalType(), context, usr))
+      return type.getCanonicalType().getAsString();
+    return llvm::toHex(llvm::SHA256::hash(llvm::arrayRefFromStringRef(usr)), true);
+  }
+
   void type(json::OStream &output, QualType type) const {
     output.attributeObject("type", [&] {
       output.attribute("qualType", type.getAsString());
+      if (!type.isNull()) output.attribute("storageId", storageIdentity(type));
+      const auto *array = type.isNull() ? nullptr : llvm::dyn_cast_or_null<ClassTemplateSpecializationDecl>(type->getAsCXXRecordDecl());
+      if (array && array->getSpecializedTemplate()->getQualifiedNameAsString() == "std::array" &&
+          sm.isInSystemHeader(sm.getExpansionLoc(array->getSpecializedTemplate()->getLocation())) &&
+          array->getTemplateArgs().size() == 2 && array->getTemplateArgs().get(1).getKind() == TemplateArgument::Integral)
+        output.attribute("extent", array->getTemplateArgs().get(1).getAsIntegral().getLimitedValue());
     });
+  }
+
+  // Public storage semantics live here, before implementation fields of standard
+  // library classes. TypeScript consumes these tags, never library type spellings.
+  const char *storageKind(QualType type) const {
+    if (type->isReferenceType()) return "reference";
+    if (type->isPointerType()) return "pointer";
+    if (context.getAsArrayType(type)) return "array";
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return type->isDependentType() ? "opaque" : "value";
+    const auto name = record->getQualifiedNameAsString();
+    if (name == "std::reference_wrapper") return "reference-wrapper";
+    if (name == "std::function") return "callable";
+    if (name == "std::span" || name == "std::basic_string_view") return "view";
+    if (name == "std::shared_ptr") return "shared-owner";
+    if (name == "std::unique_ptr") return "unique-owner";
+    if (name == "std::basic_string" || name == "std::__cxx11::basic_string") return "value";
+    if (name == "std::optional" || name == "std::variant") return "sum";
+    if (name == "std::vector" || name == "std::set" || name == "std::map") return "elements";
+    if (!record->hasDefinition() || !record->isAggregate() || record->isUnion() || record->getNumBases()) return "opaque";
+    return "aggregate";
+  }
+
+  struct StorageReachability {
+    std::set<const Type *> visited;
+    std::set<std::string> identities;
+    std::set<std::string> incomplete;
+  };
+
+  // Canonical types form a finite graph. A visited set closes cycles without
+  // truncating deep but fully known aggregates into a universal unknown.
+  StorageReachability &reachableStorage(QualType type, StorageReachability &reachable) const {
+    const auto canonical = type.getUnqualifiedType().getCanonicalType();
+    if (reachable.visited.count(canonical.getTypePtr())) return reachable;
+    return fold(llvm::ArrayRef<QualType>(canonical), reachable, [&](auto &reachable, QualType canonical) {
+      reachable.visited.insert(canonical.getTypePtr());
+      if (type->isDependentType()) { reachable.incomplete.insert("dependent-type"); return; }
+      // Nominal reachability does not invent casts inside foreign pointees.
+      // Direct erased pointer values get an explicit boundary in storage().
+      if (type->isVoidType()) return;
+      // A function pointer carries no captured object. Global side effects are
+      // outside this local storage model; erased callable objects are below.
+      if (type->isFunctionType()) return;
+      if (type->isPointerType() || type->isReferenceType()) {
+        const auto pointee = type->getPointeeType();
+        reachable.identities.insert(storageIdentity(pointee.getUnqualifiedType()));
+        reachableStorage(pointee, reachable);
+        return;
+      }
+      if (const auto *array = context.getAsArrayType(type)) {
+        reachableStorage(array->getElementType(), reachable);
+        return;
+      }
+      const auto *record = type->getAsCXXRecordDecl();
+      const llvm::StringRef kind = storageKind(type);
+      if (!record || kind == "value") return;
+      // An incomplete foreign pointee retains its nominal identity. Its
+      // absence of fields is not evidence of an arbitrary callback or cast.
+      if (!record->hasDefinition()) return;
+      if (record->getQualifiedNameAsString() == "std::function") {
+        reachable.incomplete.insert("callback");
+        return;
+      }
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        if (record->getDeclContext()->isStdNamespace()) {
+          const auto visit = [&](auto &&self, const TemplateArgument &argument) -> void {
+            if (argument.getKind() == TemplateArgument::Pack) {
+              fold(argument.pack_elements(), reachable, [&](auto &, const auto &argument) { self(self, argument); });
+            } else if (argument.getKind() == TemplateArgument::Type) {
+              const auto argumentType = argument.getAsType();
+              if (kind == "view" || kind == "reference-wrapper" || kind == "shared-owner" || kind == "unique-owner")
+                reachable.identities.insert(storageIdentity(argumentType.getUnqualifiedType()));
+              reachableStorage(argumentType, reachable);
+            }
+          };
+          fold(specialization->getTemplateArgs().asArray(), reachable,
+              [&](auto &, const auto &argument) { visit(visit, argument); });
+          return;
+        }
+      }
+      fold(record->bases(), reachable, [&](auto &reachable, const CXXBaseSpecifier &base) {
+        reachableStorage(base.getType(), reachable);
+      });
+      fold(record->fields(), reachable, [&](auto &reachable, const FieldDecl *field) {
+        reachableStorage(field->getType(), reachable);
+      });
+    });
+  }
+
+  void storage(json::OStream &output, QualType type) const {
+    const llvm::StringRef kind = storageKind(type);
+    output.attribute("kind", kind);
+    output.attribute("identity", storageIdentity(type.getNonReferenceType().getUnqualifiedType()));
+    output.attribute("shared", sharedStorage(type));
+    output.attributeObject("reachability", [&] {
+      StorageReachability reachable;
+      reachableStorage(type, reachable);
+      if (type->isPointerType() && type->getPointeeType()->isVoidType()) reachable.incomplete.insert("erased-pointee");
+      output.attribute("kind", reachable.incomplete.empty() ? "complete" : "incomplete");
+      output.attributeArray("identities", [&] {
+        fold(reachable.identities, output, [](json::OStream &output, const auto &identity) { output.value(identity); });
+      });
+      if (!reachable.incomplete.empty()) output.attributeArray("reasons", [&] {
+        fold(reachable.incomplete, output, [](json::OStream &output, const auto &reason) { output.value(reason); });
+      });
+    });
+    if (kind == "pointer" || kind == "reference")
+      output.attribute("pointee", storageIdentity(type->getPointeeType().getUnqualifiedType()));
+    if (kind == "array")
+      output.attribute("element", storageIdentity(context.getAsArrayType(type)->getElementType().getUnqualifiedType()));
+    if (kind == "aggregate")
+      output.attributeArray("fields", [&] {
+        fold(type->getAsCXXRecordDecl()->fields(), output, [&](json::OStream &output, const FieldDecl *field) {
+          output.object([&] {
+            output.attribute("name", field->getNameAsString());
+            output.attribute("storageId", storageIdentity(field->getType()));
+          });
+        });
+      });
+  }
+
+  // A value parameter can still expose shared storage. This is an effect
+  // boundary, independent of whether a copy constructor preserves field values.
+  bool sharedStorage(QualType type, unsigned depth = 0) const {
+    if (depth > 16 || type->isDependentType()) return true;
+    if (type->isReferenceType() || type->isPointerType()) return true;
+    if (const auto *array = context.getAsArrayType(type))
+      return sharedStorage(array->getElementType(), depth + 1);
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return false;
+    const auto name = record->getQualifiedNameAsString();
+    if (name == "std::shared_ptr" || name == "std::unique_ptr" ||
+        name == "std::function" || name == "std::reference_wrapper" ||
+        name == "std::span" || name == "std::basic_string_view") return true;
+    if (name == "std::basic_string" || name == "std::__cxx11::basic_string") return false;
+    if (name == "std::vector" || name == "std::optional" || name == "std::set" || name == "std::map") {
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        const auto &argument = specialization->getTemplateArgs().get(0);
+        const bool shared = argument.getKind() != TemplateArgument::Type || sharedStorage(argument.getAsType(), depth + 1);
+        if (name != "std::map" || shared) return shared;
+        const auto &value = specialization->getTemplateArgs().get(1);
+        return value.getKind() != TemplateArgument::Type || sharedStorage(value.getAsType(), depth + 1);
+      }
+    }
+    if (!record->hasDefinition() || record->isUnion() || record->getNumBases()) return true;
+    const auto fields = record->fields();
+    return std::any_of(fields.begin(), fields.end(), [&](const FieldDecl *field) {
+      return field->isMutable() || sharedStorage(field->getType(), depth + 1);
+    });
+  }
+
+  const char *parameterEffect(QualType type) const {
+    if (type->isReferenceType() || type->isPointerType()) {
+      const auto pointee = type->getPointeeType();
+      if (type->isPointerType()) return !pointee.isConstQualified() || sharedStorage(pointee) ? "pointee" : "read";
+      return !pointee.isConstQualified() ? "write" : sharedStorage(pointee) ? "shared" : "read";
+    }
+    return sharedStorage(type) ? "shared" : "value";
   }
 
   void parameter(json::OStream &output, const ParmVarDecl *parameter) const {
@@ -122,6 +302,7 @@ public:
       output.attribute("kind", "ParmVarDecl");
       output.attribute("id", identity(parameter));
       output.attribute("name", parameter->getNameAsString());
+      output.attribute("parameterEffect", parameterEffect(parameter->getType()));
       type(output, parameter->getType());
       output.attributeObject("loc", [&] { location(output, parameter->getLocation()); });
       output.attributeObject("range", [&] { range(output, parameter->getSourceRange()); });
@@ -143,6 +324,62 @@ public:
     });
   }
 
+  void copyBoundaries(json::OStream &output, QualType type, bool move,
+                      const std::string &prefix, bool wholeValue, unsigned depth = 0) const {
+    if (depth > 16) { output.value(prefix); return; }
+    if (type->isReferenceType()) { output.value(prefix); return; }
+    if (type->isPointerType()) {
+      if (!wholeValue) output.value(prefix.empty() ? "*" : prefix + ".*");
+      return;
+    }
+    if (const auto *array = context.getAsArrayType(type)) {
+      copyBoundaries(output, array->getElementType(), move, prefix, wholeValue, depth + 1);
+      return;
+    }
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return;
+    const auto name = record->getQualifiedNameAsString();
+    const bool storageTransfer = name == "std::shared_ptr" || (move &&
+        (name == "std::vector" || name == "std::map" || name == "std::unique_ptr" ||
+         name == "std::future" || name == "std::basic_string" || name == "std::__cxx11::basic_string"));
+    // Classify public value semantics before inspecting implementation fields:
+    // libstdc++ may default these moves through private tuple/tree helpers.
+    if (storageTransfer) {
+      if (!wholeValue) output.value(prefix);
+      return;
+    }
+    // Optional/variant invoke the contained value's constructor.
+    if (name == "std::optional" || name == "std::variant") {
+      if (!wholeValue) { output.value(prefix); return; }
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        const auto arguments = specialization->getTemplateArgs().asArray();
+        const auto visit = [&](auto &&self, const TemplateArgument &argument) -> void {
+          if (argument.getKind() == TemplateArgument::Type)
+            copyBoundaries(output, argument.getAsType(), move, prefix, true, depth + 1);
+          else if (argument.getKind() == TemplateArgument::Pack)
+            fold(argument.pack_elements(), output, [&](json::OStream &, const TemplateArgument &argument) { self(self, argument); });
+        };
+        fold(arguments, output, [&](json::OStream &, const TemplateArgument &argument) { visit(visit, argument); });
+        return;
+      }
+    }
+    const auto constructors = record->ctors();
+    const bool hasMove = std::any_of(constructors.begin(), constructors.end(),
+        [](const CXXConstructorDecl *constructor) { return constructor->isMoveConstructor(); });
+    const bool opaque = !record->hasDefinition() || record->isUnion() || record->getNumBases() != 0 ||
+        std::any_of(constructors.begin(), constructors.end(), [&](const CXXConstructorDecl *constructor) {
+          return (move && hasMove ? constructor->isMoveConstructor() : constructor->isCopyConstructor()) && constructor->isUserProvided();
+        });
+    if (opaque) {
+      output.value(prefix);
+      return;
+    }
+    fold(record->fields(), output, [&](json::OStream &output, const FieldDecl *field) {
+      copyBoundaries(output, field->getType(), move,
+          prefix.empty() ? field->getNameAsString() : prefix + "." + field->getNameAsString(), wholeValue, depth + 1);
+    });
+  }
+
   void statement(json::OStream &output, const Stmt *stmt, unsigned depth = 0) const {
     output.object([&] {
       if (depth > 256) {
@@ -155,13 +392,135 @@ public:
         type(output, expression->getType());
         output.attribute("dependent", expression->isTypeDependent());
       }
+      if (const auto *cast = llvm::dyn_cast<CastExpr>(stmt))
+        output.attribute("castKind", cast->getCastKindName());
+      if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt)) {
+        const auto *variant = llvm::dyn_cast_or_null<ClassTemplateSpecializationDecl>(construction->getType()->getAsCXXRecordDecl());
+        if (variant && variant->getSpecializedTemplate()->getQualifiedNameAsString() == "std::optional" &&
+            sm.isInSystemHeader(sm.getExpansionLoc(construction->getConstructor()->getLocation())) &&
+            construction->getConstructor()->isDefaultConstructor() && construction->getNumArgs() == 0)
+          output.attribute("storageOperation", "optional-empty");
+        if (variant && variant->getSpecializedTemplate()->getQualifiedNameAsString() == "std::variant" &&
+            sm.isInSystemHeader(sm.getExpansionLoc(construction->getConstructor()->getLocation())) &&
+            construction->getNumArgs() == 1 && !construction->getConstructor()->isCopyOrMoveConstructor()) {
+          const auto argument = construction->getArg(0)->getType();
+          const auto alternatives = variant->getTemplateArgs().get(0);
+          const auto matches = [&](const TemplateArgument &alternative) {
+            return alternative.getKind() == TemplateArgument::Type &&
+              context.hasSameUnqualifiedType(alternative.getAsType(), argument);
+          };
+          if (alternatives.getKind() == TemplateArgument::Pack &&
+              llvm::any_of(alternatives.pack_elements(), matches))
+            output.attribute("variantAlternative", storageIdentity(argument.getUnqualifiedType()));
+        }
+        output.attributeObject("construction", [&] {
+          output.attribute("name", construction->getConstructor()->getQualifiedNameAsString());
+          const llvm::StringRef kind = storageKind(construction->getType());
+          output.attribute("storageBinding", kind == "reference-wrapper" || kind == "view" ||
+              kind == "shared-owner" || kind == "unique-owner");
+          output.attributeArray("parameterEffects", [&] {
+            fold(construction->getConstructor()->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
+              output.value(parameterEffect(parameter->getType()));
+            });
+          });
+        });
+        output.attribute("copyOrMove", construction->getConstructor()->isCopyOrMoveConstructor());
+        output.attribute("fieldwiseCopy", construction->getConstructor()->isCopyOrMoveConstructor() &&
+            !construction->getConstructor()->isUserProvided());
+        if (construction->getConstructor()->isCopyOrMoveConstructor())
+          output.attributeArray("copyBoundaries", [&] {
+            copyBoundaries(output, construction->getType(), construction->getConstructor()->isMoveConstructor(), "", false);
+          });
+        if (construction->getConstructor()->isCopyOrMoveConstructor())
+          output.attributeArray("copyValueBoundaries", [&] {
+            copyBoundaries(output, construction->getType(), construction->getConstructor()->isMoveConstructor(), "", true);
+          });
+      }
+      if (const auto *initial = llvm::dyn_cast<InitListExpr>(stmt)) {
+        const auto *record = initial->getType()->getAsCXXRecordDecl();
+        if (record && record->isAggregate() && !record->isUnion() && record->getNumBases() == 0 &&
+            initial->isSemanticForm())
+          output.attributeArray("aggregateFields", [&] {
+            fold(record->fields(), output, [](json::OStream &output, const FieldDecl *field) {
+              if (!field->isUnnamedBitField()) output.value(field->getNameAsString());
+            });
+          });
+      }
+      if (const auto *member = llvm::dyn_cast<MemberExpr>(stmt))
+        output.attribute("arrow", member->isArrow());
+      if (const auto *conditional = llvm::dyn_cast<IfStmt>(stmt))
+        output.attribute("hasElse", conditional->getElse() != nullptr);
+      if (const auto *literal = llvm::dyn_cast<IntegerLiteral>(stmt))
+        output.attribute("value", llvm::toString(literal->getValue(), 10, false));
       if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
-        if (const auto *callee = call->getDirectCallee())
+        if (const auto *callee = call->getDirectCallee()) {
+          const auto name = callee->getQualifiedNameAsString();
+          if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee)) {
+            const auto *optional = llvm::dyn_cast<ClassTemplateSpecializationDecl>(method->getParent());
+            // Public optional operations have no contained-value callbacks.
+            // Verify the canonical specialization and system declaration; a
+            // user-defined arrow with the same spelling has no such contract.
+            if (optional && optional->getSpecializedTemplate()->getQualifiedNameAsString() == "std::optional" &&
+                sm.isInSystemHeader(sm.getExpansionLoc(method->getLocation())) && !method->isVirtual() &&
+                method->getNumParams() == 0) {
+              const auto &contained = optional->getTemplateArgs().get(0);
+              if (method->getOverloadedOperator() == OO_Arrow && contained.getKind() == TemplateArgument::Type &&
+                  method->getReturnType()->isPointerType() && context.hasSameUnqualifiedType(
+                    method->getReturnType()->getPointeeType(), contained.getAsType()))
+                output.attribute("storageOperation", "optional-arrow");
+              if (method->isConst() && method->getReturnType()->isBooleanType() &&
+                  (method->getNameAsString() == "operator bool" || method->getNameAsString() == "has_value"))
+                output.attribute("storageOperation", "optional-observe");
+            }
+          }
+          if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee))
+            if (method->getNameAsString() == "get" && llvm::StringRef(storageKind(context.getCanonicalTagType(method->getParent()))) == "reference-wrapper")
+              output.attribute("storageOperation", "borrow-reference");
+          // variant projection returns a borrow; it does not invoke a stored
+          // callable or mutate objects merely reachable from the variant.
+          if (name == "std::get_if") {
+            output.attribute("storageOperation", "borrow-projection");
+            const auto *arguments = callee->getTemplateSpecializationArgs();
+            if (arguments && arguments->size() && arguments->get(0).getKind() == TemplateArgument::Type &&
+                sm.isInSystemHeader(sm.getExpansionLoc(callee->getLocation())))
+              output.attribute("variantProjection", storageIdentity(arguments->get(0).getAsType().getUnqualifiedType()));
+          }
+          if (name == "std::ref" || name == "std::cref") output.attribute("storageOperation", "bind-reference");
+          // Only the standard one-argument reference cast is transparent.
+          // std::move(first, last, out) is an algorithm, not an identity.
+          if ((name == "std::move" || name == "std::forward") && call->getNumArgs() == 1 &&
+              sm.isInSystemHeader(sm.getExpansionLoc(callee->getLocation())) &&
+              callee->getReturnType()->isReferenceType() &&
+              context.hasSameUnqualifiedType(callee->getReturnType().getNonReferenceType(), call->getArg(0)->getType()))
+            output.attribute("storageOperation", "identity");
+          if (name == "std::make_unique" || name == "std::make_shared") output.attribute("storageOperation", "fresh");
           output.attributeObject("callee", [&] {
             output.attribute("id", identity(callee));
+            output.attribute("symbol", symbol(callee));
             output.attribute("name", callee->getNameAsString());
             output.attribute("qualifiedName", callee->getQualifiedNameAsString());
+            output.attributeObject("definition", [&] {
+              const auto *definition = callee->getDefinition();
+              if (!definition) {
+                output.attribute("kind", "unavailable");
+                return;
+              }
+              output.attribute("kind", inUserCode(definition) ? "user" : "system-excluded");
+              output.attribute("id", identity(definition));
+              output.attributeObject("loc", [&] { location(output, definition->getLocation()); });
+            });
+            output.attributeArray("parameterEffects", [&] {
+              fold(callee->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
+                output.value(parameterEffect(parameter->getType()));
+              });
+            });
+            if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee)) {
+              output.attribute("receiverEffect", !method->isConst() ? "write" :
+                  sharedStorage(context.getCanonicalTagType(method->getParent())) ? "shared" : "read");
+              output.attribute("virtual", method->isVirtual());
+            }
           });
+        }
       }
       if (const auto *call = llvm::dyn_cast<CXXOperatorCallExpr>(stmt)) {
         output.attribute("opcode", getOperatorSpelling(call->getOperator()));
@@ -201,11 +560,23 @@ public:
         output.attribute("captureDefault", lambda->getCaptureDefault() == LCD_ByRef ? "reference" :
             lambda->getCaptureDefault() == LCD_ByCopy ? "copy" : "none");
         const auto captureRange = lambda->captures();
+        fold(captureRange, output, [](json::OStream &output, const LambdaCapture &capture) {
+          if (capture.capturesThis())
+            output.attribute("thisCapture", capture.getCaptureKind() == LCK_StarThis ? "copy" : "pointer");
+        });
         output.attributeArray("captures", [&] {
-          fold(captureRange, output, [](json::OStream &output, const LambdaCapture &capture) {
+          fold(captureRange, output, [&](json::OStream &output, const LambdaCapture &capture) {
             if (capture.capturesVariable()) output.object([&] {
               output.attribute("id", identity(capture.getCapturedVar()));
               output.attribute("kind", capture.getCaptureKind() == LCK_ByRef ? "reference" : "copy");
+              if (capture.getCaptureKind() == LCK_ByCopy) {
+                output.attributeArray("copyBoundaries", [&] {
+                  copyBoundaries(output, capture.getCapturedVar()->getType().getNonReferenceType(), false, "", false);
+                });
+                output.attributeArray("copyValueBoundaries", [&] {
+                  copyBoundaries(output, capture.getCapturedVar()->getType().getNonReferenceType(), false, "", true);
+                });
+              }
             });
           });
         });
@@ -222,6 +593,11 @@ public:
                   });
                 }
               });
+            });
+            // Capture construction runs in the enclosing function, before any
+            // invocation. Preserve its constructors as effects at that time.
+            fold(lambda->capture_inits(), output, [&](json::OStream &output, const Expr *initial) {
+              if (initial) statement(output, initial, depth + 1);
             });
           });
         }
@@ -244,8 +620,13 @@ public:
           llvm::isa<CXXConversionDecl>(function) ? "CXXConversionDecl" :
           llvm::isa<CXXMethodDecl>(function) ? "CXXMethodDecl" : "FunctionDecl");
       output.attribute("id", identity(function));
+      output.attribute("symbol", symbol(function));
       output.attribute("name", function->getNameAsString());
       output.attribute("dependent", function->isDependentContext());
+      if (function->getReturnType()->isReferenceType()) output.attribute("returnBorrow", "reference");
+      if (function->getReturnType()->isPointerType()) output.attribute("returnBorrow", "pointer");
+      if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(function))
+        output.attribute("receiverStorageId", storageIdentity(context.getCanonicalTagType(method->getParent())));
       type(output, function->getType());
       output.attributeObject("loc", [&] { location(output, function->getLocation()); });
       output.attributeObject("range", [&] { range(output, function->getSourceRange()); });
@@ -311,6 +692,38 @@ public:
   }
   const Serializer &serializer;
   std::vector<const FunctionDecl *> roots;
+};
+
+// The visitor is a Clang API adapter. Its map is fold state; descriptors are
+// serialized once per canonical type instead of repeated at every expression.
+class StorageTypes : public RecursiveASTVisitor<StorageTypes> {
+public:
+  explicit StorageTypes(const Serializer &serializer) : serializer(serializer) {}
+  bool add(QualType type) {
+    if (type.isNull()) return true;
+    fold(llvm::ArrayRef<QualType>(type.getCanonicalType()), types, [&](auto &types, QualType type) {
+      if (!types.emplace(type.getAsOpaquePtr(), type).second) return;
+      const llvm::StringRef kind = serializer.storageKind(type);
+      if (kind == "pointer" || kind == "reference") add(type->getPointeeType().getUnqualifiedType());
+      if (const auto *array = type->getAsArrayTypeUnsafe()) add(array->getElementType().getUnqualifiedType());
+      if (kind == "aggregate") fold(type->getAsCXXRecordDecl()->fields(), types,
+          [&](auto &, const FieldDecl *field) { add(field->getType()); });
+    });
+    return true;
+  }
+  bool VisitCXXMethodDecl(CXXMethodDecl *method) { return add(method->getASTContext().getCanonicalTagType(method->getParent())); }
+  bool VisitExpr(Expr *expression) { return add(expression->getType()); }
+  bool VisitValueDecl(ValueDecl *declaration) { return add(declaration->getType()); }
+  bool VisitDeclRefExpr(DeclRefExpr *reference) { return add(reference->getDecl()->getType()); }
+  bool VisitLambdaExpr(LambdaExpr *lambda) {
+    const auto *methodTemplate = lambda->getCallOperator()->getDescribedFunctionTemplate();
+    if (!methodTemplate) return true;
+    const auto specializations = methodTemplate->specializations();
+    return std::accumulate(specializations.begin(), specializations.end(), true,
+        [&](bool traversed, FunctionDecl *specialization) { return traversed && TraverseDecl(specialization); });
+  }
+  std::map<void *, QualType> types;
+  const Serializer &serializer;
 };
 
 struct FunctionSelection {
@@ -571,6 +984,10 @@ public:
     fold(functions.roots, selection, [&](auto &selection, const FunctionDecl *root) {
       include(include, root, selection);
     });
+    StorageTypes storageTypes(serializer);
+    fold(selection.selected, storageTypes, [](auto &storageTypes, const FunctionDecl *function) {
+      storageTypes.TraverseDecl(const_cast<FunctionDecl *>(function));
+    });
     timings.selectionMs = elapsedMs(selectionStarted);
     const auto serializationStarted = std::chrono::steady_clock::now();
     // Stream the compact tree directly. A JSON DOM retains a hash table for
@@ -578,6 +995,13 @@ public:
     json::OStream output(llvm::outs());
     output.object([&] {
       output.attribute("kind", "TranslationUnitDecl");
+      output.attributeObject("storageTypes", [&] {
+        fold(storageTypes.types, output, [&](json::OStream &output, const auto &entry) {
+          output.attributeObject(serializer.storageIdentity(entry.second), [&] {
+            serializer.storage(output, entry.second);
+          });
+        });
+      });
       output.attributeArray("inner", [&] {
         fold(selection.selected, output, [&](json::OStream &output, const FunctionDecl *function) {
           serializer.function(output, function);

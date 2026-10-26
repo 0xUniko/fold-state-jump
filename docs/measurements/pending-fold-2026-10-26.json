@@ -1,0 +1,3131 @@
+{
+  "date": "2026-10-26",
+  "branch": "feat/multi-funcs",
+  "baseline": "44210684268978912f21d9a95afc712f13275693",
+  "remoteBranch": "origin/feat/multi-funcs",
+  "remoteHead": "44210684268978912f21d9a95afc712f13275693",
+  "nanoInfer": {
+    "head": "562758447a716d05dabb3173cebac489bf7daf80",
+    "branch": "main",
+    "userModifiedFiles": [
+      "minicpm-v-4_7/experts.h",
+      "minicpm-v-4_7/model.h"
+    ],
+    "sourceSha256": {
+      "minicpm-v-4_7/ffn.h": "4d125e1b5190ab9b4ed72929b49387fd2f6e89ffd20ccc3f6285ebba2b3ed8f4",
+      "minicpm-v-4_7/experts.h": "7ad709a9563dc4a4cc2565f651ae2b058ae7c81a22bb5afb4244e3bebea76cf3",
+      "minicpm-v-4_7/model.h": "c3ce985ff95eeb8d65d016f7863d0a32834f6b3881bd2ff62072c242729eef01",
+      "minicpm-v-4_7/pipeline.h": "dffc286040436fb8ec371e1fb16cc12378d401f0b11df46f363c3e6329a44053"
+    },
+    "compileCommands": "/home/huawei/nano-infer/build-cpu-tests/compile_commands.json",
+    "compileCommandsSha256": "c60fda7b2e59fefcfec53c59560d7dc9da47e338a3432ff156da0140cb4f2005"
+  },
+  "baselineAnalyzerSha256": "5a01bc1617c786443e6b0800deb6422ac7be5cae05d6b11966ba5426620bda51",
+  "analyzerSha256": "46ed67f70725ded770b8e7d6469c572cc253b04a3e63bd004200c9dbc7d20d7b",
+  "baselineExtractorSha256": "17a188826a73e9158ff0426b2ea00d3fa41cd6016190e9186474143a0cf265ce",
+  "extractorSha256": "bf14bf6f8b74fb09ab987a9481538f601a6ff07c718ca40cfc0f3623c088b746",
+  "before": [
+    {
+      "ast": "ffn",
+      "cursor": 0,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 262,
+            "text": "BankState &bank_state,"
+          },
+          "kind": "parameter",
+          "boundary": "No verified caller is available; stopped at the parameter.",
+          "frames": []
+        }
+      ]
+    },
+    {
+      "ast": "ffn",
+      "cursor": 0,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+      "diagnostics": [
+        "No verified caller is available for start_decode_layer."
+      ],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": []
+    },
+    {
+      "ast": "ffn",
+      "cursor": 1,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 262,
+            "text": "BankState &bank_state,"
+          },
+          "kind": "parameter",
+          "boundary": "No verified caller is available; stopped at the parameter.",
+          "frames": []
+        }
+      ]
+    },
+    {
+      "ast": "ffn",
+      "cursor": 1,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12401: Unverified call effect on bank_state.pending: operator bool; shared storage or callback effects are not verified.",
+      "diagnostics": [
+        "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12401: Unverified call effect on bank_state.pending: operator bool; shared storage or callback effects are not verified."
+      ],
+      "boundaries": [],
+      "candidates": []
+    },
+    {
+      "ast": "ffn",
+      "cursor": 2,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 262,
+            "text": "BankState &bank_state,"
+          },
+          "kind": "parameter",
+          "boundary": "No verified caller is available; stopped at the parameter.",
+          "frames": []
+        }
+      ]
+    },
+    {
+      "ast": "ffn",
+      "cursor": 2,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified.",
+      "diagnostics": [
+        "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified."
+      ],
+      "boundaries": [],
+      "candidates": []
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 0,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924,
+            "text": "LayerExecution{&session_state, nullptr},"
+          },
+          "kind": "initialization",
+          "frames": [
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 1007,
+                "text": "start_decode_layer(bank_context, bank_state, index,"
+              },
+              "argument": {
+                "rootId": "77C222947A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 981,
+                "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 0,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:42968: Unverified call effect on layer_execution.session_state.*.bank_state.pending: finish_prefill_read; shared storage or callback effects are not verified.",
+      "diagnostics": [
+        "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:42968: Unverified call effect on layer_execution.session_state.*.bank_state.pending: finish_prefill_read; shared storage or callback effects are not verified."
+      ],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": []
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 1,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924,
+            "text": "LayerExecution{&session_state, nullptr},"
+          },
+          "kind": "initialization",
+          "frames": [
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 1007,
+                "text": "start_decode_layer(bank_context, bank_state, index,"
+              },
+              "argument": {
+                "rootId": "77C222947A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 981,
+                "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 1,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12401: Unverified call effect on bank_state.pending: operator bool; shared storage or callback effects are not verified.",
+      "diagnostics": [
+        "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12401: Unverified call effect on bank_state.pending: operator bool; shared storage or callback effects are not verified."
+      ],
+      "boundaries": [],
+      "candidates": []
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 2,
+      "mode": "origin",
+      "tag": "OriginFound",
+      "diagnostics": [],
+      "boundaries": [
+        "start_decode_layer"
+      ],
+      "candidates": [
+        {
+          "target": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924,
+            "text": "LayerExecution{&session_state, nullptr},"
+          },
+          "kind": "initialization",
+          "frames": [
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 1007,
+                "text": "start_decode_layer(bank_context, bank_state, index,"
+              },
+              "argument": {
+                "rootId": "77C222947A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "call": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "line": 981,
+                "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ast": "pipeline",
+      "cursor": 2,
+      "mode": "mutation",
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified.",
+      "diagnostics": [
+        "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified."
+      ],
+      "boundaries": [],
+      "candidates": []
+    }
+  ],
+  "after": {
+    "files": [
+      {
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-x",
+            "c++-header",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "inferred",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "astBytes": 9725748,
+        "extractMs": 15531.683047999999
+      },
+      {
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-x",
+            "c++-header",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "inferred",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "astBytes": 4351996,
+        "extractMs": 12099.653853
+      }
+    ],
+    "queries": [
+      {
+        "name": "presence",
+        "mode": "mutation",
+        "connected": false,
+        "tag": "AnalysisFailure",
+        "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+        "diagnostics": [
+          "No verified caller is available for start_decode_layer."
+        ],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "presence",
+        "mode": "mutation",
+        "connected": true,
+        "tag": "MutationFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 24026,
+          "line": 528,
+          "text": "bank_state ="
+        },
+        "wrapped": true,
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 39423,
+              "line": 922,
+              "text": "ranges::fold_left("
+            },
+            "fold": {
+              "kind": "borrow-preserved",
+              "initial": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 39521,
+                "line": 924,
+                "text": "LayerExecution{&session_state, nullptr},"
+              },
+              "returned": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 45556,
+                "line": 1056,
+                "text": "return LayerExecution{&session_state,"
+              },
+              "target": {
+                "root": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "source": {
+                "rootId": "7707C6747A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "invariantObservations": [
+                {
+                  "file": "minicpm-v-4_7/pipeline.h",
+                  "offset": 43435,
+                  "line": 1007,
+                  "text": "start_decode_layer(bank_context, bank_state, index,"
+                }
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43932,
+              "line": 1018,
+              "text": "finish_decode_layer("
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          }
+        ],
+        "diagnostics": [
+          "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:39521."
+        ],
+        "externalOwners": []
+      },
+      {
+        "name": "presence",
+        "mode": "origin",
+        "connected": false,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 12203,
+          "line": 262,
+          "text": "BankState &bank_state,"
+        },
+        "boundary": "No verified caller is available; stopped at the parameter.",
+        "frames": [],
+        "diagnostics": [],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "presence",
+        "mode": "origin",
+        "connected": true,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/pipeline.h",
+          "offset": 39521,
+          "line": 924,
+          "text": "LayerExecution{&session_state, nullptr},"
+        },
+        "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          }
+        ],
+        "diagnostics": [],
+        "externalOwners": []
+      },
+      {
+        "name": "contained",
+        "mode": "mutation",
+        "connected": false,
+        "tag": "AnalysisFailure",
+        "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+        "diagnostics": [
+          "No verified caller is available for start_decode_layer."
+        ],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "contained",
+        "mode": "mutation",
+        "connected": true,
+        "tag": "MutationFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 24026,
+          "line": 528,
+          "text": "bank_state ="
+        },
+        "wrapped": true,
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 39423,
+              "line": 922,
+              "text": "ranges::fold_left("
+            },
+            "fold": {
+              "kind": "borrow-preserved",
+              "initial": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 39521,
+                "line": 924,
+                "text": "LayerExecution{&session_state, nullptr},"
+              },
+              "returned": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 45556,
+                "line": 1056,
+                "text": "return LayerExecution{&session_state,"
+              },
+              "target": {
+                "root": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "source": {
+                "rootId": "7707C6747A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "invariantObservations": [
+                {
+                  "file": "minicpm-v-4_7/pipeline.h",
+                  "offset": 43435,
+                  "line": 1007,
+                  "text": "start_decode_layer(bank_context, bank_state, index,"
+                }
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43932,
+              "line": 1018,
+              "text": "finish_decode_layer("
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          }
+        ],
+        "diagnostics": [
+          "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:39521."
+        ],
+        "externalOwners": []
+      },
+      {
+        "name": "contained",
+        "mode": "origin",
+        "connected": false,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 12203,
+          "line": 262,
+          "text": "BankState &bank_state,"
+        },
+        "boundary": "No verified caller is available; stopped at the parameter.",
+        "frames": [],
+        "diagnostics": [],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "contained",
+        "mode": "origin",
+        "connected": true,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/pipeline.h",
+          "offset": 39521,
+          "line": 924,
+          "text": "LayerExecution{&session_state, nullptr},"
+        },
+        "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          }
+        ],
+        "diagnostics": [],
+        "externalOwners": []
+      },
+      {
+        "name": "reset",
+        "mode": "mutation",
+        "connected": false,
+        "tag": "AnalysisFailure",
+        "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+        "diagnostics": [
+          "No verified caller is available for start_decode_layer."
+        ],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "reset",
+        "mode": "mutation",
+        "connected": true,
+        "tag": "MutationFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 24026,
+          "line": 528,
+          "text": "bank_state ="
+        },
+        "wrapped": true,
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 39423,
+              "line": 922,
+              "text": "ranges::fold_left("
+            },
+            "fold": {
+              "kind": "borrow-preserved",
+              "initial": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 39521,
+                "line": 924,
+                "text": "LayerExecution{&session_state, nullptr},"
+              },
+              "returned": {
+                "file": "minicpm-v-4_7/pipeline.h",
+                "offset": 45556,
+                "line": 1056,
+                "text": "return LayerExecution{&session_state,"
+              },
+              "target": {
+                "root": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "source": {
+                "rootId": "7707C6747A70",
+                "rootName": "layer_execution",
+                "members": [
+                  "session_state",
+                  "*",
+                  "bank_state",
+                  "pending"
+                ]
+              },
+              "invariantObservations": [
+                {
+                  "file": "minicpm-v-4_7/pipeline.h",
+                  "offset": 43435,
+                  "line": 1007,
+                  "text": "start_decode_layer(bank_context, bank_state, index,"
+                }
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43932,
+              "line": 1018,
+              "text": "finish_decode_layer("
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          }
+        ],
+        "diagnostics": [
+          "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:39521."
+        ],
+        "externalOwners": []
+      },
+      {
+        "name": "reset",
+        "mode": "origin",
+        "connected": false,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/ffn.h",
+          "offset": 12203,
+          "line": 262,
+          "text": "BankState &bank_state,"
+        },
+        "boundary": "No verified caller is available; stopped at the parameter.",
+        "frames": [],
+        "diagnostics": [],
+        "externalOwners": [
+          "start_decode_layer"
+        ]
+      },
+      {
+        "name": "reset",
+        "mode": "origin",
+        "connected": true,
+        "tag": "OriginFound",
+        "target": {
+          "file": "minicpm-v-4_7/pipeline.h",
+          "offset": 39521,
+          "line": 924,
+          "text": "LayerExecution{&session_state, nullptr},"
+        },
+        "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+        "frames": [
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 43435,
+              "line": 1007,
+              "text": "start_decode_layer(bank_context, bank_state, index,"
+            },
+            "parameterIndex": 1,
+            "argument": {
+              "root": "layer_execution",
+              "members": [
+                "session_state",
+                "*",
+                "bank_state",
+                "pending"
+              ]
+            }
+          },
+          {
+            "caller": "operator()",
+            "call": {
+              "file": "minicpm-v-4_7/pipeline.h",
+              "offset": 42282,
+              "line": 981,
+              "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+            }
+          }
+        ],
+        "diagnostics": [],
+        "externalOwners": []
+      }
+    ]
+  },
+  "audit": [
+    {
+      "file": "minicpm-v-4_7/pipeline.h",
+      "extractAndPrepareMs": 13505.689531,
+      "astBytes": 9725748,
+      "queries": [
+        {
+          "name": "batch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1079
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 1077,
+                    "text": "session_state.rope_position = next_rope;"
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-borrow",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1056
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefill-helper",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 996
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 250,
+                    "text": "bank_state.slots = std::move(plan.slots);"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 984,
+                        "text": "start_prefill_layer(bank_context, bank_state,"
+                      },
+                      "argument": [
+                        "layer_execution",
+                        [
+                          "session_state",
+                          "*",
+                          "bank_state"
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 981,
+                        "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 883,
+                    "text": "++session_state.bank_state.counters.graph_builds;"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 850,
+                        "text": "[&] {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/cli.cpp",
+      "extractAndPrepareMs": 17498.942544,
+      "astBytes": 27042037,
+      "queries": [
+        {
+          "name": "generation-wrap",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 492,
+                    "text": "generation.batch_state = take_batch_state(pipeline.run_batch("
+                  },
+                  "wrapped": true,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/cli.cpp",
+                        "line": 469,
+                        "text": "ranges::fold_left("
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [
+                "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:22183.",
+                "No mutation is verified on this fold return path.",
+                "No mutation is verified on this fold return path."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-done",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 483,
+                    "text": "generation.done = true;"
+                  },
+                  "wrapped": true,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/cli.cpp",
+                        "line": 469,
+                        "text": "ranges::fold_left("
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [
+                "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:22183.",
+                "No mutation is verified on this fold return path."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 471
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CallExpr. No verified mutation through return source of prefill. /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CallExpr. No verified mutation through return source of prefill.",
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 448,
+                    "text": "auto batch_state = prefill(pipeline, std::move(chat_state.session_state),"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "chat-return",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 513
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 469,
+                    "text": "auto generation = ranges::fold_left("
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "clear-input",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 636
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 644,
+                    "text": "interactive->chat_state ="
+                  },
+                  "wrapped": true,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/cli.cpp",
+                        "line": 622,
+                        "text": "ranges::fold_left("
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [
+                "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:28659."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 625,
+                    "text": "&interactive,"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/ffn.h",
+      "extractAndPrepareMs": 12438.879228000002,
+      "astBytes": 4351996,
+      "queries": [
+        {
+          "name": "pending-presence",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 266
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for start_decode_layer."
+              ],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 262,
+                    "text": "BankState &bank_state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "pending-contained",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 266
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for start_decode_layer."
+              ],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 262,
+                    "text": "BankState &bank_state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "pending-reset",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 270
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for start_decode_layer.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for start_decode_layer."
+              ],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 262,
+                    "text": "BankState &bank_state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "prefill-counter",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 450
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 457,
+                    "text": "ActivePrefillLayer current) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": [
+                    {
+                      "caller": "finish_prefill_layer",
+                      "call": {
+                        "file": "minicpm-v-4_7/ffn.h",
+                        "line": 458,
+                        "text": "finish_prefill_read(bank_state, std::move(current));"
+                      },
+                      "argument": [
+                        "current",
+                        []
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_prefill_layer",
+                "finish_prefill_read"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/experts.h",
+      "extractAndPrepareMs": 9391.393665000003,
+      "astBytes": 14413317,
+      "queries": [
+        {
+          "name": "slot-index",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 451
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/experts.h:21479. Return copy/move field preservation is not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/experts.h:21479.",
+                "Return copy/move field preservation is not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 437,
+                    "text": "Planning{bank_state.slots, {}, {}, {}},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefetch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 594
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 589,
+                    "text": "bank_state.pending ="
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 515,
+                    "text": "BankState bank_state, int layer,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "begin_decode_prefetch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/expert_io.h",
+      "extractAndPrepareMs": 6981.373483999996,
+      "astBytes": 3235694,
+      "queries": [
+        {
+          "name": "read-progress",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 800
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Fold range has at most one iteration; no previous iteration exists.",
+              "candidates": [],
+              "diagnostics": [
+                "Fold range has at most one iteration; no previous iteration exists."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 790,
+                    "text": "&task.batch->read_state,"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "future-result",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 502
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; retained variant projection identity is not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; retained variant projection identity is not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 497,
+                    "text": "SharedReadTicket read_ticket) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_shared_read"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "queue-count",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 727
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for take_io_task.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for take_io_task."
+              ],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 722,
+                    "text": "IoQueue &queue) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "extractAndPrepareMs": 6755.4406549999985,
+      "astBytes": 6292802,
+      "queries": [
+        {
+          "name": "attention-cache",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1716
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CXXMemberCallExpr. Return source unavailable: std::vector<LayerCaches>::at (definition unavailable). Definition exists at /usr/include/c++/13/bits/stl_vector.h:39526; system-header body was excluded from the compact AST.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CXXMemberCallExpr. Return source unavailable: std::vector<LayerCaches>::at (definition unavailable). Definition exists at /usr/include/c++/13/bits/stl_vector.h:39526; system-header body was excluded from the compact AST."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1716,
+                    "text": "const auto &cache = state.cache->layers.at(il);"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "attention-return",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1731
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for run_batch.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for run_batch."
+              ],
+              "externalOwners": [
+                "run_batch"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1683,
+                    "text": "AttentionState state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "run_batch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "extractAndPrepareMs": 8549.88649199999,
+      "astBytes": 4775499,
+      "queries": [
+        {
+          "name": "ffn-runtime",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 492
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 476,
+                    "text": "state.banks.push_back(prepare_expert_bank(layout, model.layers.at(il)));"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "deepseek-v4-flash/ffn_service.h",
+                        "line": 491,
+                        "text": "find_or_prepare_expert_bank(state, model, il, layout);"
+                      },
+                      "argument": [
+                        "state",
+                        [
+                          "banks"
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 484,
+                    "text": "FfnRuntime{},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "ffn-service",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 678
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:30883. /home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31204: Unverified call effect on state.ffn: handle_request; shared storage or callback effects are not verified. /home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:30883.",
+                "/home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31204: Unverified call effect on state.ffn: handle_request; shared storage or callback effects are not verified.",
+                "/home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 671,
+                    "text": "State{transport.await_call(), std::move(runtime)},"
+                  },
+                  "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "shared/ffn_rpc.h",
+      "extractAndPrepareMs": 4849.209063000002,
+      "astBytes": 2206386,
+      "queries": [
+        {
+          "name": "rpc-variant",
+          "selected": {
+            "file": "shared/ffn_rpc.h",
+            "line": 322
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for advance.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for advance."
+              ],
+              "externalOwners": [
+                "advance"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "shared/ffn_rpc.h",
+                    "line": 320,
+                    "text": "State state, const Event &event) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "advance"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_node.cpp",
+      "extractAndPrepareMs": 8010.688565999997,
+      "astBytes": 7352987,
+      "queries": [
+        {
+          "name": "deepseek-prefill",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 52
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 44,
+                    "text": "PrefillState{pipeline.start_session()},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "deepseek-generation",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 65
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 59,
+                    "text": "Generation{std::move(std::get<BatchResult>(prefill))},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "performance": {
+    "project": {
+      "before": {
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "sourceSha256": "dffc286040436fb8ec371e1fb16cc12378d401f0b11df46f363c3e6329a44053",
+        "querySha256": "4d125e1b5190ab9b4ed72929b49387fd2f6e89ffd20ccc3f6285ebba2b3ed8f4",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-x",
+            "c++-header",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "inferred",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "extractor": "/tmp/fsj-pending-baseline/fold-state-jump-ast",
+        "runs": 3,
+        "queries": 100,
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 14347.149573,
+            "parseMs": 11.305513999999675,
+            "prepareMs": 62.26247700000022,
+            "astBytes": 9716377,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 31.95977999999741
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 417.33695999999327
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 55.11923999998544
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 6.473669999995764
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 19.209929999997257
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 7.871219999997265
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 14294.336220000001,
+            "parseMs": 12.90494299999773,
+            "prepareMs": 45.67194699999891,
+            "astBytes": 9716377,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 18.873850000018138
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 509.17749000000185
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 20.228029999998398
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 4.276929999978165
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 13.947670000015933
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 4.380999999993946
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 13883.242494000002,
+            "parseMs": 12.086817000003066,
+            "prepareMs": 38.791338000002725,
+            "astBytes": 9716377,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 18.32008000004862
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 238.39966999999888
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 12.986469999959809
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 58.67901999998139
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 13.269729999956326
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 4.278609999964829
+              }
+            ]
+          }
+        ]
+      },
+      "after": {
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "sourceSha256": "dffc286040436fb8ec371e1fb16cc12378d401f0b11df46f363c3e6329a44053",
+        "querySha256": "4d125e1b5190ab9b4ed72929b49387fd2f6e89ffd20ccc3f6285ebba2b3ed8f4",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-x",
+            "c++-header",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "inferred",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "extractor": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "runs": 3,
+        "queries": 100,
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 14211.402758,
+            "parseMs": 11.131116000000475,
+            "prepareMs": 53.70888999999988,
+            "astBytes": 9725748,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 32.26254999999583
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1774.5190100000036
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 15.93656999999439
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 2170.8580000000075
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 33.023190000003524
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 2085.607369999998
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 13970.138184,
+            "parseMs": 11.44559400000071,
+            "prepareMs": 40.965863999997964,
+            "astBytes": 9725748,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 21.366390000002866
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1631.681239999998
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 13.747389999989537
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1545.39252999999
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 9.974079999992682
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1532.0879499999864
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 14223.366791999997,
+            "parseMs": 15.272985000003246,
+            "prepareMs": 36.54929400000401,
+            "astBytes": 9725748,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 17.710020000013174
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 2294.885839999988
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 10.722979999991367
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1657.5706200000423
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 10.030160000023898
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 1579.4916400000511
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "fixture": {
+      "before": {
+        "file": "/home/huawei/fold-state-jump/test/fixtures/pending-fold.cpp",
+        "sourceSha256": "1a959ebe8feda21f2180237c763bd90644fc46beaa7c09de117894cbd5ce7999",
+        "querySha256": "1a959ebe8feda21f2180237c763bd90644fc46beaa7c09de117894cbd5ce7999",
+        "command": {
+          "compiler": "clang++",
+          "cwd": "/home/huawei/fold-state-jump",
+          "args": [
+            "-std=c++23",
+            "/home/huawei/fold-state-jump/test/fixtures/pending-fold.cpp"
+          ]
+        },
+        "extractor": "/tmp/fsj-pending-baseline/fold-state-jump-ast",
+        "runs": 3,
+        "queries": 100,
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 426.47866899999997,
+            "parseMs": 0.9084810000000516,
+            "prepareMs": 15.77186299999994,
+            "astBytes": 522106,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 28.309550000000172
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 25.664230000000998
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 17.118379999999433
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 81.4709599999992
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 14.209619999999177
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 7.934099999999944
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 412.449253,
+            "parseMs": 0.7022349999999733,
+            "prepareMs": 4.800674000000072,
+            "astBytes": 522106,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 14.504230000000007
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 14.79586999999924
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 13.240669999999
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 13.014610000000175
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 42.08364000000074
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 5.433229999999867
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 451.65459599999997,
+            "parseMs": 0.7923039999998309,
+            "prepareMs": 2.413767000000007,
+            "astBytes": 522106,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 10.393440000000282
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 12.541909999999916
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 10.94871000000012
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 13.40554000000111
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 15.169559999999365
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "AnalysisFailure",
+                "queryUs": 7.190149999998994
+              }
+            ]
+          }
+        ]
+      },
+      "after": {
+        "file": "/home/huawei/fold-state-jump/test/fixtures/pending-fold.cpp",
+        "sourceSha256": "1a959ebe8feda21f2180237c763bd90644fc46beaa7c09de117894cbd5ce7999",
+        "querySha256": "1a959ebe8feda21f2180237c763bd90644fc46beaa7c09de117894cbd5ce7999",
+        "command": {
+          "compiler": "clang++",
+          "cwd": "/home/huawei/fold-state-jump",
+          "args": [
+            "-std=c++23",
+            "/home/huawei/fold-state-jump/test/fixtures/pending-fold.cpp"
+          ]
+        },
+        "extractor": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "runs": 3,
+        "queries": 100,
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 439.49394700000005,
+            "parseMs": 0.7211700000000292,
+            "prepareMs": 13.275592999999958,
+            "astBytes": 524461,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 28.67497999999955
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 341.16184999999973
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 24.94801999999936
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 130.8660999999995
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 41.44506999999976
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 136.40567000000033
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 446.9418609999999,
+            "parseMs": 0.6709559999999328,
+            "prepareMs": 3.0071530000000166,
+            "astBytes": 524461,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 16.535820000001422
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 154.25883999999996
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 13.399699999999939
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 240.0421900000015
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 11.671539999999823
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 147.00106000000005
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 428.86971500000004,
+            "parseMs": 0.6953049999999621,
+            "prepareMs": 1.9183919999998125,
+            "astBytes": 524461,
+            "samples": [
+              {
+                "cursor": 0,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 9.054380000000037
+              },
+              {
+                "cursor": 0,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 171.9557499999996
+              },
+              {
+                "cursor": 1,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 10.489949999998771
+              },
+              {
+                "cursor": 1,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 166.49903999999879
+              },
+              {
+                "cursor": 2,
+                "mode": "origin",
+                "tag": "OriginFound",
+                "queryUs": 9.136719999999059
+              },
+              {
+                "cursor": 2,
+                "mode": "mutation",
+                "tag": "MutationFound",
+                "queryUs": 135.98054000000047
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "performanceMedians": {
+    "project": {
+      "before": {
+        "astBytes": 9716377,
+        "extractMs": 14294.336220000001,
+        "parseMs": 12.086817000003066,
+        "prepareMs": 45.67194699999891,
+        "queries": [
+          {
+            "cursor": 0,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 18.873850000018138
+          },
+          {
+            "cursor": 0,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 417.33695999999327
+          },
+          {
+            "cursor": 1,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 20.228029999998398
+          },
+          {
+            "cursor": 1,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 6.473669999995764
+          },
+          {
+            "cursor": 2,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 13.947670000015933
+          },
+          {
+            "cursor": 2,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 4.380999999993946
+          }
+        ]
+      },
+      "after": {
+        "astBytes": 9725748,
+        "extractMs": 14211.402758,
+        "parseMs": 11.44559400000071,
+        "prepareMs": 40.965863999997964,
+        "queries": [
+          {
+            "cursor": 0,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 21.366390000002866
+          },
+          {
+            "cursor": 0,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 1774.5190100000036
+          },
+          {
+            "cursor": 1,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 13.747389999989537
+          },
+          {
+            "cursor": 1,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 1657.5706200000423
+          },
+          {
+            "cursor": 2,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 10.030160000023898
+          },
+          {
+            "cursor": 2,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 1579.4916400000511
+          }
+        ]
+      }
+    },
+    "fixture": {
+      "before": {
+        "astBytes": 522106,
+        "extractMs": 426.47866899999997,
+        "parseMs": 0.7923039999998309,
+        "prepareMs": 4.800674000000072,
+        "queries": [
+          {
+            "cursor": 0,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 14.504230000000007
+          },
+          {
+            "cursor": 0,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 14.79586999999924
+          },
+          {
+            "cursor": 1,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 13.240669999999
+          },
+          {
+            "cursor": 1,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 13.40554000000111
+          },
+          {
+            "cursor": 2,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 15.169559999999365
+          },
+          {
+            "cursor": 2,
+            "mode": "mutation",
+            "tag": "AnalysisFailure",
+            "queryUs": 7.190149999998994
+          }
+        ]
+      },
+      "after": {
+        "astBytes": 524461,
+        "extractMs": 439.49394700000005,
+        "parseMs": 0.6953049999999621,
+        "prepareMs": 3.0071530000000166,
+        "queries": [
+          {
+            "cursor": 0,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 16.535820000001422
+          },
+          {
+            "cursor": 0,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 171.9557499999996
+          },
+          {
+            "cursor": 1,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 13.399699999999939
+          },
+          {
+            "cursor": 1,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 166.49903999999879
+          },
+          {
+            "cursor": 2,
+            "mode": "origin",
+            "tag": "OriginFound",
+            "queryUs": 11.671539999999823
+          },
+          {
+            "cursor": 2,
+            "mode": "mutation",
+            "tag": "MutationFound",
+            "queryUs": 136.40567000000033
+          }
+        ]
+      }
+    }
+  },
+  "generalAnalysisPerformance": {
+    "before": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 50.6,
+        "queryUs": 6.22
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 32.78,
+        "queryUs": 2.94
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 53.59,
+        "queryUs": 8.43
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 4.48,
+        "queryUs": 16.19
+      }
+    ],
+    "after": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 44.7,
+        "queryUs": 7.3
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 32.42,
+        "queryUs": 3.26
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 51.7,
+        "queryUs": 9.35
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 4.69,
+        "queryUs": 15.7
+      }
+    ]
+  },
+  "verification": [
+    {
+      "command": "git fetch origin feat/multi-funcs",
+      "result": "passed with escalation after read-only FETCH_HEAD rejection; baseline equals remote"
+    },
+    {
+      "command": "git -C /home/huawei/nano-infer fetch origin main",
+      "result": "passed with escalation; baseline equals remote"
+    },
+    {
+      "command": "bun run build:native",
+      "result": "passed; LLVM/Clang 23.1.4"
+    },
+    {
+      "command": "bun check",
+      "result": "passed; 77 files, Bun 1.4.3"
+    },
+    {
+      "command": "bun run build",
+      "result": "passed; extension.js 220.50 KB"
+    },
+    {
+      "command": "native/build/fold-state-jump-ast --source test/fixtures/native-fold.cpp -- -std=c++17 > /tmp/fold-state-jump-ast.json && bun test/native-integration.ts",
+      "result": "passed direct and cross-function mutations"
+    },
+    {
+      "command": "bun test test/pending-fold.test.ts test/state-sources.test.ts",
+      "result": "44 passed, 0 failed; includes C++ runtime compile/execution"
+    },
+    {
+      "command": "bun test",
+      "result": "531 passed, 0 failed, 26 files; elevated for async native pipe access"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-pending.ts /home/huawei/nano-infer",
+      "result": "12 passed; independently extracted, USR-verified caller edge"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-state-audit.ts /home/huawei/nano-infer",
+      "result": "9 files, 25 positions, 50 queries passed"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-integration.ts /home/huawei/nano-infer",
+      "result": "passed; ffn 14, experts 3, pipeline 8 positions (25 total)"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "proofBoundaries": [
+    "previous-iteration candidates require an earlier iteration and branch guards",
+    "Origin identifies initial storage, not the exact current pending value",
+    "mutation navigation stops at caller BankState replacement; callee-local pending write is conditional",
+    "unknown variant aliases/effects, changed discriminators, changed return pointers and arbitrary return transformations retain boundaries",
+    "VS Code providers are mocked in command tests; no live Extension Host or language-service completeness claim"
+  ],
+  "delivery": {
+    "committed": false,
+    "pushed": false,
+    "nanoInferBusinessCodeModified": false
+  }
+}

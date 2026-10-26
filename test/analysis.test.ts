@@ -1,6 +1,6 @@
 import { describe, it as test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeAst, analyzeOriginAst, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, prepareAst, type ClangNode, type WrappedNode } from '../src/analysis';
+import { analyzeAst, analyzeOriginAst, analyzeQuery, buildTree, byteOffsetFromUtf16, utf16OffsetFromByte, expressionPath, prepareAst, type ClangNode, type WrappedNode } from '../src/analysis';
 
 const wrapped = (node: WrappedNode['node'], children: readonly WrappedNode[] = []): WrappedNode => ({
   node,
@@ -66,7 +66,7 @@ const foldAst = (statements: readonly ClangNode[], helpers: readonly ClangNode[]
               kind: 'CXXMethodDecl', id: 'lambda', name: 'operator()',
               inner: [
                 { kind: 'ParmVarDecl', id: 'state', name: 'state', type: { qualType: 'State' } },
-                { kind: 'CompoundStmt', inner: statements }
+                { kind: 'CompoundStmt', inner: [...statements, { kind: 'ReturnStmt', range: { begin: { offset: 190 }, end: { offset: 199 } }, inner: [reference('state', 'state', 197)] }] }
               ]
             }]
           }]
@@ -151,6 +151,16 @@ describe('fold mutation analysis', () => {
       assert.equal(result.kind, 'initialization');
       assert.equal(result.origin.node.kind, 'CXXConstructExpr');
     }
+  });
+
+  test('does not wrap a fresh local object across fold iterations', () => {
+    const mutation = increment('local-state', 'local', 70);
+    const ast = foldAst([
+      { kind: 'VarDecl', id: 'local-state', name: 'local', inner: [{ kind: 'InitListExpr' }] },
+      member('local-state', 'local', 10), mutation
+    ]);
+    const result = analyze(ast, 16);
+    assert.equal(result._tag, 'AnalysisFailure');
   });
 
   test('wraps to an invoked reference helper mutation inside the fold', () => {
@@ -466,5 +476,237 @@ describe('reference path indexes', () => {
       assert.equal(result._tag, 'OriginFound');
       if (result._tag === 'OriginFound') assert.equal(result.origin.node, declaration);
     });
+  });
+});
+
+describe('member receiver traces', () => {
+  const thisMember = (name: string, offset: number): ClangNode => ({
+    kind: 'MemberExpr', name, inner: [{ kind: 'CXXThisExpr' }],
+    range: { begin: { offset }, end: { offset, tokLen: name.length } }
+  });
+  const method = (id: string, symbol: string, body: readonly ClangNode[]): ClangNode => ({
+    kind: 'CXXMethodDecl', id, name: id, symbol, loc: { file: '/fixture.cpp' },
+    inner: [{ kind: 'CompoundStmt', inner: body }]
+  });
+  const memberCall = (callee: string, symbol: string, receiver: ClangNode, start: number): ClangNode => ({
+    kind: 'CXXMemberCallExpr', callee: { id: callee, name: callee, symbol },
+    range: { begin: { offset: start }, end: { offset: start + 20, tokLen: 1 } },
+    inner: [{ kind: 'MemberExpr', name: callee, referencedMemberDecl: callee, inner: [receiver] }]
+  });
+  const variable = (id: string, offset: number): ClangNode => ({
+    kind: 'VarDecl', id, name: id, inner: [{ kind: 'InitListExpr' }],
+    range: { begin: { offset }, end: { offset: offset + id.length, tokLen: 1 } }
+  });
+  const caller = (id: string, statements: readonly ClangNode[]): ClangNode => ({
+    kind: 'FunctionDecl', id, name: id, loc: { file: '/fixture.cpp' },
+    inner: [{ kind: 'CompoundStmt', inner: statements }]
+  });
+  const receiver = (id: string, offset: number): ClangNode => ({
+    kind: 'DeclRefExpr', referencedDecl: { id, name: id },
+    range: { begin: { offset }, end: { offset, tokLen: id.length } }
+  });
+  const writeIncrement = (rootId: string, rootName: string, offset: number): ClangNode => ({
+    kind: 'UnaryOperator', opcode: '++',
+    inner: [{ kind: 'MemberExpr', name: 'records', inner: [reference(rootId, rootName, offset)],
+      range: { begin: { offset }, end: { offset: offset + rootName.length + 8, tokLen: 1 } } }],
+    range: { begin: { offset }, end: { offset: offset + rootName.length + 10, tokLen: 1 } }
+  });
+  const cursorOptions = { file: '/fixture.cpp', sourceText: ' '.repeat(400), cursorByteOffset: 101 };
+
+  test('maps implicit this to the calling object for mutations', () => {
+    const write = writeIncrement('account', 'account', 30);
+    const call = memberCall('audit', 'audit-symbol', receiver('account', 60), 50);
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [thisMember('records', 100)]),
+      caller('run', [variable('account', 10), write, call])
+    ] };
+    const prepared = prepareAst(ast);
+    const first = analyzeQuery('mutation', ast, cursorOptions, prepared);
+    assert.equal(first.result._tag, 'MutationFound');
+    if (first.result._tag === 'MutationFound') {
+      assert.equal(first.result.mutation.node, write);
+      assert.equal(first.result.frames?.length, 1);
+      assert.equal(first.result.frames?.[0].parameterIndex, undefined);
+      assert.deepEqual(first.result.frames?.[0].receiver, { rootId: 'account', rootName: 'account', members: ['records'] });
+    }
+    // Local success must not suppress external caller discovery for `audit`.
+    assert.equal(first.boundaries.length, 1);
+    assert.equal(first.boundaries[0].name, 'audit');
+    const settled = analyzeQuery('mutation', ast, { ...cursorOptions, externalCallers: new Map([[first.boundaries[0].wrapped.node, []]]) }, prepared);
+    assert.equal(settled.boundaries.length, 0);
+    assert.equal(settled.result._tag, 'MutationFound');
+  });
+
+  test('maps implicit this to the calling object for origins', () => {
+    const declaration = variable('account', 10);
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [thisMember('records', 100)]),
+      caller('run', [declaration, memberCall('audit', 'audit-symbol', receiver('account', 60), 50)])
+    ] };
+    const result = analyzeOriginAst(ast, cursorOptions, prepareAst(ast));
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') {
+      assert.equal(result.kind, 'initialization');
+      assert.equal(result.origin.node, declaration);
+      assert.deepEqual(result.frames?.[0].receiver?.members, ['records']);
+    }
+  });
+
+  test('maps pointer member calls and keeps this-member suffixes', () => {
+    const write: ClangNode = {
+      kind: 'BinaryOperator', opcode: '+=',
+      inner: [{ kind: 'MemberExpr', name: 'records', inner: [receiver('pointer', 20)], range: { begin: { offset: 20 }, end: { offset: 28, tokLen: 1 } } },
+        { kind: 'IntegerLiteral' }],
+      range: { begin: { offset: 20 }, end: { offset: 30, tokLen: 1 } }
+    };
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [thisMember('records', 100)]),
+      caller('run', [variable('account', 10), variable('pointer', 12), write,
+        memberCall('audit', 'audit-symbol', { kind: 'ImplicitCastExpr', inner: [receiver('pointer', 60)] }, 50)])
+    ] };
+    const result = analyzeAst(ast, cursorOptions, prepareAst(ast));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.equal(result.mutation.node, write);
+      assert.equal(result.frames?.[0].receiver?.rootName, 'pointer');
+    }
+  });
+
+  test('maps two-level member access through the receiver', () => {
+    const nestedThis: ClangNode = {
+      kind: 'MemberExpr', name: 'records',
+      inner: [{ kind: 'MemberExpr', name: 'bank', inner: [{ kind: 'CXXThisExpr' }],
+        range: { begin: { offset: 90 }, end: { offset: 95, tokLen: 1 } } }],
+      range: { begin: { offset: 90 }, end: { offset: 100, tokLen: 7 } }
+    };
+    const write: ClangNode = {
+      kind: 'UnaryOperator', opcode: '++',
+      inner: [{ kind: 'MemberExpr', name: 'records',
+        inner: [{ kind: 'MemberExpr', name: 'bank', inner: [reference('session', 'session', 30)],
+          range: { begin: { offset: 30 }, end: { offset: 37, tokLen: 1 } } }],
+        range: { begin: { offset: 30 }, end: { offset: 45, tokLen: 1 } } }],
+      range: { begin: { offset: 30 }, end: { offset: 47, tokLen: 1 } }
+    };
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [nestedThis]),
+      caller('run', [variable('session', 10), write, memberCall('audit', 'audit-symbol', receiver('session', 60), 50)])
+    ] };
+    const result = analyzeAst(ast, cursorOptions, prepareAst(ast));
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') {
+      assert.equal(result.mutation.node, write);
+      assert.deepEqual(result.frames?.[0].receiver, { rootId: 'session', rootName: 'session', members: ['bank', 'records'] });
+    }
+  });
+
+  test('keeps distinct object paths when two objects call the same method', () => {
+    const firstWrite = writeIncrement('first', 'first', 30);
+    const secondWrite = writeIncrement('second', 'second', 30);
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [thisMember('records', 100)]),
+      caller('run_a', [variable('first', 10), firstWrite, memberCall('audit', 'audit-symbol', receiver('first', 60), 50)]),
+      caller('run_b', [variable('second', 10), secondWrite, memberCall('audit', 'audit-symbol', receiver('second', 60), 50)])
+    ] };
+    const result = analyzeAst(ast, cursorOptions, prepareAst(ast));
+    assert.equal(result._tag, 'CandidatesFound');
+    if (result._tag === 'CandidatesFound') {
+      assert.equal(result.candidates.length, 2);
+      assert.deepEqual(result.candidates.map((candidate) => candidate.frames[0].receiver?.rootName).sort(), ['first', 'second']);
+    }
+  });
+
+  test('reports a boundary instead of guessing an unresolvable receiver', () => {
+    const unsupported: ClangNode = { kind: 'CallExpr', range: { begin: { offset: 60 }, end: { offset: 65, tokLen: 1 } } };
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [
+      method('audit', 'audit-symbol', [thisMember('records', 100)]),
+      caller('run', [variable('account', 10), memberCall('audit', 'audit-symbol', unsupported, 50)])
+    ] };
+    const prepared = prepareAst(ast);
+    const first = analyzeQuery('mutation', ast, cursorOptions, prepared);
+    assert.equal(first.result._tag, 'AnalysisFailure');
+    assert.equal(first.boundaries.length, 1);
+    const settled = analyzeQuery('mutation', ast, { ...cursorOptions, externalCallers: new Map([[first.boundaries[0].wrapped.node, []]]) }, prepared);
+    assert.equal(settled.result._tag, 'AnalysisFailure');
+    assert.equal(settled.boundaries.length, 0);
+  });
+});
+
+describe('caller origin and fold context', () => {
+  const helper = (id: string, body: readonly ClangNode[], qualType = 'State &'): ClangNode => ({
+    kind: 'FunctionDecl', id, name: id, loc: { file: '/fixture.cpp' },
+    inner: [{ kind: 'ParmVarDecl', id: id + '-state', name: 'value', type: { qualType } }, { kind: 'CompoundStmt', inner: body }]
+  });
+  const call = (callee: string, root: string, offset: number): ClangNode => ({
+    kind: 'CallExpr', callee: { id: callee, name: callee },
+    range: { begin: { offset }, end: { offset: offset + 9, tokLen: 1 } },
+    inner: [reference(callee, callee, offset), reference(root, 'value', offset + 2)]
+  });
+  test('traces three helper parameter mappings to a fold seed', () => {
+    const ast = foldAst([call('outer', 'state', 50)], [
+      helper('leaf', [member('leaf-state', 'value', 100)]),
+      helper('middle', [call('leaf', 'middle-state', 30)]),
+      helper('outer', [call('middle', 'outer-state', 20)])
+    ]);
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.equal(result.origin.node.kind, 'CXXConstructExpr');
+  });
+  test('preserves every intermediate call frame', () => {
+    const mutation = increment('state', 'state', 10);
+    const ast = foldAst([mutation, call('outer', 'state', 50), call('outer', 'state', 70)], [
+      helper('leaf', [member('leaf-state', 'value', 100)]),
+      helper('middle', [call('leaf', 'middle-state', 30)]),
+      helper('outer', [call('middle', 'outer-state', 20)])
+    ]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'CandidatesFound');
+    if (result._tag === 'CandidatesFound') assert.deepEqual(result.candidates.map((candidate) => candidate.frames.map((frame) => frame.caller.name)),
+      [['middle', 'outer', 'operator()'], ['middle', 'outer', 'operator()']]);
+  });
+  test('maps a member argument without dropping the callee member suffix', () => {
+    const write: ClangNode = { ...increment('state', 'state', 10), inner: [{ ...member('state', 'state', 10),
+      inner: [member('state', 'state', 10)] }] };
+    const mappedCall = { ...call('leaf', 'state', 50), inner: [reference('leaf', 'leaf', 50), member('state', 'state', 52)] };
+    const ast = foldAst([write, mappedCall], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, write);
+  });
+  test('keeps origin paths distinct even when they reach the same seed', () => {
+    const ast = foldAst([call('leaf', 'state', 30), call('leaf', 'state', 60)], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginCandidatesFound');
+    if (result._tag === 'OriginCandidatesFound') {
+      assert.equal(result.candidates.length, 2);
+      assert.equal(result.candidates[0].origin, result.candidates[1].origin);
+      assert.notEqual(result.candidates[0].frames[0].callsite, result.candidates[1].frames[0].callsite);
+    }
+  });
+  test('wraps in the calling fold through an independent helper', () => {
+    const mutation = increment('state', 'state', 70);
+    const ast = foldAst([call('leaf', 'state', 30), mutation], [helper('leaf', [member('leaf-state', 'value', 100)])]);
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') { assert.equal(result.mutation.node, mutation); assert.equal(result.wrapped, true); }
+  });
+  ['State', 'State &', 'State *'].map((qualType) => test('traces origin and entry value for ' + qualType, () => {
+    const mutation = increment('state', 'state', 10);
+    const ast = foldAst([mutation, call('leaf', 'state', 30)], [helper('leaf', [member('leaf-state', 'value', 100)], qualType)]);
+    assert.equal(origin(ast)._tag, 'OriginFound');
+    const result = analyze(ast);
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag === 'MutationFound') assert.equal(result.mutation.node, mutation);
+  }));
+  test('terminates recursive calls at an explicit parameter boundary', () => {
+    const ast: ClangNode = { kind: 'TranslationUnitDecl', inner: [helper('leaf', [call('leaf', 'leaf-state', 30), member('leaf-state', 'value', 100)])] };
+    const result = origin(ast);
+    assert.equal(result._tag, 'OriginFound');
+    if (result._tag === 'OriginFound') assert.match(result.boundary ?? '', /Recursive/);
+    assert.equal(analyze(ast)._tag, 'AnalysisFailure');
+  });
+  test('does not resolve an unknown declaration ID using a matching name', () => {
+    const ast = foldAst([{ ...call('leaf', 'state', 30), callee: undefined,
+      inner: [reference('unresolved', 'leaf', 30), reference('state', 'value', 32)] }], [helper('leaf', [increment('leaf-state', 'value', 10)])]);
+    assert.equal(analyze(ast)._tag, 'AnalysisFailure');
   });
 });

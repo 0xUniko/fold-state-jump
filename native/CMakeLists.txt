@@ -12,4 +12,4 @@ message(STATUS "Fold State Jump LLVM ${LLVM_PACKAGE_VERSION}: ${LLVM_DIR}; Clang
 add_executable(fold-state-jump-ast ast-extractor.cpp)
 target_compile_features(fold-state-jump-ast PRIVATE cxx_std_17)
 target_include_directories(fold-state-jump-ast PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
-target_link_libraries(fold-state-jump-ast PRIVATE clangTooling clangFrontend clangAST clangBasic clangLex)
+target_link_libraries(fold-state-jump-ast PRIVATE clangUnifiedSymbolResolution clangTooling clangFrontend clangAST clangBasic clangLex)

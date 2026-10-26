@@ -200,3 +200,240 @@ void capture_timing(SessionState &session_state) {
   session_state.bank_state.bank.records = 3;
   read_copy();
 }
+
+// Independent helpers are deliberately not lexical children of either fold.
+void origin_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-leaf
+}
+void origin_middle(BankState &bank_state) {
+  auto &bank = bank_state.bank;
+  origin_leaf(bank);
+}
+void origin_outer(SessionState &session_state) { origin_middle(session_state.bank_state); }
+SessionState backward_fold() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    session_state.bank_state.bank.records = 10; // @write backward-entry
+    origin_outer(session_state);
+    return session_state;
+  });
+}
+void wrap_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-wrap
+}
+void wrap_middle(BankState &bank_state) { wrap_leaf(bank_state.bank); }
+SessionState wrap_fold_a() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    wrap_middle(session_state.bank_state);
+    session_state.bank_state.bank.records = 11; // @write wrap-a
+    return session_state;
+  });
+}
+SessionState wrap_fold_b() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    wrap_middle(session_state.bank_state);
+    session_state.bank_state.bank.records = 22; // @write wrap-b
+    return session_state;
+  });
+}
+void copy_leaf(Bank bank) {
+  consume(bank.records); // @case backward-copy
+  bank.records = 99;
+}
+void copy_entry() {
+  Bank bank{}; // @origin copy-entry
+  bank.records = 42; // @write copy-entry
+  copy_leaf(bank);
+  consume(bank.records); // @case backward-copy-isolation
+}
+void pointer_leaf(Bank *bank) {
+  consume(bank->records); // @case backward-pointer
+}
+void pointer_entry() {
+  Bank bank{}; // @origin pointer-entry
+  auto &alias = bank;
+  alias.records = 7; // @write pointer-entry
+  pointer_leaf(&alias);
+}
+void overload_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-overload
+}
+void overload_leaf(int &records) { ++records; }
+namespace other {
+void overload_leaf(Bank &bank) { bank.records = 999; }
+}
+void overload_entry() {
+  Bank bank{}; // @origin overload-entry
+  bank.records = 8; // @write overload-entry
+  overload_leaf(bank);
+  int records = 0;
+  overload_leaf(records);
+  other::overload_leaf(bank);
+}
+template <typename T> void template_leaf(T &bank) {
+  consume(bank.records); // @case backward-template
+}
+void template_entry() {
+  Bank bank{}; // @origin template-entry
+  bank.records = 9; // @write template-entry
+  template_leaf(bank);
+}
+void recursive_leaf(Bank &bank) {
+  recursive_leaf(bank);
+  consume(bank.records); // @case backward-recursive
+}
+
+void indexed_leaf(int unused, Bank &bank) {
+  consume(bank.records); // @case backward-parameter-index
+}
+void indexed_entry() {
+  Bank bank{}; // @origin indexed-entry
+  bank.records = 12; // @write indexed-entry
+  indexed_leaf(0, bank);
+}
+
+void specialization_leaf(Bank &bank) {
+  consume(bank.records); // @case backward-specializations
+}
+template <typename T> void specialization_middle(T &state) { specialization_leaf(state.bank); }
+void specialization_a() {
+  BankState state{};
+  state.bank.records = 13;
+  specialization_middle(state);
+}
+struct OtherBankState { Bank bank; };
+void specialization_b() {
+  OtherBankState state{};
+  state.bank.records = 14;
+  specialization_middle(state);
+}
+
+struct AuditedBank {
+  int records = 0;
+  void audit() { consume(records); } // @case this-mutation
+};
+void audited_run() {
+  AuditedBank account{}; // @origin this-caller
+  account.records++; // @write this-caller
+  account.audit();
+}
+void audited_run_b() {
+  AuditedBank account{}; // @origin this-caller-b
+  account.records = 5; // @write this-caller-b
+  account.audit();
+}
+void audited_pointer() {
+  AuditedBank account{};
+  AuditedBank *pointer = &account;
+  pointer->records += 2; // @write this-pointer
+  pointer->audit();
+}
+void audited_forward(AuditedBank &account) {
+  account.records += 3; // @write this-forward
+  account.audit();
+}
+struct AuditedSession {
+  AuditedBank bank;
+  void audit() { consume(bank.records); } // @case this-nested
+};
+void audited_session_run() {
+  AuditedSession session{}; // @origin this-nested
+  session.bank.records++; // @write this-nested-caller
+  session.audit();
+}
+struct AuditedMulti {
+  int records = 0;
+  void ping() { consume(records); } // @case this-overload
+  void ping(int) { records = 77; }
+};
+void audited_multi_run() {
+  AuditedMulti multi{};
+  multi.records++; // @write this-overload-caller
+  multi.ping();
+  multi.ping(0);
+}
+struct AuditedFold {
+  Bank bank;
+  void audit() { consume(bank.records); } // @case this-fold
+};
+SessionState audited_fold_entry() {
+  return fold_left(SessionState{}, [](SessionState session_state) {
+    AuditedFold member{}; // @origin this-fold
+    member.bank.records = 31; // @write this-fold-caller
+    member.audit();
+    return session_state;
+  });
+}
+
+template<class F> void invoke_reader(F read) { read(); }
+struct LambdaBank {
+  int records = 0;
+  void stored() {
+    auto read = [this] { consume(records); }; // @case lambda-this-stored
+    ++records; // @write lambda-this-invocation
+    read();
+  }
+  void immediate() {
+    [this] { consume(records); }(); // @case lambda-this-immediate
+  }
+  void implicit_copy() {
+    [=] { consume(records); }(); // @case lambda-this-default-copy
+  }
+  void implicit_reference() {
+    [&] { consume(records); }(); // @case lambda-this-default-reference
+  }
+  void copied() {
+    [*this] { consume(records); }(); // @case lambda-this-copy
+  }
+  void nested() {
+    [this] { [&] { consume(records); }(); }(); // @case lambda-this-nested
+  }
+  void nested_copy() {
+    [*this] { [this] { consume(records); }(); }(); // @case lambda-this-nested-copy
+  }
+  void algorithm() {
+    fold_left(0, [this](int value) {
+      consume(records); // @case lambda-this-algorithm
+      return value;
+    });
+  }
+  void generic_algorithm() {
+    fold_left(0, [this](auto value) {
+      consume(records); // @case lambda-this-generic
+      return value;
+    });
+  }
+  auto reader() {
+    return [this] { consume(records); }; // @case lambda-this-escaped
+  }
+  template<class F> void invoke(F read) { invoke_reader(read); }
+  void unavailable() {
+    [this] { consume(records); }(); // @case lambda-this-unavailable
+  }
+};
+void lambda_bank_a() {
+  LambdaBank account{}; // @origin lambda-this-a
+  account.stored();
+  account.immediate();
+  account.implicit_copy();
+  account.implicit_reference();
+  account.copied();
+  account.nested();
+  account.nested_copy();
+  account.algorithm();
+  account.generic_algorithm();
+  auto read = account.reader();
+  LambdaBank unrelated{};
+  unrelated.invoke(read);
+}
+void lambda_bank_b() {
+  LambdaBank account{}; // @origin lambda-this-b
+  account.stored();
+  account.immediate();
+  account.implicit_copy();
+  account.implicit_reference();
+  account.copied();
+  account.nested();
+  account.nested_copy();
+  account.algorithm();
+  account.generic_algorithm();
+}

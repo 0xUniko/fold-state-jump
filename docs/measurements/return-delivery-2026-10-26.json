@@ -1,0 +1,5026 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Shanghai",
+  "branch": "feat/multi-funcs",
+  "baselineHead": "cf5814b06f0671bd115680292e4e80879369b964",
+  "environment": {
+    "bun": "1.4.3",
+    "clang": "Ubuntu clang version 23.1.4 (++20261018124056+71c76755a8ff-1~exp1~20261018124211.83)",
+    "typescript": "No project TypeScript package; builtin bun check used.",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpuCount": 18
+  },
+  "sourceSha256": {
+    "src/analysis.ts": "5a01bc1617c786443e6b0800deb6422ac7be5cae05d6b11966ba5426620bda51",
+    "src/extension.ts": "3dab0dceb6444258f0a2109ebcdd101c1f51b060872dda96081a5691b068aea6",
+    "src/storage.ts": "62f448fb6265f36e1f21180aca0fdf444195e08f8d020fd4537b01c3c034efe1",
+    "native/ast-extractor.cpp": "ee8bd499c2a5cc815df3e4cf9ed0391e95ba85c8b471cce9990a6debc7096a66",
+    "test/fixtures/return-sources.cpp": "a62cf48c10326d860af7c0a68f42aa807614d7387fad4e32acad8d5fbea7c0c5",
+    "test/return-presentation.ts": "8d7ae386812fead0d020e755a3e70304ad9f9ad89b68aaa05723f911ee3c271d",
+    "test/system-return-probe.ts": "87a7a2dca2222d8e815035c243d0432f9f4f14c3806d727002c6753390cb6361",
+    "test/return-sources-performance.ts": "9aa847a02fa1ebc3894e222b45b218e4aeedddda35e29eaa293400ae3e17555d"
+  },
+  "baselineNativeSourceSha256": "46c691423d26ee9c13042daea7a8530a0009bf60b38bafa877a4ce3ba0fea75a",
+  "nanoInfer": {
+    "head": "562758447a716d05dabb3173cebac489bf7daf80",
+    "status": "",
+    "modified": false
+  },
+  "validation": [
+    {
+      "command": "bun run build:native",
+      "result": "Native Release build passed with LLVM/Clang 23.1.4.",
+      "exitCode": 0,
+      "logSha256": "73a2c9e2e14e39db91c040edb1acd6a32e701d70fa1c4d9e696dcf870e09b573"
+    },
+    {
+      "command": "native/build/fold-state-jump-ast --source \"$PWD/test/fixtures/native-fold.cpp\" -- -std=c++20 > /tmp/fold-state-jump-ast.json && bun test/native-integration.ts",
+      "result": "Direct and cross-function native integration passed.",
+      "exitCode": 0,
+      "logSha256": "248020c608a0694356040133a1e199e2d9e85daed6daa4a08c1ff2664fa48ffb"
+    },
+    {
+      "command": "bun test test/return-sources.test.ts",
+      "result": "46 pass / 0 fail; real AST fixtures.",
+      "exitCode": 0,
+      "logSha256": "fa9c3ba094c7e276c85639a5d6362a0020d561070006854eceea3c5ca830782c"
+    },
+    {
+      "command": "bun test test/storage-alias.test.ts",
+      "result": "95 pass / 0 fail.",
+      "exitCode": 0,
+      "logSha256": "f1be86147dea99bdca2ec8e21e6d55c3a0a7e565a2b163587d241d1659bdbda9"
+    },
+    {
+      "command": "bun test test/return-sources.test.ts test/return-presentation.test.ts test/storage-alias.test.ts",
+      "result": "142 pass / 0 fail; command adapter covers 20 choices across Mutation and Origin.",
+      "exitCode": 0,
+      "logSha256": "15d7eb5dd6b3c8263ffcc836af6fdda52c2105f76b81b08db23d730a38315dbb"
+    },
+    {
+      "command": "bun test",
+      "result": "512 pass / 0 fail across 25 files. Includes command harness and native preamble lifecycle tests; normal process environment.",
+      "exitCode": 0,
+      "logSha256": "97260b83ad7046c69ee1676f154d90f646919192341815e0911f6d0e0c84ae23"
+    },
+    {
+      "command": "bun check",
+      "result": "No type errors in 74 files; builtin Bun checker, no tsc substitution.",
+      "exitCode": 0,
+      "logSha256": "3fdb85eda88c5fc74a8afc9e324a70d0b14d46fbb13eedf9dbff65f2bca92a00"
+    },
+    {
+      "command": "bun run build",
+      "result": "Extension bundle passed.",
+      "exitCode": 0,
+      "logSha256": "a7f7cf9a6ae37af5afafca8e50602936f39ba679bbd7cf2c86fa60a9d429b8d2"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json FSJ_AUDIT_AST_DIRECTORY=/tmp/fsj-delivery-audit-asts bun test/project-state-audit.ts",
+      "result": "9 files / 23 original cursors / 46 queries passed unchanged expectations.",
+      "exitCode": 0,
+      "logSha256": "19014c900c60d7517eddab257daf93b2bd2799b3b10d356f9db85b8dd4719ad6"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-state-sources.ts",
+      "result": "Real pipeline caller mappings, generation wrap and three seed Origins passed.",
+      "exitCode": 0,
+      "logSha256": "53d991c4690925864c2706c1f0a24739583dc1ea4785ee20ae2f5065b1aa86d0"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-return-sources.ts",
+      "result": "Both original cursors and actual system-definition provenance passed; both Mutation results remain failures.",
+      "exitCode": 0,
+      "logSha256": "9e49a2febe4dedd80607678de407f2ed37393ad309db6cb69f5121b9e62874b7"
+    },
+    {
+      "command": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/project-integration.ts",
+      "result": "ffn.h 14 / experts.h 3 / pipeline.h 8 targets passed.",
+      "exitCode": 0,
+      "logSha256": "755e48100514ada34ba3af0efa4ddbaf95dac72715d15154b360050d5f545c11"
+    },
+    {
+      "command": "bun test/system-return-probe.ts /tmp/fsj-fold-definition-probe/cli.json",
+      "result": "Full-system AST experiment: both targets fail safely; recurrence and caller branch boundaries retained.",
+      "exitCode": 0,
+      "logSha256": "bda9d07ba8a03f80a24e89750a065eb6ed339dc27e83220311a0cf8ade67b80c"
+    }
+  ],
+  "developmentFindings": [
+    "Initial full regression had two new-test failures: incorrect local Origin expectation and the new harness default 5-second timeout. Both corrected; original expectations unchanged.",
+    "Unpruned-system diagnostic experiment first exposed ConstructorConversion around a bound temporary; then exposed an unsafe mutually exclusive caller-branch candidate after the last return binding was popped. Both fixed and independently regressed; final probe requires two AnalysisFailure results.",
+    "One early performance run was rejected by its source-hash guard; other preliminary runs/audits were interrupted while source changes and final batch length were settled. They are not used as final measurements."
+  ],
+  "performanceCommand": "FSJ_PROJECT_COMPILE_COMMANDS=/home/huawei/nano-infer/build-cpu-tests/compile_commands.json bun test/return-sources-performance.ts /tmp/fsj-delivery-before/analysis.ts /tmp/fsj-delivery-before/extractor /home/huawei/nano-infer 3 20",
+  "isolatedQueryCommand": "bun test/return-query-performance.ts /tmp/fsj-delivery-before/analysis.ts /tmp/fsj-delivery-audit-asts/minicpm-v-4_7-cli.cpp.json /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp 7 1000",
+  "performanceSummary": [
+    {
+      "input": "micro",
+      "metrics": {
+        "extractMs": {
+          "before": {
+            "median": 248.15522800000008,
+            "min": 202.84195899999986,
+            "max": 248.66767600000003,
+            "samples": [
+              248.66767600000003,
+              248.15522800000008,
+              202.84195899999986
+            ]
+          },
+          "after": {
+            "median": 207.15528400000005,
+            "min": 178.48827400000005,
+            "max": 225.53245600000002,
+            "samples": [
+              207.15528400000005,
+              225.53245600000002,
+              178.48827400000005
+            ]
+          }
+        },
+        "parseMs": {
+          "before": {
+            "median": 1.1630700000000047,
+            "min": 1.1416269999999713,
+            "max": 1.2137299999999414,
+            "samples": [
+              1.1630700000000047,
+              1.1416269999999713,
+              1.2137299999999414
+            ]
+          },
+          "after": {
+            "median": 1.8726090000000113,
+            "min": 1.090516999999977,
+            "max": 2.437061000000085,
+            "samples": [
+              1.090516999999977,
+              2.437061000000085,
+              1.8726090000000113
+            ]
+          }
+        },
+        "prepareMs": {
+          "before": {
+            "median": 5.512817000000041,
+            "min": 3.2312060000001566,
+            "max": 11.243146999999965,
+            "samples": [
+              11.243146999999965,
+              5.512817000000041,
+              3.2312060000001566
+            ]
+          },
+          "after": {
+            "median": 7.797422999999981,
+            "min": 7.4185959999999795,
+            "max": 10.080858000000035,
+            "samples": [
+              10.080858000000035,
+              7.797422999999981,
+              7.4185959999999795
+            ]
+          }
+        },
+        "returnSummaryMs": {
+          "before": {
+            "median": 0.12865395000000035,
+            "min": 0.08216449999999895,
+            "max": 0.16334594999999866,
+            "samples": [
+              0.16334594999999866,
+              0.12865395000000035,
+              0.08216449999999895
+            ]
+          },
+          "after": {
+            "median": 0.10105699999999729,
+            "min": 0.07667135000000372,
+            "max": 0.15178035000000137,
+            "samples": [
+              0.15178035000000137,
+              0.10105699999999729,
+              0.07667135000000372
+            ]
+          }
+        },
+        "astBytes": {
+          "before": {
+            "median": 858747,
+            "min": 858747,
+            "max": 858747,
+            "samples": [
+              858747,
+              858747,
+              858747
+            ]
+          },
+          "after": {
+            "median": 872256,
+            "min": 872256,
+            "max": 872256,
+            "samples": [
+              872256,
+              872256,
+              872256
+            ]
+          }
+        },
+        "returnMetadataBytes": {
+          "before": {
+            "median": 19497,
+            "min": 19497,
+            "max": 19497,
+            "samples": [
+              19497,
+              19497,
+              19497
+            ]
+          },
+          "after": {
+            "median": 22451,
+            "min": 22451,
+            "max": 22451,
+            "samples": [
+              22451,
+              22451,
+              22451
+            ]
+          }
+        }
+      },
+      "queries": [
+        {
+          "name": "parameter",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 29.407350000008137,
+              "min": 28.871049999997922,
+              "max": 62.156049999998686,
+              "samples": [
+                62.156049999998686,
+                28.871049999997922,
+                29.407350000008137
+              ]
+            },
+            "after": {
+              "median": 17.919849999998405,
+              "min": 16.7067999999972,
+              "max": 47.7361999999971,
+              "samples": [
+                47.7361999999971,
+                16.7067999999972,
+                17.919849999998405
+              ]
+            }
+          }
+        },
+        {
+          "name": "parameter",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 36.454300000002604,
+              "min": 14.200049999999464,
+              "max": 64.3738500000012,
+              "samples": [
+                64.3738500000012,
+                36.454300000002604,
+                14.200049999999464
+              ]
+            },
+            "after": {
+              "median": 23.032100000000355,
+              "min": 15.741600000001199,
+              "max": 53.39374999999791,
+              "samples": [
+                53.39374999999791,
+                23.032100000000355,
+                15.741600000001199
+              ]
+            }
+          }
+        },
+        {
+          "name": "relay",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 23.043600000005426,
+              "min": 21.66614999999865,
+              "max": 79.574199999999,
+              "samples": [
+                79.574199999999,
+                21.66614999999865,
+                23.043600000005426
+              ]
+            },
+            "after": {
+              "median": 23.794800000001715,
+              "min": 19.61790000000292,
+              "max": 30.867099999994707,
+              "samples": [
+                30.867099999994707,
+                23.794800000001715,
+                19.61790000000292
+              ]
+            }
+          }
+        },
+        {
+          "name": "relay",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 61.96270000000368,
+              "min": 22.826499999996486,
+              "max": 76.26630000000034,
+              "samples": [
+                76.26630000000034,
+                61.96270000000368,
+                22.826499999996486
+              ]
+            },
+            "after": {
+              "median": 53.2859999999971,
+              "min": 19.905849999997827,
+              "max": 106.7713499999968,
+              "samples": [
+                53.2859999999971,
+                106.7713499999968,
+                19.905849999997827
+              ]
+            }
+          }
+        },
+        {
+          "name": "aggregate",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 20.394850000002407,
+              "min": 11.105850000001283,
+              "max": 24.15850000000148,
+              "samples": [
+                24.15850000000148,
+                20.394850000002407,
+                11.105850000001283
+              ]
+            },
+            "after": {
+              "median": 20.898799999997664,
+              "min": 11.627250000003642,
+              "max": 65.75360000000501,
+              "samples": [
+                20.898799999997664,
+                65.75360000000501,
+                11.627250000003642
+              ]
+            }
+          }
+        },
+        {
+          "name": "aggregate",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 31.193599999994603,
+              "min": 16.735099999993963,
+              "max": 128.14695000000142,
+              "samples": [
+                128.14695000000142,
+                31.193599999994603,
+                16.735099999993963
+              ]
+            },
+            "after": {
+              "median": 88.9910499999985,
+              "min": 14.71524999999474,
+              "max": 230.8493999999996,
+              "samples": [
+                230.8493999999996,
+                88.9910499999985,
+                14.71524999999474
+              ]
+            }
+          }
+        },
+        {
+          "name": "branches",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 31.77815000000237,
+              "min": 26.411300000000892,
+              "max": 40.59355000000551,
+              "samples": [
+                26.411300000000892,
+                40.59355000000551,
+                31.77815000000237
+              ]
+            },
+            "after": {
+              "median": 36.44515000000297,
+              "min": 19.542999999998756,
+              "max": 45.740699999998924,
+              "samples": [
+                36.44515000000297,
+                45.740699999998924,
+                19.542999999998756
+              ]
+            }
+          }
+        },
+        {
+          "name": "branches",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 40.90210000000525,
+              "min": 29.939200000001165,
+              "max": 44.3153499999994,
+              "samples": [
+                44.3153499999994,
+                29.939200000001165,
+                40.90210000000525
+              ]
+            },
+            "after": {
+              "median": 50.265849999999546,
+              "min": 25.18284999999878,
+              "max": 61.816900000002306,
+              "samples": [
+                50.265849999999546,
+                61.816900000002306,
+                25.18284999999878
+              ]
+            }
+          }
+        },
+        {
+          "name": "partial",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 20.22620000000188,
+              "min": 14.877150000000938,
+              "max": 24.310700000000907,
+              "samples": [
+                14.877150000000938,
+                20.22620000000188,
+                24.310700000000907
+              ]
+            },
+            "after": {
+              "median": 20.138150000002497,
+              "min": 14.555350000000544,
+              "max": 24.768499999998994,
+              "samples": [
+                20.138150000002497,
+                24.768499999998994,
+                14.555350000000544
+              ]
+            }
+          }
+        },
+        {
+          "name": "partial",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 24.652800000001207,
+              "min": 21.075500000006286,
+              "max": 26.350800000000163,
+              "samples": [
+                26.350800000000163,
+                24.652800000001207,
+                21.075500000006286
+              ]
+            },
+            "after": {
+              "median": 25.646500000004835,
+              "min": 22.637600000001612,
+              "max": 34.98089999999365,
+              "samples": [
+                25.646500000004835,
+                22.637600000001612,
+                34.98089999999365
+              ]
+            }
+          }
+        },
+        {
+          "name": "capture",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 2.2168999999991,
+              "min": 2.0541499999922053,
+              "max": 3.2368499999961386,
+              "samples": [
+                2.2168999999991,
+                3.2368499999961386,
+                2.0541499999922053
+              ]
+            },
+            "after": {
+              "median": 1.8907500000011623,
+              "min": 1.7077500000027612,
+              "max": 3.148649999997133,
+              "samples": [
+                1.8907500000011623,
+                3.148649999997133,
+                1.7077500000027612
+              ]
+            }
+          }
+        },
+        {
+          "name": "capture",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 51.540399999998954,
+              "min": 33.54024999999865,
+              "max": 89.72970000000089,
+              "samples": [
+                89.72970000000089,
+                51.540399999998954,
+                33.54024999999865
+              ]
+            },
+            "after": {
+              "median": 47.09809999999948,
+              "min": 31.665850000001683,
+              "max": 93.45835000000307,
+              "samples": [
+                93.45835000000307,
+                47.09809999999948,
+                31.665850000001683
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "input": "pipeline.h",
+      "metrics": {
+        "extractMs": {
+          "before": {
+            "median": 13731.299238,
+            "min": 13472.041650999992,
+            "max": 13805.82212299999,
+            "samples": [
+              13731.299238,
+              13805.82212299999,
+              13472.041650999992
+            ]
+          },
+          "after": {
+            "median": 13357.590476000005,
+            "min": 13007.149316000003,
+            "max": 13903.144291000004,
+            "samples": [
+              13357.590476000005,
+              13007.149316000003,
+              13903.144291000004
+            ]
+          }
+        },
+        "parseMs": {
+          "before": {
+            "median": 11.642324000000372,
+            "min": 11.106197999994038,
+            "max": 13.739151999994647,
+            "samples": [
+              11.642324000000372,
+              13.739151999994647,
+              11.106197999994038
+            ]
+          },
+          "after": {
+            "median": 11.69570099998964,
+            "min": 11.147362999996403,
+            "max": 13.14809399999649,
+            "samples": [
+              11.147362999996403,
+              13.14809399999649,
+              11.69570099998964
+            ]
+          }
+        },
+        "prepareMs": {
+          "before": {
+            "median": 43.60751000000164,
+            "min": 37.528699000002234,
+            "max": 60.72114100000181,
+            "samples": [
+              43.60751000000164,
+              60.72114100000181,
+              37.528699000002234
+            ]
+          },
+          "after": {
+            "median": 48.44297899999947,
+            "min": 40.292264999996405,
+            "max": 54.179790000009234,
+            "samples": [
+              48.44297899999947,
+              40.292264999996405,
+              54.179790000009234
+            ]
+          }
+        },
+        "returnSummaryMs": {
+          "before": {
+            "median": 2.0170630500004334,
+            "min": 1.9747212499999478,
+            "max": 2.3226635500002883,
+            "samples": [
+              1.9747212499999478,
+              2.3226635500002883,
+              2.0170630500004334
+            ]
+          },
+          "after": {
+            "median": 2.015807499999937,
+            "min": 2.0065216500002863,
+            "max": 2.5643081499998517,
+            "samples": [
+              2.015807499999937,
+              2.0065216500002863,
+              2.5643081499998517
+            ]
+          }
+        },
+        "astBytes": {
+          "before": {
+            "median": 9552760,
+            "min": 9552760,
+            "max": 9552760,
+            "samples": [
+              9552760,
+              9552760,
+              9552760
+            ]
+          },
+          "after": {
+            "median": 9716377,
+            "min": 9716377,
+            "max": 9716377,
+            "samples": [
+              9716377,
+              9716377,
+              9716377
+            ]
+          }
+        },
+        "returnMetadataBytes": {
+          "before": {
+            "median": 99651,
+            "min": 99651,
+            "max": 99651,
+            "samples": [
+              99651,
+              99651,
+              99651
+            ]
+          },
+          "after": {
+            "median": 103101,
+            "min": 103101,
+            "max": 103101,
+            "samples": [
+              103101,
+              103101,
+              103101
+            ]
+          }
+        }
+      },
+      "queries": [
+        {
+          "name": "batch-return",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 7.753000000047905,
+              "min": 6.453550000151154,
+              "max": 8.142899999802466,
+              "samples": [
+                7.753000000047905,
+                8.142899999802466,
+                6.453550000151154
+              ]
+            },
+            "after": {
+              "median": 10.562950000166893,
+              "min": 6.326450000051409,
+              "max": 92.88719999967725,
+              "samples": [
+                10.562950000166893,
+                6.326450000051409,
+                92.88719999967725
+              ]
+            }
+          }
+        },
+        {
+          "name": "batch-return",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 5.497149999428075,
+              "min": 3.8465999999971245,
+              "max": 6.620149999798741,
+              "samples": [
+                3.8465999999971245,
+                6.620149999798741,
+                5.497149999428075
+              ]
+            },
+            "after": {
+              "median": 7.425399999920046,
+              "min": 7.316450000143959,
+              "max": 11.236250000001746,
+              "samples": [
+                11.236250000001746,
+                7.316450000143959,
+                7.425399999920046
+              ]
+            }
+          }
+        },
+        {
+          "name": "layer-seed",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 6.334600000081991,
+              "min": 4.244599999947241,
+              "max": 6.348499999876367,
+              "samples": [
+                6.334600000081991,
+                6.348499999876367,
+                4.244599999947241
+              ]
+            },
+            "after": {
+              "median": 4.027800000039861,
+              "min": 3.97835000003397,
+              "max": 5.286500000147498,
+              "samples": [
+                5.286500000147498,
+                3.97835000003397,
+                4.027800000039861
+              ]
+            }
+          }
+        },
+        {
+          "name": "layer-seed",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 264332.93859999976,
+              "min": 256549.5299000002,
+              "max": 277778.7372500001,
+              "samples": [
+                277778.7372500001,
+                256549.5299000002,
+                264332.93859999976
+              ]
+            },
+            "after": {
+              "median": 255284.8853000003,
+              "min": 249748.48045,
+              "max": 269636.49884999974,
+              "samples": [
+                249748.48045,
+                255284.8853000003,
+                269636.49884999974
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "input": "cli.cpp",
+      "metrics": {
+        "extractMs": {
+          "before": {
+            "median": 17213.72297199999,
+            "min": 16605.255535000004,
+            "max": 17273.269428,
+            "samples": [
+              17213.72297199999,
+              16605.255535000004,
+              17273.269428
+            ]
+          },
+          "after": {
+            "median": 17463.259217000013,
+            "min": 17423.59692099999,
+            "max": 18332.81104,
+            "samples": [
+              18332.81104,
+              17423.59692099999,
+              17463.259217000013
+            ]
+          }
+        },
+        "parseMs": {
+          "before": {
+            "median": 38.088317999994615,
+            "min": 36.76441400000476,
+            "max": 41.732829000015045,
+            "samples": [
+              38.088317999994615,
+              36.76441400000476,
+              41.732829000015045
+            ]
+          },
+          "after": {
+            "median": 35.5060260000173,
+            "min": 30.506426000007195,
+            "max": 36.700875000009546,
+            "samples": [
+              36.700875000009546,
+              35.5060260000173,
+              30.506426000007195
+            ]
+          }
+        },
+        "prepareMs": {
+          "before": {
+            "median": 110.75730399999884,
+            "min": 107.87601099998574,
+            "max": 129.87197800001013,
+            "samples": [
+              129.87197800001013,
+              107.87601099998574,
+              110.75730399999884
+            ]
+          },
+          "after": {
+            "median": 108.51382299998659,
+            "min": 107.30176300002495,
+            "max": 113.36732399999164,
+            "samples": [
+              108.51382299998659,
+              107.30176300002495,
+              113.36732399999164
+            ]
+          }
+        },
+        "returnSummaryMs": {
+          "before": {
+            "median": 7.128076249999867,
+            "min": 6.361527349999233,
+            "max": 7.715155049999884,
+            "samples": [
+              7.128076249999867,
+              6.361527349999233,
+              7.715155049999884
+            ]
+          },
+          "after": {
+            "median": 7.011829349999607,
+            "min": 6.821843750000698,
+            "max": 7.030857999999716,
+            "samples": [
+              7.030857999999716,
+              6.821843750000698,
+              7.011829349999607
+            ]
+          }
+        },
+        "astBytes": {
+          "before": {
+            "median": 26480884,
+            "min": 26480884,
+            "max": 26480884,
+            "samples": [
+              26480884,
+              26480884,
+              26480884
+            ]
+          },
+          "after": {
+            "median": 27019772,
+            "min": 27019772,
+            "max": 27019772,
+            "samples": [
+              27019772,
+              27019772,
+              27019772
+            ]
+          }
+        },
+        "returnMetadataBytes": {
+          "before": {
+            "median": 277419,
+            "min": 277419,
+            "max": 277419,
+            "samples": [
+              277419,
+              277419,
+              277419
+            ]
+          },
+          "after": {
+            "median": 286641,
+            "min": 286641,
+            "max": 286641,
+            "samples": [
+              286641,
+              286641,
+              286641
+            ]
+          }
+        }
+      },
+      "queries": [
+        {
+          "name": "generation-wrap",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 5.087050001020543,
+              "min": 4.4678500009467825,
+              "max": 7.182850000390317,
+              "samples": [
+                5.087050001020543,
+                7.182850000390317,
+                4.4678500009467825
+              ]
+            },
+            "after": {
+              "median": 5.4245999999693595,
+              "min": 4.398200000287034,
+              "max": 6.374500000674743,
+              "samples": [
+                4.398200000287034,
+                5.4245999999693595,
+                6.374500000674743
+              ]
+            }
+          }
+        },
+        {
+          "name": "generation-wrap",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 17.002200000570156,
+              "min": 8.194799999182578,
+              "max": 18.12424999952782,
+              "samples": [
+                17.002200000570156,
+                18.12424999952782,
+                8.194799999182578
+              ]
+            },
+            "after": {
+              "median": 15.730249999614898,
+              "min": 10.989449999760836,
+              "max": 26.518499999656342,
+              "samples": [
+                26.518499999656342,
+                10.989449999760836,
+                15.730249999614898
+              ]
+            }
+          }
+        },
+        {
+          "name": "generation-done",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 3.7051499995868653,
+              "min": 3.6269000003812835,
+              "max": 5.143099999986589,
+              "samples": [
+                3.7051499995868653,
+                5.143099999986589,
+                3.6269000003812835
+              ]
+            },
+            "after": {
+              "median": 3.9226499997312203,
+              "min": 3.6414000001968816,
+              "max": 9.38014999992447,
+              "samples": [
+                9.38014999992447,
+                3.6414000001968816,
+                3.9226499997312203
+              ]
+            }
+          }
+        },
+        {
+          "name": "generation-done",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 54.446450000978075,
+              "min": 51.554149998992216,
+              "max": 84.2496500001289,
+              "samples": [
+                84.2496500001289,
+                51.554149998992216,
+                54.446450000978075
+              ]
+            },
+            "after": {
+              "median": 50.967949999903794,
+              "min": 46.75134999997681,
+              "max": 57.06460000074003,
+              "samples": [
+                46.75134999997681,
+                50.967949999903794,
+                57.06460000074003
+              ]
+            }
+          }
+        },
+        {
+          "name": "generation-seed",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 2.844950000871904,
+              "min": 2.322000000276603,
+              "max": 5.735650000860915,
+              "samples": [
+                5.735650000860915,
+                2.322000000276603,
+                2.844950000871904
+              ]
+            },
+            "after": {
+              "median": 2.6176499988650903,
+              "min": 2.306700000190176,
+              "max": 2.865949999250006,
+              "samples": [
+                2.865949999250006,
+                2.6176499988650903,
+                2.306700000190176
+              ]
+            }
+          }
+        },
+        {
+          "name": "generation-seed",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 105.6476500001736,
+              "min": 80.3413499990711,
+              "max": 128.80615000030957,
+              "samples": [
+                80.3413499990711,
+                105.6476500001736,
+                128.80615000030957
+              ]
+            },
+            "after": {
+              "median": 83.40634999913163,
+              "min": 79.6140500009642,
+              "max": 102.75254999869503,
+              "samples": [
+                79.6140500009642,
+                83.40634999913163,
+                102.75254999869503
+              ]
+            }
+          }
+        },
+        {
+          "name": "chat-return",
+          "mode": "origin",
+          "variants": {
+            "before": {
+              "median": 2.4958499998319894,
+              "min": 2.368850000493694,
+              "max": 4.368899999826681,
+              "samples": [
+                2.368850000493694,
+                2.4958499998319894,
+                4.368899999826681
+              ]
+            },
+            "after": {
+              "median": 2.7581499991356395,
+              "min": 2.0690000004833564,
+              "max": 13.096550000773277,
+              "samples": [
+                2.7581499991356395,
+                13.096550000773277,
+                2.0690000004833564
+              ]
+            }
+          }
+        },
+        {
+          "name": "chat-return",
+          "mode": "mutation",
+          "variants": {
+            "before": {
+              "median": 123.70219999866094,
+              "min": 111.13949999999022,
+              "max": 139.77854999975534,
+              "samples": [
+                111.13949999999022,
+                139.77854999975534,
+                123.70219999866094
+              ]
+            },
+            "after": {
+              "median": 124.77715000131866,
+              "min": 124.54964999924414,
+              "max": 151.2876499997219,
+              "samples": [
+                124.54964999924414,
+                151.2876499997219,
+                124.77715000131866
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "isolatedQuerySummary": [
+    {
+      "name": "generation-wrap",
+      "mode": "origin",
+      "variants": {
+        "before": {
+          "median": 3.02445554445557,
+          "min": 2.2969690309690196,
+          "max": 4.607083916083924,
+          "samples": [
+            4.607083916083924,
+            4.433585414585411,
+            3.02445554445557,
+            2.9908371628371704,
+            2.2969690309690196,
+            3.6103346653346664,
+            2.405701298701328
+          ]
+        },
+        "after": {
+          "median": 3.1113286713286734,
+          "min": 2.5650529470529855,
+          "max": 8.23259440559443,
+          "samples": [
+            3.959608391608344,
+            3.0733836163836212,
+            8.23259440559443,
+            7.463146853146876,
+            2.789943056943055,
+            3.1113286713286734,
+            2.5650529470529855
+          ]
+        }
+      }
+    },
+    {
+      "name": "generation-wrap",
+      "mode": "mutation",
+      "variants": {
+        "before": {
+          "median": 5.156038961038981,
+          "min": 4.778295704295703,
+          "max": 11.753455544455573,
+          "samples": [
+            6.250893106893146,
+            4.952473526473524,
+            4.827477522477542,
+            4.778295704295703,
+            5.156038961038981,
+            11.753455544455573,
+            5.75788711288711
+          ]
+        },
+        "after": {
+          "median": 6.829461538461556,
+          "min": 4.477468531468525,
+          "max": 8.063400599400591,
+          "samples": [
+            6.829461538461556,
+            4.851214785214784,
+            5.029984015984006,
+            4.477468531468525,
+            7.511553446553458,
+            8.063400599400591,
+            7.004394605394588
+          ]
+        }
+      }
+    },
+    {
+      "name": "generation-done",
+      "mode": "origin",
+      "variants": {
+        "before": {
+          "median": 2.340543456543426,
+          "min": 1.870250749250742,
+          "max": 3.072731268731274,
+          "samples": [
+            3.072731268731274,
+            2.219481518481514,
+            2.382136863136875,
+            2.4819480519480837,
+            2.340543456543426,
+            1.870250749250742,
+            1.8779380619380672
+          ]
+        },
+        "after": {
+          "median": 2.0866403596403655,
+          "min": 1.7750219780220227,
+          "max": 2.361304695304662,
+          "samples": [
+            2.361304695304662,
+            2.2327032967033014,
+            2.3389050949051122,
+            2.0866403596403655,
+            1.9926023976024014,
+            1.7750219780220227,
+            2.0207762237761924
+          ]
+        }
+      }
+    },
+    {
+      "name": "generation-done",
+      "mode": "mutation",
+      "variants": {
+        "before": {
+          "median": 33.49759940059933,
+          "min": 29.07830469530461,
+          "max": 37.78810889110883,
+          "samples": [
+            37.78810889110883,
+            36.805534465534386,
+            33.49759940059933,
+            30.389435564435622,
+            35.30820679320682,
+            29.07830469530461,
+            32.52506193806195
+          ]
+        },
+        "after": {
+          "median": 28.323312687312672,
+          "min": 25.723804195804252,
+          "max": 44.20184715284712,
+          "samples": [
+            44.20184715284712,
+            35.02673026973032,
+            26.410810189810213,
+            25.723804195804252,
+            28.323312687312672,
+            28.05494205794215,
+            31.56346553446549
+          ]
+        }
+      }
+    },
+    {
+      "name": "generation-seed",
+      "mode": "origin",
+      "variants": {
+        "before": {
+          "median": 1.5739790209789208,
+          "min": 1.3288981018980246,
+          "max": 1.830105894105822,
+          "samples": [
+            1.8146253746253178,
+            1.7001898101898587,
+            1.830105894105822,
+            1.3288981018980246,
+            1.3381678321678607,
+            1.4532397602397804,
+            1.5739790209789208
+          ]
+        },
+        "after": {
+          "median": 1.7566843156842638,
+          "min": 1.4134695304694485,
+          "max": 5.123909090909026,
+          "samples": [
+            5.123909090909026,
+            2.6091108891108803,
+            1.7566843156842638,
+            1.5163646353647375,
+            1.4134695304694485,
+            2.3845524475524367,
+            1.491978021978024
+          ]
+        }
+      }
+    },
+    {
+      "name": "generation-seed",
+      "mode": "mutation",
+      "variants": {
+        "before": {
+          "median": 50.11281218781228,
+          "min": 45.65758441558446,
+          "max": 60.903373626373664,
+          "samples": [
+            60.903373626373664,
+            50.11281218781228,
+            50.73222277722291,
+            54.09772927072941,
+            47.23809590409605,
+            45.65758441558446,
+            46.06213586413599
+          ]
+        },
+        "after": {
+          "median": 51.07155644355652,
+          "min": 44.52417882117874,
+          "max": 56.205225774225674,
+          "samples": [
+            54.96111088911101,
+            54.34235164835167,
+            51.07155644355652,
+            56.205225774225674,
+            44.95370529470538,
+            46.196488511488454,
+            44.52417882117874
+          ]
+        }
+      }
+    },
+    {
+      "name": "chat-return",
+      "mode": "origin",
+      "variants": {
+        "before": {
+          "median": 1.8701908091908397,
+          "min": 1.5386603396603693,
+          "max": 2.2423866133866452,
+          "samples": [
+            2.2423866133866452,
+            2.028772227772111,
+            1.7510419580420686,
+            2.1060329670329043,
+            1.7294925074926235,
+            1.8701908091908397,
+            1.5386603396603693
+          ]
+        },
+        "after": {
+          "median": 1.7426033966033472,
+          "min": 1.5940159840160628,
+          "max": 2.233522477522515,
+          "samples": [
+            2.233522477522515,
+            2.1541228771229224,
+            1.7426033966033472,
+            1.664296703296628,
+            1.7844515484516927,
+            1.5940159840160628,
+            1.6048951048952012
+          ]
+        }
+      }
+    },
+    {
+      "name": "chat-return",
+      "mode": "mutation",
+      "variants": {
+        "before": {
+          "median": 96.13788611388597,
+          "min": 92.03089210789247,
+          "max": 104.91008491508491,
+          "samples": [
+            96.13788611388597,
+            96.04989510489531,
+            96.74237762237772,
+            96.86414985014983,
+            96.01404795204814,
+            104.91008491508491,
+            92.03089210789247
+          ]
+        },
+        "after": {
+          "median": 97.80190609390624,
+          "min": 92.59864035964036,
+          "max": 106.37522177822174,
+          "samples": [
+            97.80190609390624,
+            92.59864035964036,
+            98.67964135864159,
+            106.37522177822174,
+            94.59331368631368,
+            98.1384875124874,
+            95.13080419580413
+          ]
+        }
+      }
+    }
+  ],
+  "performance": {
+    "runs": 3,
+    "repetitions": 20,
+    "baselineModule": "/tmp/fsj-delivery-before/analysis.ts",
+    "compileCommandsSha256": "c60fda7b2e59fefcfec53c59560d7dc9da47e338a3432ff156da0140cb4f2005",
+    "variants": [
+      {
+        "name": "before",
+        "extractor": "/tmp/fsj-delivery-before/extractor",
+        "extractorSha256": "3baac44a0e628f96c1b4c9428554faef297111714b43919c80be631e04b16785"
+      },
+      {
+        "name": "after",
+        "extractor": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "extractorSha256": "17a188826a73e9158ff0426b2ea00d3fa41cd6016190e9186474143a0cf265ce"
+      }
+    ],
+    "currentSourceSha256": "5a01bc1617c786443e6b0800deb6422ac7be5cae05d6b11966ba5426620bda51",
+    "baselineSourceSha256": "3b704f3d666ec5d1bb403a50a2ef6ccafdd83f3efb1f9aa7b6011a006cbc07f7",
+    "measurements": [
+      {
+        "input": "micro",
+        "file": "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp",
+        "sourceSha256": "a62cf48c10326d860af7c0a68f42aa807614d7387fad4e32acad8d5fbea7c0c5",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-std=c++20",
+            "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp"
+          ],
+          "cwd": "/home/huawei/fold-state-jump"
+        },
+        "queries": [
+          {
+            "name": "parameter",
+            "offset": 578
+          },
+          {
+            "name": "relay",
+            "offset": 889
+          },
+          {
+            "name": "aggregate",
+            "offset": 1450
+          },
+          {
+            "name": "branches",
+            "offset": 2229
+          },
+          {
+            "name": "partial",
+            "offset": 4586
+          },
+          {
+            "name": "capture",
+            "offset": 3889
+          }
+        ],
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "extractMs": 248.66767600000003,
+            "parseMs": 1.1630700000000047,
+            "prepareMs": 11.243146999999965,
+            "returnSummaryMs": 0.16334594999999866,
+            "astBytes": 858747,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 19497,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 62.156049999998686,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 64.3738500000012,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 79.574199999999,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 76.26630000000034,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 24.15850000000148,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 128.14695000000142,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 26.411300000000892,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 44.3153499999994,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 14.877150000000938,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 26.350800000000163,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 2.2168999999991,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 89.72970000000089,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "extractMs": 207.15528400000005,
+            "parseMs": 1.090516999999977,
+            "prepareMs": 10.080858000000035,
+            "returnSummaryMs": 0.15178035000000137,
+            "astBytes": 872256,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 22451,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 47.7361999999971,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 53.39374999999791,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 30.867099999994707,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 53.2859999999971,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 20.898799999997664,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 230.8493999999996,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 36.44515000000297,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 50.265849999999546,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 20.138150000002497,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 25.646500000004835,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 1.8907500000011623,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 93.45835000000307,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "extractMs": 225.53245600000002,
+            "parseMs": 2.437061000000085,
+            "prepareMs": 7.797422999999981,
+            "returnSummaryMs": 0.10105699999999729,
+            "astBytes": 872256,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 22451,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 16.7067999999972,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 23.032100000000355,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 23.794800000001715,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 106.7713499999968,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 65.75360000000501,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 88.9910499999985,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 45.740699999998924,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 61.816900000002306,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 24.768499999998994,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 22.637600000001612,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 3.148649999997133,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 47.09809999999948,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "extractMs": 248.15522800000008,
+            "parseMs": 1.1416269999999713,
+            "prepareMs": 5.512817000000041,
+            "returnSummaryMs": 0.12865395000000035,
+            "astBytes": 858747,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 19497,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 28.871049999997922,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 36.454300000002604,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 21.66614999999865,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 61.96270000000368,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 20.394850000002407,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 31.193599999994603,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 40.59355000000551,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 29.939200000001165,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 20.22620000000188,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 24.652800000001207,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 3.2368499999961386,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 51.540399999998954,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "extractMs": 202.84195899999986,
+            "parseMs": 1.2137299999999414,
+            "prepareMs": 3.2312060000001566,
+            "returnSummaryMs": 0.08216449999999895,
+            "astBytes": 858747,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 19497,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 29.407350000008137,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 14.200049999999464,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 23.043600000005426,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 22.826499999996486,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 11.105850000001283,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 16.735099999993963,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 31.77815000000237,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 40.90210000000525,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 24.310700000000907,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 21.075500000006286,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 2.0541499999922053,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 33.54024999999865,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "extractMs": 178.48827400000005,
+            "parseMs": 1.8726090000000113,
+            "prepareMs": 7.4185959999999795,
+            "returnSummaryMs": 0.07667135000000372,
+            "astBytes": 872256,
+            "storageMetadataBytes": 31821,
+            "returnMetadataBytes": 22451,
+            "returnBranches": 50,
+            "timings": [
+              {
+                "name": "parameter",
+                "mode": "origin",
+                "queryUs": 17.919849999998405,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "parameter",
+                "mode": "mutation",
+                "queryUs": 15.741600000001199,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "origin",
+                "queryUs": 19.61790000000292,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "relay",
+                "mode": "mutation",
+                "queryUs": 19.905849999997827,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "origin",
+                "queryUs": 11.627250000003642,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "aggregate",
+                "mode": "mutation",
+                "queryUs": 14.71524999999474,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "origin",
+                "queryUs": 19.542999999998756,
+                "result": "OriginCandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "branches",
+                "mode": "mutation",
+                "queryUs": 25.18284999999878,
+                "result": "CandidatesFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "origin",
+                "queryUs": 14.555350000000544,
+                "result": "OriginFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "partial",
+                "mode": "mutation",
+                "queryUs": 34.98089999999365,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/fold-state-jump/test/fixtures/return-sources.cpp:4514 return: Unsupported argument expression: CallExpr. Return source unavailable: unknown (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "capture",
+                "mode": "origin",
+                "queryUs": 1.7077500000027612,
+                "result": "OriginFound"
+              },
+              {
+                "name": "capture",
+                "mode": "mutation",
+                "queryUs": 31.665850000001683,
+                "result": "MutationFound",
+                "returnMapping": {
+                  "kind": "complete"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "pipeline.h",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "sourceSha256": "dffc286040436fb8ec371e1fb16cc12378d401f0b11df46f363c3e6329a44053",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-x",
+            "c++-header",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "inferred",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "queries": [
+          {
+            "name": "batch-return",
+            "offset": 46430
+          },
+          {
+            "name": "layer-seed",
+            "offset": 39537
+          }
+        ],
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "extractMs": 13731.299238,
+            "parseMs": 11.642324000000372,
+            "prepareMs": 43.60751000000164,
+            "returnSummaryMs": 1.9747212499999478,
+            "astBytes": 9552760,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 99651,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 7.753000000047905,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 3.8465999999971245,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 6.334600000081991,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 277778.7372500001,
+                "result": "MutationFound"
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "extractMs": 13357.590476000005,
+            "parseMs": 11.147362999996403,
+            "prepareMs": 48.44297899999947,
+            "returnSummaryMs": 2.015807499999937,
+            "astBytes": 9716377,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 103101,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 10.562950000166893,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 11.236250000001746,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 5.286500000147498,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 249748.48045,
+                "result": "MutationFound"
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "extractMs": 13007.149316000003,
+            "parseMs": 13.14809399999649,
+            "prepareMs": 40.292264999996405,
+            "returnSummaryMs": 2.0065216500002863,
+            "astBytes": 9716377,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 103101,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 6.326450000051409,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 7.316450000143959,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 3.97835000003397,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 255284.8853000003,
+                "result": "MutationFound"
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "extractMs": 13805.82212299999,
+            "parseMs": 13.739151999994647,
+            "prepareMs": 60.72114100000181,
+            "returnSummaryMs": 2.3226635500002883,
+            "astBytes": 9552760,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 99651,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 8.142899999802466,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 6.620149999798741,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 6.348499999876367,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 256549.5299000002,
+                "result": "MutationFound"
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "extractMs": 13472.041650999992,
+            "parseMs": 11.106197999994038,
+            "prepareMs": 37.528699000002234,
+            "returnSummaryMs": 2.0170630500004334,
+            "astBytes": 9552760,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 99651,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 6.453550000151154,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 5.497149999428075,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 4.244599999947241,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 264332.93859999976,
+                "result": "MutationFound"
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "extractMs": 13903.144291000004,
+            "parseMs": 11.69570099998964,
+            "prepareMs": 54.179790000009234,
+            "returnSummaryMs": 2.5643081499998517,
+            "astBytes": 9716377,
+            "storageMetadataBytes": 1622207,
+            "returnMetadataBytes": 103101,
+            "returnBranches": 203,
+            "timings": [
+              {
+                "name": "batch-return",
+                "mode": "origin",
+                "queryUs": 92.88719999967725,
+                "result": "OriginFound"
+              },
+              {
+                "name": "batch-return",
+                "mode": "mutation",
+                "queryUs": 7.425399999920046,
+                "result": "MutationFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "origin",
+                "queryUs": 4.027800000039861,
+                "result": "OriginFound"
+              },
+              {
+                "name": "layer-seed",
+                "mode": "mutation",
+                "queryUs": 269636.49884999974,
+                "result": "MutationFound"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "input": "cli.cpp",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+        "sourceSha256": "0929f693b67ec8b5913c5956518ce757742f3851594fdb85fa47eda698ab4dda",
+        "command": {
+          "compiler": "clang++",
+          "args": [
+            "-DGGML_BACKEND_SHARED",
+            "-DGGML_SHARED",
+            "-DGGML_USE_CPU",
+            "-DLLAMA_SHARED",
+            "-DLLAMA_SUBPROCESS",
+            "-I/home/huawei/nano-infer/minicpm-v-4_7",
+            "-I/home/huawei/nano-infer/shared",
+            "-I/home/huawei/nano-infer/llama.cpp/src",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor",
+            "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+            "-I/home/huawei/nano-infer/llama.cpp/common/.",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+            "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+            "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+            "-isystem",
+            "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+            "-O3",
+            "-DNDEBUG",
+            "-std=gnu++17",
+            "-Wall",
+            "-Wextra",
+            "-Xclang",
+            "-ast-dump=json",
+            "-fsyntax-only",
+            "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp"
+          ],
+          "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+          "context": "exact",
+          "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+        },
+        "queries": [
+          {
+            "name": "generation-wrap",
+            "offset": 22338
+          },
+          {
+            "name": "generation-done",
+            "offset": 22293
+          },
+          {
+            "name": "generation-seed",
+            "offset": 22204
+          },
+          {
+            "name": "chat-return",
+            "offset": 23982
+          }
+        ],
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "extractMs": 17213.72297199999,
+            "parseMs": 38.088317999994615,
+            "prepareMs": 129.87197800001013,
+            "returnSummaryMs": 7.128076249999867,
+            "astBytes": 26480884,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 277419,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 5.087050001020543,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 17.002200000570156,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 3.7051499995868653,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 84.2496500001289,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 5.735650000860915,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 80.3413499990711,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 2.368850000493694,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 111.13949999999022,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "extractMs": 18332.81104,
+            "parseMs": 36.700875000009546,
+            "prepareMs": 108.51382299998659,
+            "returnSummaryMs": 7.030857999999716,
+            "astBytes": 27019772,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 286641,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 4.398200000287034,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 26.518499999656342,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 9.38014999992447,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 46.75134999997681,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 2.865949999250006,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 79.6140500009642,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 2.7581499991356395,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 124.54964999924414,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "extractMs": 17423.59692099999,
+            "parseMs": 35.5060260000173,
+            "prepareMs": 107.30176300002495,
+            "returnSummaryMs": 6.821843750000698,
+            "astBytes": 27019772,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 286641,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 5.4245999999693595,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 10.989449999760836,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 3.6414000001968816,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 50.967949999903794,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 2.6176499988650903,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 83.40634999913163,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 13.096550000773277,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 151.2876499997219,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "extractMs": 16605.255535000004,
+            "parseMs": 36.76441400000476,
+            "prepareMs": 107.87601099998574,
+            "returnSummaryMs": 6.361527349999233,
+            "astBytes": 26480884,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 277419,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 7.182850000390317,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 18.12424999952782,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 5.143099999986589,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 51.554149998992216,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 2.322000000276603,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 105.6476500001736,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 2.4958499998319894,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 139.77854999975534,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "extractMs": 17273.269428,
+            "parseMs": 41.732829000015045,
+            "prepareMs": 110.75730399999884,
+            "returnSummaryMs": 7.715155049999884,
+            "astBytes": 26480884,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 277419,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 4.4678500009467825,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 8.194799999182578,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 3.6269000003812835,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 54.446450000978075,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 2.844950000871904,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 128.80615000030957,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 4.368899999826681,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 123.70219999866094,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "extractMs": 17463.259217000013,
+            "parseMs": 30.506426000007195,
+            "prepareMs": 113.36732399999164,
+            "returnSummaryMs": 7.011829349999607,
+            "astBytes": 27019772,
+            "storageMetadataBytes": 2379278,
+            "returnMetadataBytes": 286641,
+            "returnBranches": 830,
+            "timings": [
+              {
+                "name": "generation-wrap",
+                "mode": "origin",
+                "queryUs": 6.374500000674743,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-wrap",
+                "mode": "mutation",
+                "queryUs": 15.730249999614898,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "origin",
+                "queryUs": 3.9226499997312203,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-done",
+                "mode": "mutation",
+                "queryUs": 57.06460000074003,
+                "result": "MutationFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "origin",
+                "queryUs": 2.306700000190176,
+                "result": "OriginFound"
+              },
+              {
+                "name": "generation-seed",
+                "mode": "mutation",
+                "queryUs": 102.75254999869503,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              },
+              {
+                "name": "chat-return",
+                "mode": "origin",
+                "queryUs": 2.0690000004833564,
+                "result": "OriginFound"
+              },
+              {
+                "name": "chat-return",
+                "mode": "mutation",
+                "queryUs": 124.77715000131866,
+                "result": "AnalysisFailure",
+                "returnMapping": {
+                  "kind": "incomplete",
+                  "reasons": [
+                    "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "isolatedQueryPerformance": {
+    "runs": 7,
+    "repetitions": 1000,
+    "astSha256": "e39e137bba640987c217e0e20f0331dd0a39d5a525b84684245a029595a4f089",
+    "sourceSha256": "0929f693b67ec8b5913c5956518ce757742f3851594fdb85fa47eda698ab4dda",
+    "currentSourceSha256": "5a01bc1617c786443e6b0800deb6422ac7be5cae05d6b11966ba5426620bda51",
+    "baselineSourceSha256": "3b704f3d666ec5d1bb403a50a2ef6ccafdd83f3efb1f9aa7b6011a006cbc07f7",
+    "timings": [
+      {
+        "name": "generation-wrap",
+        "mode": "origin",
+        "offset": 22338,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 4.607083916083924,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 3.959608391608344,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 3.0733836163836212,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 4.433585414585411,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 3.02445554445557,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 8.23259440559443,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 7.463146853146876,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 2.9908371628371704,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 2.2969690309690196,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 2.789943056943055,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 3.1113286713286734,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 3.6103346653346664,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 2.405701298701328,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 2.5650529470529855,
+            "result": "OriginFound"
+          }
+        ]
+      },
+      {
+        "name": "generation-wrap",
+        "mode": "mutation",
+        "offset": 22338,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 6.250893106893146,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 6.829461538461556,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 4.851214785214784,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 4.952473526473524,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 4.827477522477542,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 5.029984015984006,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 4.477468531468525,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 4.778295704295703,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 5.156038961038981,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 7.511553446553458,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 8.063400599400591,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 11.753455544455573,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 5.75788711288711,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 7.004394605394588,
+            "result": "MutationFound"
+          }
+        ]
+      },
+      {
+        "name": "generation-done",
+        "mode": "origin",
+        "offset": 22293,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 3.072731268731274,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 2.361304695304662,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 2.2327032967033014,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 2.219481518481514,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 2.382136863136875,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 2.3389050949051122,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 2.0866403596403655,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 2.4819480519480837,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 2.340543456543426,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 1.9926023976024014,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 1.7750219780220227,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 1.870250749250742,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 1.8779380619380672,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 2.0207762237761924,
+            "result": "OriginFound"
+          }
+        ]
+      },
+      {
+        "name": "generation-done",
+        "mode": "mutation",
+        "offset": 22293,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 37.78810889110883,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 44.20184715284712,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 35.02673026973032,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 36.805534465534386,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 33.49759940059933,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 26.410810189810213,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 25.723804195804252,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 30.389435564435622,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 35.30820679320682,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 28.323312687312672,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 28.05494205794215,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 29.07830469530461,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 32.52506193806195,
+            "result": "MutationFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 31.56346553446549,
+            "result": "MutationFound"
+          }
+        ]
+      },
+      {
+        "name": "generation-seed",
+        "mode": "origin",
+        "offset": 22204,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 1.8146253746253178,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 5.123909090909026,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 2.6091108891108803,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 1.7001898101898587,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 1.830105894105822,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 1.7566843156842638,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 1.5163646353647375,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 1.3288981018980246,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 1.3381678321678607,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 1.4134695304694485,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 2.3845524475524367,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 1.4532397602397804,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 1.5739790209789208,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 1.491978021978024,
+            "result": "OriginFound"
+          }
+        ]
+      },
+      {
+        "name": "generation-seed",
+        "mode": "mutation",
+        "offset": 22204,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 60.903373626373664,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 54.96111088911101,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 54.34235164835167,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 50.11281218781228,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 50.73222277722291,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 51.07155644355652,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 56.205225774225674,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 54.09772927072941,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 47.23809590409605,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 44.95370529470538,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 46.196488511488454,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 45.65758441558446,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 46.06213586413599,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 44.52417882117874,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "chat-return",
+        "mode": "origin",
+        "offset": 23982,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 2.2423866133866452,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 2.233522477522515,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 2.1541228771229224,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 2.028772227772111,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 1.7510419580420686,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 1.7426033966033472,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 1.664296703296628,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 2.1060329670329043,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 1.7294925074926235,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 1.7844515484516927,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 1.5940159840160628,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 1.8701908091908397,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 1.5386603396603693,
+            "result": "OriginFound"
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 1.6048951048952012,
+            "result": "OriginFound"
+          }
+        ]
+      },
+      {
+        "name": "chat-return",
+        "mode": "mutation",
+        "offset": 23982,
+        "samples": [
+          {
+            "variant": "before",
+            "run": 0,
+            "queryUs": 96.13788611388597,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 0,
+            "queryUs": 97.80190609390624,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 1,
+            "queryUs": 92.59864035964036,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 1,
+            "queryUs": 96.04989510489531,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 2,
+            "queryUs": 96.74237762237772,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 2,
+            "queryUs": 98.67964135864159,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 3,
+            "queryUs": 106.37522177822174,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 3,
+            "queryUs": 96.86414985014983,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 4,
+            "queryUs": 96.01404795204814,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 4,
+            "queryUs": 94.59331368631368,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 5,
+            "queryUs": 98.1384875124874,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 5,
+            "queryUs": 104.91008491508491,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "before",
+            "run": 6,
+            "queryUs": 92.03089210789247,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable)."
+              ]
+            }
+          },
+          {
+            "variant": "after",
+            "run": 6,
+            "queryUs": 95.13080419580413,
+            "result": "AnalysisFailure",
+            "returnMapping": {
+              "kind": "incomplete",
+              "reasons": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "systemExperiment": {
+    "command": {
+      "compiler": "/tmp/fsj-fold-definition-probe/build/fold-state-jump-ast",
+      "args": [
+        "--source",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+        "--",
+        "-DGGML_BACKEND_SHARED",
+        "-DGGML_SHARED",
+        "-DGGML_USE_CPU",
+        "-DLLAMA_SHARED",
+        "-DLLAMA_SUBPROCESS",
+        "-I/home/huawei/nano-infer/minicpm-v-4_7",
+        "-I/home/huawei/nano-infer/shared",
+        "-I/home/huawei/nano-infer/llama.cpp/src",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor",
+        "-I/home/huawei/nano-infer/llama.cpp/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/ggml/src/../include",
+        "-I/home/huawei/nano-infer/llama.cpp/common/.",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/..",
+        "-I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/..",
+        "-I/home/huawei/nano-infer/llama.cpp/tools/mtmd/.",
+        "-isystem",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=gnu++17",
+        "-Wall",
+        "-Wextra"
+      ],
+      "cwd": "/home/huawei/nano-infer/build-cpu-tests",
+      "context": "exact",
+      "buildConfiguration": "{\"directory\":\"/home/huawei/nano-infer/build-cpu-tests\",\"file\":\"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\",\"command\":\"/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DLLAMA_SHARED -DLLAMA_SUBPROCESS -I/home/huawei/nano-infer/minicpm-v-4_7 -I/home/huawei/nano-infer/shared -I/home/huawei/nano-infer/llama.cpp/src -I/home/huawei/nano-infer/llama.cpp/vendor -I/home/huawei/nano-infer/llama.cpp/src/../include -I/home/huawei/nano-infer/llama.cpp/ggml/src/../include -I/home/huawei/nano-infer/llama.cpp/common/. -I/home/huawei/nano-infer/llama.cpp/vendor/nlohmann/.. -I/home/huawei/nano-infer/llama.cpp/vendor/sheredom/.. -I/home/huawei/nano-infer/llama.cpp/tools/mtmd/. -isystem /home/huawei/nano-infer/vcpkg_installed/x64-linux/include -O3 -DNDEBUG -std=gnu++17 -Wall -Wextra -o minicpm-v-4_7/CMakeFiles/minicpm_v47_cli.dir/cli.cpp.o -c /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp\"}"
+    },
+    "nativeSourceSha256": "318bedff4fe0f4240174fb0fd00aa75d83bd226093060c193af0ca44f06e4266",
+    "nativeBinarySha256": "78289a5ddb303be5126e8f7194feb8db0ccd9626ea80d03bfd8c1fcdd7d2fbcd",
+    "report": "return-system-definition-probe-2026-10-26.json"
+  },
+  "finalAudit": [
+    {
+      "file": "minicpm-v-4_7/pipeline.h",
+      "extractAndPrepareMs": 14790.370389000002,
+      "astBytes": 9716377,
+      "queries": [
+        {
+          "name": "batch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1079
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 1077,
+                    "text": "session_state.rope_position = next_rope;"
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-borrow",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 1056
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:45177: Unverified call effect on layer_execution.session_state.*: finish_host_copies; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefill-helper",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 996
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 250,
+                    "text": "bank_state.slots = std::move(plan.slots);"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 984,
+                        "text": "start_prefill_layer(bank_context, bank_state,"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 924,
+                    "text": "LayerExecution{&session_state, nullptr},"
+                  },
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 981,
+                        "text": "[&]() -> std::variant<PreparedPrefill, PreparedDecode> {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "layer-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/pipeline.h",
+            "line": 924
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 883,
+                    "text": "++session_state.bank_state.counters.graph_builds;"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "minicpm-v-4_7/pipeline.h",
+                        "line": 850,
+                        "text": "[&] {"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/pipeline.h",
+                    "line": 801,
+                    "text": "BatchState{std::move(session.session_state), {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/cli.cpp",
+      "extractAndPrepareMs": 17395.754042,
+      "astBytes": 27019772,
+      "queries": [
+        {
+          "name": "generation-wrap",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 492,
+                    "text": "generation.batch_state = take_batch_state(pipeline.run_batch("
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-done",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 473
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 483,
+                    "text": "generation.done = true;"
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 471,
+                    "text": "Generation{std::move(batch_state), {}, false},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "generation-seed",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 471
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CallExpr. No verified mutation through return source of prefill. /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CallExpr. No verified mutation through return source of prefill.",
+                "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 448,
+                    "text": "auto batch_state = prefill(pipeline, std::move(chat_state.session_state),"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "chat-return",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 513
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST.",
+              "candidates": [],
+              "diagnostics": [
+                "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 469,
+                    "text": "auto generation = ranges::fold_left("
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "clear-input",
+          "selected": {
+            "file": "minicpm-v-4_7/cli.cpp",
+            "line": 636
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 644,
+                    "text": "interactive->chat_state ="
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/cli.cpp",
+                    "line": 625,
+                    "text": "&interactive,"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/ffn.h",
+      "extractAndPrepareMs": 11344.461331000002,
+      "astBytes": 4346687,
+      "queries": [
+        {
+          "name": "pending-reset",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 270
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:12423: Unverified call effect on bank_state.pending: operator->; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 262,
+                    "text": "BankState &bank_state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "start_decode_layer"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "prefill-counter",
+          "selected": {
+            "file": "minicpm-v-4_7/ffn.h",
+            "line": 450
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h:19826: Unverified call effect on current.: operator(); shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/ffn.h",
+                    "line": 457,
+                    "text": "ActivePrefillLayer current) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": [
+                    {
+                      "caller": "finish_prefill_layer",
+                      "call": {
+                        "file": "minicpm-v-4_7/ffn.h",
+                        "line": 458,
+                        "text": "finish_prefill_read(bank_state, std::move(current));"
+                      },
+                      "argument": [
+                        "current",
+                        []
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_prefill_layer",
+                "finish_prefill_read"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/experts.h",
+      "extractAndPrepareMs": 10150.727945999999,
+      "astBytes": 14399683,
+      "queries": [
+        {
+          "name": "slot-index",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 447
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/experts.h:22079: Unverified call effect on plan.slots.ages: operator[]; shared storage or callback effects are not verified. Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/experts.h:22079: Unverified call effect on plan.slots.ages: operator[]; shared storage or callback effects are not verified.",
+                "Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 433,
+                    "text": "Planning{bank_state.slots, {}, {}, {}},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "prefetch-return",
+          "selected": {
+            "file": "minicpm-v-4_7/experts.h",
+            "line": 590
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 585,
+                    "text": "bank_state.pending ="
+                  },
+                  "wrapped": false,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/experts.h",
+                    "line": 511,
+                    "text": "BankState bank_state, int layer,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "begin_decode_prefetch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "minicpm-v-4_7/expert_io.h",
+      "extractAndPrepareMs": 7009.415226000005,
+      "astBytes": 3228846,
+      "queries": [
+        {
+          "name": "read-progress",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 800
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 800,
+                    "text": "--progress.remaining != 0)"
+                  },
+                  "wrapped": true,
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 790,
+                    "text": "&task.batch->read_state,"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "future-result",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 502
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; retained variant projection identity is not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h:21858: Unverified call effect on read_ticket.read_result: get_if; retained variant projection identity is not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 497,
+                    "text": "SharedReadTicket read_ticket) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "finish_shared_read"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "queue-count",
+          "selected": {
+            "file": "minicpm-v-4_7/expert_io.h",
+            "line": 727
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for take_io_task.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for take_io_task."
+              ],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "minicpm-v-4_7/expert_io.h",
+                    "line": 722,
+                    "text": "IoQueue &queue) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "take_io_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "extractAndPrepareMs": 6692.096043999998,
+      "astBytes": 6290162,
+      "queries": [
+        {
+          "name": "attention-cache",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1716
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h:72566: Unverified call effect on cache.: execute_attention; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h:72566: Unverified call effect on cache.: execute_attention; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1716,
+                    "text": "const auto &cache = state.cache->layers.at(il);"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "attention-return",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_pipeline.h",
+            "line": 1731
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for run_batch.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for run_batch."
+              ],
+              "externalOwners": [
+                "run_batch"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_pipeline.h",
+                    "line": 1683,
+                    "text": "AttentionState state,"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "run_batch"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "extractAndPrepareMs": 7517.115722000002,
+      "astBytes": 4771209,
+      "queries": [
+        {
+          "name": "ffn-runtime",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 492
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "MutationFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 476,
+                    "text": "state.banks.push_back(prepare_expert_bank(layout, model.layers.at(il)));"
+                  },
+                  "wrapped": false,
+                  "frames": [
+                    {
+                      "caller": "operator()",
+                      "call": {
+                        "file": "deepseek-v4-flash/ffn_service.h",
+                        "line": 491,
+                        "text": "find_or_prepare_expert_bank(state, model, il, layout);"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 484,
+                    "text": "FfnRuntime{},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "ffn-service",
+          "selected": {
+            "file": "deepseek-v4-flash/ffn_service.h",
+            "line": 678
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified. Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/ffn_service.h:31265: Unverified call effect on state.ffn: finish_request; shared storage or callback effects are not verified.",
+                "Fold state has no indexed mutation; returned state transformations are not verified. Use Origin for the fold seed."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/ffn_service.h",
+                    "line": 671,
+                    "text": "State{transport.await_call(), std::move(runtime)},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "shared/ffn_rpc.h",
+      "extractAndPrepareMs": 4257.988366999998,
+      "astBytes": 2203493,
+      "queries": [
+        {
+          "name": "rpc-variant",
+          "selected": {
+            "file": "shared/ffn_rpc.h",
+            "line": 322
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. No verified caller is available for advance.",
+              "candidates": [],
+              "diagnostics": [
+                "No verified caller is available for advance."
+              ],
+              "externalOwners": [
+                "advance"
+              ]
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "shared/ffn_rpc.h",
+                    "line": 320,
+                    "text": "State state, const Event &event) {"
+                  },
+                  "boundary": "No verified caller is available; stopped at the parameter.",
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": [
+                "advance"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "deepseek-v4-flash/attention_node.cpp",
+      "extractAndPrepareMs": 6999.022499999992,
+      "astBytes": 7349209,
+      "queries": [
+        {
+          "name": "deepseek-prefill",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 52
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2041: Unverified call effect on state.: run_batch; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 44,
+                    "text": "PrefillState{pipeline.start_session()},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        },
+        {
+          "name": "deepseek-generation",
+          "selected": {
+            "file": "deepseek-v4-flash/attention_node.cpp",
+            "line": 65
+          },
+          "queries": [
+            {
+              "mode": "mutation",
+              "tag": "AnalysisFailure",
+              "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. /home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified.",
+              "candidates": [],
+              "diagnostics": [
+                "/home/huawei/nano-infer/deepseek-v4-flash/attention_node.cpp:2442: Unverified call effect on state.: holds_alternative; shared storage or callback effects are not verified."
+              ],
+              "externalOwners": []
+            },
+            {
+              "mode": "origin",
+              "tag": "OriginFound",
+              "candidates": [
+                {
+                  "target": {
+                    "file": "deepseek-v4-flash/attention_node.cpp",
+                    "line": 59,
+                    "text": "Generation{std::move(std::get<BatchResult>(prefill))},"
+                  },
+                  "frames": []
+                }
+              ],
+              "diagnostics": [],
+              "externalOwners": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "productionReturnCursors": [
+    {
+      "name": "generation-seed",
+      "line": 471,
+      "returnMapping": {
+        "kind": "incomplete",
+        "reasons": [
+          "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+        ]
+      },
+      "diagnostics": [
+        "Unsupported argument expression: CallExpr. No verified mutation through return source of prefill.",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+      ],
+      "originLine": 448
+    },
+    {
+      "name": "chat-return",
+      "line": 513,
+      "returnMapping": {
+        "kind": "incomplete",
+        "reasons": [
+          "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+        ]
+      },
+      "diagnostics": [
+        "Unsupported argument expression: CXXOperatorCallExpr. Return source unavailable: ranges::fold_left_fn::operator() (definition unavailable). Definition exists at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2766; system-header body was excluded from the compact AST."
+      ],
+      "originLine": 469
+    }
+  ],
+  "notes": [
+    "Native extraction includes process/frontend/serialization, without AST/PCH caching; OS cold cache is not claimed.",
+    "Same source bytes, flags and cursors, alternating variant order. Each real input/version has 3 extraction/index samples; summary is mean of 20 rebuilds in each sample.",
+    "Query short batches use 20 repetitions after warmup; CLI isolated queries use 7 alternating rounds of 1000 queries plus warmup.",
+    "Index timing and standalone summary timing overlap conceptually; they must not be subtracted for precise attribution.",
+    "returnMetadataBytes is a logical serialization of summary references, not heap size. The single unpruned-system experiment is diagnostic, not a performance comparison.",
+    "No Extension Host, real language server providers, model inference, GPU workload or runtime C++ reachability validation was run."
+  ]
+}
