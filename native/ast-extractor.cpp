@@ -120,10 +120,116 @@ public:
     output.attributeObject("end", [&] { location(output, span.getEnd()); });
   }
 
+  std::string storageIdentity(QualType type) const {
+    llvm::SmallString<128> usr;
+    if (index::generateUSRForType(type.getCanonicalType(), context, usr))
+      return type.getCanonicalType().getAsString();
+    return llvm::toHex(llvm::SHA256::hash(llvm::arrayRefFromStringRef(usr)), true);
+  }
+
   void type(json::OStream &output, QualType type) const {
     output.attributeObject("type", [&] {
       output.attribute("qualType", type.getAsString());
+      if (!type.isNull()) output.attribute("storageId", storageIdentity(type));
     });
+  }
+
+  // Public storage semantics live here, before implementation fields of standard
+  // library classes. TypeScript consumes these tags, never library type spellings.
+  const char *storageKind(QualType type) const {
+    if (type->isReferenceType()) return "reference";
+    if (type->isPointerType()) return "pointer";
+    if (context.getAsArrayType(type)) return "array";
+    const auto *record = type->getAsCXXRecordDecl();
+    if (!record) return type->isDependentType() ? "opaque" : "value";
+    const auto name = record->getQualifiedNameAsString();
+    if (name == "std::reference_wrapper") return "reference-wrapper";
+    if (name == "std::span" || name == "std::basic_string_view") return "view";
+    if (name == "std::shared_ptr") return "shared-owner";
+    if (name == "std::unique_ptr") return "unique-owner";
+    if (name == "std::basic_string" || name == "std::__cxx11::basic_string") return "value";
+    if (name == "std::optional" || name == "std::variant") return "sum";
+    if (name == "std::vector" || name == "std::set" || name == "std::map") return "elements";
+    if (!record->hasDefinition() || !record->isAggregate() || record->isUnion() || record->getNumBases()) return "opaque";
+    return "aggregate";
+  }
+
+  struct StorageReachability {
+    std::set<const Type *> visited;
+    std::set<std::string> identities;
+  };
+
+  StorageReachability &reachableStorage(QualType type, StorageReachability &reachable, unsigned depth = 0) const {
+    const auto canonical = type.getUnqualifiedType().getCanonicalType();
+    if (reachable.visited.count(canonical.getTypePtr())) return reachable;
+    return fold(llvm::ArrayRef<QualType>(canonical), reachable, [&](auto &reachable, QualType canonical) {
+      reachable.visited.insert(canonical.getTypePtr());
+      if (depth > 64 || type->isDependentType()) { reachable.identities.insert("?"); return; }
+      if (type->isPointerType() || type->isReferenceType()) {
+        const auto pointee = type->getPointeeType();
+        reachable.identities.insert(storageIdentity(pointee.getUnqualifiedType()));
+        reachableStorage(pointee, reachable, depth + 1);
+        return;
+      }
+      if (const auto *array = context.getAsArrayType(type)) {
+        reachableStorage(array->getElementType(), reachable, depth + 1);
+        return;
+      }
+      const auto *record = type->getAsCXXRecordDecl();
+      const llvm::StringRef kind = storageKind(type);
+      if (!record || kind == "value") return;
+      // An incomplete foreign pointee retains its nominal identity. Its
+      // absence of fields is not evidence of an arbitrary callback or cast.
+      if (!record->hasDefinition()) return;
+      if (record->getQualifiedNameAsString() == "std::function") {
+        reachable.identities.insert("?");
+        return;
+      }
+      if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
+        if (record->getDeclContext()->isStdNamespace()) {
+          const auto visit = [&](auto &&self, const TemplateArgument &argument) -> void {
+            if (argument.getKind() == TemplateArgument::Pack) {
+              fold(argument.pack_elements(), reachable, [&](auto &, const auto &argument) { self(self, argument); });
+            } else if (argument.getKind() == TemplateArgument::Type) {
+              const auto argumentType = argument.getAsType();
+              if (kind == "view" || kind == "reference-wrapper" || kind == "shared-owner" || kind == "unique-owner")
+                reachable.identities.insert(storageIdentity(argumentType.getUnqualifiedType()));
+              reachableStorage(argumentType, reachable, depth + 1);
+            }
+          };
+          fold(specialization->getTemplateArgs().asArray(), reachable,
+              [&](auto &, const auto &argument) { visit(visit, argument); });
+          return;
+        }
+      }
+      fold(record->fields(), reachable, [&](auto &reachable, const FieldDecl *field) {
+        reachableStorage(field->getType(), reachable, depth + 1);
+      });
+    });
+  }
+
+  void storage(json::OStream &output, QualType type, unsigned depth = 0) const {
+    const llvm::StringRef kind = depth > 16 ? "opaque" : storageKind(type);
+    output.attribute("kind", kind);
+    output.attribute("identity", storageIdentity(type.getNonReferenceType().getUnqualifiedType()));
+    output.attribute("shared", sharedStorage(type));
+    if (sharedStorage(type)) output.attributeArray("reachable", [&] {
+      StorageReachability reachable;
+      reachableStorage(type, reachable);
+      fold(reachable.identities, output, [](json::OStream &output, const auto &identity) { output.value(identity); });
+    });
+    if (kind == "pointer" || kind == "reference")
+      output.attribute("pointee", storageIdentity(type->getPointeeType().getUnqualifiedType()));
+    if (kind == "aggregate")
+      output.attributeArray("fields", [&] {
+        fold(type->getAsCXXRecordDecl()->fields(), output, [&](json::OStream &output, const FieldDecl *field) {
+          if (!sharedStorage(field->getType())) return;
+          output.object([&] {
+            output.attribute("name", field->getNameAsString());
+            output.attributeObject("storage", [&] { storage(output, field->getType(), depth + 1); });
+          });
+        });
+      });
   }
 
   // A value parameter can still expose shared storage. This is an effect
@@ -265,6 +371,9 @@ public:
       if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt)) {
         output.attributeObject("construction", [&] {
           output.attribute("name", construction->getConstructor()->getQualifiedNameAsString());
+          const llvm::StringRef kind = storageKind(construction->getType());
+          output.attribute("storageBinding", kind == "reference-wrapper" || kind == "view" ||
+              kind == "shared-owner" || kind == "unique-owner");
           output.attributeArray("parameterEffects", [&] {
             fold(construction->getConstructor()->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
               output.value(parameterEffect(parameter->getType()));
@@ -298,7 +407,14 @@ public:
       if (const auto *literal = llvm::dyn_cast<IntegerLiteral>(stmt))
         output.attribute("value", llvm::toString(literal->getValue(), 10, false));
       if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
-        if (const auto *callee = call->getDirectCallee())
+        if (const auto *callee = call->getDirectCallee()) {
+          const auto name = callee->getQualifiedNameAsString();
+          if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee))
+            if (method->getNameAsString() == "get" && llvm::StringRef(storageKind(context.getCanonicalTagType(method->getParent()))) == "reference-wrapper")
+              output.attribute("storageOperation", "borrow-reference");
+          if (name == "std::ref" || name == "std::cref") output.attribute("storageOperation", "bind-reference");
+          if (name == "std::move" || name == "std::forward") output.attribute("storageOperation", "identity");
+          if (name == "std::make_unique" || name == "std::make_shared") output.attribute("storageOperation", "fresh");
           output.attributeObject("callee", [&] {
             output.attribute("id", identity(callee));
             output.attribute("symbol", symbol(callee));
@@ -315,6 +431,7 @@ public:
               output.attribute("virtual", method->isVirtual());
             }
           });
+        }
       }
       if (const auto *call = llvm::dyn_cast<CXXOperatorCallExpr>(stmt)) {
         output.attribute("opcode", getOperatorSpelling(call->getOperator()));
@@ -482,6 +599,28 @@ public:
   }
   const Serializer &serializer;
   std::vector<const FunctionDecl *> roots;
+};
+
+// The visitor is a Clang API adapter. Its map is fold state; descriptors are
+// serialized once per canonical type instead of repeated at every expression.
+class StorageTypes : public RecursiveASTVisitor<StorageTypes> {
+public:
+  bool add(QualType type) {
+    if (!type.isNull()) fold(llvm::ArrayRef<QualType>(type.getCanonicalType()), types,
+        [](auto &types, QualType type) { types.emplace(type.getAsOpaquePtr(), type); });
+    return true;
+  }
+  bool VisitExpr(Expr *expression) { return add(expression->getType()); }
+  bool VisitValueDecl(ValueDecl *declaration) { return add(declaration->getType()); }
+  bool VisitDeclRefExpr(DeclRefExpr *reference) { return add(reference->getDecl()->getType()); }
+  bool VisitLambdaExpr(LambdaExpr *lambda) {
+    const auto *methodTemplate = lambda->getCallOperator()->getDescribedFunctionTemplate();
+    if (!methodTemplate) return true;
+    const auto specializations = methodTemplate->specializations();
+    return std::accumulate(specializations.begin(), specializations.end(), true,
+        [&](bool traversed, FunctionDecl *specialization) { return traversed && TraverseDecl(specialization); });
+  }
+  std::map<void *, QualType> types;
 };
 
 struct FunctionSelection {
@@ -742,6 +881,10 @@ public:
     fold(functions.roots, selection, [&](auto &selection, const FunctionDecl *root) {
       include(include, root, selection);
     });
+    StorageTypes storageTypes;
+    fold(selection.selected, storageTypes, [](auto &storageTypes, const FunctionDecl *function) {
+      storageTypes.TraverseDecl(const_cast<FunctionDecl *>(function));
+    });
     timings.selectionMs = elapsedMs(selectionStarted);
     const auto serializationStarted = std::chrono::steady_clock::now();
     // Stream the compact tree directly. A JSON DOM retains a hash table for
@@ -749,6 +892,13 @@ public:
     json::OStream output(llvm::outs());
     output.object([&] {
       output.attribute("kind", "TranslationUnitDecl");
+      output.attributeObject("storageTypes", [&] {
+        fold(storageTypes.types, output, [&](json::OStream &output, const auto &entry) {
+          output.attributeObject(serializer.storageIdentity(entry.second), [&] {
+            serializer.storage(output, entry.second);
+          });
+        });
+      });
       output.attributeArray("inner", [&] {
         fold(selection.selected, output, [&](json::OStream &output, const FunctionDecl *function) {
           serializer.function(output, function);

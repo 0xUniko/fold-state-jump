@@ -1,3 +1,133 @@
+# 2026-10-26：容器存储身份与引用别名复核
+
+本节是当前验证结果；下方 2026-10-25 内容是历史审计。当前分析器基线为 `db9d7c2d2aa3a62bce0563faf42a4118cde6cfb9`，分支 `feat/multi-funcs`，验证对象是该 HEAD 上的**未提交工作区修改**，不是已发布的新提交。nano-infer 固定为 `562758447a716d05dabb3173cebac489bf7daf80`，工作区干净。本次通过 GitHub connector 的 commit API 再次核对两个远端分支，均与上述本地 HEAD 一致。没有提交、推送、合并或修改 nano-infer。
+
+[当前结果 JSON](nano-infer-audit-results.json) 的 `analyzerRevision` 记录 HEAD、dirty 状态、分析器/Native 源码 SHA256 和 extractor SHA256；`realSourceQueries` 已用本轮真实提取结果全部替换。历史基线另行标记，不能将旧性能或旧查询结果算成本轮验证。[可复现性能原始数据](measurements/storage-alias-2026-10-26.json) 使用相同源码 SHA256，并分别记录 Native 提取、JSON 解码、索引准备和 query 时间。
+
+## 已复现的基线缺陷
+
+`test/storage-alias.test.ts` 使用独立的 C++20 fixture、真实 Clang AST。保存 `db9d7c2` 的分析器和 extractor 后运行同一套最终测试，结果 **37 pass / 28 fail**；修复后 **65/65**。其中 64 项是精确导航/边界查询，1 项验证每个已输出的类型引用都能解析。原 13 项容器回归保持原断言，合计 **78/78**。
+
+28 项失败的名字和结果保存在性能/验证 JSON 中。已通过真实 AST 复现的主要错误包括：
+
+- 聚合、嵌套聚合、引用成员、聚合字段后赋值、复制后的指针字段，经容器保存后仍返回过早写入。
+- span、数组 span、string_view，以及 cref/包装变量复制，丢失目标关联。
+- 指针先指向其他对象、再赋值为目标时漏掉逃逸；通过可写借用使指针来源未知时仍沿旧初始化器推断。
+- 指针已明确重绑定到无关对象、span 指向无关对象，仍错误阻断；引用包装所指的指针变量/聚合字段后来改变时，仍错误使用旧内容；查询指针变量自身时，将复制指针值错误视为它自身的地址逃逸。
+- 新分配的普通值副本，以及只读 `.get()`、经 `.get()` 进行普通值拷贝、无关包装对象写入，出现不必要的边界。
+
+`std::ref` 的某些局部 `.get()` 路径、共享/独占指针、string 普通值拷贝等在基线上已经得到预期结果；这些是新增验证，不能算作本次新发现的基线缺陷。引用初始化后冻结、复制时间点、未知指针之间的潜在别名也有独立对照断言。
+
+## 模型与修复规则
+
+统一模型可用于这些场景，但“对象本身”“值中包含的借用”“副本的字段来源”“调用副作用”是不同问题，不能合并成一个 shared 布尔值或同一条 Path。
+
+| 情况 | 本轮规则 |
+|---|---|
+| 对象自身 | 保持 declaration + member Path 的已有身份；普通值拷贝不把新对象本身关联回原对象 |
+| 指针 | 复制的是指针值；访问需要再经过 `*`。保存 `&pointer` 与保存 `pointer` 分别处理；Clang 的 `p->field` 补上隐含的 pointee 类型身份 |
+| 引用 | 初始化时绑定 lvalue；局部引用沿指针初始化时冻结绑定时间，随后改写指针不会重绑定引用；引用成员同样按绑定来源处理；绑定身份的时间与随后访问对象内容的时间分开，引用所指对象的字段仍可继续变化 |
+| 聚合 | 只递归真正传递借用的字段，按 semantic InitList 字段名和 fieldwise copy 投影；纯值字段不会因对象外观相似被判定逃逸 |
+| 复制与移动 | 复制保存当时的字段值，不能读取源对象后来的重绑定；移动保留可能传递的借用/所有权，但不伪造 moved-from 对象的精确状态 |
+| view / owner / wrapper | 由 Native 分类 span/string_view、shared_ptr、unique_ptr、reference_wrapper；跟踪显式构造实参和复制/移动来源。新分配普通值本身独立，若其值又包含指针，则这些指针仍可传递目标关联 |
+| optional/variant | 单独作为和类型保留工厂来源，不与拥有元素的容器合并；保留原有 copyBoundaries/copyValueBoundaries 的限制 |
+| 已保存的借用 | 无法识别容器元素时，停在保存调用；不会将元素写编造为目标的精确写入。更晚的直接写仍优先 |
+| 未知值 | 查询点前最近的简单、无条件赋值可作为来源；条件/循环内赋值、不可表示的写、可写借用使来源变未知。有兼容类型或显式来源证据时产生边界，不能沿初始化器猜测 |
+
+Native 继续将 `sharedStorage`（潜在共享副作用）与 `copyBoundaries` / `copyValueBoundaries`（字段复制保真）分开。新增 `storageTypes` 表提供语义标签、共享字段和类型可达身份，`type.storageId` 引用它。身份来自 Clang canonical type USR 的 SHA256，避免地址导致冷解析与 PCH 解析产生不同结果。空 QualType 不生成引用。TS 消费这些标签，没有新增库类型字符串正则或容器函数名白名单。
+
+`bindsTarget`、`storesTargetReference` 和 `exposesTarget` 共用存储来源判断，保留 unrelated / reachable / unknown 三种结果。类型可达信息只筛选可能关联，不能单独证明某个对象持有目标；不因外部资源内部可能存在任意回调就将所有会话状态关联过去。外部复制凭据等保留明确的构造/工厂实参来源，不能用 nominal 类型筛选抹掉既有保守边界。
+
+`ref`/`cref` 的包装由 Native 标记。`reference_wrapper::get` 也由 Native 标记其返回借用语义：只读访问和普通值复制透明；写入或保存返回引用时，在 `.get()` 的准确偏移停止。`cref` 的 const 不会抹掉合法的 mutable 写。容器经 wrapper 保存后，边界仍在保存调用，不被随后容器元素的 `.get()` 覆盖。
+
+开发过程中真实项目验证发现过三类中间回归：类型描述逐节点重复使 CLI 超过 64 MiB；空 QualType 触发新增 canonical 查询崩溃；将和类型与容器合并丢失已有工厂边界。均已修正，并通过原有断言重新验证。这些是本轮实现中的中间问题，不是 `db9d7c2` 的已确认缺陷。
+
+## 当前验证结果与复现
+
+| 检查 | 当前结果 |
+|---|---|
+| `bun run build:native` | 成功，LLVM/Clang 23.1.4；可选 LibEdit/zstd/CURL 未找到的 CMake 提示不阻断构建 |
+| `bunx --no-install tsc --noEmit` | 成功 |
+| `bun run build`、`bun run test/native-integration.ts` | 成功 |
+| `bun test` | **435 pass / 0 fail，23 文件，15.79 s**；未跳过、删除或放宽任何既有测试 |
+| 新 fixture + 既有容器套件 | **78/78**；成功断言准确文件、字节偏移、wrapped=false、frames=[]；失败断言具体原因和准确调用/重绑定偏移 |
+| nano-infer audit | 9 文件、23 选择位置、46 次原精确断言通过 |
+| 既有项目 integration | ffn.h 14、experts.h 3、pipeline.h 8，**25/25** |
+| 项目 seed/caller sources | 原有 CLI 三条 seed 来源、generation wrapped 写、生产 discovery/USR 校验通过；provider 仍是 mock |
+| `git diff --check` | 通过；只修改分析器、Native、独立 fixture/测试/基准和审计数据文档 |
+
+沙箱内完整 Bun 的 Native worker 通信限制与历史记录相同。最终完整测试经自动审核允许在沙箱外运行，未修改测试以掩盖失败。没有启动真实 Extension Host、语言服务或 nano-infer 推理运行时。
+
+关键位置仍精确定位：pipeline.h:1077（batch return）；ffn.h:250（prefill helper，帧 operator()）；pipeline.h:883（layer seed）；CLI:492（generation，wrapped=true）。原有 finish_host_copies、pending operator->、finish_request 等明确边界也保持原断言，未将成功查询一律改成失败。
+
+```sh
+# 在修改 Native 前保存可比较基线；本次已执行，未改动 Git 工作树基线。
+git show db9d7c2:src/analysis.ts > /tmp/fsj-storage-baseline.ts
+cp native/build/fold-state-jump-ast /tmp/fsj-storage-baseline-ast
+# 上一行必须在 rebuild 前执行，保存的是 db9d7c2 对应二进制。
+
+FSJ_ANALYSIS_MODULE=/tmp/fsj-storage-baseline.ts \
+FSJ_AST_EXTRACTOR=/tmp/fsj-storage-baseline-ast \
+  bun test test/storage-alias.test.ts
+bun run build:native
+bun test test/storage-alias.test.ts test/container-escape.test.ts
+bunx --no-install tsc --noEmit
+bun run build
+bun run test/native-integration.ts
+bun test
+
+FSJ_AUDIT_AST_DIRECTORY=/tmp/fsj-storage-audit-asts \
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-state-audit.ts /home/huawei/nano-infer
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-integration.ts /home/huawei/nano-infer
+FSJ_PROJECT_COMPILE_COMMANDS=build-cpu-tests/compile_commands.json \
+  bun test/project-state-sources.ts /home/huawei/nano-infer
+```
+
+## 重复性能对照
+
+同一生成的真实 C++ 输入，4 个函数各含一次目标保存和 100 次无关容器操作；输入 SHA256 为 `5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7`。执行顺序为旧 5 轮 → 新 5 轮 → 新 5 轮 → 旧 5 轮，每版本 10 轮；每轮独立提取/prepare，每场景先预热 100 次再计时 1000 次。下表为中位数 [最小, 最大]，query 单位 µs。
+
+| 场景 | db9d7c2 | 当前工作区 | 中位数变化 |
+|---|---:|---:|---:|
+| aggregate | 32.02 [28.45, 48.18] | 104.59 [97.62, 119.32] | +226.6% |
+| pointer | 54.88 [52.47, 67.54] | 65.23 [63.44, 71.66] | +18.9% |
+| view | 29.09 [27.87, 32.51] | 80.10 [76.49, 94.68] | +175.3% |
+| value | 28.45 [24.93, 36.96] | 16.70 [15.94, 19.81] | -41.3% |
+
+| 准备阶段 | db9d7c2 | 当前工作区 |
+|---|---:|---:|
+| extractMs (ms) | 266.62 [259.59, 426.63] | 269.92 [255.63, 282.55] |
+| parseMs (ms) | 1.52 [1.46, 4.18] | 1.73 [1.59, 3.46] |
+| prepareMs (ms) | 5.56 [3.94, 21.06] | 6.43 [4.62, 17.84] |
+
+AST 大小固定为 1,380,193 → 1,780,891 bytes（+29.0%）。聚合与视图查询的额外来源分析有明确成本，不能宣称无退化。旧 aggregate 返回过早写；旧 view 停在最后一个无关 span 构造处，边界错误。因此这些是相同输入的耗时对照，不是相同正确性能力的性能等价证明。pointer 的结果边界前后一致；value 的精确写位置前后一致。未将一次样本或区间重叠解释成统计等价。
+
+复现基准（每条连续运行，避免与其他大型提取并行）：
+
+```sh
+bun test/storage-alias-performance.ts /tmp/fsj-storage-baseline.ts /tmp/fsj-storage-baseline-ast 5 1000
+bun test/storage-alias-performance.ts "$PWD/src/analysis.ts" "$PWD/native/build/fold-state-jump-ast" 5 1000
+# 再按新、旧各执行一遍，得到每版本 10 轮。
+```
+
+本轮真实项目 pipeline/CLI 的 AST 为 10,615,640/28,361,136 bytes；本轮提取+prepare 为 14.078/16.654 s。这只是当前单次绝对值，不与下方历史不同版本的时间混比。
+
+## 保守边界与尚未解决的范围
+
+- 本次证明的是上述真实 AST 查询，不是完整 C++ 指针分析。容器元素身份、迭代器区间拼接、容器间 swap、返回值所有分支、异步/析构器延迟写、全局保存、类型擦除/任意强制转换，没有新增完整生命周期模型；这些仍是静态审查风险，未凭静态阅读宣称新确认的运行时错误。
+- 本轮在已建立的类型/实参来源关联上，对于未知重绑定、共享返回和不可追踪元素写明确停止；不把 unrelated 原始对象全部当作逃逸。不同形参仍遵循现有 symbolic root 契约，并未求解任意两个调用实参在实际运行中是否别名。void*、设备内存和外部库内部物理地址关系不能由 nominal 类型证明。
+- `.get()` 写和保存返回引用当前是准确边界；没有将它们宣称为已定位到内部对象的精确 MutationFound。移动后的源对象、复杂赋值表达式和多分支重绑定不生成精确新别名。
+- 标准库语义使用本机 Clang 23 + libstdc++ 验证。libc++ 命名空间、第三方 view/owner、未展开继承/union、跨 TU 资源身份仍未全面验证。
+- 下方历史风险列表中的局部 ref/cref 包装保存与直接指针后续赋值已被本轮复现并覆盖；仍不能据此扩大为容器拼接或所有间接别名均已支持。
+
+---
+
+# 2026-10-25 历史审计记录
+
+以下数字、版本和“本次”字样均属于当日记录；当前验证以文档顶部和结果 JSON 的 `analyzerRevision` 为准。
+
 # nano-infer 跨函数状态追踪审计
 
 ## 基线、范围与结论

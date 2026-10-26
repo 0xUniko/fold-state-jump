@@ -1,0 +1,1118 @@
+{
+  "date": "2026-10-26",
+  "analyzerBaseline": {
+    "head": "db9d7c2d2aa3a62bce0563faf42a4118cde6cfb9",
+    "analysisSha256": "b0ccad039b7fe5d64d415980cd53e4df03901954b70100f2db6cb132aa726704",
+    "nativeSourceSha256": "c9c7e3aea1fc499b90f8981874a5d65354bafe3c6ef30919450b8abb2199351f",
+    "extractorSha256": "e544ea0e49aa4288ffa8908abaec1bc9c28d2e1d7a12a7c4f13567dcd1b9ec9d"
+  },
+  "analyzerRevision": {
+    "head": "db9d7c2d2aa3a62bce0563faf42a4118cde6cfb9",
+    "branch": "feat/multi-funcs",
+    "dirty": true,
+    "sourceSha256": {
+      "src/analysis.ts": "34ee6be1edf91378930d8815fc0492510f4cfd83bee7a034f80d7a2a4564f8f0",
+      "native/ast-extractor.cpp": "3df713b7834ea5a24e00f592e7e94db2ded6152e99862ae584bfc8b2da2aadc7",
+      "test/storage-alias.test.ts": "105b5a59729cd4e530cf909b3b392ae954b60ab70e3899c5b710cf7e86bab68c",
+      "test/fixtures/storage-alias.cpp": "1ceca096805bded6c547ce13213e89db8e40b1dbab9e1fc17b843b5a49226826",
+      "test/storage-alias-performance.ts": "5c8dae09be16bea5cb79b20632b144aec25b2141d02c4ca7e170b0ff978255b8"
+    },
+    "extractorSha256": "3a0148dcee1d06056e73eb9f79c11e1565016b060a7c636fb2f89aa466119620"
+  },
+  "nanoInferHead": "562758447a716d05dabb3173cebac489bf7daf80",
+  "protocol": {
+    "batchOrder": [
+      "before-a",
+      "after-a",
+      "after-b",
+      "before-b"
+    ],
+    "runsPerVersion": 10,
+    "queriesPerWorkloadPerRun": 1000,
+    "warmupQueriesPerWorkloadPerRun": 100,
+    "unrelatedOperationsPerFunction": 100,
+    "compileFlags": [
+      "-std=c++20"
+    ],
+    "sourceSha256": "5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7",
+    "timingNote": "Native process/extraction, JSON parsing, index preparation and query are timed separately. Query result assertions occur outside timed batches. Old aggregate result and old view boundary are incorrect; fingerprints here check stability, not correctness."
+  },
+  "baselineRegression": {
+    "pass": 37,
+    "fail": 28,
+    "failedCases": [
+      "aggregate",
+      "nested",
+      "reference-member",
+      "aggregate-assignment",
+      "span",
+      "direct-cref",
+      "stored-cref",
+      "wrapper-copy",
+      "pointer-late-bound",
+      "copy-snapshot",
+      "span-copy",
+      "array-view",
+      "unknown-rebind",
+      "ref-holder",
+      "unknown-factory",
+      "unknown-pointer-alias",
+      "reference-live-pointer",
+      "reference-live-field",
+      "string-view",
+      "span-unrelated",
+      "pointer-known-rebound",
+      "allocated-value",
+      "readonly-wrapper-get",
+      "wrapper-value-copy",
+      "unrelated-wrapper-get",
+      "reference-live-unrelated-pointer",
+      "pointer-self",
+      "rebind-self"
+    ]
+  },
+  "finalRegression": {
+    "pass": 65,
+    "fail": 0,
+    "queries": 64,
+    "metadataChecks": 1
+  },
+  "fullBun": {
+    "pass": 435,
+    "fail": 0,
+    "files": 23,
+    "seconds": 15.79
+  },
+  "summary": {
+    "before": {
+      "extractMs": {
+        "median": 266.6224185000001,
+        "min": 259.5882939999997,
+        "max": 426.628954,
+        "samples": 10
+      },
+      "parseMs": {
+        "median": 1.518814500000076,
+        "min": 1.459340999999995,
+        "max": 4.178532000000132,
+        "samples": 10
+      },
+      "prepareMs": {
+        "median": 5.564393999999936,
+        "min": 3.9357319999999163,
+        "max": 21.064727000000005,
+        "samples": 10
+      },
+      "astBytes": {
+        "median": 1380193.0,
+        "min": 1380193,
+        "max": 1380193,
+        "samples": 10
+      },
+      "queryUs": {
+        "aggregate": {
+          "median": 32.018396000000166,
+          "min": 28.44553600000006,
+          "max": 48.17785300000014,
+          "samples": 10
+        },
+        "pointer": {
+          "median": 54.87658699999997,
+          "min": 52.46782699999995,
+          "max": 67.54104900000016,
+          "samples": 10
+        },
+        "view": {
+          "median": 29.091427000000067,
+          "min": 27.866588000000036,
+          "max": 32.511601000000155,
+          "samples": 10
+        },
+        "value": {
+          "median": 28.452643499999795,
+          "min": 24.92758700000013,
+          "max": 36.95575900000006,
+          "samples": 10
+        }
+      }
+    },
+    "after": {
+      "extractMs": {
+        "median": 269.91559250000006,
+        "min": 255.63010199999997,
+        "max": 282.547956,
+        "samples": 10
+      },
+      "parseMs": {
+        "median": 1.7258765000001404,
+        "min": 1.5901569999999765,
+        "max": 3.4634490000000824,
+        "samples": 10
+      },
+      "prepareMs": {
+        "median": 6.433157000000165,
+        "min": 4.620222999999896,
+        "max": 17.844531000000018,
+        "samples": 10
+      },
+      "astBytes": {
+        "median": 1780891.0,
+        "min": 1780891,
+        "max": 1780891,
+        "samples": 10
+      },
+      "queryUs": {
+        "aggregate": {
+          "median": 104.58607149999989,
+          "min": 97.62493199999994,
+          "max": 119.32491299999998,
+          "samples": 10
+        },
+        "pointer": {
+          "median": 65.22957150000002,
+          "min": 63.441915999999765,
+          "max": 71.66200400000002,
+          "samples": 10
+        },
+        "view": {
+          "median": 80.09847950000005,
+          "min": 76.49141400000008,
+          "max": 94.68482900000004,
+          "samples": 10
+        },
+        "value": {
+          "median": 16.70176400000014,
+          "min": 15.94116299999996,
+          "max": 19.81233999999995,
+          "samples": 10
+        }
+      }
+    }
+  },
+  "rawBatches": {
+    "before": [
+      {
+        "sourceSha256": "5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7",
+        "count": 100,
+        "runs": 5,
+        "repetitions": 1000,
+        "module": "/tmp/fsj-storage-baseline.ts",
+        "extractor": "/tmp/fsj-storage-baseline-ast",
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 426.628954,
+            "parseMs": 1.7404099999999971,
+            "prepareMs": 21.064727000000005,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 47.30514000000005,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 64.37578600000006,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 31.375282999999968,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 36.95575900000006,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 301.12074300000006,
+            "parseMs": 1.472030000000018,
+            "prepareMs": 5.819370999999933,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 37.651853000000074,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 67.54104900000016,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 32.511601000000155,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 36.335826000000004,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 269.84075600000006,
+            "parseMs": 1.5264770000001135,
+            "prepareMs": 4.51972099999989,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 48.17785300000014,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 55.01605399999994,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 28.108895999999955,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 32.481784999999945,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 3,
+            "extractMs": 263.40408100000013,
+            "parseMs": 1.459340999999995,
+            "prepareMs": 7.523635000000013,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 30.69615300000009,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 52.79333299999985,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 28.47715900000003,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 24.92758700000013,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 4,
+            "extractMs": 259.5882939999997,
+            "parseMs": 1.5111520000000382,
+            "prepareMs": 3.9357319999999163,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 28.46876199999997,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 52.46782699999995,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 31.933215999999902,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 25.072364000000107,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceSha256": "5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7",
+        "count": 100,
+        "runs": 5,
+        "repetitions": 1000,
+        "module": "/tmp/fsj-storage-baseline.ts",
+        "extractor": "/tmp/fsj-storage-baseline-ast",
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 271.33327399999996,
+            "parseMs": 1.7777389999999968,
+            "prepareMs": 12.778227000000015,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 37.635760999999995,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 54.737120000000004,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 27.866588000000036,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 29.934892999999988,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 261.547193,
+            "parseMs": 1.463630999999964,
+            "prepareMs": 5.672656999999958,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 28.44553600000006,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 61.430841999999984,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 28.85818900000004,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 28.997659999999996,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 271.0115690000001,
+            "parseMs": 1.4724229999999352,
+            "prepareMs": 4.241175000000112,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 33.33860800000002,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 55.377956999999924,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 27.886258999999882,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 25.74097299999994,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 3,
+            "extractMs": 260.62043199999994,
+            "parseMs": 1.8675489999998263,
+            "prepareMs": 4.201522000000068,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 29.63622600000008,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 53.248245,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 29.324665000000095,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 27.215296000000084,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 4,
+            "extractMs": 261.58372699999995,
+            "parseMs": 4.178532000000132,
+            "prepareMs": 5.456130999999914,
+            "astBytes": 1380193,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 30.69818400000031,
+                "result": [
+                  "MutationFound",
+                  248,
+                  false,
+                  0
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 52.50217500000007,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 31.682838000000174,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:18181: Unverified call effect in constructor std::span<State>::span; shared storage or callback effects are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 27.907626999999593,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "after": [
+      {
+        "sourceSha256": "5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7",
+        "count": 100,
+        "runs": 5,
+        "repetitions": 1000,
+        "module": "/home/huawei/fold-state-jump/src/analysis.ts",
+        "extractor": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 267.491868,
+            "parseMs": 1.8624659999999835,
+            "prepareMs": 17.844531000000018,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 119.32491299999998,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 68.42149700000004,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 89.613023,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 18.259130000000027,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 255.63010199999997,
+            "parseMs": 1.6433070000000498,
+            "prepareMs": 9.266710999999987,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 107.84035699999993,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 64.33658100000002,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 79.76633800000013,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 17.64728500000001,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 262.71840599999996,
+            "parseMs": 3.4634490000000824,
+            "prepareMs": 5.001784999999927,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 102.93084199999998,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 63.56773700000008,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 78.43724599999996,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 16.75244100000009,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 3,
+            "extractMs": 268.5291460000001,
+            "parseMs": 1.7563100000002123,
+            "prepareMs": 4.620222999999896,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 98.95734600000013,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 63.441915999999765,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 76.49141400000008,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 15.94116299999996,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 4,
+            "extractMs": 256.7062759999999,
+            "parseMs": 1.6256419999999707,
+            "prepareMs": 7.703708000000006,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 104.05520299999989,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 63.893371000000116,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 80.43062099999997,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 17.730560999999852,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceSha256": "5d42bc36f7129f4ecd63d81bfc9c992a338980e67fc75afd000a979c5ebb04f7",
+        "count": 100,
+        "runs": 5,
+        "repetitions": 1000,
+        "module": "/home/huawei/fold-state-jump/src/analysis.ts",
+        "extractor": "/home/huawei/fold-state-jump/native/build/fold-state-jump-ast",
+        "timings": [
+          {
+            "run": 0,
+            "extractMs": 282.547956,
+            "parseMs": 1.991267999999991,
+            "prepareMs": 16.541719999999998,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 117.39217100000002,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 71.66200400000002,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 94.68482900000004,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 19.81233999999995,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 1,
+            "extractMs": 271.30203900000004,
+            "parseMs": 1.5901569999999765,
+            "prepareMs": 10.122634000000062,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 105.11693999999989,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 65.241712,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 78.34964500000001,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 16.60573400000021,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 2,
+            "extractMs": 271.6330110000001,
+            "parseMs": 1.6954430000000684,
+            "prepareMs": 5.012071999999989,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 97.62493199999994,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 65.50189,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 81.629275,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 16.485897999999906,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 3,
+            "extractMs": 273.66271400000005,
+            "parseMs": 1.8730220000002191,
+            "prepareMs": 4.799463999999716,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 99.40616199999977,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 65.21743100000003,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 79.12590600000023,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 16.249108999999862,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "run": 4,
+            "extractMs": 276.22730599999977,
+            "parseMs": 1.6072380000000521,
+            "prepareMs": 5.1626060000003235,
+            "astBytes": 1780891,
+            "queries": [
+              {
+                "name": "aggregate",
+                "queryUs": 106.82462399999987,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:265: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "pointer",
+                "queryUs": 67.13534400000026,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:6034: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "view",
+                "queryUs": 85.10177199999998,
+                "result": [
+                  "AnalysisFailure",
+                  "No earlier mutation or supported fold wrap-around was found along verified caller paths. /tmp/fsj-storage-performance.cpp:11919: Unverified call effect on state.value: push_back stores the target address or reference; later container-mediated mutations are not verified."
+                ]
+              },
+              {
+                "name": "value",
+                "queryUs": 16.65108700000019,
+                "result": [
+                  "MutationFound",
+                  18338,
+                  false,
+                  0
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
