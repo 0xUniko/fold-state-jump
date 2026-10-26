@@ -808,15 +808,78 @@ const exposesTarget = (input: WrappedNode | undefined, target: ExpressionPath, i
     };
     const argumentType = borrowedType(declaration);
     if (argumentType && argumentType === borrowedType(targetDeclaration)) return true;
-    return !!declaration && (sharedValue || /\*|function|lambda/.test(declaration.node.type?.qualType ?? '')) &&
+    return !!declaration && (sharedValue || /\*|function|lambda|reference_wrapper|shared_ptr|unique_ptr/.test(declaration.node.type?.qualType ?? '')) &&
       exposesTarget(declaration.children[0], target, index, [...visited, argument.rootId], sharedValue);
   }
   return expression.children.some((child) => exposesTarget(child, target, index, visited, sharedValue));
 };
 
+// Does this lvalue denote the target's own storage (possibly through a local
+// pointer variable), rather than a copy of it?
+const bindsTarget = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
+  visited: readonly string[] = []): boolean => {
+  const argument = pathAt(input, index);
+  if (!argument) return false;
+  if (visited.includes(argument.rootId)) return false;
+  if (argument.rootId !== target.rootId) {
+    const declaration = index.declarations.get(argument.rootId);
+    if (!declaration) return false;
+    const type = declaration.node.type?.qualType ?? '';
+    if (!/\*|reference_wrapper|shared_ptr|unique_ptr/.test(type)) return false;
+    return bindsTarget(declaration.children[0], target, index, [...visited, argument.rootId]);
+  }
+  const members = argument.members.at(-1) === '&' ? argument.members.slice(0, -1) : argument.members;
+  return sameOrParent(members, target.members) || sameOrParent(target.members, members);
+};
+
+// A container element created from a value argument is a copy; only an
+// address, pointer, or reference argument binds the element to the target's
+// storage, letting later element access mutate the target without any write
+// indexed to the target's root.
+const storesTargetReference = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
+  visited: readonly string[] = []): boolean => {
+  const expression = unwrap(input);
+  if (!expression) return false;
+  if (expression.node.kind === 'CallExpr' && expression.node.callee?.qualifiedName === 'std::ref') {
+    // reference_wrapper binds to its argument's storage instead of copying it.
+    return bindsTarget(expression.children[1], target, index, visited);
+  }
+  if (expression.node.kind === 'CXXConstructExpr' && /reference_wrapper/.test(expression.node.type?.qualType ?? '')) {
+    return expression.children.some((child) => bindsTarget(child, target, index, visited));
+  }
+  const argument = pathAt(expression, index);
+  if (!argument) {
+    return expression.children.some((child) => storesTargetReference(child, target, index, visited));
+  }
+  if (visited.includes(argument.rootId)) return false;
+  if (argument.rootId !== target.rootId) {
+    const declaration = index.declarations.get(argument.rootId);
+    if (!declaration) return false;
+    const type = declaration.node.type?.qualType ?? '';
+    if (!/\*|reference_wrapper|shared_ptr|unique_ptr/.test(type)) return false;
+    return storesTargetReference(declaration.children[0], target, index, [...visited, argument.rootId]);
+  }
+  const qualType = unwrap(input)?.node.type?.qualType ?? '';
+  if (argument.members.at(-1) !== '&' && !/\*\s*$/.test(qualType) &&
+      !/reference_wrapper|shared_ptr|unique_ptr/.test(qualType)) return false;
+  const members = argument.members.at(-1) === '&' ? argument.members.slice(0, -1) : argument.members;
+  return sameOrParent(members, target.members) || sameOrParent(target.members, members);
+};
+
 const callEffectBoundary = (call: WrappedNode, callee: FunctionInfo | undefined,
   target: ExpressionPath, index: AstIndex, visitedFunctionIds: readonly string[]): string | undefined => {
-  if (['std::move', 'std::forward'].includes(call.node.callee?.qualifiedName ?? '') || standardMutationTarget(call)) return undefined;
+  if (['std::move', 'std::forward', 'std::ref', 'std::cref'].includes(call.node.callee?.qualifiedName ?? '')) return undefined;
+  if (standardMutationTarget(call)) {
+    // The receiver write itself is already indexed as the call. Only an
+    // argument storing the target's address or reference can redirect later
+    // writes to the target; skipping that check would return a stale mutation
+    // from before the escape.
+    return argsOf(call).some((argument) => storesTargetReference(argument, target, index, visitedFunctionIds))
+      ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') + ': ' +
+        (call.node.callee?.name ?? 'container operation') + ' stores the target address or reference; ' +
+        'later container-mediated mutations are not verified.'
+      : undefined;
+  }
   const argumentsExposed = argsOf(call).some((argument, parameterIndex) => {
     const parameter = callee?.params[parameterIndex];
     const effect = parameter?.node.parameterEffect ?? call.node.callee?.parameterEffects?.[parameterIndex];

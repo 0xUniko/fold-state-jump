@@ -20,6 +20,7 @@
 ## 证据标记
 
 - `A:name`：`test/project-state-audit.ts` 的真实源码断言；完整目标、帧、边界见 [结果 JSON](nano-infer-audit-results.json)。
+- `E:name`：`test/container-escape.test.ts` + `test/fixtures/container-escape.cpp`；真实 native Clang AST，验证容器参数逃逸边界与无逃逸时的精确写位置。
 - `P`：`test/project-state-sources.ts`；真实 pipeline/CLI AST、生产 caller-discovery、模拟 providers、USR 校验。
 - `I`：`test/project-integration.ts`；真实头文件的 25 个导航断言。
 - `F:name`：`test/semantic-boundaries.test.ts` + `test/fixtures/semantic-boundaries.cpp`；真实 native AST。
@@ -96,6 +97,18 @@
 - 修改过程中真实 CLI :492 揭示完成赋值与 RHS call 的时序冲突：新增边界不能覆盖包含该调用、且已完成的外层赋值。现在显式排除被已完成写包含的 RHS 调用/构造；`F:assignment-order` 与 `A:generation-wrap` 防止回归。
 - 过度保守地屏蔽所有引用捕获会阻断 run_batch 中只读 positions transform。对可见只读 callback 的效果做局部证明，保留 P 的原有三条来源路径；`F:readonly-callback` 防止回退成“一切 lambda 都阻断”。
 
+### 容器参数逃逸短路（2026-10-25 第二轮复现）
+
+**已复现缺陷。** `callEffectBoundary` 原来对 `standardMutationTarget()` 识别的全部标准库容器修改操作无条件返回 `undefined`。逃逸后的写经由容器元素身份（`storage[0]->value`）索引在容器 root 下，永远不会归属到目标 root；因此目标在逃逸前的最后一次直接写被当成"最新修改"返回。真实 Clang AST 反例：`state.value = 1; storage.push_back(&state); storage[0]->value = 2; consume(state.value)` 旧结果定位 `:1` 的写，而正确行为是在逃逸调用处停止。
+
+**修复。** 共同根因是短路本身，不是某一个函数名识别错误，因此修复保留容器调用的 receiver 写索引（`vec.push_back(x)` 仍是 `vec` 的已证修改），只在参数把目标的**地址或引用**存入容器时返回 `MutationBoundary`：`storesTargetReference` 区分"值参数是副本"（不改目标，不阻断）与"地址/指针/`std::ref`/reference_wrapper 参数绑定目标存储"（后续元素写无法索引到目标，必须停止）。声明回溯沿局部指针变量（`State *p = &state; push_back(p)`）与引用别名（`State &a = state; push_back(&a)`）推导。`std::ref`/`std::cref` 是纯包装，与 `std::move`/`std::forward` 一样直通；`exposesTarget` 的声明回溯补充 `reference_wrapper`/`shared_ptr`/`unique_ptr` 共享存储类型，避免 `auto r = std::ref(state); unknown(r)` 漏报。未采用一律禁止标准库调用或无条件白名单。
+
+**回归证据（全部精确到文件内偏移或明确边界，非仅检查非空）。**
+- 逃逸必须停止（AnalysisFailure，原因匹配 `stores the target address or reference`，边界偏移落在逃逸语句行内）：`E:push-back-pointer`、`E:push-back-refwrapper`、`E:emplace-pointer`、`E:emplace-back-refwrapper`、`E:insert-pointer`、`E:insert-refwrapper`、`E:pointer-variable`、`E:alias-reference`。
+- 无逃逸必须保留精确结果（MutationFound，mutation 偏移落在标记写语句行内，wrapped=false、零帧）：`E:by-value-copy`（值拷贝进容器）、`E:unrelated-pointer`（存入无关对象地址）、`E:readonly-parameter`、`E:escape-then-direct-write`（逃逸发生在直接写之前时仍定位到更新的直接写）、`E:container-self`（查询目标即容器自身时 `push_back` 是已证修改）。
+
+**验证。** 修复前同组 13 个新测试中指针逃逸用例返回逃逸前旧写；修复后 13/13 通过，全量 **370 pass / 0 fail（22 文件）**。`bun test/analysis-performance.ts` 修复前后同输入对比（每项 20000 次 query）：无关写 4.36 vs 5.48 µs、历史写 2.48 vs 2.30 µs、最新 helper 调用 7.87 vs 8.61 µs、引用别名 Origin 15.6 vs 15.5 µs；单次微基准受调度/JIT 影响，只确认无数量级退化。
+
 ### 真实项目中的边界变化
 
 I 的旧断言将 ffn.h:240/:393、pipeline.h:705/:742 的 callback 捕获直接退到外层参数/seed，这并不证明执行时点。现在这四处严格断言 `LambdaExpr + parameter + Reference capture invocation is not verified`。层返回处的旧断言越过 finish_host_copies 跳到早期 bank_state 赋值；现在严格断言目标路径 `layer_execution.session_state.*` 和 `finish_host_copies` 边界。没有跳过检查、接受任意结果或删除断言；修正了与语义不符的预期。
@@ -103,6 +116,7 @@ I 的旧断言将 ffn.h:240/:393、pipeline.h:705/:742 的 callback 捕获直接
 ### 静态审查风险，尚未作为运行时错误复现
 
 1. **一般共享/别名与逃逸生命周期仍不完整。** 子对象交叉别名、函数先保存地址再由后续无参函数/析构器/外部线程写入、跨多次调用的异步保留关系，没有全局 escape/happens-before 模型。当前屏障能阻止本次直接暴露目标的未知调用，不能声称覆盖所有间接或延迟别名。此类资源不属于可靠导航范围，尤其不能把整对象 M 当作其所有共享字节的最后写。后续应引入存储身份和 escaped/async 状态，不能仅新增函数名白名单。
+   - 容器方向的残余：经 `auto w = std::ref(state); vec.push_back(w)` 这类包装变量间接存入、容器间拷贝/拼接（`insert(vec.begin(), other.begin(), other.end())`、`swap`）带入的第三方指针、`std::cref` 后 `const_cast` 改写，当前不判定为逃逸。指向目标的指针在逃逸前被重绑到无关对象（声明回溯只看初始化器，不看后续赋值）也不判定。这些都是静态审查风险，未作为运行时错误复现；修复方式是通用存储身份模型，不是扩充容器函数名单。
 2. **返回转换仍不透明。** take_batch_state 的聚合 ReturnStmt 没有被映射回调用结果；不能从 ChatState/Generation 输出外部可靠倒推到每个旧字段。后续需要 typed ReturnSource，按所有 return 分支保留候选/边界，而不是选第一个 ReturnStmt。
 3. **source order 不是控制流。** 分支、零次 fold、早退、异常、当前/前轮是否存在、被 move 后继续访问等不证明。`A:clear-input` 和 graph counters 只能作为源码候选；没有降为实际发生过的确定事件。
 4. **标准库和第三方资源有保守假阳性。** optional/variant/get_if、某些 const handle 与共享子对象操作会提前停止；GGML 的图节点 side effect 不会被倒推为 C++ 字段写。不是“没有修改”的证据。
@@ -119,9 +133,10 @@ I 的旧断言将 ffn.h:240/:393、pipeline.h:705/:742 的 callback 捕获直接
 
 ## 修改范围与可复核性
 
-- `src/analysis.ts`：共享调用效果屏障、单独构造索引、指针值/借用分案、captureSource、虚调用边界、精确 fold 名称、赋值完成时序。exposesTarget 不能生成 Path 或 Mutation，只能否定确定性。
+- `src/analysis.ts`：共享调用效果屏障、单独构造索引、指针值/借用分案、captureSource、虚调用边界、精确 fold 名称、赋值完成时序、容器参数逃逸检测（`storesTargetReference`/`bindsTarget` 区分值拷贝与地址/引用绑定，`std::ref`/`std::cref` 纯包装直通）。exposesTarget 不能生成 Path 或 Mutation，只能否定确定性。
 - `native/ast-extractor.cpp`：参数 value/read/write/pointee/shared、receiver 效果、virtual 标记、构造参数效果、捕获初始化器。sharedStorage 与 copyBoundaries 分开，前者判断可能共享效果，后者判断字段值保真，未混为同一不变量。数组/record/std 常见持有类型分别处理；深度上限保守返回 shared。
 - `test/fixtures/semantic-boundaries.cpp` / `test/semantic-boundaries.test.ts`：23 个真实 C++ 回归。
+- `test/fixtures/container-escape.cpp` / `test/container-escape.test.ts`：8 个容器参数逃逸反例与 5 个无逃逸正例，全部断言精确偏移或明确边界。
 - `test/project-state-audit.ts`：9 个真实文件、23 个选择位置、46 次结果断言；成功检查最终文件/行、wrapped、caller 序列及选中成员路径，边界检查具体原因；不接受任意 tag。
 - `test/project-state-sources.ts`：保留原有精确 seed/caller/成员断言，加入生产 discoverCallerLocations 的 incoming+references 合并和 USR 校验；provider 含重复候选和 declaration 非调用候选。
 - `test/project-integration.ts`：25 个真实源码断言，严格区分四个未知 callback 和复制凭据边界；支持显式编译数据库。
@@ -176,6 +191,7 @@ bun test/services-performance.ts
 | 完整 Bun（沙箱内） | 基线 293 pass / 41 fail；最终 316 pass / 41 fail；同一批 preamble 问题 |
 | 同 4 个 preamble 套件打包后使用 VS Code 自带 Node | 19 + 27 + 7 + 1 = 54 pass，0 fail |
 | 完整 Bun（自动审核允许沙箱外重跑） | **357 pass / 0 fail，21 文件，14.53 s**；包括原先全部 41 个失败 |
+| 第二轮：完整 Bun（容器逃逸修复后） | **370 pass / 0 fail，22 文件，14.97 s**；新增 13 个容器逃逸回归全通过 |
 | cache/services benchmark | 缓存命中、无重提取、跨键复用、数据库复用断言通过 |
 
 Node 复核使用的实际运行时为 `/home/huawei/.vscode-server/bin/e646868227c3e3a9e3f24277c8c7220be42c0be7/node`（本 shell 没有 `node` PATH），形式如下，四个 suite 均分别打包并运行：
