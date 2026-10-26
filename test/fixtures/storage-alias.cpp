@@ -3,7 +3,11 @@
 #include <span>
 #include <string_view>
 #include <memory>
-struct State { mutable int value; };
+struct State {
+  mutable int value;
+  void set_value(int value) { this->value = value; }
+  int read_value() const { return value; }
+};
 struct Holder { State *ptr; };
 struct Inner { Holder holder; };
 struct Reference { State &state; };
@@ -505,4 +509,267 @@ void reference_live_unrelated_field(State &state, State &other) {
   state.value = 1; // @write reference-live-unrelated-field
   storage.push_back(reference);
   consume(state.value); // @select reference-live-unrelated-field
+}
+
+// Unknown closures and erased pointers cannot be excluded by nominal type.
+void callback_unknown(State &state, std::function<void()> callback) {
+  std::vector<std::function<void()>> storage;
+  state.value = 1;
+  storage.push_back(callback); // @boundary callback-unknown
+  storage[0]();
+  consume(state.value); // @select callback-unknown
+}
+struct CallbackHolder { std::function<void()> callback; };
+void nested_callback_unknown(State &state, CallbackHolder holder) {
+  std::vector<CallbackHolder> storage;
+  state.value = 1;
+  storage.push_back(holder); // @boundary nested-callback-unknown
+  consume(state.value); // @select nested-callback-unknown
+}
+void callback_later_write(State &state, std::function<void()> callback) {
+  std::vector<std::function<void()>> storage;
+  storage.push_back(callback);
+  state.value = 2; // @write callback-later-write
+  consume(state.value); // @select callback-later-write
+}
+void unknown_callback_call(State &state, const std::function<void()> &callback) {
+  state.value = 1;
+  callback(); // @boundary callback-call
+  consume(state.value); // @select callback-call
+}
+void erased_pointer(State &state, void *pointer) {
+  std::vector<void *> storage;
+  state.value = 1;
+  storage.push_back(pointer); // @boundary erased-pointer
+  consume(state.value); // @select erased-pointer
+}
+struct BaseHolder { State *ptr; };
+struct DerivedHolder : BaseHolder {};
+DerivedHolder derived_factory();
+void inherited_pointer(State &state) {
+  std::vector<DerivedHolder> storage;
+  auto holder = derived_factory();
+  state.value = 1;
+  storage.push_back(holder); // @boundary inherited-pointer
+  consume(state.value); // @select inherited-pointer
+}
+struct UnrelatedBase { Resource *ptr; };
+struct UnrelatedDerived : UnrelatedBase {};
+UnrelatedDerived unrelated_derived_factory();
+void unrelated_inherited_pointer(State &state) {
+  std::vector<UnrelatedDerived> storage;
+  auto holder = unrelated_derived_factory();
+  state.value = 1; // @write unrelated-inherited-pointer
+  storage.push_back(holder);
+  consume(state.value); // @select unrelated-inherited-pointer
+}
+struct MixedHolder { State *known; std::function<void()> unknown; };
+void mixed_unknown(State &state, State &other, std::function<void()> callback) {
+  std::vector<MixedHolder> storage;
+  MixedHolder holder{&other, callback};
+  state.value = 1;
+  storage.push_back(holder); // @boundary mixed-unknown
+  consume(state.value); // @select mixed-unknown
+}
+void mixed_known(State &state, State &other) {
+  std::vector<MixedHolder> storage;
+  MixedHolder holder{&other, [] {}};
+  state.value = 1; // @write mixed-known
+  storage.push_back(holder);
+  consume(state.value); // @select mixed-known
+}
+struct Deep0 { State * inner; };
+struct Deep1 { Deep0 inner; };
+struct Deep2 { Deep1 inner; };
+struct Deep3 { Deep2 inner; };
+struct Deep4 { Deep3 inner; };
+struct Deep5 { Deep4 inner; };
+struct Deep6 { Deep5 inner; };
+struct Deep7 { Deep6 inner; };
+struct Deep8 { Deep7 inner; };
+struct Deep9 { Deep8 inner; };
+struct Deep10 { Deep9 inner; };
+struct Deep11 { Deep10 inner; };
+struct Deep12 { Deep11 inner; };
+struct Deep13 { Deep12 inner; };
+struct Deep14 { Deep13 inner; };
+struct Deep15 { Deep14 inner; };
+struct Deep16 { Deep15 inner; };
+struct Deep17 { Deep16 inner; };
+struct Deep18 { Deep17 inner; };
+struct Deep19 { Deep18 inner; };
+struct Deep20 { Deep19 inner; };
+struct Deep21 { Deep20 inner; };
+struct Deep22 { Deep21 inner; };
+struct Deep23 { Deep22 inner; };
+struct Deep24 { Deep23 inner; };
+struct Deep25 { Deep24 inner; };
+struct Deep26 { Deep25 inner; };
+struct Deep27 { Deep26 inner; };
+struct Deep28 { Deep27 inner; };
+struct Deep29 { Deep28 inner; };
+struct Deep30 { Deep29 inner; };
+struct Deep31 { Deep30 inner; };
+struct Deep32 { Deep31 inner; };
+struct Deep33 { Deep32 inner; };
+struct Deep34 { Deep33 inner; };
+struct Deep35 { Deep34 inner; };
+struct Deep36 { Deep35 inner; };
+struct Deep37 { Deep36 inner; };
+struct Deep38 { Deep37 inner; };
+struct Deep39 { Deep38 inner; };
+struct Deep40 { Deep39 inner; };
+struct Deep41 { Deep40 inner; };
+struct Deep42 { Deep41 inner; };
+struct Deep43 { Deep42 inner; };
+struct Deep44 { Deep43 inner; };
+struct Deep45 { Deep44 inner; };
+struct Deep46 { Deep45 inner; };
+struct Deep47 { Deep46 inner; };
+struct Deep48 { Deep47 inner; };
+struct Deep49 { Deep48 inner; };
+struct Deep50 { Deep49 inner; };
+struct Deep51 { Deep50 inner; };
+struct Deep52 { Deep51 inner; };
+struct Deep53 { Deep52 inner; };
+struct Deep54 { Deep53 inner; };
+struct Deep55 { Deep54 inner; };
+struct Deep56 { Deep55 inner; };
+struct Deep57 { Deep56 inner; };
+struct Deep58 { Deep57 inner; };
+struct Deep59 { Deep58 inner; };
+struct Deep60 { Deep59 inner; };
+struct Deep61 { Deep60 inner; };
+struct Deep62 { Deep61 inner; };
+struct Deep63 { Deep62 inner; };
+struct Deep64 { Deep63 inner; };
+struct Deep65 { Deep64 inner; };
+struct Deep66 { Deep65 inner; };
+struct Deep67 { Deep66 inner; };
+struct Deep68 { Deep67 inner; };
+struct Deep69 { Deep68 inner; };
+
+void deep_unknown(State &state, Deep69 holder) {
+  std::vector<Deep69> storage;
+  state.value = 1;
+  storage.push_back(holder); // @boundary deep-unknown
+  consume(state.value); // @select deep-unknown
+}
+
+void empty_callback(State &state) {
+  std::vector<std::function<void()>> storage;
+  std::function<void()> callback;
+  state.value = 1; // @write empty-callback
+  storage.push_back(callback);
+  consume(state.value); // @select empty-callback
+}
+void known_callback(State &state) {
+  std::vector<std::function<void()>> storage;
+  std::function<void()> callback = [&state] { state.value = 2; };
+  state.value = 1;
+  storage.push_back(callback); // @boundary known-callback
+  consume(state.value); // @select known-callback
+}
+void pointer_alias_write(State *pointer, State *alias) {
+  pointer->value = 1;
+  alias->value = 2; // @boundary pointer-alias-write
+  consume(pointer->value); // @select pointer-alias-write
+}
+void pointer_alias_later_write(State *pointer, State *alias) {
+  alias->value = 2;
+  pointer->value = 3; // @write pointer-alias-later-write
+  consume(pointer->value); // @select pointer-alias-later-write
+}
+void pointer_disjoint_write(State &state) {
+  State other{};
+  State *alias = &other;
+  state.value = 1; // @write pointer-disjoint-write
+  alias->value = 2;
+  consume(state.value); // @select pointer-disjoint-write
+}
+void helper_unknown_before(std::function<void()> callback, State &state) {
+  callback();
+  state.value = 3; // @helper-write helper-unknown-before
+}
+void helper_unknown_after(State &state, std::function<void()> callback) {
+  state.value = 3;
+  callback();
+}
+void helper_before(State &state, std::function<void()> callback) {
+  state.value = 1;
+  helper_unknown_before(callback, state); // @call helper-unknown-before
+  consume(state.value); // @select helper-unknown-before
+}
+void helper_after(State &state, std::function<void()> callback) {
+  state.value = 1;
+  helper_unknown_after(state, callback); // @boundary helper-unknown-after
+  consume(state.value); // @select helper-unknown-after
+}
+void helper_pointer_after(State &state, State *alias) {
+  state.value = 3;
+  alias->value = 4;
+}
+void helper_pointer(State &state, State *alias) {
+  state.value = 1;
+  helper_pointer_after(state, alias); // @boundary helper-pointer-after
+  consume(state.value); // @select helper-pointer-after
+}
+
+struct ReceiverState {
+  State state;
+  void run() {
+    std::vector<Holder> storage;
+    state.value = 1;
+    auto holder = holder_factory();
+    storage.push_back(holder); // @boundary receiver-related
+    consume(state.value); // @select receiver-related
+  }
+};
+struct OtherState { int value; };
+struct ReceiverOther {
+  OtherState state;
+  void run() {
+    std::vector<Holder> storage;
+    state.value = 1; // @write receiver-unrelated
+    auto holder = holder_factory();
+    storage.push_back(holder);
+    consume(state.value); // @select receiver-unrelated
+  }
+};
+
+void known_receiver_alias(State &state, State *alias) {
+  state.value = 1;
+  alias->set_value(2); // @boundary known-receiver-alias
+  consume(state.value); // @select known-receiver-alias
+}
+void known_receiver_disjoint(State &state) {
+  State other{};
+  State *alias = &other;
+  state.value = 1; // @write known-receiver-disjoint
+  alias->set_value(2);
+  consume(state.value); // @select known-receiver-disjoint
+}
+void readonly_receiver_alias(State &state, State *alias) {
+  state.value = 1; // @write readonly-receiver-alias
+  consume(alias->read_value());
+  consume(state.value); // @select readonly-receiver-alias
+}
+struct Link { Link *next; State *ptr; };
+void cyclic_unknown(State &state, Link holder) {
+  std::vector<Link> storage;
+  state.value = 1;
+  storage.push_back(holder); // @boundary cyclic-unknown
+  consume(state.value); // @select cyclic-unknown
+}
+
+void callback_projection_read(State &state, std::variant<std::function<void()>, int> callbacks) {
+  state.value = 1; // @write callback-projection-read
+  auto *callback = std::get_if<std::function<void()>>(&callbacks);
+  consume(state.value); // @select callback-projection-read
+}
+void callback_projection_invoke(State &state, std::variant<std::function<void()>, int> callbacks) {
+  state.value = 1;
+  auto *callback = std::get_if<std::function<void()>>(&callbacks);
+  if (callback) (*callback)(); // @boundary callback-projection-invoke
+  consume(state.value); // @select callback-projection-invoke
 }

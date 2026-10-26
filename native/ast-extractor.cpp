@@ -144,6 +144,7 @@ public:
     if (!record) return type->isDependentType() ? "opaque" : "value";
     const auto name = record->getQualifiedNameAsString();
     if (name == "std::reference_wrapper") return "reference-wrapper";
+    if (name == "std::function") return "callable";
     if (name == "std::span" || name == "std::basic_string_view") return "view";
     if (name == "std::shared_ptr") return "shared-owner";
     if (name == "std::unique_ptr") return "unique-owner";
@@ -157,22 +158,31 @@ public:
   struct StorageReachability {
     std::set<const Type *> visited;
     std::set<std::string> identities;
+    std::set<std::string> incomplete;
   };
 
-  StorageReachability &reachableStorage(QualType type, StorageReachability &reachable, unsigned depth = 0) const {
+  // Canonical types form a finite graph. A visited set closes cycles without
+  // truncating deep but fully known aggregates into a universal unknown.
+  StorageReachability &reachableStorage(QualType type, StorageReachability &reachable) const {
     const auto canonical = type.getUnqualifiedType().getCanonicalType();
     if (reachable.visited.count(canonical.getTypePtr())) return reachable;
     return fold(llvm::ArrayRef<QualType>(canonical), reachable, [&](auto &reachable, QualType canonical) {
       reachable.visited.insert(canonical.getTypePtr());
-      if (depth > 64 || type->isDependentType()) { reachable.identities.insert("?"); return; }
+      if (type->isDependentType()) { reachable.incomplete.insert("dependent-type"); return; }
+      // Nominal reachability does not invent casts inside foreign pointees.
+      // Direct erased pointer values get an explicit boundary in storage().
+      if (type->isVoidType()) return;
+      // A function pointer carries no captured object. Global side effects are
+      // outside this local storage model; erased callable objects are below.
+      if (type->isFunctionType()) return;
       if (type->isPointerType() || type->isReferenceType()) {
         const auto pointee = type->getPointeeType();
         reachable.identities.insert(storageIdentity(pointee.getUnqualifiedType()));
-        reachableStorage(pointee, reachable, depth + 1);
+        reachableStorage(pointee, reachable);
         return;
       }
       if (const auto *array = context.getAsArrayType(type)) {
-        reachableStorage(array->getElementType(), reachable, depth + 1);
+        reachableStorage(array->getElementType(), reachable);
         return;
       }
       const auto *record = type->getAsCXXRecordDecl();
@@ -182,7 +192,7 @@ public:
       // absence of fields is not evidence of an arbitrary callback or cast.
       if (!record->hasDefinition()) return;
       if (record->getQualifiedNameAsString() == "std::function") {
-        reachable.identities.insert("?");
+        reachable.incomplete.insert("callback");
         return;
       }
       if (const auto *specialization = llvm::dyn_cast<ClassTemplateSpecializationDecl>(record)) {
@@ -194,7 +204,7 @@ public:
               const auto argumentType = argument.getAsType();
               if (kind == "view" || kind == "reference-wrapper" || kind == "shared-owner" || kind == "unique-owner")
                 reachable.identities.insert(storageIdentity(argumentType.getUnqualifiedType()));
-              reachableStorage(argumentType, reachable, depth + 1);
+              reachableStorage(argumentType, reachable);
             }
           };
           fold(specialization->getTemplateArgs().asArray(), reachable,
@@ -202,31 +212,42 @@ public:
           return;
         }
       }
+      fold(record->bases(), reachable, [&](auto &reachable, const CXXBaseSpecifier &base) {
+        reachableStorage(base.getType(), reachable);
+      });
       fold(record->fields(), reachable, [&](auto &reachable, const FieldDecl *field) {
-        reachableStorage(field->getType(), reachable, depth + 1);
+        reachableStorage(field->getType(), reachable);
       });
     });
   }
 
-  void storage(json::OStream &output, QualType type, unsigned depth = 0) const {
-    const llvm::StringRef kind = depth > 16 ? "opaque" : storageKind(type);
+  void storage(json::OStream &output, QualType type) const {
+    const llvm::StringRef kind = storageKind(type);
     output.attribute("kind", kind);
     output.attribute("identity", storageIdentity(type.getNonReferenceType().getUnqualifiedType()));
     output.attribute("shared", sharedStorage(type));
-    if (sharedStorage(type)) output.attributeArray("reachable", [&] {
+    output.attributeObject("reachability", [&] {
       StorageReachability reachable;
       reachableStorage(type, reachable);
-      fold(reachable.identities, output, [](json::OStream &output, const auto &identity) { output.value(identity); });
+      if (type->isPointerType() && type->getPointeeType()->isVoidType()) reachable.incomplete.insert("erased-pointee");
+      output.attribute("kind", reachable.incomplete.empty() ? "complete" : "incomplete");
+      output.attributeArray("identities", [&] {
+        fold(reachable.identities, output, [](json::OStream &output, const auto &identity) { output.value(identity); });
+      });
+      if (!reachable.incomplete.empty()) output.attributeArray("reasons", [&] {
+        fold(reachable.incomplete, output, [](json::OStream &output, const auto &reason) { output.value(reason); });
+      });
     });
     if (kind == "pointer" || kind == "reference")
       output.attribute("pointee", storageIdentity(type->getPointeeType().getUnqualifiedType()));
+    if (kind == "array")
+      output.attribute("element", storageIdentity(context.getAsArrayType(type)->getElementType().getUnqualifiedType()));
     if (kind == "aggregate")
       output.attributeArray("fields", [&] {
         fold(type->getAsCXXRecordDecl()->fields(), output, [&](json::OStream &output, const FieldDecl *field) {
-          if (!sharedStorage(field->getType())) return;
           output.object([&] {
             output.attribute("name", field->getNameAsString());
-            output.attributeObject("storage", [&] { storage(output, field->getType(), depth + 1); });
+            output.attribute("storageId", storageIdentity(field->getType()));
           });
         });
       });
@@ -412,6 +433,9 @@ public:
           if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee))
             if (method->getNameAsString() == "get" && llvm::StringRef(storageKind(context.getCanonicalTagType(method->getParent()))) == "reference-wrapper")
               output.attribute("storageOperation", "borrow-reference");
+          // variant projection returns a borrow; it does not invoke a stored
+          // callable or mutate objects merely reachable from the variant.
+          if (name == "std::get_if") output.attribute("storageOperation", "borrow-projection");
           if (name == "std::ref" || name == "std::cref") output.attribute("storageOperation", "bind-reference");
           if (name == "std::move" || name == "std::forward") output.attribute("storageOperation", "identity");
           if (name == "std::make_unique" || name == "std::make_shared") output.attribute("storageOperation", "fresh");
@@ -534,6 +558,8 @@ public:
       output.attribute("symbol", symbol(function));
       output.attribute("name", function->getNameAsString());
       output.attribute("dependent", function->isDependentContext());
+      if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(function))
+        output.attribute("receiverStorageId", storageIdentity(context.getCanonicalTagType(method->getParent())));
       type(output, function->getType());
       output.attributeObject("loc", [&] { location(output, function->getLocation()); });
       output.attributeObject("range", [&] { range(output, function->getSourceRange()); });
@@ -605,11 +631,20 @@ public:
 // serialized once per canonical type instead of repeated at every expression.
 class StorageTypes : public RecursiveASTVisitor<StorageTypes> {
 public:
+  explicit StorageTypes(const Serializer &serializer) : serializer(serializer) {}
   bool add(QualType type) {
-    if (!type.isNull()) fold(llvm::ArrayRef<QualType>(type.getCanonicalType()), types,
-        [](auto &types, QualType type) { types.emplace(type.getAsOpaquePtr(), type); });
+    if (type.isNull()) return true;
+    fold(llvm::ArrayRef<QualType>(type.getCanonicalType()), types, [&](auto &types, QualType type) {
+      if (!types.emplace(type.getAsOpaquePtr(), type).second) return;
+      const llvm::StringRef kind = serializer.storageKind(type);
+      if (kind == "pointer" || kind == "reference") add(type->getPointeeType().getUnqualifiedType());
+      if (const auto *array = type->getAsArrayTypeUnsafe()) add(array->getElementType().getUnqualifiedType());
+      if (kind == "aggregate") fold(type->getAsCXXRecordDecl()->fields(), types,
+          [&](auto &, const FieldDecl *field) { add(field->getType()); });
+    });
     return true;
   }
+  bool VisitCXXMethodDecl(CXXMethodDecl *method) { return add(method->getASTContext().getCanonicalTagType(method->getParent())); }
   bool VisitExpr(Expr *expression) { return add(expression->getType()); }
   bool VisitValueDecl(ValueDecl *declaration) { return add(declaration->getType()); }
   bool VisitDeclRefExpr(DeclRefExpr *reference) { return add(reference->getDecl()->getType()); }
@@ -621,6 +656,7 @@ public:
         [&](bool traversed, FunctionDecl *specialization) { return traversed && TraverseDecl(specialization); });
   }
   std::map<void *, QualType> types;
+  const Serializer &serializer;
 };
 
 struct FunctionSelection {
@@ -881,7 +917,7 @@ public:
     fold(functions.roots, selection, [&](auto &selection, const FunctionDecl *root) {
       include(include, root, selection);
     });
-    StorageTypes storageTypes;
+    StorageTypes storageTypes(serializer);
     fold(selection.selected, storageTypes, [](auto &storageTypes, const FunctionDecl *function) {
       storageTypes.TraverseDecl(const_cast<FunctionDecl *>(function));
     });

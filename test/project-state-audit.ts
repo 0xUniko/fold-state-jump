@@ -104,6 +104,7 @@ await files.reduce(async (work, relative) => {
   const started = performance.now();
   const astText = await Effect.runPromise(runClangAst(makeExtractionCommand(command, executable), 67108864, AbortSignal.timeout(120000)));
   assert.equal(await readFile(file, 'utf8'), text);
+  if (directory) await writeFile(path.join(directory, relative.replaceAll('/', '-') + '.json'), astText);
   const prepared = prepareAst(JSON.parse(astText));
   const sourceTextByFile = new Map(await Promise.all([...new Set(prepared.index.all.map((wrapped) => wrapped.file))]
     .filter((file) => file.startsWith(root + '/') && !file.includes('/llama.cpp/') && !file.includes('/vcpkg'))
@@ -167,5 +168,4 @@ await files.reduce(async (work, relative) => {
       }) };
   });
   console.log(JSON.stringify({ file: relative, extractAndPrepareMs: performance.now() - started, astBytes: Buffer.byteLength(astText), queries }));
-  if (directory) await writeFile(path.join(directory, relative.replaceAll('/', '-') + '.json'), astText);
 }, Promise.resolve());

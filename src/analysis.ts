@@ -1,6 +1,7 @@
 'use strict';
 
 import path from 'node:path';
+import { type Storage, type StorageRelation, combineRelations, unknownRelation, relationEvidence, unrelated, reachable, incomplete } from './storage';
 
 export type ClangLocation = {
   readonly file?: string;
@@ -9,14 +10,6 @@ export type ClangLocation = {
   readonly expansionLoc?: ClangLocation;
   readonly spellingLoc?: ClangLocation;
 };
-
-type Storage = { readonly reachable?: readonly string[] } & (
-  | { readonly kind: 'value'; readonly identity: string; readonly shared: boolean }
-  | { readonly kind: 'pointer' | 'reference'; readonly identity: string; readonly shared: boolean; readonly pointee: string }
-  | { readonly kind: 'aggregate'; readonly identity: string; readonly shared: boolean;
-      readonly fields: readonly { readonly name: string; readonly storage: Storage }[] }
-  | { readonly kind: 'reference-wrapper' | 'view' | 'shared-owner' | 'unique-owner' | 'array' | 'elements' | 'sum' | 'opaque';
-      readonly identity: string; readonly shared: boolean });
 
 type ParameterEffect = 'value' | 'read' | 'write' | 'pointee' | 'shared';
 
@@ -27,7 +20,8 @@ export type ClangNode = {
   readonly name?: string;
   readonly opcode?: string;
   readonly memberOperator?: boolean;
-  readonly storageOperation?: 'identity' | 'bind-reference' | 'fresh' | 'borrow-reference';
+  readonly receiverStorageId?: string;
+  readonly storageOperation?: 'identity' | 'bind-reference' | 'fresh' | 'borrow-reference' | 'borrow-projection';
   readonly copyOrMove?: boolean;
   readonly fieldwiseCopy?: boolean;
   readonly copyBoundaries?: readonly string[];
@@ -132,8 +126,11 @@ type AstIndex = {
   readonly wrappedByNode: ReadonlyMap<ClangNode, WrappedNode>;
   readonly enclosingFunctions: ReadonlyMap<WrappedNode, FunctionInfo>;
   readonly normalizedPaths: ReadonlyMap<string, ExpressionPath>;
-  readonly storageByPath: ReadonlyMap<string, Storage>;
+  readonly storageTypes: Readonly<Record<string, Storage>>;
+  readonly storageByPath: ReadonlyMap<string, { readonly storage: Storage; readonly target: ExpressionPath }>;
+  readonly storageIdentitiesByPath: ReadonlyMap<string, readonly string[]>;
   readonly storageBorrowsByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly StorageBorrow[]>>;
+  readonly aliasWritesByFunctionId: ReadonlyMap<string, readonly IndexedWrite[]>;
   readonly writesByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly IndexedWrite[]>>;
   readonly writeBoundariesByFunctionId: ReadonlyMap<string, ReadonlyMap<string, readonly IndexedBoundary[]>>;
   readonly callsByCallerId: ReadonlyMap<string, readonly WrappedNode[]>;
@@ -286,7 +283,7 @@ const functionInfo = (wrapped: WrappedNode): FunctionInfo | undefined => {
     : undefined;
 };
 
-const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
+const buildIndex = (all: readonly WrappedNode[], storageTypes: Readonly<Record<string, Storage>>): AstIndex => {
   const index = all.reduce((index, wrapped) => {
     const fn = isFunction(wrapped.node) ? functionInfo(wrapped) : undefined;
     if (fn) {
@@ -307,8 +304,11 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     wrappedByNode: new Map<ClangNode, WrappedNode>(),
     enclosingFunctions: new Map<WrappedNode, FunctionInfo>(),
     normalizedPaths: new Map<string, ExpressionPath>(),
-    storageByPath: new Map<string, Storage>(),
+    storageTypes,
+    storageByPath: new Map<string, { readonly storage: Storage; readonly target: ExpressionPath }>(),
+    storageIdentitiesByPath: new Map<string, readonly string[]>(),
     storageBorrowsByFunctionId: new Map<string, Map<string, StorageBorrow[]>>(),
+    aliasWritesByFunctionId: new Map<string, IndexedWrite[]>(),
     writesByFunctionId: new Map<string, Map<string, IndexedWrite[]>>(),
     writeBoundariesByFunctionId: new Map<string, Map<string, IndexedBoundary[]>>(),
     callsByCallerId: new Map<string, WrappedNode[]>(),
@@ -348,8 +348,9 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
   all.reduce((index, wrapped) => {
     const owner = enclosingFunction(wrapped, index);
     if (!owner || !(wrapped.node === owner.body.node || wrapped.ancestors.includes(owner.body.node))) return index;
-    const storagePath = wrapped.storage && pathAt(wrapped, index);
-    if (storagePath) index.storageByPath.set(storagePath.rootId + ':' + storagePath.members.join('.'), wrapped.storage!);
+    const storagePath = wrapped.storage && ['DeclRefExpr', 'MemberExpr', 'UnaryOperator', 'ArraySubscriptExpr', 'CXXThisExpr'].includes(wrapped.node.kind)
+      ? pathAt(wrapped, index) : null;
+    if (storagePath) index.storageByPath.set(storagePathKey(storagePath), { storage: wrapped.storage!, target: storagePath });
     // The backward trace only needs potential writes, not every expression
     // in the function. Classify these once per extracted AST.
     const write = writeTarget(wrapped) ?? (isCall(wrapped.node) ? standardMutationTarget(wrapped) : undefined);
@@ -371,6 +372,13 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
       writes.push({ mutation: wrapped, target, start });
       byRoot.set(target.rootId, writes);
       byFunction.set(owner.id, byRoot);
+      if (target.members.includes('*') && write && findDescendant(write, (expression) =>
+        expression.node.kind === 'MemberExpr' && !!expression.node.arrow ||
+        expression.node.kind === 'UnaryOperator' && expression.node.opcode === '*')) {
+        const aliasWrites = index.aliasWritesByFunctionId.get(owner.id) ?? [];
+        aliasWrites.push({ mutation: wrapped, target, start });
+        index.aliasWritesByFunctionId.set(owner.id, aliasWrites);
+      }
     }
     if (isCall(wrapped.node)) {
       if (!wrapped.node.storageOperation) argsOf(wrapped).reduce((index, input, parameterIndex) => {
@@ -422,6 +430,10 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     }, byRoot);
     return index;
   }, index);
+  [...index.aliasWritesByFunctionId.values()].reduce((index, writes) => {
+    writes.sort((left, right) => right.start - left.start);
+    return index;
+  }, index);
   [...index.callsByCallerId.values()].reduce((index, calls) => {
     calls.sort((left, right) =>
       (right.node.range?.begin?.offset ?? -1) - (left.node.range?.begin?.offset ?? -1));
@@ -439,12 +451,19 @@ const buildIndex = (all: readonly WrappedNode[]): AstIndex => {
     }, byRoot);
     return index;
   }, index);
+  // Each selected path's type evidence is immutable preparation state. Reuse
+  // ancestor identities at every relation check instead of rebuilding them per
+  // aggregate field and per call. This cache contains no query-time provenance.
+  [...index.storageByPath.values()].reduce((storageIdentitiesByPath, { target }) => {
+    storageIdentitiesByPath.set(storagePathKey(target), targetStorageIdentities(target, index));
+    return storageIdentitiesByPath;
+  }, index.storageIdentitiesByPath);
   return index;
 };
 
 export const prepareAst = (ast: ClangNode): PreparedAst => ({
   ast,
-  index: buildIndex(buildTree(ast).all)
+  index: buildIndex(buildTree(ast).all, ast.storageTypes ?? {})
 });
 
 const sourceFor = (sourceTextByFile: ReadonlyMap<string, string>, file: string): string =>
@@ -590,7 +609,7 @@ const isDependent = (wrapped: WrappedNode): boolean =>
 const unwrap = (wrapped: WrappedNode | undefined): WrappedNode | undefined => {
   if (!wrapped || !(TRANSPARENT_EXPRESSIONS as readonly string[]).includes(wrapped.node.kind)) return wrapped;
   if (wrapped.node.kind === 'ImplicitCastExpr' && wrapped.node.castKind !== undefined &&
-      !['NoOp', 'LValueToRValue', 'FunctionToPointerDecay', 'ArrayToPointerDecay'].includes(wrapped.node.castKind)) return wrapped;
+      !['NoOp', 'LValueToRValue', 'FunctionToPointerDecay', 'ArrayToPointerDecay', 'ConstructorConversion'].includes(wrapped.node.castKind)) return wrapped;
   return unwrap(wrapped.children[0]);
 };
 
@@ -598,7 +617,11 @@ export type ExpressionPath = {
   readonly rootId: string;
   readonly rootName: string;
   readonly members: readonly string[];
+  readonly receiverStorageId?: string;
 };
+
+const storagePathKey = (target: ExpressionPath): string =>
+  target.rootId + (target.receiverStorageId ? '@' + target.receiverStorageId : '') + ':' + target.members.join('.');
 
 export const expressionPath = (input: WrappedNode | undefined): ExpressionPath | null => {
   const wrapped = unwrap(input);
@@ -618,7 +641,8 @@ export const expressionPath = (input: WrappedNode | undefined): ExpressionPath |
     const base = expressionPath(wrapped.children[0]);
     return base ? appendMembers(base, [...(node.arrow && base.rootId !== '$this' ? ['*'] : []), node.name ?? '?']) : null;
   }
-  if (node.kind === 'CXXThisExpr') return { rootId: '$this', rootName: 'this', members: [] };
+  if (node.kind === 'CXXThisExpr') return { rootId: '$this', rootName: 'this', members: [],
+    receiverStorageId: wrapped.storage?.kind === 'pointer' ? wrapped.storage.pointee : undefined };
   if (node.storageOperation === 'borrow-reference') {
     const receiver = expressionPath(receiverOf(wrapped));
     return receiver ? appendMembers(receiver, ['*']) : null;
@@ -815,7 +839,7 @@ const exposesTarget = (input: WrappedNode | undefined, target: ExpressionPath, i
   const expression = unwrap(input);
   if (!expression) return false;
   if (expression.node.storageOperation === 'borrow-reference') return bindsTarget(expression, target, index, visited,
-    expression.node.range?.begin?.offset ?? Number.POSITIVE_INFINITY) !== 'unrelated';
+    expression.node.range?.begin?.offset ?? Number.POSITIVE_INFINITY).kind !== 'unrelated';
   if (expression.node.kind === 'LambdaExpr') {
     const exposed = !!expression.node.captures?.some((capture) => {
       const declaration = index.declarations.get(capture.id);
@@ -854,7 +878,8 @@ const exposesTarget = (input: WrappedNode | undefined, target: ExpressionPath, i
     // A factory can retain a borrow in foreign storage that C++ fields do not
     // describe (for example a host-copy ticket). Preserve explicit provenance
     // from its arguments; fieldwise value copies use the storage rules above.
-    const factory = initial && isCall(initial.node) && !initial.node.storageOperation;
+    const factory = initial && isCall(initial.node) &&
+      (!initial.node.storageOperation || initial.node.storageOperation === 'borrow-projection');
     return storesTargetReference(expression, target, index, visited) ||
       !!initial && sharedValue && (factory || !declaration?.storage) &&
         exposesTarget(initial, target, index, [...visited, argument.rootId], sharedValue);
@@ -864,9 +889,6 @@ const exposesTarget = (input: WrappedNode | undefined, target: ExpressionPath, i
 
 // Reachability is a proof about storage, not a guessed mutation location.
 // Unknown values preserve a boundary; they never become an exact alias path.
-type StorageRelation = 'unrelated' | 'reachable' | 'unknown';
-const combineRelations = (relations: readonly StorageRelation[]): StorageRelation =>
-  relations.includes('reachable') ? 'reachable' : relations.includes('unknown') ? 'unknown' : 'unrelated';
 
 type StoredValue =
   | { readonly _tag: 'Value'; readonly expression: WrappedNode; readonly members: readonly string[]; readonly before: number }
@@ -919,27 +941,50 @@ const projectedStorage = (input: WrappedNode, members: readonly string[], storag
   return argument ? storedPathRelation(appendMembers(argument, members), storage, target, before, index, visited, accessBefore) : unknownStorageRelation(storage, target, index);
 };
 
-const unknownStorageRelation = (storage: Storage, target: ExpressionPath, index: AstIndex): StorageRelation => {
-  const targetIdentities = Array.from({ length: target.members.length + 1 }, (_, length) => {
-    const storage = index.storageByPath.get(target.rootId + ':' + target.members.slice(0, length).join('.'));
-    // Clang represents p->field without a separate *p expression node.
-    return storage ? [storage.identity, ...(storage.kind === 'pointer' && target.members[length] === '*' ? [storage.pointee] : [])] : [];
-  }).flat();
-  // Only compatible storage can alias. This also separates a State* value
-  // from the State* variable itself, including pointers nested in aggregates.
-  return storage.reachable?.some((identity) => targetIdentities.includes(identity)) ? 'unknown' : 'unrelated';
+// Projection uses declaration storage and field type references when Clang
+// omits an intermediate expression (notably the * in p->field).
+const storageAt = (target: ExpressionPath, index: AstIndex): Storage | undefined => {
+  const declaration = index.declarations.get(target.rootId);
+  const storage = target.rootId === '$this' ? index.storageTypes[target.receiverStorageId ?? ''] : declaration?.storage;
+  const project = (storage: Storage | undefined, members: readonly string[]): Storage | undefined => {
+    if (!storage || !members.length) return storage;
+    if (storage.kind === 'reference') return project(index.storageTypes[storage.pointee], members);
+    const member = members[0];
+    if (storage.kind === 'pointer' && member === '*') return project(index.storageTypes[storage.pointee], members.slice(1));
+    if (storage.kind === 'array' && /^\[\d+\]$/.test(member)) return project(index.storageTypes[storage.element], members.slice(1));
+    if (storage.kind === 'aggregate') {
+      const field = storage.fields.find((field) => field.name === member);
+      return field && project(index.storageTypes[field.storageId], members.slice(1));
+    }
+    return undefined;
+  };
+  return project(storage, target.members) ?? index.storageByPath.get(storagePathKey(target))?.storage;
 };
+
+const targetStorageIdentities = (target: ExpressionPath, index: AstIndex): readonly string[] =>
+  Array.from({ length: target.members.length + 1 }, (_, length) => {
+    const storage = storageAt({ ...target, members: target.members.slice(0, length) }, index);
+    return storage ? [storage.identity, ...(storage.kind === 'pointer' && (target.members[length] === '*' || target.rootId === '$this')
+      ? [storage.pointee] : [])] : [];
+  }).flat();
+
+const unknownStorageRelation = (storage: Storage, target: ExpressionPath, index: AstIndex): StorageRelation =>
+  unknownRelation(storage, index.storageIdentitiesByPath.get(storagePathKey(target)) ??
+    targetStorageIdentities(target, index));
 
 const storedPathRelation = (argument: ExpressionPath, storage: Storage, target: ExpressionPath,
   before: number, index: AstIndex, visited: readonly string[], accessBefore = before): StorageRelation => {
-  if (storage.kind === 'aggregate') return combineRelations(storage.fields.map((field) =>
-    storedPathRelation(appendMembers(argument, [field.name]), field.storage, target, before, index, visited, accessBefore)));
-  if (storage.kind === 'value' || !storage.shared) return 'unrelated';
+  if (storage.kind === 'value' || !storage.shared) return unrelated;
+  if (storage.kind === 'aggregate') return combineRelations(storage.fields.map((field) => {
+    const storage = index.storageTypes[field.storageId];
+    return storage ? storedPathRelation(appendMembers(argument, [field.name]), storage, target, before, index, visited, accessBefore)
+      : incomplete('field-type');
+  }));
   const pointee = appendMembers(argument, ['*']);
   if (argument.rootId === target.rootId)
-    return affects(pointee.members, target.members) ? 'reachable' : 'unrelated';
+    return affects(pointee.members, target.members) ? reachable : unrelated;
   const key = argument.rootId + ':' + argument.members.join('.');
-  if (visited.includes(key)) return 'unknown';
+  if (visited.includes(key)) return incomplete('provenance');
   const value = storedValue(argument, before, index, storage.kind === 'reference');
   return value._tag === 'Unknown' ? unknownStorageRelation(storage, target, index)
     : projectedStorage(value.expression, value.members, storage, target, value.before, index, [...visited, key], accessBefore);
@@ -966,27 +1011,27 @@ const referenceBinding = (argument: ExpressionPath, before: number, index: AstIn
 const bindsTarget = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
   visited: readonly string[] = [], before = Number.POSITIVE_INFINITY, accessBefore = before): StorageRelation => {
   const argumentRaw = expressionPath(input);
-  if (!argumentRaw) return 'unknown';
+  if (!argumentRaw) return incomplete('provenance');
   const binding = referenceBinding(argumentRaw, before, index);
-  if (binding._tag === 'Unknown') return 'unknown';
+  if (binding._tag === 'Unknown') return incomplete('provenance');
   const argument = binding.argument;
-  if (argument.rootId === target.rootId && affects(argument.members, target.members)) return 'reachable';
+  if (argument.rootId === target.rootId && affects(argument.members, target.members)) return reachable;
   const dereference = argument.members.indexOf('*');
   if (dereference >= 0) {
     const pointer = { ...argument, members: argument.members.slice(0, dereference) };
-    const storage = index.storageByPath.get(pointer.rootId + ':' + pointer.members.join('.'));
-    return storage ? storedPathRelation(pointer, storage, target, binding.before, index, visited, accessBefore) : 'unknown';
+    const storage = storageAt(pointer, index);
+    return storage ? storedPathRelation(pointer, storage, target, binding.before, index, visited, accessBefore) : incomplete('provenance');
   }
   // Borrowing a pointer variable or an aggregate can also expose its pointees.
   const expression = unwrap(input);
   const storage = expression?.storage;
-  return expression && storage ? storedRelation(expression, storage, target, accessBefore, index, visited, accessBefore) : 'unrelated';
+  return expression && storage ? storedRelation(expression, storage, target, accessBefore, index, visited, accessBefore) : unrelated;
 };
 
 const storedRelation = (input: WrappedNode, storage: Storage, target: ExpressionPath,
   before: number, index: AstIndex, visited: readonly string[], accessBefore = before): StorageRelation => {
   const expression = unwrap(input);
-  if (!expression || storage.kind === 'value' || !storage.shared) return 'unrelated';
+  if (!expression || storage.kind === 'value' || !storage.shared) return unrelated;
   if (storage.kind === 'reference') return bindsTarget(expression, target, index, visited, before, accessBefore);
   if (expression.node.storageOperation === 'fresh') return combineRelations(argsOf(expression).map((child) =>
     storesTargetRelation(child, target, index, before, visited, accessBefore)));
@@ -995,11 +1040,13 @@ const storedRelation = (input: WrappedNode, storage: Storage, target: Expression
   if (expression.node.storageOperation === 'identity' && expression.children[1])
     return storedRelation(expression.children[1], storage, target, before, index, visited, accessBefore);
   if (expression.node.kind === 'CXXConstructExpr') {
-    if (storage.kind === 'elements' && expression.children.every((child) => child.node.kind === 'CXXDefaultArgExpr')) return 'unrelated';
+    if (storage.kind === 'elements' && expression.children.every((child) => child.node.kind === 'CXXDefaultArgExpr')) return unrelated;
     if (expression.node.copyOrMove && expression.children[0])
       return storedRelation(expression.children[0], storage, target, before, index, visited, accessBefore);
-    if (storage.kind === 'opaque' && storage.reachable?.includes('?')) return combineRelations(
-      expression.children.map((child) => storesTargetRelation(child, target, index, before, visited, accessBefore)));
+    // Callable construction stores the supplied closure. In contrast, arbitrary
+    // opaque constructors do not establish a complete field/provenance map.
+    if (storage.kind === 'callable') return combineRelations(expression.children.map((child) =>
+      storesTargetRelation(child, target, index, before, visited, accessBefore)));
     if (expression.node.construction?.storageBinding) return combineRelations(expression.children.map((child) =>
       storage.kind === 'reference-wrapper' || storage.kind === 'view' && unwrap(child)?.storage?.kind === 'array'
         ? bindsTarget(child, target, index, visited, before, accessBefore)
@@ -1007,9 +1054,12 @@ const storedRelation = (input: WrappedNode, storage: Storage, target: Expression
   }
   if (expression.node.kind === 'UnaryOperator' && expression.node.opcode === '&')
     return bindsTarget(expression.children[0], target, index, visited, before, accessBefore);
-  if (['CXXNullPtrLiteralExpr', 'GNUNullExpr', 'IntegerLiteral', 'ImplicitValueInitExpr'].includes(expression.node.kind)) return 'unrelated';
+  if (['CXXNullPtrLiteralExpr', 'GNUNullExpr', 'IntegerLiteral', 'ImplicitValueInitExpr'].includes(expression.node.kind)) return unrelated;
   if (expression.node.kind === 'InitListExpr' && storage.kind === 'aggregate')
-    return combineRelations(storage.fields.map((field) => projectedStorage(expression, [field.name], field.storage, target, before, index, visited, accessBefore)));
+    return combineRelations(storage.fields.map((field) => {
+      const storage = index.storageTypes[field.storageId];
+      return storage ? projectedStorage(expression, [field.name], storage, target, before, index, visited, accessBefore) : incomplete('field-type');
+    }));
   const argument = pathAt(expression, index);
   return argument ? storedPathRelation(argument, storage, target, before, index, visited, accessBefore)
     : unknownStorageRelation(storage, target, index);
@@ -1018,19 +1068,19 @@ const storedRelation = (input: WrappedNode, storage: Storage, target: Expression
 const storesTargetRelation = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
   before: number, visited: readonly string[] = [], accessBefore = before): StorageRelation => {
   const expression = unwrap(input);
-  if (!expression) return 'unrelated';
-  if (expression.node.kind === 'LambdaExpr') return exposesTarget(expression, target, index, visited) ? 'unknown' : 'unrelated';
+  if (!expression) return unrelated;
+  if (expression.node.kind === 'LambdaExpr') return exposesTarget(expression, target, index, visited) ? incomplete('provenance') : unrelated;
   const storage = expression.storage;
   // Legacy hand-built ASTs have no storage metadata. Preserve address evidence
   // without inventing semantics for type spellings.
   if (!storage) return expression.node.kind === 'UnaryOperator' && expression.node.opcode === '&'
-    ? bindsTarget(expression.children[0], target, index, visited, before, accessBefore) : 'unrelated';
+    ? bindsTarget(expression.children[0], target, index, visited, before, accessBefore) : unrelated;
   return storedRelation(expression, storage, target, before, index, visited, accessBefore);
 };
 
 const storesTargetReference = (input: WrappedNode | undefined, target: ExpressionPath, index: AstIndex,
   visited: readonly string[] = [], before = input?.node.range?.begin?.offset ?? Number.POSITIVE_INFINITY): boolean =>
-  storesTargetRelation(input, target, index, before, visited) !== 'unrelated';
+  storesTargetRelation(input, target, index, before, visited).kind !== 'unrelated';
 
 const callEffectBoundary = (call: WrappedNode, callee: FunctionInfo | undefined,
   target: ExpressionPath, index: AstIndex, visitedFunctionIds: readonly string[]): string | undefined => {
@@ -1045,17 +1095,35 @@ const callEffectBoundary = (call: WrappedNode, callee: FunctionInfo | undefined,
       ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') +
         ': ' + call.node.callee?.name + '; writes through a retained reference are not verified.' : undefined;
   }
+  if (call.node.storageOperation === 'borrow-projection') {
+    const retained = call.ancestors.some((node) => {
+      const wrapped = index.wrappedByNode.get(node);
+      const write = wrapped && writeTarget(wrapped);
+      return write && !!findDescendant(write, (expression) => expression.node === call.node) ||
+        node.kind === 'VarDecl' && (wrapped?.storage?.kind === 'reference' || wrapped?.storage?.kind === 'pointer');
+    });
+    const directlyBorrowed = argsOf(call).some((argument) => {
+      const argumentPath = pathAt(argument, index);
+      const members = argumentPath?.members.at(-1) === '&' ? argumentPath.members.slice(0, -1)
+        : argumentPath && appendMembers(argumentPath, ['*']).members;
+      return argumentPath?.rootId === target.rootId && !!members && affects(members, target.members);
+    });
+    return retained && directlyBorrowed ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') +
+      ': ' + call.node.callee?.name + '; retained variant projection identity is not verified.' : undefined;
+  }
   if (call.node.storageOperation || ['std::move', 'std::forward'].includes(call.node.callee?.qualifiedName ?? '')) return undefined;
   if (standardMutationTarget(call)) {
     // The receiver write itself is already indexed as the call. Only an
     // argument storing the target's address or reference can redirect later
     // writes to the target; skipping that check would return a stale mutation
     // from before the escape.
-    return argsOf(call).some((argument) => storesTargetReference(argument, target, index, visitedFunctionIds))
-      ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') + ': ' +
-        (call.node.callee?.name ?? 'container operation') + ' stores the target address or reference; ' +
-        'later container-mediated mutations are not verified.'
-      : undefined;
+    const relation = argsOf(call).reduce<StorageRelation>((relation, argument) => relation.kind === 'unrelated'
+      ? storesTargetRelation(argument, target, index, argument.node.range?.begin?.offset ?? Number.POSITIVE_INFINITY, visitedFunctionIds)
+      : relation, unrelated);
+    return relation.kind === 'unrelated' ? undefined
+      : 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') + ': ' +
+        (call.node.callee?.name ?? 'container operation') + ' possibly stores the target address or reference; ' +
+        'later container-mediated mutations are not verified; ' + relationEvidence(relation) + '.';
   }
   const argumentsExposed = argsOf(call).some((argument, parameterIndex) => {
     const parameter = callee?.params[parameterIndex];
@@ -1080,8 +1148,16 @@ const callEffectBoundary = (call: WrappedNode, callee: FunctionInfo | undefined,
   const receiver = receiverOf(call);
   // Element-mediated effects are bounded at the insertion which introduced
   // the alias. A later operator[] is not evidence of a new target association.
-  const receiverExposed = (!callee || call.node.callee?.virtual) && call.node.callee?.receiverEffect !== 'read' &&
-    exposesTarget(receiver, target, index, visitedFunctionIds);
+  const receiverEffect = (): boolean => {
+    if (!callee || call.node.callee?.virtual) return true;
+    if (receiverPath(call, index)?.rootId === target.rootId) return false;
+    const members = target.members[0] === '*' ? target.members.slice(1) : target.members;
+    return visitedFunctionIds.includes(callee.id) || !!findPreviousMutation(callee, {
+      rootId: '$this', rootName: 'this', members, receiverStorageId: callee.wrapped.node.receiverStorageId
+    }, Number.POSITIVE_INFINITY, index, new Map(), visitedFunctionIds);
+  };
+  const receiverExposed = call.node.callee?.receiverEffect !== 'read' &&
+    exposesTarget(receiver, target, index, visitedFunctionIds) && receiverEffect();
   return argumentsExposed || receiverExposed
     ? 'Unverified call effect on ' + target.rootName + '.' + target.members.join('.') +
       ': ' + (call.node.callee?.name ?? 'indirect call') + '; shared storage or callback effects are not verified.'
@@ -1138,7 +1214,7 @@ const findPreviousMutation = (
   };
   const calls = index.callsByCallerId.get(fn.id) ?? [];
   const callStart = (call: WrappedNode): number => call.node.range?.begin?.offset ?? -1;
-  const candidate = findFirstMapped(calls, (call): PreviousMutation | undefined => {
+  const callCandidate = findFirstMapped(calls, (call): { readonly result: PreviousMutation; readonly evaluationRange: { readonly start: number; readonly end: number } } | undefined => {
     const callRange = nodeRange(call, sourceTextByFile);
     if (!callRange || callRange.end > beforeOffset) return undefined;
     // A completed assignment takes effect after its RHS calls. A call nested
@@ -1147,9 +1223,9 @@ const findPreviousMutation = (
     if (directRange && directRange.start <= callRange.start && directRange.end >= callRange.end) return undefined;
     const callee = resolveFunction(call, index);
     const boundary = callEffectBoundary(call, callee, target, index, nextVisited);
-    if (boundary) return { _tag: 'MutationBoundary', orderOffset: callRange.start,
-      reason: call.file + ':' + callRange.start + ': ' + boundary };
-    if (!callee) return undefined;
+    const boundaryResult: MutationBoundary | undefined = boundary ? { _tag: 'MutationBoundary', orderOffset: callRange.start,
+      reason: call.file + ':' + callRange.start + ': ' + boundary } : undefined;
+    if (!callee) return boundaryResult && { result: boundaryResult, evaluationRange: callRange };
     const args = argsOf(call);
     const parameterTargets = callee.params.flatMap((parameter, parameterIndex) => {
       if (!isReferenceOrPointer(parameter)) return [];
@@ -1170,7 +1246,8 @@ const findPreviousMutation = (
     });
     const receiver = receiverPath(call, index);
     const receiverTargets = receiver?.rootId === target.rootId && affects(receiver.members, target.members)
-      ? [{ _tag: 'BorrowedTarget' as const, target: { rootId: '$this', rootName: 'this', members: target.members.slice(receiver.members.length) } }]
+      ? [{ _tag: 'BorrowedTarget' as const, target: { rootId: '$this', rootName: 'this', members: target.members.slice(receiver.members.length),
+          receiverStorageId: callee.wrapped.node.receiverStorageId } }]
       : [];
     const lambda = lambdaFor(callee, index);
     const capture = lambda?.node.captures?.find((capture) => captureMatches(capture, target, index));
@@ -1179,7 +1256,7 @@ const findPreviousMutation = (
     const defaultReference = lambda?.node.captureDefault === 'reference' && owner &&
       callee.wrapped.ancestors.some((node) => node.id === owner.id);
     const capturedTargets = capture?.kind === 'reference' || (!capture && defaultReference) ? [{ _tag: 'BorrowedTarget' as const, target }] : [];
-    return [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce<PreviousMutation | undefined>((latest, mapped) => {
+    const nested = [...parameterTargets, ...receiverTargets, ...capturedTargets].reduce<PreviousMutation | undefined>((latest, mapped) => {
       if (latest?.orderOffset === callRange.start) return latest;
       const target = mapped.target;
       if (mapped._tag === 'PointerValueTarget') {
@@ -1199,13 +1276,22 @@ const findPreviousMutation = (
       return nested._tag === 'MutationBoundary' ? { ...nested, orderOffset: callRange.start }
         : { ...nested, orderOffset: callRange.start, frames: [{ callsite: call, caller: fn }, ...nested.frames] };
     }, undefined);
-  }, firstAtMost(calls, beforeOffset, callStart), direct ? firstAtMost(calls, direct.orderOffset, callStart) : calls.length) ?? direct;
+    // Recursive tracing sees the callee's own ordering, including later calls
+    // and aliased writes. A verified later write can supersede an uncertain
+    // alias at call entry; a missing mapping keeps the call-site boundary.
+    const result = nested?._tag === 'Mutation' ? nested : boundaryResult ?? nested;
+    return result && { result, evaluationRange: callRange };
+  }, firstAtMost(calls, beforeOffset, callStart), direct ? firstAtMost(calls, direct.orderOffset, callStart) : calls.length);
+  const candidate = callCandidate?.result ?? direct;
   const constructions = index.constructionsByCallerId.get(fn.id) ?? [];
   const construction = findFirstMapped(constructions, (construction): MutationBoundary | undefined => {
     const range = nodeRange(construction, sourceTextByFile);
     if (!range || range.end > beforeOffset) return undefined;
     const directRange = directWrite && nodeRange(directWrite.mutation, sourceTextByFile);
     if (directRange && directRange.start <= range.start && directRange.end >= range.end) return undefined;
+    // Argument construction completes before the enclosing call's body effect.
+    const evaluationRange = callCandidate?.evaluationRange;
+    if (evaluationRange && evaluationRange.start <= range.start && evaluationRange.end >= range.end) return undefined;
     const exposed = construction.children.some((argument, parameterIndex) => {
       const effect = construction.node.construction?.parameterEffects[parameterIndex];
       return effect !== 'read' && effect !== 'value' && exposesTarget(argument, target, index, nextVisited, effect === 'shared');
@@ -1215,10 +1301,27 @@ const findPreviousMutation = (
         (construction.node.construction?.name ?? '(unknown)') + '; shared storage or callback effects are not verified.' } : undefined;
   }, firstAtMost(constructions, beforeOffset, callStart), candidate ? firstAtMost(constructions, candidate.orderOffset, callStart) : constructions.length);
   const latest = construction ?? candidate;
+  const aliasWrites = index.aliasWritesByFunctionId.get(fn.id) ?? [];
+  const aliasWrite = findFirstMapped(aliasWrites, (write): MutationBoundary | undefined => {
+    const writePointer = write.target.members.slice(0, write.target.members.lastIndexOf('*') + 1);
+    const targetPointer = target.members.slice(0, target.members.lastIndexOf('*') + 1);
+    // One pointer identifies one object; its distinct ordinary fields stay
+    // disjoint. Different pointer values still require an alias proof.
+    if (write.target.rootId === target.rootId && writePointer.length === targetPointer.length &&
+        sameOrParent(writePointer, targetPointer)) return undefined;
+    const range = nodeRange(write.mutation, sourceTextByFile);
+    const expression = writeTarget(write.mutation);
+    if (!range || range.end > beforeOffset || !expression) return undefined;
+    const exposed = bindsTarget(expression, target, index, nextVisited, write.start).kind !== 'unrelated';
+    return exposed ? { _tag: 'MutationBoundary', orderOffset: write.start,
+      reason: write.mutation.file + ':' + write.start + ': Unverified aliased write; target storage identity is not verified.' } : undefined;
+  }, firstAtMost(aliasWrites, beforeOffset, (write) => write.start),
+  latest ? firstAtMost(aliasWrites, latest.orderOffset, (write) => write.start) : aliasWrites.length);
   const barrier = mutationBarrier(fn, target, beforeOffset, index, latest?.orderOffset);
-  return barrier && (!latest || latest.orderOffset <= barrier.start)
+  const latestWithAlias = aliasWrite ?? latest;
+  return barrier && (!latestWithAlias || latestWithAlias.orderOffset <= barrier.start)
     ? { _tag: 'MutationBoundary', orderOffset: barrier.start, reason: fn.file + ':' + barrier.start + ': ' + barrier.reason }
-    : latest;
+    : latestWithAlias;
 };
 
 // A query exposes only unresolved parameter owners to the editor adapter. Each
@@ -1549,7 +1652,7 @@ const originFor = (
       if (!barrier && !rebound && source._tag === 'Path' && source.target.rootId !== target.rootId)
         return originFor(fn, source.target, index, options, visited, declaration.node.range?.begin?.offset ?? beforeOffset);
       return { candidates: [{ origin: declaration, kind: 'parameter', frames: [], boundary:
-        barrier?.reason ?? (rebound ? 'Pointer binding may have changed through a helper; pointee identity is not verified.'
+        (barrier && fn.file + ':' + barrier.start + ': ' + barrier.reason) ?? (rebound ? 'Pointer binding may have changed through a helper; pointee identity is not verified.'
           : 'Pointee initialization source is not verified.') }], boundaries: [] };
     }
     return { candidates: declaration.children.length > 0 ? [{ origin: declaration, kind: 'initialization', frames: [] }] : [], boundaries: [] };

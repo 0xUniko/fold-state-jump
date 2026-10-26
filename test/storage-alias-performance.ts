@@ -57,6 +57,7 @@ const timings = Array.from({ length: runs }).map((_, run) => {
     results.map((result) => assert.deepEqual(fingerprint(result), expected));
     return { name, queryUs, result: expected };
   });
-  return { run, extractMs, parseMs, prepareMs, astBytes: Buffer.byteLength(extracted.stdout), queries };
+  return { run, extractMs, parseMs, prepareMs, astBytes: Buffer.byteLength(extracted.stdout),
+    storageMetadataBytes: Buffer.byteLength(JSON.stringify(ast.storageTypes ?? {})), queries };
 });
 console.log(JSON.stringify({ sourceSha256, count, runs, repetitions, module: process.argv[2] ?? '../src/analysis', extractor, timings }, null, 2));
