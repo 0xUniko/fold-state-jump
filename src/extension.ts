@@ -409,15 +409,14 @@ const presentAnalysis = (
       case 'MutationFound':
         if (!(yield* navigate(result.mutation, result.returnMapping))) return;
         yield* Effect.sync(() => vscode.window.setStatusBarMessage(result.wrapped
-          ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
+          ? 'Fold State Jump: wrapped through a verified fold return; first-iteration state and branch guards still apply; runtime reachability is not verified.'
           : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000));
         return;
       case 'OriginFound':
         if (!(yield* navigate(result.origin, result.returnMapping))) return;
         yield* Effect.sync(() => {
-          void vscode.window.showInformationMessage(result.kind === 'initialization'
-            ? 'Fold State Jump: showing the initialization source.'
-            : 'Fold State Jump: ' + (result.boundary ?? 'showing the parameter source.'));
+          void vscode.window.showInformationMessage('Fold State Jump: ' + (result.boundary ?? (result.kind === 'initialization'
+            ? 'showing the initialization source.' : 'showing the parameter source.')));
         });
         return;
       case 'OriginCandidatesFound':
@@ -426,7 +425,7 @@ const presentAnalysis = (
         if (candidate) {
           if (!(yield* navigate(candidateTarget(candidate), candidate.returnMapping))) return;
           if ('mutation' in candidate) vscode.window.setStatusBarMessage(candidate.wrapped
-            ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
+            ? 'Fold State Jump: wrapped through a verified fold return; first-iteration state and branch guards still apply; runtime reachability is not verified.'
             : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000);
           if ('origin' in candidate && candidate.boundary) yield* showFailure(candidate.boundary);
         }

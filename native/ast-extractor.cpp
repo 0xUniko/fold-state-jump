@@ -131,6 +131,11 @@ public:
     output.attributeObject("type", [&] {
       output.attribute("qualType", type.getAsString());
       if (!type.isNull()) output.attribute("storageId", storageIdentity(type));
+      const auto *array = type.isNull() ? nullptr : llvm::dyn_cast_or_null<ClassTemplateSpecializationDecl>(type->getAsCXXRecordDecl());
+      if (array && array->getSpecializedTemplate()->getQualifiedNameAsString() == "std::array" &&
+          sm.isInSystemHeader(sm.getExpansionLoc(array->getSpecializedTemplate()->getLocation())) &&
+          array->getTemplateArgs().size() == 2 && array->getTemplateArgs().get(1).getKind() == TemplateArgument::Integral)
+        output.attribute("extent", array->getTemplateArgs().get(1).getAsIntegral().getLimitedValue());
     });
   }
 
@@ -390,6 +395,24 @@ public:
       if (const auto *cast = llvm::dyn_cast<CastExpr>(stmt))
         output.attribute("castKind", cast->getCastKindName());
       if (const auto *construction = llvm::dyn_cast<CXXConstructExpr>(stmt)) {
+        const auto *variant = llvm::dyn_cast_or_null<ClassTemplateSpecializationDecl>(construction->getType()->getAsCXXRecordDecl());
+        if (variant && variant->getSpecializedTemplate()->getQualifiedNameAsString() == "std::optional" &&
+            sm.isInSystemHeader(sm.getExpansionLoc(construction->getConstructor()->getLocation())) &&
+            construction->getConstructor()->isDefaultConstructor() && construction->getNumArgs() == 0)
+          output.attribute("storageOperation", "optional-empty");
+        if (variant && variant->getSpecializedTemplate()->getQualifiedNameAsString() == "std::variant" &&
+            sm.isInSystemHeader(sm.getExpansionLoc(construction->getConstructor()->getLocation())) &&
+            construction->getNumArgs() == 1 && !construction->getConstructor()->isCopyOrMoveConstructor()) {
+          const auto argument = construction->getArg(0)->getType();
+          const auto alternatives = variant->getTemplateArgs().get(0);
+          const auto matches = [&](const TemplateArgument &alternative) {
+            return alternative.getKind() == TemplateArgument::Type &&
+              context.hasSameUnqualifiedType(alternative.getAsType(), argument);
+          };
+          if (alternatives.getKind() == TemplateArgument::Pack &&
+              llvm::any_of(alternatives.pack_elements(), matches))
+            output.attribute("variantAlternative", storageIdentity(argument.getUnqualifiedType()));
+        }
         output.attributeObject("construction", [&] {
           output.attribute("name", construction->getConstructor()->getQualifiedNameAsString());
           const llvm::StringRef kind = storageKind(construction->getType());
@@ -425,17 +448,43 @@ public:
       }
       if (const auto *member = llvm::dyn_cast<MemberExpr>(stmt))
         output.attribute("arrow", member->isArrow());
+      if (const auto *conditional = llvm::dyn_cast<IfStmt>(stmt))
+        output.attribute("hasElse", conditional->getElse() != nullptr);
       if (const auto *literal = llvm::dyn_cast<IntegerLiteral>(stmt))
         output.attribute("value", llvm::toString(literal->getValue(), 10, false));
       if (const auto *call = llvm::dyn_cast<CallExpr>(stmt)) {
         if (const auto *callee = call->getDirectCallee()) {
           const auto name = callee->getQualifiedNameAsString();
+          if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee)) {
+            const auto *optional = llvm::dyn_cast<ClassTemplateSpecializationDecl>(method->getParent());
+            // Public optional operations have no contained-value callbacks.
+            // Verify the canonical specialization and system declaration; a
+            // user-defined arrow with the same spelling has no such contract.
+            if (optional && optional->getSpecializedTemplate()->getQualifiedNameAsString() == "std::optional" &&
+                sm.isInSystemHeader(sm.getExpansionLoc(method->getLocation())) && !method->isVirtual() &&
+                method->getNumParams() == 0) {
+              const auto &contained = optional->getTemplateArgs().get(0);
+              if (method->getOverloadedOperator() == OO_Arrow && contained.getKind() == TemplateArgument::Type &&
+                  method->getReturnType()->isPointerType() && context.hasSameUnqualifiedType(
+                    method->getReturnType()->getPointeeType(), contained.getAsType()))
+                output.attribute("storageOperation", "optional-arrow");
+              if (method->isConst() && method->getReturnType()->isBooleanType() &&
+                  (method->getNameAsString() == "operator bool" || method->getNameAsString() == "has_value"))
+                output.attribute("storageOperation", "optional-observe");
+            }
+          }
           if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(callee))
             if (method->getNameAsString() == "get" && llvm::StringRef(storageKind(context.getCanonicalTagType(method->getParent()))) == "reference-wrapper")
               output.attribute("storageOperation", "borrow-reference");
           // variant projection returns a borrow; it does not invoke a stored
           // callable or mutate objects merely reachable from the variant.
-          if (name == "std::get_if") output.attribute("storageOperation", "borrow-projection");
+          if (name == "std::get_if") {
+            output.attribute("storageOperation", "borrow-projection");
+            const auto *arguments = callee->getTemplateSpecializationArgs();
+            if (arguments && arguments->size() && arguments->get(0).getKind() == TemplateArgument::Type &&
+                sm.isInSystemHeader(sm.getExpansionLoc(callee->getLocation())))
+              output.attribute("variantProjection", storageIdentity(arguments->get(0).getAsType().getUnqualifiedType()));
+          }
           if (name == "std::ref" || name == "std::cref") output.attribute("storageOperation", "bind-reference");
           // Only the standard one-argument reference cast is transparent.
           // std::move(first, last, out) is an algorithm, not an identity.

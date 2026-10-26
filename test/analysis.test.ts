@@ -66,7 +66,7 @@ const foldAst = (statements: readonly ClangNode[], helpers: readonly ClangNode[]
               kind: 'CXXMethodDecl', id: 'lambda', name: 'operator()',
               inner: [
                 { kind: 'ParmVarDecl', id: 'state', name: 'state', type: { qualType: 'State' } },
-                { kind: 'CompoundStmt', inner: statements }
+                { kind: 'CompoundStmt', inner: [...statements, { kind: 'ReturnStmt', range: { begin: { offset: 190 }, end: { offset: 199 } }, inner: [reference('state', 'state', 197)] }] }
               ]
             }]
           }]
@@ -153,15 +153,14 @@ describe('fold mutation analysis', () => {
     }
   });
 
-  test('preserves wrap-around for a local state inside the fold', () => {
+  test('does not wrap a fresh local object across fold iterations', () => {
     const mutation = increment('local-state', 'local', 70);
     const ast = foldAst([
       { kind: 'VarDecl', id: 'local-state', name: 'local', inner: [{ kind: 'InitListExpr' }] },
       member('local-state', 'local', 10), mutation
     ]);
     const result = analyze(ast, 16);
-    assert.equal(result._tag, 'MutationFound');
-    if (result._tag === 'MutationFound') { assert.equal(result.mutation.node, mutation); assert.equal(result.wrapped, true); }
+    assert.equal(result._tag, 'AnalysisFailure');
   });
 
   test('wraps to an invoked reference helper mutation inside the fold', () => {

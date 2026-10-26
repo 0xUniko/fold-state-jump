@@ -21,6 +21,8 @@ const cases = [
   { name: 'generation-seed', file: 'minicpm-v-4_7/cli.cpp', snippet: 'Generation{std::move(batch_state), {}, false}', expression: 'batch_state' },
   { name: 'chat-return', file: 'minicpm-v-4_7/cli.cpp', snippet: 'return {std::move(generation.batch_state.session_state), std::move(history)};', expression: 'session_state' },
   { name: 'clear-input', file: 'minicpm-v-4_7/cli.cpp', snippet: 'std::move(interactive->chat_state.session_state)})', expression: 'session_state' },
+  { name: 'pending-presence', file: 'minicpm-v-4_7/ffn.h', snippet: 'if (bank_state.pending &&', expression: 'pending' },
+  { name: 'pending-contained', file: 'minicpm-v-4_7/ffn.h', snippet: 'bank_state.pending->reservation.layer', expression: 'pending' },
   { name: 'pending-reset', file: 'minicpm-v-4_7/ffn.h', snippet: 'bank_state.pending.reset();', expression: 'pending' },
   { name: 'prefill-counter', file: 'minicpm-v-4_7/ffn.h', snippet: 'return {current.layer, std::move(current.slot_ids),', expression: 'current' },
   { name: 'slot-index', file: 'minicpm-v-4_7/experts.h', snippet: 'plan.slots.ages[slot.index] = ++plan.slots.tick;', expression: 'ages' },
@@ -38,7 +40,7 @@ const cases = [
 ] as const;
 
 const files = [...new Set(cases.map((test) => test.file))];
-type ExpectedMutation = { readonly file: string; readonly line: number; readonly wrapped: boolean; readonly callers: readonly string[] };
+type ExpectedMutation = { readonly file: string; readonly line: number; readonly anchor?: string; readonly wrapped: boolean; readonly callers: readonly string[] };
 const mutations: Readonly<Record<string, ExpectedMutation>> = {
   'batch-return': { file: 'minicpm-v-4_7/pipeline.h', line: 1077, wrapped: false, callers: [] },
   'prefill-helper': { file: 'minicpm-v-4_7/ffn.h', line: 250, wrapped: false, callers: ['operator()'] },
@@ -46,8 +48,7 @@ const mutations: Readonly<Record<string, ExpectedMutation>> = {
   'generation-wrap': { file: 'minicpm-v-4_7/cli.cpp', line: 492, wrapped: true, callers: [] },
   'generation-done': { file: 'minicpm-v-4_7/cli.cpp', line: 483, wrapped: true, callers: [] },
   'clear-input': { file: 'minicpm-v-4_7/cli.cpp', line: 644, wrapped: true, callers: [] },
-  'prefetch-return': { file: 'minicpm-v-4_7/experts.h', line: 585, wrapped: false, callers: [] },
-  'read-progress': { file: 'minicpm-v-4_7/expert_io.h', line: 800, wrapped: true, callers: [] },
+  'prefetch-return': { file: 'minicpm-v-4_7/experts.h', line: 585, anchor: 'bank_state.pending =', wrapped: false, callers: [] },
   'ffn-runtime': { file: 'deepseek-v4-flash/ffn_service.h', line: 476, wrapped: false, callers: ['operator()'] }
 };
 const selectedPaths: Readonly<Record<string, readonly [string, readonly string[]]>> = {
@@ -60,30 +61,35 @@ const boundaries: Readonly<Record<string, RegExp>> = {
   'layer-borrow': /Unverified call effect on layer_execution\.session_state\.\*: finish_host_copies/,
   'generation-seed': /Unsupported argument expression: CallExpr/,
   'chat-return': /Unsupported argument expression: CXXOperatorCallExpr/,
-  'pending-reset': /Unverified call effect on bank_state\.pending: operator->/,
+  'pending-presence': /No verified caller is available for start_decode_layer/,
+  'pending-contained': /No verified caller is available for start_decode_layer/,
+  'pending-reset': /No verified caller is available for start_decode_layer/,
   'prefill-counter': /Unverified call effect on current\.: operator\(\)/,
-  'slot-index': /Unverified call effect on plan\.slots\.ages: operator\[\]/,
+  'slot-index': /Return copy\/move field preservation is not verified/,
+  'read-progress': /Fold range has at most one iteration/,
   'future-result': /Unverified call effect on read_ticket\.read_result: get_if/,
   'queue-count': /No verified caller is available for take_io_task/,
-  'attention-cache': /Unverified call effect on cache\.: execute_attention/,
+  'attention-cache': /Return source unavailable: std::vector<LayerCaches>::at/,
   'attention-return': /No verified caller is available for run_batch/,
   'ffn-service': /Unverified call effect on state\.ffn: finish_request/,
   'rpc-variant': /No verified caller is available for advance/,
   'deepseek-prefill': /Unverified call effect on state\.: run_batch/,
   'deepseek-generation': /Unverified call effect on state\.: holds_alternative/
 };
-const origins: Readonly<Record<string, { readonly line: number; readonly boundary?: string; readonly callers?: readonly string[] }>> = {
-  'batch-return': { line: 801 }, 'layer-borrow': { line: 924 },
-  'prefill-helper': { line: 924, callers: ['operator()'] }, 'layer-seed': { line: 801 },
-  'generation-wrap': { line: 471 }, 'generation-done': { line: 471 }, 'generation-seed': { line: 448 },
-  'chat-return': { line: 469 }, 'clear-input': { line: 625 },
+const origins: Readonly<Record<string, { readonly line: number; readonly boundary?: string; readonly callers?: readonly string[]; readonly foldMember?: boolean; readonly anchor?: string }>> = {
+  'batch-return': { line: 801, foldMember: true }, 'layer-borrow': { line: 924, foldMember: true },
+  'prefill-helper': { line: 924, callers: ['operator()'], foldMember: true }, 'layer-seed': { line: 801, foldMember: true },
+  'generation-wrap': { line: 471, foldMember: true }, 'generation-done': { line: 471, foldMember: true }, 'generation-seed': { line: 448 },
+  'chat-return': { line: 469 }, 'clear-input': { line: 625, foldMember: true },
+  'pending-presence': { line: 262, boundary: 'No verified caller is available; stopped at the parameter.' },
+  'pending-contained': { line: 262, boundary: 'No verified caller is available; stopped at the parameter.' },
   'pending-reset': { line: 262, boundary: 'No verified caller is available; stopped at the parameter.' },
   'prefill-counter': { line: 457, boundary: 'No verified caller is available; stopped at the parameter.', callers: ['finish_prefill_layer'] },
-  'slot-index': { line: 433 }, 'prefetch-return': { line: 511, boundary: 'No verified caller is available; stopped at the parameter.' },
-  'read-progress': { line: 790 }, 'future-result': { line: 497, boundary: 'No verified caller is available; stopped at the parameter.' },
+  'slot-index': { line: 433, anchor: 'selected, Planning{bank_state.slots, {}, {}, {}}', foldMember: true }, 'prefetch-return': { line: 511, anchor: 'BankState bank_state, int layer,', boundary: 'No verified caller is available; stopped at the parameter.' },
+  'read-progress': { line: 790, foldMember: true }, 'future-result': { line: 497, boundary: 'No verified caller is available; stopped at the parameter.' },
   'queue-count': { line: 722, boundary: 'No verified caller is available; stopped at the parameter.' },
   'attention-cache': { line: 1716 }, 'attention-return': { line: 1683, boundary: 'No verified caller is available; stopped at the parameter.' },
-  'ffn-runtime': { line: 484 }, 'ffn-service': { line: 671 },
+  'ffn-runtime': { line: 484, foldMember: true }, 'ffn-service': { line: 671, foldMember: true },
   'rpc-variant': { line: 320, boundary: 'No verified caller is available; stopped at the parameter.' },
   'deepseek-prefill': { line: 44 }, 'deepseek-generation': { line: 59 }
 };
@@ -137,9 +143,10 @@ await files.reduce(async (work, relative) => {
           const expected = mutations[test.name];
           if (expected) {
             assert.equal(result._tag, 'MutationFound', test.name + ': ' + JSON.stringify(query.diagnostics));
+            if (result._tag === 'MutationFound' && result.wrapped) assert.ok(result.frames?.some((frame) => frame.fold), test.name + ': recurrence proof');
             if (result._tag !== 'MutationFound') assert.fail(test.name);
             assert.deepEqual([location(result.mutation).file, location(result.mutation).line, result.wrapped,
-              result.frames?.map((frame) => frame.caller.name)], [expected.file, expected.line, expected.wrapped, expected.callers], test.name);
+              result.frames?.filter((frame) => !frame.fold).map((frame) => frame.caller.name)], [expected.file, expected.anchor ? text.slice(0, text.indexOf(expected.anchor)).split('\n').length : expected.line, expected.wrapped, expected.callers], test.name);
           } else {
             assert.ok(boundaries[test.name], 'Missing mutation expectation: ' + test.name);
             assert.equal(result._tag, 'AnalysisFailure', test.name);
@@ -152,8 +159,9 @@ await files.reduce(async (work, relative) => {
           assert.equal(result._tag, 'OriginFound', test.name);
           if (result._tag !== 'OriginFound') assert.fail(test.name);
           assert.deepEqual([location(result.origin).file, location(result.origin).line, result.kind, result.boundary,
-            result.frames?.map((frame) => frame.caller.name)],
-          [relative, expected.line, expected.boundary ? 'parameter' : 'initialization', expected.boundary, expected.callers ?? []], test.name);
+            result.frames?.filter((frame) => !frame.fold).map((frame) => frame.caller.name)],
+          [relative, expected.anchor ? text.slice(0, text.indexOf(expected.anchor)).split('\n').length : expected.line, expected.boundary ? 'parameter' : 'initialization',
+            expected.foldMember ? 'Fold seed identifies the initial storage; the current member value may be carried from a previous iteration.' : expected.boundary, expected.callers ?? []], test.name);
         }
         const candidates = result._tag === 'MutationFound' || result._tag === 'OriginFound' ? [result] : [];
         return { mode, tag: result._tag, ...(result._tag === 'AnalysisFailure' ? { reason: result.reason } : {}),

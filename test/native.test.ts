@@ -147,7 +147,7 @@ describe('native member paths', { skip: !existsSync(executable) }, () => {
     assert.equal(result._tag, 'CandidatesFound');
     if (result._tag === 'CandidatesFound') {
       assert.equal(result.candidates.length, 2);
-      assert.ok(result.candidates.every((candidate) => candidate.wrapped && candidate.frames.length === 2));
+      assert.ok(result.candidates.every((candidate) => candidate.wrapped && candidate.frames.filter((frame) => !frame.fold).length === 2 && candidate.frames.some((frame) => frame.fold)));
       assert.deepEqual(result.candidates.map((candidate) => candidate.mutation.node.range?.begin?.offset).sort(),
         ['wrap-a', 'wrap-b'].map((marker) => byteOffsetFromUtf16(sourceText, lineOffset('// @write ' + marker + '\n') + 4)).sort());
     }

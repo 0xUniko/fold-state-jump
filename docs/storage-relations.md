@@ -74,6 +74,28 @@ Provenance through the projection remains available to later consumers (for
 example `finish_host_copies`); classifying an operation as a read must not erase
 its returned borrow's source.
 
+Native also qualifies `std::optional<T>` presence reads, default empty
+construction and `operator->` using the canonical specialization, system
+declaration and exact method signature. An optional arrow returns the address
+of contained inline storage: dereferencing it keeps the optional path prefix.
+This contract does not apply to user-defined arrows. Retained-pointer writes and
+escapes still pass through alias/effect checks.
+
+Fold wrap-around now requires a returned accumulator projection. Borrowed
+storage additionally requires the same returned pointer path and an unchanged
+binding. Frames retain the seed, return statement, projected source/target and
+invariant branch observations. A known `std::array` extent below two excludes a
+previous iteration. Conditional writes remain candidates with branch/iteration
+diagnostics; a fresh local object cannot wrap merely because its function is a
+fold callback. Member Origin identifies initial storage and explicitly leaves
+current loop-carried contents unresolved.
+
+Switch cases are excluded only with an exiting case body. A stable captured
+value discriminator can carry that constraint across iterations. Native variant
+construction/projection identities can then prove a `get_if<T>` branch false;
+unknown variant writes, mutable discriminators, incompatible returns and missing
+provenance retain the effect boundary. See [the pending regression report](pending-fold.md).
+
 Container element identities and callback invocation times remain unsupported;
 an insertion retaining a target borrow is a boundary rather than an invented
 mutation. Unknown mutation effects do not erase the known initialization of an

@@ -117,7 +117,7 @@ try {
   assert.ok(mutation.messages.some((message) => /runtime reachability is not verified/.test(message)));
   if (aggregateArguments) {
     [origin, mutation].map((result) => result.picks[0].map((item: any) => {
-      assert.deepEqual(item.candidate.frames.map((frame: any) => [frame.parameterIndex, frame.argument.members]),
+      assert.deepEqual(item.candidate.frames.filter((frame: any) => !frame.fold).map((frame: any) => [frame.parameterIndex, frame.argument.members]),
         [[0, ['bank', 'records']], [0, ['bank', 'records']]]);
     }));
   }

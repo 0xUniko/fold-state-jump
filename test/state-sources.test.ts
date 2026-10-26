@@ -148,7 +148,7 @@ describe('native state value sources', { skip: !existsSync(executable) }, () => 
     }
     const noWrite = query('no-fold-write', 'value').result;
     assert.equal(noWrite._tag, 'AnalysisFailure');
-    if (noWrite._tag === 'AnalysisFailure') assert.match(noWrite.reason, /returned state transformations are not verified/);
+    if (noWrite._tag === 'AnalysisFailure') assert.match(noWrite.reason, /No mutation is verified on this fold return path/);
   });
   ['custom', 'custom-parent', 'factory'].map((name) => it('retains an explicit expression boundary: ' + name, () => {
     const mutation = query(name, 'value');
