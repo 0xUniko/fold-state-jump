@@ -437,7 +437,13 @@ public:
           // callable or mutate objects merely reachable from the variant.
           if (name == "std::get_if") output.attribute("storageOperation", "borrow-projection");
           if (name == "std::ref" || name == "std::cref") output.attribute("storageOperation", "bind-reference");
-          if (name == "std::move" || name == "std::forward") output.attribute("storageOperation", "identity");
+          // Only the standard one-argument reference cast is transparent.
+          // std::move(first, last, out) is an algorithm, not an identity.
+          if ((name == "std::move" || name == "std::forward") && call->getNumArgs() == 1 &&
+              sm.isInSystemHeader(sm.getExpansionLoc(callee->getLocation())) &&
+              callee->getReturnType()->isReferenceType() &&
+              context.hasSameUnqualifiedType(callee->getReturnType().getNonReferenceType(), call->getArg(0)->getType()))
+            output.attribute("storageOperation", "identity");
           if (name == "std::make_unique" || name == "std::make_shared") output.attribute("storageOperation", "fresh");
           output.attributeObject("callee", [&] {
             output.attribute("id", identity(callee));
@@ -558,6 +564,8 @@ public:
       output.attribute("symbol", symbol(function));
       output.attribute("name", function->getNameAsString());
       output.attribute("dependent", function->isDependentContext());
+      if (function->getReturnType()->isReferenceType()) output.attribute("returnBorrow", "reference");
+      if (function->getReturnType()->isPointerType()) output.attribute("returnBorrow", "pointer");
       if (const auto *method = llvm::dyn_cast<CXXMethodDecl>(function))
         output.attribute("receiverStorageId", storageIdentity(context.getCanonicalTagType(method->getParent())));
       type(output, function->getType());

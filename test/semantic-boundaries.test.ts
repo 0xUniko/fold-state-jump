@@ -52,10 +52,24 @@ describe('verified state transitions (real Clang AST)', () => {
     assert.equal(result.wrapped, false);
     assert.equal(result.frames?.length, name === 'lambda-direct' ? 1 : 0);
   }));
-  it('returns an explicit boundary for a function result instead of an older unrelated write', () => {
-    const result = query('returned').result;
-    assert.equal(result._tag, 'AnalysisFailure');
-    if (result._tag === 'AnalysisFailure') assert.match(result.reason, /Unsupported argument expression: CallExpr/);
+  it('maps a returned aggregate field to its proven internal write', () => {
+    const q = query('returned');
+    const result = q.result;
+    assert.equal(result._tag, 'MutationFound');
+    if (result._tag !== 'MutationFound') return;
+    assert.equal(result.mutation.file, file);
+    assert.equal(result.mutation.node.range?.begin?.offset, byteOffsetFromUtf16(text, text.indexOf('state.value = 17')));
+    assert.equal(result.wrapped, false);
+    assert.equal(result.via, 'call');
+    assert.equal(result.frames?.length, 1);
+    const frame = result.frames![0];
+    assert.equal(frame.caller.name, 'returned_entry');
+    assert.equal(frame.callsite.node.range?.begin?.offset, byteOffsetFromUtf16(text, text.indexOf('returned({0})')));
+    assert.equal(frame.returned?.callee.name, 'returned');
+    assert.equal(frame.returned?.statement.node.range?.begin?.offset, byteOffsetFromUtf16(text, text.indexOf('return {std::move(state)}')));
+    assert.deepEqual(frame.returned?.members, ['state', 'value']);
+    assert.deepEqual(q.returnMapping, { kind: 'complete' });
+    assert.deepEqual(q.diagnostics, []);
   });
   it('does not infer fold wrap-around from a substring in a different callable name', () => {
     const result = query('similar-name').result;
