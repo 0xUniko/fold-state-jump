@@ -1,0 +1,3966 @@
+{
+  "scope": "Single diagnostic experiment; no performance claim. All transitively called system definitions retained in a temporary extractor.",
+  "astBytes": 126294306,
+  "astSha256": "2cfecf513535d1f3a0c88915ff9e425947d575a069ddb0b4664face0797e5ae1",
+  "sourceSha256": "0929f693b67ec8b5913c5956518ce757742f3851594fdb85fa47eda698ab4dda",
+  "analysisSha256": "5a01bc1617c786443e6b0800deb6422ac7be5cae05d6b11966ba5426620bda51",
+  "functions": 8523,
+  "systemHeaderSha256": "988c51482d2d72d170e55486c90df93cd8eb51890931a77badadbd5bba48f821",
+  "folds": [
+    {
+      "id": "77A8BE02A358",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BE02FD88",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BE02FD88",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BE02FB80",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BE032908",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BE032908",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::EnvironmentOptions::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD8F92C8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BD8FE6B8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD8FE6B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BD8FE4B0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BD903638",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BD903638",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::parse_options(int, char **)::Parsing::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD94E2B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BD952CF8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD952CF8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BD952AF8",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BD957C48",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BD957C48",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::BatchState::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BFA8ABF8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BFA905F8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BFA905F8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BFA903F0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BFA933B8",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BFA933B8",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::BatchState::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C397CE28",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C3982218",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C3982218",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C3982010",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C3987150",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C3987150",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::Pipeline::build_language_graphs(SessionState &, const GraphKey &)::(lambda)::operator()()::ArenaSizes::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C49E9C78",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C49EEE48",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C49EEE48",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8C49EEC40",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BF94C168",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BF958168",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BF958168",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BF957F60",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BF95DCA0",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BF95DCA0",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::Pipeline::execute(Session, BatchInput, const std::vector<int32_t> &, int, ExecutionPhase)::(lambda)::operator()(BatchState, const BatchInput &)::LayerExecution::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C6880EA8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C688CEA8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C688CEA8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C688CCA0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C6892858",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C6892858",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::plan_prefill(const ExpertIndex &, const BankContext &, const BankState &, int, const std::vector<int32_t> &)::Planning::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8D1934638",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8D1939188",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8D1939188",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8D1938F88",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C48F7668",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C48FCB68",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C48FCB68",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8C48FC960",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CC27D1C8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CC297FA8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CC297FA8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8CC297DA0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8CC29E548",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8CC29E548",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::set<ExpertFrequency>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C4ACB928",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C4AD0B38",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C4AD0B38",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C4AD0930",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C4AD5B38",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C4AD5B38",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::begin_retain_prefill(const BankContext &, BankState &, int, const std::vector<int32_t> &)::Retaining::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CEBCE4F8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CEBD36C8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CEBD36C8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8CEBD34C0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8CEBD8580",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8CEBD8580",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::optional<unsigned long>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CE80C7C8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CE811AC8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CE811AC8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8CE8118C0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8CE816BC8",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8CE816BC8",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::plan_decode(const ExpertIndex &, const BankContext &, const BankState &, int, const std::vector<int32_t> &, const std::vector<ExpertKey> &, const std::vector<MetadataSlot> &)::Planning::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C4955F88",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C495A7F8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C495A7F8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8C495A5F0",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CDED8A48",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CDEDDD48",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CDEDDD48",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8CDEDDB40",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8CDEE2578",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8CDEE2578",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::begin_decode_prefetch(const BankContext &, BankState, int, const std::vector<int32_t> &)::PrefetchPlan::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD7E78B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BD7EC0E8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD7EC0E8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BD7EBEE0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BD7F0FB8",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BD7F0FB8",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::BatchState::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD79C848",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BD7A1078",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BD7A1078",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BD7A0E70",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BD7A5F48",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BD7A5F48",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::BatchState::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB6F84C8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BB6FCE18",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB6FCE18",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "unsupported",
+              "reason": "Unsupported argument expression: CXXConstructExpr (copy/move field preservation is not verified)."
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Unsupported argument expression: CXXConstructExpr (copy/move field preservation is not verified)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB7FB3B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BB800588",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB800588",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BB800380",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BB805488",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BB805488",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::turn(const Options &, const Pipeline &, ChatState, const common_chat_templates *, mtmd_context *, const llama_vocab *, llama_sampler *, const std::string &, const std::vector<std::string> &)::Generation::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB132C68",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BB137CE8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BB137CE8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8BB137AE0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8BB13A8A8",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8BB13A8A8",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::vector<common_chat_msg>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9303A08",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C9308508",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9308508",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8C9308300",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "loop-carried",
+            "target": {
+              "rootId": "77A8C930D3E0",
+              "rootName": "accum",
+              "members": []
+            },
+            "declaration": {
+              "kind": "VarDecl",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2329
+            },
+            "initial": {
+              "kind": "ExprWithCleanups",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2339
+            },
+            "updates": [
+              {
+                "kind": "replacement",
+                "target": {
+                  "rootId": "77A8C930D3E0",
+                  "rootName": "accum",
+                  "members": []
+                },
+                "loop": {
+                  "kind": "ForStmt",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2388
+                },
+                "statement": {
+                  "kind": "BinaryOperator",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2455
+                },
+                "value": {
+                  "kind": "CXXOperatorCallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2463,
+                  "callee": "ranges::invoke_fn::operator()"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C8C41538",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C8C46088",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C8C46088",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8C8C45E88",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "loop-carried",
+            "target": {
+              "rootId": "77A8C8C4B120",
+              "rootName": "accum",
+              "members": []
+            },
+            "declaration": {
+              "kind": "VarDecl",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2329
+            },
+            "initial": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2339,
+              "callee": "ranges::invoke_fn::operator()"
+            },
+            "updates": [
+              {
+                "kind": "replacement",
+                "target": {
+                  "rootId": "77A8C8C4B120",
+                  "rootName": "accum",
+                  "members": []
+                },
+                "loop": {
+                  "kind": "ForStmt",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2388
+                },
+                "statement": {
+                  "kind": "BinaryOperator",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2455
+                },
+                "value": {
+                  "kind": "CXXOperatorCallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2463,
+                  "callee": "ranges::invoke_fn::operator()"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C7A9C3D8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C7AA15E8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C7AA15E8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C7AA13E0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C7AA6698",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C7AA6698",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::vector<std::unique_ptr<ggml_backend_buffer, void (*)(ggml_backend_buffer *)>>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8DA6A9E88",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8DA6AF3F8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8DA6AF3F8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8DA6AF1F0",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8DA6B6208",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8DA6B6208",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::map<std::basic_string<char>, minicpm::ExpertSource>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CAAA4158",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CAAB1118",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CAAB1118",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8CAAB0F10",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8CAAB68C8",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8CAAB68C8",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "std::vector<std::vector<int>>::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9BD19B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C9BD6B88",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9BD6B88",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C9BD6980",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C9BDBA88",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C9BDBA88",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::apply_prewarm(const BankContext &, BankState, const LesConfig &)::Prewarming::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9B3C468",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8C9B48468",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8C9B48468",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "preserved-copy",
+              "expression": {
+                "kind": "CXXConstructExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2282
+              },
+              "source": {
+                "kind": "transparent",
+                "expression": {
+                  "kind": "CallExpr",
+                  "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                  "offset": 2284,
+                  "callee": "std::move"
+                },
+                "source": {
+                  "kind": "storage",
+                  "target": {
+                    "rootId": "77A8C9B48260",
+                    "rootName": "init",
+                    "members": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "preserved-copy",
+            "expression": {
+              "kind": "CXXConstructExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2534
+            },
+            "source": {
+              "kind": "loop-carried",
+              "target": {
+                "rootId": "77A8C9B4DE18",
+                "rootName": "accum",
+                "members": []
+              },
+              "declaration": {
+                "kind": "VarDecl",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2329
+              },
+              "initial": {
+                "kind": "ExprWithCleanups",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2339
+              },
+              "updates": [
+                {
+                  "kind": "replacement",
+                  "target": {
+                    "rootId": "77A8C9B4DE18",
+                    "rootName": "accum",
+                    "members": []
+                  },
+                  "loop": {
+                    "kind": "ForStmt",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2388
+                  },
+                  "statement": {
+                    "kind": "CXXOperatorCallExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2455,
+                    "callee": "minicpm::apply_prewarm(const BankContext &, BankState, const LesConfig &)::(lambda)::operator()(Prewarming, size_t)::Warming::operator="
+                  },
+                  "value": {
+                    "kind": "MaterializeTemporaryExpr",
+                    "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                    "offset": 2463
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BA8E9E88",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8BA920118",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8BA920118",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8BA91FF10",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CA5D3D18",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CA5D9018",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CA5D9018",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "transparent",
+              "expression": {
+                "kind": "CallExpr",
+                "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+                "offset": 2284,
+                "callee": "std::move"
+              },
+              "source": {
+                "kind": "storage",
+                "target": {
+                  "rootId": "77A8CA5D8E10",
+                  "rootName": "init",
+                  "members": []
+                }
+              }
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Return borrow lifetime from callee-owned storage is not verified."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CA57A798",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "rng",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2838
+          },
+          "source": {
+            "kind": "call",
+            "callsite": {
+              "kind": "CXXOperatorCallExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2845,
+              "callee": "ranges::fold_left_fn::operator()"
+            },
+            "callee": "77A8CA57F0B8",
+            "members": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "77A8CA57F0B8",
+      "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+      "name": "operator()",
+      "parameters": [
+        "first",
+        "last",
+        "init",
+        "op"
+      ],
+      "branches": [
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2275
+          },
+          "source": {
+            "kind": "transparent",
+            "expression": {
+              "kind": "CXXFunctionalCastExpr",
+              "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+              "offset": 2282
+            },
+            "source": {
+              "kind": "unsupported",
+              "reason": "Unsupported argument expression: CXXConstructExpr (copy/move field preservation is not verified)."
+            }
+          }
+        },
+        {
+          "statement": {
+            "kind": "ReturnStmt",
+            "file": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp",
+            "offset": 2527
+          },
+          "source": {
+            "kind": "unsupported",
+            "reason": "Unsupported argument expression: CXXConstructExpr (copy/move field preservation is not verified)."
+          }
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "name": "generation-seed",
+      "cursorByteOffset": 22204,
+      "result": {
+        "_tag": "AnalysisFailure",
+        "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CallExpr. No verified mutation through return source of prefill. /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: State is initialized here; no earlier mutation of this value is verified. /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+      },
+      "returnMapping": {
+        "kind": "incomplete",
+        "reasons": [
+          "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+        ]
+      },
+      "boundaries": [],
+      "diagnostics": [
+        "Unsupported argument expression: CallExpr. No verified mutation through return source of prefill.",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: State is initialized here; no earlier mutation of this value is verified.",
+        "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+      ]
+    },
+    {
+      "name": "chat-return",
+      "cursorByteOffset": 23982,
+      "result": {
+        "_tag": "AnalysisFailure",
+        "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Unsupported argument expression: CallExpr. No verified mutation through return source of prefill. /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator(). /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Unsupported argument expression: CXXMemberCallExpr. No verified mutation through return source of start_session. /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:49319 return: State is initialized here; no earlier mutation of this value is verified. /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Mutation execution before this return-source call is not verified. /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof. /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+      },
+      "returnMapping": {
+        "kind": "incomplete",
+        "reasons": [
+          "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Mutation execution before this return-source call is not verified.",
+          "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof.",
+          "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+        ]
+      },
+      "boundaries": [
+        {
+          "name": "turn",
+          "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp"
+        }
+      ],
+      "diagnostics": [
+        "Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Unsupported argument expression: CallExpr. No verified mutation through return source of prefill.",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: Unsupported argument expression: CXXOperatorCallExpr. No verified mutation through return source of operator().",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Unsupported argument expression: CXXMemberCallExpr. No verified mutation through return source of start_session.",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/pipeline.h:49319 return: State is initialized here; no earlier mutation of this value is verified.",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: Mutation execution before this return-source call is not verified.",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2275 return: /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11129 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof.",
+        "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2838 return: /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2527 return: Loop-carried return value of accum is not verified: initial storage at /home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:2329, 1 indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof."
+      ]
+    }
+  ]
+}

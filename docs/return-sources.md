@@ -1,5 +1,7 @@
 # Return Source Mapping（2026-10-26）
 
+> 本文为上一轮实现的历史记录。后续 UI 完整性、循环返回调查和提交交付状态见 [本轮交付](return-delivery.md)。
+
 本轮基线为 `feat/multi-funcs` 的 `0fdd544da70238e63bdf50ba685d1917d14eab79`，开始时工作区干净。nano-infer 为 `562758447a716d05dabb3173cebac489bf7daf80`，全程未修改。没有提交、推送、合并，没有运行 VS Code / Extension Host / clangd / cpptools。
 
 ## 1. 当前 HEAD 的复现和根因

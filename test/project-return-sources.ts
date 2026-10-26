@@ -19,6 +19,18 @@ assert.ok(prefill);
 const branches = prepared.index.returnSourcesByFunctionId.get(prefill.id)!;
 assert.equal(branches.length, 1, 'nested lambdas must not contribute returns to prefill');
 assert.equal(branches[0].source.kind, 'unsupported');
+const foldCalls = prepared.index.calls.filter((call) => call.node.callee?.qualifiedName === 'ranges::fold_left_fn::operator()');
+assert.ok(foldCalls.length > 0);
+foldCalls.map((call) => {
+  const callee = call.node.callee!;
+  assert.ok(callee.symbol, 'the instantiated operator has a stable Clang symbol');
+  assert.equal(prepared.index.functionsById.has(callee.id), false, 'the compact AST omits the system body');
+  assert.equal(callee.definition?.kind, 'system-excluded', 'the body exists in the actual Clang AST');
+  if (callee.definition?.kind === 'system-excluded') {
+    assert.ok(callee.definition.loc.file?.endsWith('/range/v3/algorithm/fold_left.hpp'));
+    assert.ok(callee.definition.loc.offset !== undefined);
+  }
+});
 const returnOffset = branches[0].statement.node.range!.begin!.offset!;
 assert.equal(returnOffset, byteOffsetFromUtf16(text, text.indexOf('return ranges::fold_left(', text.indexOf('inline BatchState prefill('))));
 const cases = [
@@ -35,7 +47,7 @@ cases.map((test) => {
   const q = analyzeQuery('mutation', prepared.ast, options, prepared);
   assert.equal(q.result._tag, 'AnalysisFailure', 'no fabricated mutation through a system range adapter');
   assert.equal(q.returnMapping?.kind, 'incomplete');
-  assert.match(q.diagnostics?.join(' ') ?? '', /ranges::fold_left_fn::operator\(\) \(definition unavailable\)/);
+  assert.match(q.diagnostics?.join(' ') ?? '', /ranges::fold_left_fn::operator\(\) \(definition unavailable\).*system-header body was excluded/);
   if (test.name === 'generation-seed') {
     assert.equal(q.diagnostics?.length, 2);
     assert.ok(q.diagnostics![1].startsWith(file + ':' + returnOffset + ' return: '), 'prefill return must actually be traversed');

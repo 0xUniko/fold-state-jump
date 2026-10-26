@@ -8,7 +8,7 @@ import { clearPreamblePool, disposePreamblePool, extractWithPreamble, makePreamb
 import * as vscode from 'vscode';
 import path from 'node:path';
 import { Effect, Ref } from 'effect';
-import { analyzeQuery, callerLinksAt, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type AnalysisOptions, type AnalysisResult, type ClangNode, type CallerLink, type FunctionInfo, type PreparedAst, type WrappedNode, type TraceCandidate, type OriginCandidate } from './analysis';
+import { analyzeQuery, callerLinksAt, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type AnalysisOptions, type AnalysisQuery, type AnalysisResult, type ReturnMapping, type ClangNode, type CallerLink, type FunctionInfo, type PreparedAst, type WrappedNode, type TraceCandidate, type OriginCandidate } from './analysis';
 import { discoverCallerLocations, type CallerLocation } from './caller-discovery';
 import type { DependencyManifest } from './dependencies';
 import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, removeAstSources, type AstCache } from './ast-cache';
@@ -258,7 +258,7 @@ const isInputChanged = (error: Error): error is InputChangedError =>
 const skipOrRethrow = (report: (error: Error) => void) => (error: Error) =>
   isInputChanged(error) ? Effect.fail(error) : (report(error), Effect.succeed(undefined));
 
-type AnalysisRun = { readonly result: AnalysisResult; readonly validate: Effect.Effect<boolean> };
+type AnalysisRun = { readonly query: AnalysisQuery; readonly validate: Effect.Effect<boolean> };
 
 const runAnalysis = Effect.fnUntraced(function* (
   mode: 'mutation' | 'origin', document: vscode.TextDocument, signal: AbortSignal,
@@ -268,15 +268,18 @@ const runAnalysis = Effect.fnUntraced(function* (
   const before = yield* Ref.get(runtime.astCache.state);
   const documentVersion = document.version;
   const extraction = yield* requestAst(document, signal, extensionPath, runtime);
-  const failed = (result: AnalysisResult): AnalysisRun => ({ result, validate: Effect.succeed(false) });
+  const failed = (result: AnalysisResult): AnalysisRun => ({ query: { result, boundaries: [] }, validate: Effect.succeed(false) });
   if (extraction._tag === 'AnalysisFailure') return failed(extraction);
   if (document.version !== documentVersion) return failed({ _tag: 'AnalysisFailure', reason: 'The document changed during analysis.' });
   const initial: AnalysisInput = { document, version: documentVersion, prepared: extraction.prepared, dependencies: extraction.dependencies };
   type SearchState = {
     readonly inputs: ReadonlyMap<string, AnalysisInput>;
     readonly externalCallers: ReadonlyMap<ClangNode, readonly CallerLink[]>;
-    readonly diagnostics: readonly string[];
+    readonly diagnostics: ReadonlyMap<ClangNode, readonly string[]>;
   };
+  const appendCallerDiagnostics = (state: SearchState, fn: FunctionInfo, reasons: readonly string[]): SearchState => ({
+    ...state, diagnostics: new Map([...state.diagnostics, [fn.wrapped.node, [...(state.diagnostics.get(fn.wrapped.node) ?? []), ...reasons]]])
+  });
   const loadInput = Effect.fnUntraced(function* (file: string, state: SearchState) {
     const previous = state.inputs.get(path.resolve(file));
     if (previous) return { input: previous, state };
@@ -303,18 +306,16 @@ const runAnalysis = Effect.fnUntraced(function* (
           Effect.catch(skipOrRethrow((error) =>
             runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: location.uri.fsPath, reason: 'Could not prepare caller: ' + error.message }))))
         );
-        if (!loaded) return { links, state: { ...state, diagnostics: [...state.diagnostics,
-          'Could not prepare caller: ' + location.uri.fsPath + '. Caller set is incomplete.'] } };
+        if (!loaded) return { links, state: appendCallerDiagnostics(state, fn, [
+          'Could not prepare caller: ' + location.uri.fsPath + '. Caller set is incomplete.']) };
         const text = loaded.input.document.getText();
         const start = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.start));
         const end = byteOffsetFromUtf16(text, loaded.input.document.offsetAt(location.range.end));
         const verified = callerLinksAt(loaded.input.prepared, location.uri.fsPath, start, end, fn);
-        return { links: [...links, ...verified], state: verified.length > 0 ? loaded.state : {
-          ...loaded.state, diagnostics: [...loaded.state.diagnostics,
-            location.uri.fsPath + ':' + start + ': reference did not pass Clang symbol and call-range validation.']
-        } };
+        return { links: [...links, ...verified], state: verified.length > 0 ? loaded.state : appendCallerDiagnostics(loaded.state, fn, [
+          location.uri.fsPath + ':' + start + ': reference did not pass Clang symbol and call-range validation.']) };
       }))), Effect.succeed({ links: [], state }));
-  const expand = (state: SearchState): Effect.Effect<{ readonly result: AnalysisResult; readonly state: SearchState }, Error> =>
+  const expand = (state: SearchState): Effect.Effect<{ readonly query: AnalysisQuery; readonly state: SearchState }, Error> =>
     Effect.gen(function* () {
       yield* Effect.sync(() => signal.throwIfAborted());
       const queryOptions: AnalysisOptions = { ...options, externalCallers: state.externalCallers,
@@ -323,14 +324,14 @@ const runAnalysis = Effect.fnUntraced(function* (
       const query = analyzeQuery(mode, extraction.prepared.ast, queryOptions, extraction.prepared);
       if (query.boundaries.length === 0) {
         (query.diagnostics ?? []).map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'analysis-boundary', reason })));
-        return { result: query.result, state };
+        return { query, state };
       }
       const expanded = yield* query.boundaries.reduce<Effect.Effect<SearchState, Error>>((work, fn) =>
         work.pipe(Effect.flatMap((state) => Effect.gen(function* () {
           if (state.externalCallers.has(fn.wrapped.node)) return state;
           if (!fn.wrapped.node.symbol || fn.wrapped.node.loc?.offset === undefined) {
             runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Native AST has no stable function symbol or declaration position.' }));
-            return { ...state, diagnostics: [...state.diagnostics, fn.name + ': Native AST has no stable function symbol or declaration position.'],
+            return { ...appendCallerDiagnostics(state, fn, [fn.name + ': Native AST has no stable function symbol or declaration position.']),
               externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
           }
           const loaded = yield* loadInput(fn.file, state).pipe(
@@ -338,21 +339,21 @@ const runAnalysis = Effect.fnUntraced(function* (
               runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'Could not prepare the declaring file for caller discovery: ' + error.message }))))
           );
           if (!loaded) {
-            return { ...state, diagnostics: [...state.diagnostics, fn.name + ': Could not prepare the declaring file for caller discovery.'],
+            return { ...appendCallerDiagnostics(state, fn, [fn.name + ': Could not prepare the declaring file for caller discovery.']),
               externalCallers: new Map([...state.externalCallers, [fn.wrapped.node, []]]) };
           }
           const locations = yield* Effect.tryPromise({
             try: () => discoverCallerLocations(fn, loaded.input.document, signal), catch: (error) => new Error(String(error))
           });
           locations.diagnostics.map((reason) => runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason })));
-          const final = yield* validateLocations(fn, locations.locations, { ...loaded.state,
-            diagnostics: [...loaded.state.diagnostics, ...locations.diagnostics.map((reason) => fn.name + ': ' + reason)] });
+          const final = yield* validateLocations(fn, locations.locations, appendCallerDiagnostics(loaded.state, fn,
+            locations.diagnostics.map((reason) => fn.name + ': ' + reason)));
           if (final.links.length === 0) runtime.output.appendLine(JSON.stringify({ event: 'caller-boundary', file: fn.file, reason: 'No direct caller passed Clang symbol and call-range validation.' }));
           return { ...final.state, externalCallers: new Map([...final.state.externalCallers, [fn.wrapped.node, final.links]]) };
         }))), Effect.succeed(state));
       return yield* expand(expanded);
     });
-  const expanded = yield* expand({ inputs: new Map([[path.resolve(document.uri.fsPath), initial]]), externalCallers: new Map(), diagnostics: [] });
+  const expanded = yield* expand({ inputs: new Map([[path.resolve(document.uri.fsPath), initial]]), externalCallers: new Map(), diagnostics: new Map() });
   // Retain guards for every AST, even after memory-cache eviction and while the
   // QuickPick is open. Revalidate dependencies before any navigation.
   const validate = Effect.gen(function* () {
@@ -366,7 +367,7 @@ const runAnalysis = Effect.fnUntraced(function* (
       path.resolve(input.document.uri.fsPath) === file || input.dependencies && dependencyIncludes(input.dependencies.paths, file)))) return false;
     return (yield* Effect.forEach(inputs, (input) => input.dependencies ? validateDependencies(input.dependencies) : Effect.succeed(true))).every(Boolean);
   });
-  return { result: expanded.result, validate };
+  return { query: expanded.query, validate };
 });
 
 const runMutationAnalysis = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) =>
@@ -381,13 +382,24 @@ const presentAnalysis = (
   run: AnalysisRun
 ): Effect.Effect<void, Error> =>
   Effect.gen(function* () {
-    const { result } = run;
-    const navigate = Effect.fnUntraced(function* (target: WrappedNode) {
+    const { result, returnMapping } = run.query;
+    const navigate = Effect.fnUntraced(function* (target: WrappedNode, candidateMapping: ReturnMapping | undefined) {
       if (!(yield* run.validate)) {
         yield* showFailure('An analyzed document or dependency changed. Run the command again.');
         return false;
       }
       yield* navigateTo(document, target);
+      if (returnMapping?.kind === 'incomplete') {
+        const otherReasons = candidateMapping?.kind === 'incomplete'
+          ? returnMapping.reasons.filter((reason) => !candidateMapping.reasons.includes(reason)) : returnMapping.reasons;
+        const message = candidateMapping?.kind === 'incomplete'
+          ? 'Fold State Jump: return-source analysis for this candidate is incomplete. ' + candidateMapping.reasons.join(' ') +
+            (otherReasons.length ? ' Other related return sources remain unverified. ' + otherReasons.join(' ') : '')
+          : 'Fold State Jump: showing a verified candidate. Other related return sources remain unverified. ' + otherReasons.join(' ');
+        // Do not await user dismissal; navigation has already passed the input
+        // guards and the warning stays visible independently of the status bar.
+        yield* Effect.sync(() => { void vscode.window.showWarningMessage(message); });
+      }
       return true;
     });
     switch (result._tag) {
@@ -395,13 +407,13 @@ const presentAnalysis = (
         yield* showFailure(result.reason);
         return;
       case 'MutationFound':
-        if (!(yield* navigate(result.mutation))) return;
+        if (!(yield* navigate(result.mutation, result.returnMapping))) return;
         yield* Effect.sync(() => vscode.window.setStatusBarMessage(result.wrapped
           ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
           : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000));
         return;
       case 'OriginFound':
-        if (!(yield* navigate(result.origin))) return;
+        if (!(yield* navigate(result.origin, result.returnMapping))) return;
         yield* Effect.sync(() => {
           void vscode.window.showInformationMessage(result.kind === 'initialization'
             ? 'Fold State Jump: showing the initialization source.'
@@ -412,7 +424,7 @@ const presentAnalysis = (
       case 'CandidatesFound': {
         const candidate = yield* chooseCandidate(result.candidates);
         if (candidate) {
-          if (!(yield* navigate(candidateTarget(candidate)))) return;
+          if (!(yield* navigate(candidateTarget(candidate), candidate.returnMapping))) return;
           if ('mutation' in candidate) vscode.window.setStatusBarMessage(candidate.wrapped
             ? 'Fold State Jump: wrapped to the last source-order mutation in this fold; runtime reachability is not verified.'
             : 'Fold State Jump: source-order mutation candidate; runtime reachability is not verified.', 5000);

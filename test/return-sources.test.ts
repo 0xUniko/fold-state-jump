@@ -47,7 +47,9 @@ describe('return source mapping (real Clang AST)', () => {
     ['nested', ['nested_field', 'aggregate'], [['value'], ['value']]],
     ['repeated', ['identity', 'identity'], [['value']]],
     ['lambda-source', ['operator()'], [['value']]],
-    ['receiver', ['get'], []]
+    ['receiver', ['get'], []],
+    ['constructed', ['constructed_state'], [['value']]],
+    ['constructed-managed', ['constructed_managed'], [['value']]]
   ] as const;
   cases.map(([name, callees, arguments_]) => it('maps exact mutation, origin, and field paths: ' + name, () => {
     (['mutation', 'origin'] as const).map((mode) => {
@@ -139,6 +141,8 @@ describe('return source mapping (real Clang AST)', () => {
       expectAt(result._tag === 'MutationFound' ? result.mutation : result.origin, '// @' + (mode === 'mutation' ? 'write ' : 'origin ') + 'partial');
       assert.deepEqual(returns(result.frames ?? []).map((frame) => frame.callee), ['partial']);
       assert.equal(q.returnMapping?.kind, 'incomplete');
+      assert.deepEqual(result.returnMapping, { kind: 'complete' });
+      if (q.returnMapping?.kind === 'incomplete') assert.deepEqual(q.returnMapping.reasons, q.diagnostics);
       assert.equal(q.diagnostics?.length, 1);
       assert.match(q.diagnostics![0], /return: .*unknown \(definition unavailable\)/);
       const fn = prepared.index.functions.find((fn) => fn.name === 'partial')!;
@@ -217,4 +221,113 @@ describe('return source mapping (real Clang AST)', () => {
       assert.match(origin.diagnostics?.join(' ') ?? '', reason);
     }
   }));
+});
+
+
+describe('loop-carried return evidence', () => {
+  it('keeps a proven zero-iteration branch separate from the unproved recurrence', () => {
+    const fn = prepared.index.functions.find((fn) => fn.name === 'counted_state')!;
+    const branches = prepared.index.returnSourcesByFunctionId.get(fn.id)!;
+    assert.equal(branches.length, 2);
+    const source = branches[1].source;
+    const loopState = source.kind === 'preserved-copy' ? source.source : source;
+    assert.equal(loopState.kind, 'loop-carried');
+    if (loopState.kind !== 'loop-carried') return;
+    assert.equal(loopState.target.rootId, loopState.declaration.node.id);
+    expectAt(loopState.declaration, '// @initial counted');
+    assert.equal(loopState.initial?.node.kind, 'CXXConstructExpr');
+    assert.equal(loopState.updates.length, 1);
+    assert.equal(loopState.updates[0].kind, 'replacement');
+    assert.equal(loopState.updates[0].loop.node.kind, 'ForStmt');
+    expectAt(loopState.updates[0].statement, '// @update counted');
+    (['mutation', 'origin'] as const).map((mode) => {
+      const q = query('counted', mode);
+      assert.equal(q.returnMapping?.kind, 'incomplete');
+      assert.match(q.diagnostics?.join(' ') ?? '', /Loop-carried return value of accumulator.*recurrence proof/);
+      const result = q.result;
+      assert.ok(result._tag === 'MutationFound' || result._tag === 'OriginFound');
+      expectAt(result._tag === 'MutationFound' ? result.mutation : result.origin, '// @' + (mode === 'mutation' ? 'write ' : 'origin ') + 'counted');
+      assert.deepEqual(result.returnMapping, { kind: 'complete' });
+      assert.ok(result.frames?.some((frame) => frame.returned?.statement.node.range?.begin?.offset === branches[0].statement.node.range?.begin?.offset));
+    });
+  });
+  it('does not turn loop storage assignment or field mutation into a proved final value', () => {
+    const q = query('mutated');
+    assert.equal(q.result._tag, 'AnalysisFailure');
+    assert.equal(q.returnMapping?.kind, 'incomplete');
+    assert.match(q.diagnostics?.join(' ') ?? '', /Zero-iteration and repeated-iteration values/);
+    const fn = prepared.index.functions.find((fn) => fn.name === 'mutated_state')!;
+    const source = prepared.index.returnSourcesByFunctionId.get(fn.id)![0].source;
+    const loopState = source.kind === 'preserved-copy' ? source.source : source;
+    assert.equal(loopState.kind, 'loop-carried');
+    if (loopState.kind !== 'loop-carried') return;
+    assert.equal(loopState.updates[0].kind, 'mutation');
+  });
+  it('does not attribute a nested lambda loop to the enclosing return', () => {
+    const q = query('nested-iteration');
+    assert.equal(q.result._tag, 'MutationFound');
+    assert.deepEqual(q.returnMapping, { kind: 'complete' });
+    assert.deepEqual(q.diagnostics, []);
+  });
+});
+
+
+it('distinguishes excluded system bodies from genuinely unavailable definitions', () => {
+  const algorithm = prepared.index.calls.find((call) => call.node.callee?.qualifiedName === 'std::move' && call.children.length === 4)!;
+  assert.equal(algorithm.node.callee?.definition?.kind, 'system-excluded');
+  const unknown = prepared.index.calls.find((call) => call.node.callee?.qualifiedName === 'unknown')!;
+  assert.deepEqual(unknown.node.callee?.definition, { kind: 'unavailable' });
+  const direct = prepared.index.calls.find((call) => call.node.callee?.qualifiedName === 'direct')!;
+  assert.equal(direct.node.callee?.definition?.kind, 'user');
+});
+
+
+it('keeps a disjoint returned field complete without attaching another field recurrence', () => {
+  (['mutation', 'origin'] as const).map((mode) => {
+    const q = query('disjoint-iteration', mode);
+    assert.deepEqual(q.returnMapping, { kind: 'complete' });
+    assert.deepEqual(q.diagnostics, []);
+    const result = q.result;
+    assert.ok(result._tag === 'MutationFound' || result._tag === 'OriginFound');
+    expectAt(result._tag === 'MutationFound' ? result.mutation : result.origin,
+      '// @' + (mode === 'mutation' ? 'write ' : 'origin ') + 'disjoint-iteration');
+  });
+});
+
+it('marks a returned receiver boundary as partial on that candidate itself', () => {
+  const q = query('unavailable-receiver', 'origin');
+  assert.equal(q.returnMapping?.kind, 'incomplete');
+  assert.equal(q.result._tag, 'OriginFound');
+  if (q.result._tag !== 'OriginFound') return;
+  assert.equal(q.result.kind, 'parameter');
+  assert.equal(q.result.returnMapping?.kind, 'incomplete');
+  assert.match(q.result.boundary ?? '', /Unsupported receiver expression/);
+  if (q.returnMapping?.kind === 'incomplete' && q.result.returnMapping?.kind === 'incomplete')
+    assert.deepEqual(q.result.returnMapping.reasons, q.returnMapping.reasons);
+});
+
+it('scopes discovery diagnostics to caller sets actually used by the final query', () => {
+  const sink = prepared.index.functions.find((fn) => fn.name === 'parameter_sink')!;
+  const identity = prepared.index.functions.find((fn) => fn.name === 'identity')!;
+  const unrelated = prepared.index.functions.find((fn) => fn.name === 'direct')!;
+  const q = analyzeQuery('mutation', prepared.ast, { file, sourceText: text, cursorByteOffset: at('parameter'),
+    callerDiagnostics: new Map([
+      [sink.wrapped.node, ['Relevant caller set is incomplete.']],
+      [identity.wrapped.node, ['Unrelated callers of the bound return function.']],
+      [unrelated.wrapped.node, ['Unrelated old discovery failure.']]
+    ]) }, prepared);
+  assert.equal(q.result._tag, 'MutationFound');
+  assert.deepEqual(q.diagnostics, ['Relevant caller set is incomplete.']);
+  assert.deepEqual(q.returnMapping, { kind: 'complete' });
+});
+
+it('retains caller branch constraints after leaving the last return binding', () => {
+  const q = query('exclusive');
+  assert.equal(q.result._tag, 'AnalysisFailure');
+  assert.match(q.diagnostics?.join(' ') ?? '', /Mutation execution before this return-source call is not verified/);
+  const shared = query('shared-branch');
+  assert.equal(shared.result._tag, 'MutationFound');
+  if (shared.result._tag === 'MutationFound') expectAt(shared.result.mutation, '// @write shared-branch');
+  assert.deepEqual(shared.returnMapping, { kind: 'complete' });
+  assert.deepEqual(shared.diagnostics, []);
 });

@@ -35,6 +35,9 @@ export type ClangNode = {
   readonly dependent?: boolean;
   readonly referencedMemberDecl?: string;
   readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string; readonly symbol?: string;
+    readonly definition?: { readonly kind: 'unavailable' } | {
+      readonly kind: 'user' | 'system-excluded'; readonly id: string; readonly loc: ClangLocation
+    };
     readonly parameterEffects?: readonly ParameterEffect[]; readonly receiverEffect?: ParameterEffect; readonly virtual?: boolean };
   readonly captures?: readonly { readonly id: string; readonly kind: 'reference' | 'copy';
     readonly copyBoundaries?: readonly string[]; readonly copyValueBoundaries?: readonly string[] }[];
@@ -87,6 +90,9 @@ export type TraceCandidate = {
   readonly orderOffset: number;
   readonly frames: readonly TraceFrame[];
   readonly wrapped?: boolean;
+  // Evidence for this path only. Query-level evidence also covers alternatives
+  // that produced no candidate and must survive candidate selection.
+  readonly returnMapping?: ReturnMapping;
 };
 
 export type OriginCandidate = {
@@ -94,6 +100,7 @@ export type OriginCandidate = {
   readonly kind: 'initialization' | 'parameter';
   readonly frames: readonly TraceFrame[];
   readonly boundary?: string;
+  readonly returnMapping?: ReturnMapping;
 };
 
 export type CallerLink = {
@@ -103,10 +110,10 @@ export type CallerLink = {
 };
 
 export type AnalysisResult =
-  | { readonly _tag: 'MutationFound'; readonly mutation: WrappedNode; readonly via: 'direct' | 'call'; readonly wrapped?: boolean; readonly frames?: readonly TraceFrame[] }
+  | { readonly _tag: 'MutationFound'; readonly mutation: WrappedNode; readonly via: 'direct' | 'call'; readonly wrapped?: boolean; readonly frames?: readonly TraceFrame[]; readonly returnMapping?: ReturnMapping }
   | { readonly _tag: 'CandidatesFound'; readonly candidates: readonly TraceCandidate[] }
   | { readonly _tag: 'OriginCandidatesFound'; readonly candidates: readonly OriginCandidate[] }
-  | { readonly _tag: 'OriginFound'; readonly origin: WrappedNode; readonly kind: 'initialization' | 'parameter'; readonly boundary?: string; readonly frames?: readonly TraceFrame[] }
+  | { readonly _tag: 'OriginFound'; readonly origin: WrappedNode; readonly kind: 'initialization' | 'parameter'; readonly boundary?: string; readonly frames?: readonly TraceFrame[]; readonly returnMapping?: ReturnMapping }
   | { readonly _tag: 'AnalysisFailure'; readonly reason: string };
 
 export type AnalysisOptions = {
@@ -115,7 +122,7 @@ export type AnalysisOptions = {
   readonly cursorByteOffset: number;
   readonly sourceTextByFile?: ReadonlyMap<string, string>;
   readonly externalCallers?: ReadonlyMap<ClangNode, readonly CallerLink[]>;
-  readonly callerDiagnostics?: readonly string[];
+  readonly callerDiagnostics?: ReadonlyMap<ClangNode, readonly string[]>;
 };
 
 type AstIndex = {
@@ -1349,9 +1356,17 @@ export type ReturnMapping =
   | { readonly kind: 'incomplete'; readonly reasons: readonly string[] };
 
 const combineReturnMappings = (mappings: readonly (ReturnMapping | undefined)[]): ReturnMapping | undefined => {
-  const reasons = mappings.flatMap((mapping) => mapping?.kind === 'incomplete' ? mapping.reasons : []);
+  const reasons = [...new Set(mappings.flatMap((mapping) => mapping?.kind === 'incomplete' ? mapping.reasons : []))];
   return reasons.length ? { kind: 'incomplete', reasons } : mappings.some(Boolean) ? { kind: 'complete' } : undefined;
 };
+
+const returnBranchReason = (frame: TraceFrame & { readonly returned: NonNullable<TraceFrame['returned']> }, reason: string): string =>
+  frame.returned.callee.file + ':' + frame.returned.statement.node.range?.begin?.offset + ' return: ' + reason;
+
+const returnBranchMapping = (frame: TraceFrame & { readonly returned: NonNullable<TraceFrame['returned']> }, mapping: ReturnMapping | undefined): ReturnMapping =>
+  mapping?.kind === 'incomplete'
+    ? { kind: 'incomplete', reasons: mapping.reasons.map((reason) => returnBranchReason(frame, reason)) }
+    : { kind: 'complete' };
 
 const combineSearches = <A>(searches: readonly TraceSearch<A>[]): TraceSearch<A> => ({
   candidates: searches.flatMap((search) => search.candidates),
@@ -1369,15 +1384,21 @@ const uniqueCallerLinks = (links: readonly CallerLink[]): readonly CallerLink[] 
     ? unique : [...unique, link], []);
 
 type ReturnBinding = { readonly callee: FunctionInfo; readonly link: CallerLink; readonly statement: WrappedNode };
-type TraceOptions = AnalysisOptions & { readonly returnBindings?: readonly ReturnBinding[] };
+type TraceOptions = AnalysisOptions & {
+  readonly returnBindings?: readonly ReturnBinding[];
+  // Popping a return binding must retain the caller's actual observation path.
+  readonly returnObservation?: { readonly caller: FunctionInfo; readonly callsite: WrappedNode };
+};
 
 const returnBinding = (fn: FunctionInfo, options: TraceOptions): ReturnBinding | undefined =>
   options.returnBindings?.reduce<ReturnBinding | undefined>((previous, binding) =>
     binding.callee.wrapped.node === fn.wrapped.node ? binding : previous, undefined);
 
-const callerOptions = (fn: FunctionInfo, options: TraceOptions): TraceOptions => {
+const callerOptions = (fn: FunctionInfo, options: TraceOptions, link: CallerLink): TraceOptions => {
   const binding = returnBinding(fn, options);
-  return binding ? { ...options, returnBindings: options.returnBindings!.slice(0, options.returnBindings!.indexOf(binding)) } : options;
+  if (binding) return { ...options, returnBindings: options.returnBindings!.slice(0, options.returnBindings!.indexOf(binding)),
+    returnObservation: { caller: link.caller, callsite: link.callsite } };
+  return options.returnObservation ? { ...options, returnObservation: { caller: link.caller, callsite: link.callsite } } : options;
 };
 
 const callerLinks = (fn: FunctionInfo, index: AstIndex, options: TraceOptions): readonly CallerLink[] => {
@@ -1404,7 +1425,8 @@ type ValueSource =
 const valueSource = (input: WrappedNode | undefined, members: readonly string[], index: AstIndex): ValueSource => {
   const expression = unwrap(input);
   if (!expression) return { _tag: 'Boundary', reason: 'Missing argument expression.' };
-  if (expression.node.kind === 'CXXFunctionalCastExpr' && expression.node.castKind === 'NoOp')
+  if (expression.node.kind === 'CXXFunctionalCastExpr' && (expression.node.castKind === 'NoOp' ||
+      expression.node.castKind === 'ConstructorConversion' && unwrap(expression.children[0])?.node.kind === 'CXXConstructExpr'))
     return valueSource(expression.children[0], members, index);
   if (expression.node.storageOperation === 'identity')
     return valueSource(expression.children[1], members, index);
@@ -1426,9 +1448,12 @@ const valueSource = (input: WrappedNode | undefined, members: readonly string[],
   if (isCall(expression.node)) {
     const callee = resolveFunction(expression, index);
     if (callee) return { _tag: 'Returned', callsite: expression, callee, members };
+    const definition = expression.node.callee?.definition;
     const reason = 'Unsupported argument expression: ' + expression.node.kind + '. Return source unavailable: ' +
         (expression.node.callee?.qualifiedName ?? '(unresolved target)') +
-        (expression.node.callee?.virtual ? ' (virtual dispatch).' : ' (definition unavailable).');
+        (expression.node.callee?.virtual ? ' (virtual dispatch).' : ' (definition unavailable).') +
+        (definition?.kind === 'system-excluded' ? ' Definition exists at ' + definition.loc.file + ':' + definition.loc.offset +
+          '; system-header body was excluded from the compact AST.' : '');
     return { _tag: 'Boundary', reason, returnMapping: { kind: 'incomplete', reasons: [reason] } };
   }
   if (['IntegerLiteral', 'FloatingLiteral', 'CXXBoolLiteralExpr', 'StringLiteral', 'ImplicitValueInitExpr'].includes(expression.node.kind))
@@ -1446,6 +1471,7 @@ const mappedArgument = (link: CallerLink, parameterIndex: number, target: Expres
 // invented storage identity. Call binding happens only when consuming a summary.
 export type ReturnSource =
   | { readonly kind: 'storage'; readonly target: ExpressionPath }
+  | LoopReturnState
   | { readonly kind: 'aggregate'; readonly origin: WrappedNode; readonly fields: readonly { readonly name: string; readonly source: ReturnSource }[] }
   | { readonly kind: 'transparent'; readonly expression: WrappedNode; readonly source: ReturnSource }
   | { readonly kind: 'preserved-copy'; readonly expression: WrappedNode; readonly source: ReturnSource }
@@ -1453,6 +1479,35 @@ export type ReturnSource =
   | { readonly kind: 'initialization'; readonly origin: WrappedNode }
   | { readonly kind: 'unsupported'; readonly reason: string };
 export type ReturnBranch = { readonly statement: WrappedNode; readonly source: ReturnSource };
+
+// These are AST witnesses, not an identity between the initial object and the
+// final value. A replacement assigns a new value to the same local storage;
+// a mutation changes a subobject. Neither proves the recurrence's call order.
+export type LoopReturnState = {
+  readonly kind: 'loop-carried';
+  readonly target: ExpressionPath;
+  readonly declaration: WrappedNode;
+  readonly initial: WrappedNode | undefined;
+  readonly updates: readonly (
+    | { readonly kind: 'replacement'; readonly loop: WrappedNode; readonly statement: WrappedNode; readonly target: ExpressionPath; readonly value: WrappedNode }
+    | { readonly kind: 'mutation'; readonly loop: WrappedNode; readonly statement: WrappedNode; readonly target: ExpressionPath }
+  )[];
+};
+
+const loopReturnState = (target: ExpressionPath, declaration: WrappedNode, fn: FunctionInfo, index: AstIndex, beforeOffset: number): LoopReturnState | undefined => {
+  const updates = (index.writesByFunctionId.get(fn.id)?.get(target.rootId) ?? []).flatMap((write): LoopReturnState['updates'] => {
+    const loopNode = [...write.mutation.ancestors].reverse().find((ancestor) =>
+      ['ForStmt', 'CXXForRangeStmt', 'WhileStmt', 'DoStmt'].includes(ancestor.kind));
+    const loop = loopNode && index.wrappedByNode.get(loopNode);
+    if (!loop || write.start >= beforeOffset ||
+      !sameOrParent(target.members, write.target.members) && !sameOrParent(write.target.members, target.members)) return [];
+    const value = write.mutation.node.opcode === '=' ? write.mutation.children.at(-1) : undefined;
+    return value && sameOrParent(write.target.members, target.members)
+      ? [{ kind: 'replacement', loop, statement: write.mutation, target: write.target, value }]
+      : [{ kind: 'mutation', loop, statement: write.mutation, target: write.target }];
+  });
+  return updates.length ? { kind: 'loop-carried', target, declaration, initial: declaration.children[0], updates } : undefined;
+};
 
 // Also usable by the benchmark to isolate summary construction from the other
 // immutable indexes. No caller bindings or observation times enter this cache.
@@ -1491,7 +1546,8 @@ const returnSource = (input: WrappedNode | undefined, index: AstIndex, fn: Funct
   if (expression.node.kind === 'CXXConstructExpr' && expression.node.fieldwiseCopy) return {
     kind: 'preserved-copy', expression, source: returnSource(expression.children[0], index, fn, returnBorrow)
   };
-  if (expression.node.kind === 'CXXFunctionalCastExpr' && expression.node.castKind === 'NoOp' ||
+  if (expression.node.kind === 'CXXFunctionalCastExpr' && (expression.node.castKind === 'NoOp' ||
+      expression.node.castKind === 'ConstructorConversion' && unwrap(expression.children[0])?.node.kind === 'CXXConstructExpr') ||
       expression.node.storageOperation === 'identity') return {
     kind: 'transparent', expression, source: returnSource(expression.node.storageOperation === 'identity'
       ? argsOf(expression)[0] : expression.children[0], index, fn, returnBorrow)
@@ -1514,9 +1570,11 @@ const returnSource = (input: WrappedNode | undefined, index: AstIndex, fn: Funct
       const localPointer = declaration?.node.kind === 'VarDecl' &&
         (returnBorrow === 'pointer' || returnBorrow === 'reference' && source.target.members.includes('*'));
       const ownedReference = returnBorrow === 'reference' && !source.target.members.includes('*');
+      const loopState = owned && declaration.node.kind === 'VarDecl' && fn
+        ? loopReturnState(source.target, declaration, fn, index, expression.node.range?.begin?.offset ?? Number.POSITIVE_INFINITY) : undefined;
       return owned && (address || localPointer || ownedReference)
         ? { kind: 'unsupported', reason: 'Return borrow lifetime from callee-owned storage is not verified.' }
-        : { kind: 'storage', target: source.target };
+        : loopState || { kind: 'storage', target: source.target };
     }
     case 'Initialization': return { kind: 'initialization', origin: source.origin };
     case 'Returned': return { kind: 'call', callsite: source.callsite, callee: source.callee, members: source.members };
@@ -1526,6 +1584,15 @@ const returnSource = (input: WrappedNode | undefined, index: AstIndex, fn: Funct
 
 const projectReturnSource = (source: ReturnSource, members: readonly string[]): ValueSource => {
   switch (source.kind) {
+    case 'loop-carried': {
+      const target = appendMembers(source.target, members);
+      const updates = source.updates.filter((update) => sameOrParent(target.members, update.target.members) ||
+        sameOrParent(update.target.members, target.members));
+      return updates.length ? { _tag: 'Boundary', reason: 'Loop-carried return value of ' + source.target.rootName +
+        ' is not verified: initial storage at ' + source.declaration.file + ':' + source.declaration.node.range?.begin?.offset +
+        ', ' + updates.length + ' indexed loop update(s). Zero-iteration and repeated-iteration values, operation returns, and call order require a recurrence proof.' }
+        : { _tag: 'Path', target };
+    }
     case 'storage': return { _tag: 'Path', target: appendMembers(source.target, members) };
     case 'call': return { _tag: 'Returned', callsite: source.callsite, callee: source.callee, members: [...source.members, ...members] };
     case 'unsupported': return { _tag: 'Boundary', reason: source.reason };
@@ -1581,9 +1648,10 @@ const mutationsFromValue = (
         if (branch.beforeOffset === undefined) return { candidates: [], boundaries: [], diagnostics: ['Return expression range is unavailable.'],
           returnMapping: { kind: 'incomplete', reasons: ['Return expression range is unavailable.'] } };
         const search = mutationsFromValue(branch.source, source.callee, branch.beforeOffset, index, sourceTextByFile, branch.options, visited);
-        return { ...search, candidates: search.candidates.map((candidate) => ({ ...candidate, frames: [branch.frame, ...candidate.frames] })),
-          diagnostics: search.diagnostics?.map((reason) => branch.frame.returned.callee.file + ':' +
-            branch.frame.returned.statement.node.range?.begin?.offset + ' return: ' + reason) };
+        return { ...search, candidates: search.candidates.map((candidate) => ({ ...candidate,
+          returnMapping: returnBranchMapping(branch.frame, candidate.returnMapping), frames: [branch.frame, ...candidate.frames] })),
+          returnMapping: returnBranchMapping(branch.frame, search.returnMapping),
+          diagnostics: search.diagnostics?.map((reason) => returnBranchReason(branch.frame, reason)) };
       }));
       const returnMapping = search.returnMapping ?? { kind: 'complete' as const };
       return search.candidates.length ? { ...search, returnMapping } : { ...search, returnMapping, diagnostics: [
@@ -1611,9 +1679,13 @@ const originsFromValue = (
         if (branch.beforeOffset === undefined) return { candidates: [], boundaries: [], diagnostics: ['Return expression range is unavailable.'],
           returnMapping: { kind: 'incomplete', reasons: ['Return expression range is unavailable.'] } };
         const search = originsFromValue(branch.source, source.callee, branch.beforeOffset, index, branch.options, visited);
-        return { ...search, candidates: search.candidates.map((candidate) => ({ ...candidate, frames: [branch.frame, ...candidate.frames] })),
-          diagnostics: search.diagnostics?.map((reason) => source.callee.file + ':' +
-            branch.frame.returned.statement.node.range?.begin?.offset + ' return: ' + reason) };
+        return { ...search, candidates: search.candidates.map((candidate) => ({ ...candidate,
+          returnMapping: returnBranchMapping(branch.frame, candidate.returnMapping ?? (candidate.boundary
+            ? { kind: 'incomplete', reasons: [candidate.boundary] } : undefined)), frames: [branch.frame, ...candidate.frames] })),
+          returnMapping: returnBranchMapping(branch.frame, combineReturnMappings([search.returnMapping,
+            ...search.candidates.map((candidate) => candidate.returnMapping ?? (candidate.boundary
+              ? { kind: 'incomplete' as const, reasons: [candidate.boundary] } : undefined))])),
+          diagnostics: search.diagnostics?.map((reason) => returnBranchReason(branch.frame, reason)) };
       }));
       return { ...search, returnMapping: search.returnMapping ?? { kind: 'complete' } };
     }
@@ -1688,6 +1760,11 @@ export const callerLinksAt = (
   }));
 };
 
+const mutationBoundarySearch = (reason: string, options: TraceOptions): TraceSearch<TraceCandidate> => ({
+  candidates: [], boundaries: [], diagnostics: [reason],
+  returnMapping: options.returnBindings?.length || options.returnObservation ? { kind: 'incomplete', reasons: [reason] } : undefined
+});
+
 // Backward tracing follows the value at call entry, including copies. Forward
 // Effects use explicit borrows; unverified shared value parameters are barriers.
 const traceMutations = (
@@ -1695,22 +1772,27 @@ const traceMutations = (
   sourceTextByFile: ReadonlyMap<string, string>, options: TraceOptions,
   visited: readonly string[] = []
 ): TraceSearch<TraceCandidate> => {
-  const key = [functionKey(fn), storagePathKey(target), beforeOffset, returnBinding(fn, options)?.link.callsite.node.range?.begin?.offset].join(':');
-  if (visited.includes(key)) return { candidates: [], boundaries: [], diagnostics: ['Recursive caller path; stopped at ' + fn.name + '.'] };
+  const key = [functionKey(fn), storagePathKey(target), beforeOffset, returnBinding(fn, options)?.link.callsite.node.range?.begin?.offset,
+    options.returnObservation && callKey(options.returnObservation.callsite)].join(':');
+  if (visited.includes(key)) return mutationBoundarySearch('Recursive caller path; stopped at ' + fn.name + '.', options);
   const nextVisited = [...visited, key];
   const local = findPreviousMutation(fn, target, beforeOffset, index, sourceTextByFile);
-  if (local?._tag === 'MutationBoundary') return { candidates: [], boundaries: [], diagnostics: [local.reason] };
+  if (local?._tag === 'MutationBoundary') return mutationBoundarySearch(local.reason, options);
   if (local) {
     const binding = returnBinding(fn, options);
     const mutation = local.frames[0]?.callsite ?? local.mutation;
     const mutationPath = [...mutation.ancestors, mutation.node];
-    const returnPath = binding && [...binding.statement.ancestors, binding.statement.node];
+    const observation = binding?.statement ?? (options.returnObservation?.caller.wrapped.node === fn.wrapped.node
+      ? options.returnObservation.callsite : undefined);
+    const observationPath = observation && [...observation.ancestors, observation.node];
     // Lexical order alone cannot prove that a write in another branch executed
     // on this return path. Keep the existing mutation search conservative here.
-    const unverifiedBranch = returnPath && mutation.ancestors.some((ancestor, position) =>
+    const unverifiedBranch = observationPath && mutation.ancestors.some((ancestor, position) =>
       ['IfStmt', 'SwitchStmt', 'CaseStmt', 'DefaultStmt', 'ForStmt', 'CXXForRangeStmt', 'WhileStmt', 'DoStmt', 'CXXCatchStmt'].includes(ancestor.kind) &&
-      (returnPath.indexOf(ancestor) < 0 || returnPath[returnPath.indexOf(ancestor) + 1] !== mutationPath[position + 1]));
-    if (unverifiedBranch) return { candidates: [], boundaries: [], diagnostics: ['Mutation execution on this return branch is not verified.'] };
+      (observationPath.indexOf(ancestor) < 0 || observationPath[observationPath.indexOf(ancestor) + 1] !== mutationPath[position + 1]));
+    if (unverifiedBranch) return mutationBoundarySearch(binding
+      ? 'Mutation execution on this return branch is not verified.'
+      : 'Mutation execution before this return-source call is not verified.', options);
     const { _tag, ...candidate } = local;
     return { candidates: [candidate], boundaries: [] };
   }
@@ -1718,7 +1800,7 @@ const traceMutations = (
   const fold = foldFor(fn, index);
   const wrap = (): TraceSearch<TraceCandidate> => {
     const last = fold && findPreviousMutation(fn, target, Number.POSITIVE_INFINITY, index, sourceTextByFile);
-    if (last?._tag === 'MutationBoundary') return { candidates: [], boundaries: [], diagnostics: [last.reason] };
+    if (last?._tag === 'MutationBoundary') return mutationBoundarySearch(last.reason, options);
     if (!last) return { candidates: [], boundaries: [] };
     const { _tag, ...candidate } = last;
     return { candidates: [{ ...candidate, wrapped: true }], boundaries: [] };
@@ -1752,14 +1834,15 @@ const traceMutations = (
       const frame = receiverTrace
         ? { callsite: link.callsite, caller: link.caller, receiver: argument }
         : { callsite: link.callsite, caller: link.caller, parameterIndex, argument };
-      const search = mutationsFromValue(source, link.caller, range.start, link.prepared.index, sourceTextByFile, callerOptions(fn, options), nextVisited);
+      const search = mutationsFromValue(source, link.caller, range.start, link.prepared.index, sourceTextByFile, callerOptions(fn, options, link), nextVisited);
       return { ...search, candidates: search.candidates.map((candidate) => ({
         ...candidate, frames: [frame, ...candidate.frames]
       })), returnMapping: source._tag === 'Boundary' && returnBinding(fn, options)
         ? { kind: 'incomplete', reasons: [source.reason] } : search.returnMapping };
     }));
     const resolved = { ...search, candidates: search.candidates.length > 0 ? search.candidates : wrap().candidates,
-      diagnostics: links.length > 0 ? search.diagnostics : ['No verified caller is available for ' + fn.name + '.'] };
+      diagnostics: [...(links.length > 0 ? search.diagnostics ?? [] : ['No verified caller is available for ' + fn.name + '.']),
+        ...(returnBinding(fn, options) ? [] : options.callerDiagnostics?.get(fn.wrapped.node) ?? [])] };
     return (returnBinding(fn, options) || options.externalCallers?.has(fn.wrapped.node))
       ? resolved
       : { ...resolved, boundaries: [...resolved.boundaries, fn] };
@@ -1786,9 +1869,7 @@ const traceMutations = (
       }));
     }
     const source = captureSource(fn, target, index, options);
-    if (!source || source._tag === 'Boundary') return { candidates: [], boundaries: [], diagnostics: [
-      source?.reason ?? 'Lambda capture source is not verified.'
-    ] };
+    if (!source || source._tag === 'Boundary') return mutationBoundarySearch(source?.reason ?? 'Lambda capture source is not verified.', options);
     if (source._tag === 'Invocations') return combineSearches(source.calls.map((call) => {
       const range = nodeRange(call, sourceTextByFile);
       if (!range) return { candidates: [], boundaries: [] };
@@ -1808,7 +1889,7 @@ const traceMutations = (
     if (source._tag === 'Path' && range && source.target.rootId !== target.rootId)
       return traceMutations(fn, source.target, range.start, index, sourceTextByFile, options, visited);
     if (source._tag === 'Returned' && (/&/.test(declaration.node.type?.qualType ?? '') || target.members.includes('*')))
-      return { candidates: [], boundaries: [], diagnostics: ['Returned borrow observation after local initialization is not verified; call-entry mutations cannot establish the observation-time value.'] };
+      return mutationBoundarySearch('Returned borrow observation after local initialization is not verified; call-entry mutations cannot establish the observation-time value.', options);
     if (source._tag === 'Returned' && range)
       return mutationsFromValue(source, fn, range.start, index, sourceTextByFile, options, nextVisited);
     return { candidates: [], boundaries: [], returnMapping: source._tag === 'Boundary' ? source.returnMapping : undefined, diagnostics: [source._tag === 'Boundary' ? source.reason
@@ -1824,30 +1905,33 @@ const receiverOriginFor = (
   fn: FunctionInfo, target: ExpressionPath, index: AstIndex, options: TraceOptions,
   visited: readonly string[]
 ): TraceSearch<OriginCandidate> => {
-  const fallback = (boundary: string): TraceSearch<OriginCandidate> => ({
-    candidates: [{ origin: fn.wrapped, kind: 'parameter', frames: [], boundary }], boundaries: [],
-    returnMapping: returnBinding(fn, options) ? { kind: 'incomplete', reasons: [boundary] } : undefined
+  const fallback = (boundary: string, returnMapping: ReturnMapping | undefined = returnBinding(fn, options)
+    ? { kind: 'incomplete', reasons: [boundary] } : undefined): TraceSearch<OriginCandidate> => ({
+    candidates: [{ origin: fn.wrapped, kind: 'parameter', frames: [], boundary, returnMapping }], boundaries: [], returnMapping
   });
   const key = functionKey(fn);
   if (visited.includes(key)) return fallback('Recursive caller path; stopped at the receiver.');
   const links = callerLinks(fn, index, options);
   if (links.length === 0) return {
     ...fallback('No verified caller is available; stopped at the receiver.'),
+    diagnostics: options.callerDiagnostics?.get(fn.wrapped.node),
     boundaries: (returnBinding(fn, options) || options.externalCallers?.has(fn.wrapped.node)) ? [] : [fn]
   };
   const search = combineSearches(links.map((link): TraceSearch<OriginCandidate> => {
     const argument = mappedReceiver(link, target);
     const search = argument
-      ? originFor(link.caller, argument, link.prepared.index, callerOptions(fn, options), [...visited, key], link.callsite.node.range?.begin?.offset)
+      ? originFor(link.caller, argument, link.prepared.index, callerOptions(fn, options, link), [...visited, key], link.callsite.node.range?.begin?.offset)
       : fallback('Unsupported receiver expression; stopped at the receiver.');
-    const resolved = search.candidates.length > 0 ? search : fallback('Receiver source could not be resolved; stopped at the receiver.');
+    const resolved = search.candidates.length > 0 ? search : {
+      ...fallback('Receiver source could not be resolved; stopped at the receiver.', search.returnMapping), diagnostics: search.diagnostics };
     return { ...resolved, candidates: resolved.candidates.map((candidate) => ({
       ...candidate, frames: [{ callsite: link.callsite, caller: link.caller, receiver: argument ?? undefined }, ...candidate.frames]
     })) };
   }));
+  const resolved = { ...search, diagnostics: [...(search.diagnostics ?? []), ...(returnBinding(fn, options) ? [] : options.callerDiagnostics?.get(fn.wrapped.node) ?? [])] };
   return (returnBinding(fn, options) || options.externalCallers?.has(fn.wrapped.node))
-    ? search
-    : { ...search, boundaries: [...search.boundaries, fn] };
+    ? resolved
+    : { ...resolved, boundaries: [...resolved.boundaries, fn] };
 };
 
 const originFor = (
@@ -1905,9 +1989,9 @@ const originFor = (
   const owner = index.functionsById.get(declarationOwner.id) ?? declarationOwner;
   const fold = owner.params[0]?.node.id === target.rootId ? foldFor(owner, index) : undefined;
   if (fold) return { candidates: [{ origin: fold.initial, kind: 'initialization', frames: [] }], boundaries: [] };
-  const fallback = (boundary: string): TraceSearch<OriginCandidate> => ({
-    candidates: [{ origin: declaration, kind: 'parameter', frames: [], boundary }], boundaries: [],
-    returnMapping: returnBinding(owner, options) ? { kind: 'incomplete', reasons: [boundary] } : undefined
+  const fallback = (boundary: string, returnMapping: ReturnMapping | undefined = returnBinding(owner, options)
+    ? { kind: 'incomplete', reasons: [boundary] } : undefined): TraceSearch<OriginCandidate> => ({
+    candidates: [{ origin: declaration, kind: 'parameter', frames: [], boundary, returnMapping }], boundaries: [], returnMapping
   });
   const key = [functionKey(owner), storagePathKey(target), beforeOffset, returnBinding(owner, options)?.link.callsite.node.range?.begin?.offset].join(':');
   if (visited.includes(key)) return fallback('Recursive caller path; stopped at the parameter.');
@@ -1916,27 +2000,28 @@ const originFor = (
   const links = callerLinks(owner, index, options);
   if (links.length === 0) return {
     ...fallback('No verified caller is available; stopped at the parameter.'),
+    diagnostics: options.callerDiagnostics?.get(owner.wrapped.node),
     boundaries: (returnBinding(owner, options) || options.externalCallers?.has(owner.wrapped.node)) ? [] : [owner]
   };
   const search = combineSearches(links.map((link): TraceSearch<OriginCandidate> => {
     const source = mappedArgument(link, parameterIndex, target);
     const argument = source._tag === 'Path' ? source.target : undefined;
     const search = source._tag === 'Returned'
-      ? originsFromValue(source, link.caller, link.callsite.node.range?.begin?.offset ?? beforeOffset, link.prepared.index, callerOptions(owner, options), [...visited, key])
-      : source._tag === 'Path' ? originFor(link.caller, source.target, link.prepared.index, callerOptions(owner, options), [...visited, key], link.callsite.node.range?.begin?.offset)
+      ? originsFromValue(source, link.caller, link.callsite.node.range?.begin?.offset ?? beforeOffset, link.prepared.index, callerOptions(owner, options, link), [...visited, key])
+      : source._tag === 'Path' ? originFor(link.caller, source.target, link.prepared.index, callerOptions(owner, options, link), [...visited, key], link.callsite.node.range?.begin?.offset)
       : source._tag === 'Initialization'
         ? { candidates: [{ origin: source.origin, kind: 'initialization' as const, frames: [] }], boundaries: [] }
-        : { ...fallback(source.reason + ' Stopped at the parameter.'),
-          returnMapping: source.returnMapping ?? (returnBinding(owner, options) ? { kind: 'incomplete' as const, reasons: [source.reason] } : undefined) };
-    const resolved = search.candidates.length > 0 ? search : { ...fallback('Argument source could not be resolved; stopped at the parameter.'),
-      diagnostics: search.diagnostics, returnMapping: search.returnMapping };
+        : fallback(source.reason + ' Stopped at the parameter.', source.returnMapping);
+    const resolved = search.candidates.length > 0 ? search : {
+      ...fallback('Argument source could not be resolved; stopped at the parameter.', search.returnMapping), diagnostics: search.diagnostics };
     return { ...resolved, candidates: resolved.candidates.map((candidate) => ({
       ...candidate, frames: [{ callsite: link.callsite, caller: link.caller, parameterIndex, argument: argument ?? undefined }, ...candidate.frames]
     })) };
   }));
+  const resolved = { ...search, diagnostics: [...(search.diagnostics ?? []), ...(returnBinding(owner, options) ? [] : options.callerDiagnostics?.get(owner.wrapped.node) ?? [])] };
   return (returnBinding(owner, options) || options.externalCallers?.has(owner.wrapped.node))
-    ? search
-    : { ...search, boundaries: [...search.boundaries, owner] };
+    ? resolved
+    : { ...resolved, boundaries: [...resolved.boundaries, owner] };
 };
 
 const uniqueByPath = <A>(candidates: readonly A[], target: (candidate: A) => WrappedNode,
@@ -2001,7 +2086,8 @@ const mutationResult = (candidates: readonly TraceCandidate[]): AnalysisResult =
         mutation: candidates[0].mutation,
         via: candidates[0].frames.length > 0 ? 'call' : 'direct',
         wrapped: candidates[0].wrapped ?? false,
-        frames: candidates[0].frames
+        frames: candidates[0].frames,
+        returnMapping: candidates[0].returnMapping
       }
     : { _tag: 'CandidatesFound', candidates };
 
@@ -2022,21 +2108,21 @@ export const analyzeQuery = (
     const search = originFor(current, target, index, options, [], options.cursorByteOffset);
     const candidates = uniqueByPath(search.candidates, (candidate) => candidate.origin, (candidate) => candidate.frames);
     const result: AnalysisResult = candidates.length === 1
-      ? { _tag: 'OriginFound', origin: candidates[0].origin, kind: candidates[0].kind, boundary: candidates[0].boundary, frames: candidates[0].frames }
+      ? { _tag: 'OriginFound', origin: candidates[0].origin, kind: candidates[0].kind, boundary: candidates[0].boundary, frames: candidates[0].frames, returnMapping: candidates[0].returnMapping }
       : candidates.length > 1 ? { _tag: 'OriginCandidatesFound', candidates }
       : { _tag: 'AnalysisFailure', reason: 'No supported initialization, fold seed, or parameter declaration was found for this expression.' };
-    return { result, boundaries: search.boundaries, diagnostics: [...(options.callerDiagnostics ?? []), ...(search.diagnostics ?? [])], returnMapping: search.returnMapping };
+    return { result, boundaries: search.boundaries, diagnostics: search.diagnostics ?? [], returnMapping: search.returnMapping };
   }
   const search = traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile, options);
   const candidates = uniqueByPath(search.candidates, (candidate) => candidate.mutation, (candidate) => candidate.frames);
   return {
     result: candidates.length > 0 ? mutationResult(candidates) : {
       _tag: 'AnalysisFailure', reason: ['No earlier mutation or supported fold wrap-around was found along verified caller paths.',
-        ...new Set([...(options.callerDiagnostics ?? []), ...(search.diagnostics ?? [])])].join(' ')
+        ...new Set(search.diagnostics ?? [])].join(' ')
     },
     boundaries: search.boundaries,
     returnMapping: search.returnMapping,
-    diagnostics: [...(options.callerDiagnostics ?? []), ...(search.diagnostics ?? [])]
+    diagnostics: search.diagnostics ?? []
   };
 };
 

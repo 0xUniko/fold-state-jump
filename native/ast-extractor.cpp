@@ -450,6 +450,16 @@ public:
             output.attribute("symbol", symbol(callee));
             output.attribute("name", callee->getNameAsString());
             output.attribute("qualifiedName", callee->getQualifiedNameAsString());
+            output.attributeObject("definition", [&] {
+              const auto *definition = callee->getDefinition();
+              if (!definition) {
+                output.attribute("kind", "unavailable");
+                return;
+              }
+              output.attribute("kind", inUserCode(definition) ? "user" : "system-excluded");
+              output.attribute("id", identity(definition));
+              output.attributeObject("loc", [&] { location(output, definition->getLocation()); });
+            });
             output.attributeArray("parameterEffects", [&] {
               fold(callee->parameters(), output, [&](json::OStream &output, const ParmVarDecl *parameter) {
                 output.value(parameterEffect(parameter->getType()));

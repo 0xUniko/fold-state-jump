@@ -8,7 +8,7 @@ import { Effect } from 'effect';
 import * as current from '../src/analysis';
 import { makeExtractionCommand, resolveCompileCommand, runClangAst } from '../src/services';
 
-const baseline: Pick<typeof current, 'prepareAst' | 'analyzeQuery'> = await import(path.resolve(process.argv[2]!));
+const baseline: Pick<typeof current, 'prepareAst' | 'analyzeQuery'> & Partial<Pick<typeof current, 'buildReturnSources'>> = await import(path.resolve(process.argv[2]!));
 const root = path.resolve(process.argv[4]!);
 const runs = Number(process.argv[5] ?? 5);
 const repetitions = Number(process.argv[6] ?? 100);
@@ -45,6 +45,10 @@ const summary = (source: current.ReturnSource): unknown => {
   switch (source.kind) {
     case 'storage': return source;
     case 'unsupported': return source;
+    case 'loop-carried': return { kind: source.kind, target: source.target, declaration: reference(source.declaration),
+      initial: source.initial && reference(source.initial), updates: source.updates.map((update) => ({ kind: update.kind,
+        loop: reference(update.loop), statement: reference(update.statement),
+        ...(update.kind === 'replacement' ? { value: reference(update.value) } : { target: update.target }) })) };
     case 'initialization': return { kind: source.kind, origin: reference(source.origin) };
     case 'transparent':
     case 'preserved-copy': return { kind: source.kind, expression: reference(source.expression), source: summary(source.source) };
@@ -81,7 +85,8 @@ const measurements = await inputs.filter((input) => !process.argv[7] || input.na
       const prepared = variant.module.prepareAst(ast);
       const prepareMs = performance.now() - prepareStarted;
       const returnStarted = performance.now();
-      const rebuilt = variant.name === 'after' ? Array.from({ length: 20 }).map(() => current.buildReturnSources(prepared.index)) : [];
+      const buildReturnSources = variant.module.buildReturnSources;
+      const rebuilt = buildReturnSources ? Array.from({ length: 20 }).map(() => buildReturnSources(prepared.index)) : [];
       const returnSummaryMs = rebuilt.length ? (performance.now() - returnStarted) / rebuilt.length : 0;
       const returnSources = [...(prepared.index.returnSourcesByFunctionId ?? [])];
       const returnMetadataBytes = Buffer.byteLength(JSON.stringify(returnSources.map(([id, branches]) => ({ id,

@@ -291,3 +291,83 @@ void dangling_entry() {
   dangling_pointer_sink(dangling_pointer());
   dangling_aggregate_sink(dangling_aggregate());
 }
+
+// Local storage identity alone cannot prove the final accumulator's value.
+State step_state(State state) { state.value = 301; return state; }
+State counted_state(State seed, int count) {
+  if (count == 0) return State(seed); // @return counted-zero
+  State accumulator = seed; // @initial counted
+  for (int i = 0; i < count; ++i)
+    accumulator = step_state(accumulator); // @update counted
+  return accumulator; // @return counted-final
+}
+void counted_sink(State state) { consume(state.value); } // @select counted
+void counted_entry(int count) {
+  State seed{0}; // @origin counted
+  seed.value = 302; // @write counted
+  counted_sink(counted_state(seed, count));
+}
+State mutated_state(State seed, int count) {
+  State accumulator = seed;
+  while (count-- > 0) accumulator.value += 1;
+  return accumulator;
+}
+void mutated_sink(State state) { consume(state.value); } // @select mutated
+void mutated_entry(int count) { State seed{0}; seed.value = 303; mutated_sink(mutated_state(seed, count)); }
+State nested_iteration(State seed) {
+  auto unused = [](State state) { while (state.value < 10) ++state.value; return state; };
+  return seed;
+}
+void nested_iteration_sink(State state) { consume(state.value); } // @select nested-iteration
+void nested_iteration_entry() { State seed{0}; seed.value = 304; nested_iteration_sink(nested_iteration(seed)); }
+
+State constructed_state(State state) { return State(state); }
+void constructed_sink(State state) { consume(state.value); } // @select constructed
+void constructed_entry() {
+  State seed{0}; // @origin constructed
+  seed.value = 305; // @write constructed
+  constructed_sink(constructed_state(seed));
+}
+
+Pair disjoint_iteration(Pair seed, int count) {
+  Pair accumulator = seed; // @origin disjoint-iteration
+  while (count-- > 0) accumulator.right.value += 1;
+  return accumulator;
+}
+void disjoint_iteration_sink(Pair pair) { consume(pair.left.value); } // @select disjoint-iteration
+void disjoint_iteration_entry(int count) {
+  Pair seed{}; // @seed disjoint-iteration
+  seed.left.value = 306; // @write disjoint-iteration
+  disjoint_iteration_sink(disjoint_iteration(seed, count));
+}
+
+struct TemporaryReceiver { State state; State get_state() { return state; } };
+TemporaryReceiver unavailable_receiver();
+void unavailable_receiver_sink(State state) { consume(state.value); } // @select unavailable-receiver
+void unavailable_receiver_entry() { unavailable_receiver_sink(unavailable_receiver().get_state()); }
+
+// A nontrivial destructor makes Clang insert CXXBindTemporaryExpr around the
+// implicit, field-preserving copy inside ConstructorConversion.
+struct ManagedState { int value; ~ManagedState() {} };
+ManagedState constructed_managed(ManagedState state) { return ManagedState(state); }
+void constructed_managed_sink(ManagedState state) { consume(state.value); } // @select constructed-managed
+void constructed_managed_entry() {
+  ManagedState seed{0}; // @origin constructed-managed
+  seed.value = 307; // @write constructed-managed
+  constructed_managed_sink(constructed_managed(seed));
+}
+
+void exclusive_sink(State state) { consume(state.value); } // @select exclusive
+void exclusive_entry(bool branch) {
+  State state{0};
+  if (branch) state.value = 999;
+  else exclusive_sink(identity(state));
+}
+void shared_branch_sink(State state) { consume(state.value); } // @select shared-branch
+void shared_branch_entry(bool branch) {
+  State state{0}; // @origin shared-branch
+  if (branch) {
+    state.value = 308; // @write shared-branch
+    shared_branch_sink(identity(state));
+  }
+}

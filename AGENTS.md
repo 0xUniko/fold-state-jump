@@ -25,3 +25,22 @@ This project vendors external repositories under @repos/
 - 不得仅因为 `bun check` 产生错误就切换到 `tsc`，也不得仅因为其中一种检查通过就忽略另一种检查发现的真实问题。
 - 在修改项目构建或检查流程之前，先确认当前 Bun 版本、TypeScript 版本和项目配置。
 - 记录实际执行的检查命令与结果，不得把未运行的检查报告为通过。
+
+## Autonomous delivery workflow
+
+For repository tasks, complete delivery autonomously: inspect local changes and
+fetch the remote branch before implementation; investigate, implement, run the
+relevant tests and full regression, native build/integration, `bun check`,
+extension build, read-only nano-infer audits and comparable performance samples.
+Record the commands actually run and their results. Review the complete diff,
+untracked files, sensitive files and unintended changes; update the necessary
+design and measurement documents before committing all task-owned changes.
+
+Commit and push only on `feat/multi-funcs`, to `origin/feat/multi-funcs`; never
+modify, merge into or push `main`, force-push, or discard changes of uncertain
+ownership. If remote commits arrive, safely integrate them and revalidate. After
+pushing, fetch again and compare the local HEAD and remote branch HEAD, check for
+concurrent commits and report both SHAs, verification results, remaining proof
+boundaries and any uncommitted files. Do not stop at implementation or leave
+commit/push/final verification to the user. Pause only for a conflict requiring
+human judgment, authentication, permissions, or another genuine external blocker.
