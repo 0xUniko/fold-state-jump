@@ -88,7 +88,7 @@ bun test
 
 - 6 TU / 680 functions / 79 template instances / 84 fold 源 / 86 实例 / 87,372 events。
 - fixture 13/13 通过。
-- TypeScript 新引擎 Oracle 48 条：14 correct-conditional、8 correct-boundary、2 correct-multiple、3 targets-found-kind-mismatch、1 unsupported、20 mismatch（未完成，不美化）。
+- TypeScript 新引擎 Oracle 48 条：18 correct-conditional、8 correct-boundary、9 correct-multiple、1 correct-no-prior、0 targets-found-kind-mismatch、1 unsupported、11 mismatch（未完成，不美化）。
 - 提取 15.3s/1.06GB（MiniCPM cli）；TypeScript 48 查询 1.54s/496MB（单查询 0.21s/206MB）；旧插件基线 32.7s/1.05GB。
 
 ## 明确未做

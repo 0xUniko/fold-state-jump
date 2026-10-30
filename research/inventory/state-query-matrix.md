@@ -6,9 +6,9 @@ Source sites: **8788**. This matrix is generated from the Clang event inventory,
 
 | dimension | count |
 |---|---|
-| status:fold-context | 6959 |
+| status:fold-context | 6963 |
 | status:mechanical | 1722 |
-| status:oracle | 107 |
+| status:oracle | 103 |
 | role:read/call-result | 3853 |
 | role:read/declref | 1392 |
 | role:read/member | 1107 |

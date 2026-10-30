@@ -152,7 +152,7 @@ python3 prototype/src/state_trace.py \
 实际结果：
 
 - 独立 fixtures 13 个测试全部通过（`python3 -m unittest prototype/tests/test_fixtures.py`）；
-- nano-infer Oracle 48 条：12 correct-conditional、5 correct-boundary、2 correct-multiple、3 targets-found-kind-mismatch、26 mismatch（详见 `correctness-results.md`）；
+- nano-infer Oracle 48 条：12 correct-conditional、5 correct-boundary、2 correct-multiple、3 targets-found-kind-mismatch、26 mismatch（详见 `correctness-results.md`，Python 研究原型）；
 - 关键 seed/lambda/history/alias 查询能给出正确的 seed/回边/别名/边界；
 - BatchState 聚合返回、start_session/clear_session 最终来源、部分跨函数/variant 仍未达到 Oracle。
 
@@ -250,23 +250,23 @@ bun run build                          extension.js built
 bun test                               540 pass / 0 fail
 ```
 
-独立语义测试 10 个通过（fold seed/backedge、首轮 guard、覆盖写、分支合流、同名对象、别名、动态下标 boundary、未来写、重命名/成员重排）。
+独立语义测试 11 个通过（fold seed/backedge、首轮 guard、覆盖写、分支合流、同名对象、别名、动态下标 boundary、未来写、重命名/成员重排）。
 
 TypeScript 引擎 Oracle：
 
 ```text
 48 entries
-correct-conditional        14
+correct-conditional        18
 correct-boundary            8
-correct-multiple            2
-targets-found-kind-mismatch 2
+correct-multiple            9
+correct-no-prior            1
 unsupported-observed        1
-mismatch                   20
-required-target recall     42/121
+mismatch                   11
+required-target recall     56/119
 ```
 
 这不是完成。剩余失败按 `FAILURE-QUEUE.md` 归入聚合返回、资源/异步、ranges pipeline、跨函数摘要等通用类别；没有新增业务字段/行号特例。
 
 ## 11.5 当前结论
 
-已完成“审计 → Oracle 复核 → 框架实验 → 新语义模型 → 新引擎 → 插件命令接线 → 独立测试”的纵向闭环，但**尚未达到最终完成标准**：新引擎仍有 20 条 Oracle mismatch，且未实现完整跨 TU/资源/variant 摘要。应继续按通用语义类别修复，不应以本报告作为停机理由。
+已完成“审计 → Oracle 复核 → 框架实验 → 新语义模型 → 新引擎 → 插件命令接线 → 独立测试”的纵向闭环，但**尚未达到最终完成标准**：新引擎仍有 11 条 Oracle mismatch，且未实现完整跨 TU/资源/variant 摘要。应继续按通用语义类别修复，不应以本报告作为停机理由。

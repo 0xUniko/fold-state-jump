@@ -36,7 +36,7 @@ bun test ./src/state-trace/native.test.ts   1 pass
 bun test ./test/state-trace-command.ts      1 pass
 ```
 
-集成测试证明：现有 `foldStateJump.jumpToOrigin` 命令在 `analysisEngine=state-trace` 下调用新 native inventory + TS engine，并成功导航到目标行；未启动 Extension Host，符合本轮验收口径。
+集成测试证明：现有 `foldStateJump.jumpToOrigin` 命令在 `analysisEngine=state-trace` 下调用新 native inventory + TS engine，并成功导航到目标行；未启动 Extension Host，符合本轮验收口径。旧命令回归测试显式设置 `analysisEngine=legacy`，用于保留旧实现对照，不是运行时 fallback。
 
 ## 语义回归
 
@@ -52,13 +52,13 @@ bun test ./test/state-trace-command.ts      1 pass
 `research/measurements/oracle-run-ts.json` / `research/reports/correctness-results-ts.md`：
 
 ```text
-mismatch                   20
-correct-conditional        14
+mismatch                   11
+correct-conditional        18
 correct-boundary            8
-correct-multiple            2
-targets-found-kind-mismatch 3
+correct-multiple            9
+correct-no-prior            1
 unsupported-observed        1
-required-target recall     42/121
+required-target recall     56/119
 ```
 
 这不是完成声明。失败集中在：

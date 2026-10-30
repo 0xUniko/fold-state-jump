@@ -78,7 +78,7 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.execute.seed.aggregate-field-mapping", C+"pipeline.h", 872, 30,
-    "layer_execution.bank_state", "provenance", "Exact",
+    "layer_execution.bank_state", "provenance", "Conditional",
     [t(C+"pipeline.h", 859, "BankState bank_state;", "destination-member"),
      t(C+"pipeline.h", 871, "LayerExecution layer_execution", "accumulator-parameter"),
      t(C+"pipeline.h", 869, "std::move(session_state.bank_state)", "seed-field")],
@@ -110,8 +110,8 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.execute.lambda.alias-binding", C+"pipeline.h", 872, 17,
-    "auto &bank_state = layer_execution.bank_state", "origin", "Exact",
-    [t(C+"pipeline.h", 872, "layer_execution.bank_state", "alias-target")],
+    "auto &bank_state = layer_execution.bank_state", "origin", "Multiple",
+    [t(C+"pipeline.h", 872, "layer_execution.bank_state", "alias-target-strict")],
     ["reference-alias"],
     [], [],
     [e(C+"pipeline.h", 872, "auto &bank_state = layer_execution.bank_state;")],
@@ -163,9 +163,10 @@ rows.append(entry(
 rows.append(entry(
     "minicpm.execute.plan-slots.origin", C+"pipeline.h", 1001, 25,
     "plan.slots", "origin", "Multiple",
-    [t(C+"experts.h", 424, "return {std::move(plan.slots)", "plan_shared_decode"),
+    [t(C+"ffn.h", 112, "std::move(plan.slots)", "plan_prefill-return"),
      t(C+"ffn.h", 54, "inline PrefillPlan plan_prefill", "plan_prefill"),
-     t(C+"experts.h", 501, "return {std::move(plan.slots)", "plan_cache_decode")],
+     t(C+"experts.h", 424, "return {std::move(plan.slots)", "other-phase-alternative"),
+     t(C+"experts.h", 501, "return {std::move(plan.slots)", "other-phase-alternative")],
     ["call-return", "aggregate-field", "move-value-transfer"],
     ["phase == Prefill selects plan_prefill",
      "phase == Decode with no layer cache selects plan_shared_decode",
@@ -223,7 +224,7 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.execute.return.batchstate-field-mapping", C+"pipeline.h", 1211, 18,
-    "std::move(layer_execution.bank_state)", "provenance", "Exact",
+    "std::move(layer_execution.bank_state)", "provenance", "Multiple",
     [t(C+"pipeline.h", 413, "SessionState session_state;", "BatchState-field"),
      t(C+"pipeline.h", 405, "BankState bank_state;", "SessionState-field"),
      t(C+"pipeline.h", 1188, "return layer_execution;", "fold-result-source")],
@@ -312,8 +313,8 @@ rows.append(entry(
 # ---------------------------------------------------------------------------
 rows.append(entry(
     "minicpm.plan_shared_decode.seed.slots", C+"experts.h", 409, 19,
-    "bank_state.slots", "origin", "Exact",
-    [t(C+"experts.h", 390, "const BankState &bank_state", "parameter"),
+    "bank_state.slots", "origin", "Multiple",
+    [t(C+"experts.h", 390, "const BankState &", "parameter"),
      t(C+"experts.h", 401, "SlotState slots;", "planning-field")],
     ["aggregate-field", "copy-value", "parameter-binding"],
     [], [],
@@ -334,11 +335,10 @@ rows.append(entry(
     {"function": "plan_shared_decode::lambda", "statePath": ["plan", "slots", "keys", "*"]}))
 
 rows.append(entry(
-    "minicpm.plan_cache_decode.found.original-snapshot", C+"experts.h", 475, 28,
-    "resident_slot(bank_state.slots, window, key)", "origin", "Exact",
-    [t(C+"experts.h", 442, "const BankState &bank_state", "parameter"),
-     t(C+"experts.h", 470, "Planning{bank_state.slots, {}, {}, {}}", "planning-copy"),
-     t(C+"experts.h", 475, "resident_slot(bank_state.slots", "original-snapshot-read")],
+    "minicpm.plan_cache_decode.found.original-snapshot", C+"experts.h", 475, 52,
+    "bank_state.slots", "origin", "Multiple",
+    [t(C+"experts.h", 442, "const BankState &", "parameter"),
+     t(C+"experts.h", 475, "bank_state.slots", "original-snapshot-read")],
     ["parameter-binding", "copy-value", "field-read"],
     ["the lookup deliberately reads the original bank_state.slots, not plan.slots"],
     [],
@@ -381,7 +381,7 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.apply_prewarm.bankstate.return", C+"experts.h", 809, 10,
-    "return {std::move(bank_state.shared_bank)", "provenance", "Exact",
+    "return {std::move(bank_state.shared_bank)", "provenance", "Multiple",
     [t(C+"experts.h", 743, "BankState bank_state", "parameter"),
      t(C+"experts.h", 751, "layer_banks", "fold-state-field"),
      t(C+"experts.h", 752, "SlotState slots", "fold-state-field"),
@@ -427,7 +427,7 @@ rows.append(entry(
 # ---------------------------------------------------------------------------
 rows.append(entry(
     "minicpm.expert_io.read_state.seed", C+"expert_io.h", 761, 11,
-    "auto &read = task.batch->read", "origin", "Exact",
+    "auto &read = task.batch->read", "origin", "Multiple",
     [t(C+"expert_io.h", 755, "char *records;", "resource-pointer"),
      t(C+"expert_io.h", 756, "IoCounters io;", "counter-field"),
      t(C+"expert_io.h", 761, "auto &read = task.batch->read;", "borrowed-task")],
@@ -725,7 +725,7 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.start_session.bank_state", C+"pipeline.h", 1280, 30,
-    "std::move(bank_state)", "origin", "Exact",
+    "std::move(bank_state)", "origin", "Multiple",
     [t(C+"pipeline.h", 1277, "make_bank(index, bank_context, shared_type, layer_bank_types)", "constructor"),
      t(C+"experts.h", 742, "apply_prewarm(const BankContext", "transform"),
      t(C+"pipeline.h", 1280, "std::move(bank_state)", "return")],
@@ -740,8 +740,8 @@ rows.append(entry(
     "minicpm.graph_cache.tick.recurrence", C+"pipeline.h", 882, 38,
     "graph_cache.tick", "history", "Conditional",
     [t(C+"pipeline.h", 861, "GraphCache graph_cache;", "field-declaration"),
-     t(C+"pipeline.h", 869, "std::move(session_state.graph_cache)", "fold-seed"),
-     t(C+"pipeline.h", 1209, "std::move(layer_execution.graph_cache)", "previous-batch-return")],
+     t(C+"pipeline.h", 870, "std::move(session_state.graph_cache)", "fold-seed"),
+     t(C+"pipeline.h", 1212, "std::move(layer_execution.graph_cache)", "previous-batch-return")],
     ["field-increment", "whole-state-transfer", "branch"],
     ["layer == 0", "either cache hit or build path", "no earlier fold iteration reaches this branch"],
     ["the current hit/build increment is not a prior iteration; prior batches supply the seed"],
@@ -752,7 +752,7 @@ rows.append(entry(
 
 rows.append(entry(
     "minicpm.ffn.retaining.pointer-fold", C+"ffn.h", 177, 10,
-    "&bank_state.slots, &bank_state.counters.prewarm_from_prefill", "mutation", "Exact",
+    "&bank_state.slots, &bank_state.counters.prewarm_from_prefill", "mutation", "Multiple",
     [t(C+"ffn.h", 169, "SlotState *slots;", "pointer-field"),
      t(C+"ffn.h", 177, "&bank_state.slots", "address-of"),
      t(C+"ffn.h", 199, "retaining.slots->keys[target] = key", "pointee-write"),
@@ -822,7 +822,7 @@ DECL_ROLES = {
     "field-issued", "field-ticket", "resource-pointer", "counter-field",
     "field", "fold-state-field", "preserved-resource", "reset-slots",
     "reset-frequencies", "reset-counters-and-pending", "BatchState-field",
-    "SessionState-field", "alias-target",
+    "SessionState-field", "alias-target", "other-phase-alternative", "plan_prefill",
 }
 for r in rows:
     for tgt in r["expectation"]["targets"]:

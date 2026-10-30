@@ -3,9 +3,9 @@
   "counts": {
     "sites": 8788,
     "byStatus": {
-      "fold-context": 6959,
+      "fold-context": 6963,
       "mechanical": 1722,
-      "oracle": 107
+      "oracle": 103
     },
     "byRole": {
       "mutation/init": 360,
@@ -78429,10 +78429,8 @@
         "reaching-def"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [
-        "minicpm.plan_cache_decode.found.original-snapshot"
-      ],
-      "status": "oracle",
+      "oracleQueries": [],
+      "status": "fold-context",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_cli"
@@ -78460,10 +78458,8 @@
         "reaching-def"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [
-        "minicpm.plan_cache_decode.found.original-snapshot"
-      ],
-      "status": "oracle",
+      "oracleQueries": [],
+      "status": "fold-context",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_cli"
@@ -78491,10 +78487,8 @@
         "write-kills-earlier"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [
-        "minicpm.plan_cache_decode.found.original-snapshot"
-      ],
-      "status": "oracle",
+      "oracleQueries": [],
+      "status": "fold-context",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_cli",
@@ -78523,10 +78517,8 @@
         "reaching-def"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [
-        "minicpm.plan_cache_decode.found.original-snapshot"
-      ],
-      "status": "oracle",
+      "oracleQueries": [],
+      "status": "fold-context",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_tests_local_test"
@@ -78554,10 +78546,8 @@
         "reaching-def"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [
-        "minicpm.plan_cache_decode.found.original-snapshot"
-      ],
-      "status": "oracle",
+      "oracleQueries": [],
+      "status": "fold-context",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_tests_local_test"
@@ -78585,8 +78575,10 @@
         "reaching-def"
       ],
       "foldSite": "minicpm-v-4_7/experts.h:469",
-      "oracleQueries": [],
-      "status": "fold-context",
+      "oracleQueries": [
+        "minicpm.plan_cache_decode.found.original-snapshot"
+      ],
+      "status": "oracle",
       "boundaryHint": "",
       "instances": [
         "minicpm-v-4_7_cli",

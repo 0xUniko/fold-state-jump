@@ -74,4 +74,4 @@
 
 ## D12：矩阵/审计的 reviewed/mechanical 分层
 
-`state-query-matrix.json` 的 8,788 sites 中只有 107 个 oracle 锚点，其余 fold-context/mechanical 不得计入“已审查覆盖”。`fold-audit.json` 的 reviewed 只表示人工读过该生命周期，不等于自动化通过。
+`state-query-matrix.json` 的 8,788 sites 中只有 103 个 oracle 锚点，其余 fold-context/mechanical 不得计入“已审查覆盖”。`fold-audit.json` 的 reviewed 只表示人工读过该生命周期，不等于自动化通过。

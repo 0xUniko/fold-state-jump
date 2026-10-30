@@ -13,7 +13,7 @@
 - [x] 独立 Oracle schema + 48 条 JSONL；覆盖 4 种 query mode、6 种结果类别。
 - [x] Oracle 覆盖率分母：84 个 fold 源全部列出，`oracle-coverage.md` 标记 covered/grouped/pure/test-only。
 - [x] 通用 fixtures：fold recurrence、aggregate negative、optional/variant、template、async、pointer/callback、dynamic index、overload/same-name、negative control。
-- [x] 13 个 fixture 单元测试全部通过。
+- [x] 旧 Python fixture 13/13；新 TypeScript 通用测试 11/11。
 - [x] CLI 原型 `prototype/src/state_trace.py`，支持 origin/mutation/history/provenance、JSON、boundary、证据链。
 - [x] Oracle 自动对照：`tools/run_oracle.py`；结果 `correctness-results.md` / `oracle-run.json`。
 - [x] Clang/LLVM/Static Analyzer 实际实验；PhASAR/SVF clone/configure/build 失败记录。
@@ -30,7 +30,7 @@
 - [x] 现有 VS Code 命令接入新引擎；`test/state-trace-command.ts` 通过。
 - [x] 新 fixtures：首轮 guard、重命名/改序、未来写、动态下标/指针。
 - [x] `bun check`、`bun run build`、`bun test`（540 pass / 28 files）通过。
-- [x] TypeScript 引擎 Oracle：`correctness-results-ts.md`（20 mismatch，未完成）。
+- [x] TypeScript 引擎 Oracle：`correctness-results-ts.md`（11 mismatch，未完成）。
 
 ## 当前结果（不得美化）
 
@@ -47,7 +47,7 @@ strict target overlap     45/518（目标集非穷尽，不能当 precision）
 ```
 
 Python 基线主要未通过类别：BatchState 聚合返回、start_session/clear_session 最终来源、部分跨函数/variant/optional、ranges pipeline 构造、资源内容 boundary。
-TypeScript 新引擎：`correctness-results-ts.md` 当前 20 mismatch、14 correct-conditional、8 correct-boundary、2 correct-multiple、2 kind mismatch、1 unsupported。
+TypeScript 新引擎：`correctness-results-ts.md` 当前 11 mismatch、18 correct-conditional、8 correct-boundary、9 correct-multiple、0 kind mismatch、1 correct-no-prior、1 unsupported。
 
 ## 未完成/下一步
 

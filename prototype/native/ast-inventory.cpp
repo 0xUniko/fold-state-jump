@@ -1474,6 +1474,9 @@ public:
         J.attribute("usr", usrFor(P));
         J.attribute("type", E.typeStr(P->getType()));
         J.attribute("index", P->getFunctionScopeIndex());
+        Loc PL = E.loc(P->getLocation(), P->getSourceRange());
+        J.attribute("line", PL.line);
+        J.attribute("col", PL.col);
         J.objectEnd();
       }
     });

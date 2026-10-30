@@ -179,4 +179,4 @@ python3 tools/build_fold_audit.py     # 84 sites / 86 instances
 python3 tools/coverage.py
 ```
 
-矩阵状态分层：`oracle` 107、`fold-context` 6,959、`mechanical` 1,722。fold audit 的 reviewed/mechanical 分层记录在 `fold-audit.json`，不等于全部通过。
+矩阵状态分层：`oracle` 103、`fold-context` 6,963、`mechanical` 1,722。fold audit 的 reviewed/mechanical 分层记录在 `fold-audit.json`，不等于全部通过。

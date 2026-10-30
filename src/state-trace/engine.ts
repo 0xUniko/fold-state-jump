@@ -117,7 +117,7 @@ export interface FunctionInfo {
   file: string;
   line: number;
   column: number;
-  params: Array<{ name: string; usr: string; type: string; index: number }>;
+  params: Array<{ name: string; usr: string; type: string; index: number; line?: number; col?: number }>;
   patternUsr?: string;
   templateArgs?: string;
   isLambda?: boolean;
@@ -454,8 +454,9 @@ export class LocalFlow {
       if (fold && p.index === 0) continue; // represented by seed/backedge
       const anchor = this.prog.byFn.get(this.fn)?.[0] ?? this.prog.events[0];
       const ev = this.prog.pseudo('param', this.fn, 'decl:' + p.usr, '', anchor, 'parameter');
-      ev.file = f?.file ?? ev.file; ev.line = f?.line ?? ev.line; ev.column = f?.column ?? ev.column;
+      ev.file = f?.file ?? ev.file; ev.line = p.line ?? f?.line ?? ev.line; ev.column = p.col ?? f?.column ?? ev.column;
       ev.offset = 0; ev.endOffset = 0; ev.endLine = ev.line; ev.endColumn = ev.column;
+      ev.expr = p.type + ' ' + p.name;
       add(ev, 'decl:' + p.usr);
     }
     if (fold) {
@@ -573,6 +574,7 @@ export class Tracer {
   private nodes = 0;
   private loop = false;
   private conditional = false;
+  private emptyState = false;
 
   constructor(p: Program, site: Event, mode: Mode) {
     this.p = p;
@@ -625,6 +627,11 @@ export class Tracer {
     const key = e.fn + '|' + e.storage + '|' + relation;
     if (this.originSeen.has(key)) return;
     this.originSeen.add(key);
+    if ((e.kind === 'construct' && !e.storage || e.kind === 'return-field') &&
+        (e.expr.trim().endsWith('{}') || e.value.endsWith('{}'))) {
+      this.emptyState = true;
+      return;
+    }
     if (e.kind === 'alias') {
       this.addTarget(e, 'alias-binding', 'alias');
       this.edge(e, undefined, 'reference-alias', 'binding names the target');
@@ -637,6 +644,8 @@ export class Tracer {
       else this.addBoundary(e, 'expression has no storage identity');
       return;
     }
+    if (storage.startsWith('call:')) { this.followCall(e, storage, depth); return; }
+    if (storage.startsWith('fold:')) { this.expandFoldResult(e, storage, depth); return; }
     if (storage.includes('[*:') || storage.includes('[at:'))
       this.addBoundary(e, 'dynamic container index may alias other elements', storage);
     const defs = this.p.flow(e.fn).defsBefore(e, storage);
@@ -834,6 +843,8 @@ export class Tracer {
   private mutation(e: Event, history: boolean): void {
     const storage = this.p.resolve(e.fn, e.storage);
     if (!storage) { this.addBoundary(e, 'selection has no storage identity'); return; }
+    if (storage.startsWith('call:')) { this.followCall(e, storage, 0); return; }
+    if (storage.startsWith('fold:')) { this.expandFoldResult(e, storage, 0); return; }
     if (storage.includes('[*:') || storage.includes('[at:'))
       this.addBoundary(e, 'dynamic container index may alias other elements', storage);
     const defs = this.p.flow(e.fn).defsBefore(e, storage);
@@ -902,6 +913,7 @@ export class Tracer {
     if (this.loop && (kind === 'Exact' || kind === 'Conditional')) kind = 'Conditional';
     if ((this.mode === 'mutation' || this.mode === 'history') && !real.length)
       kind = this.boundaries.length ? 'Boundary' : 'NoPriorMutation';
+    if (this.emptyState && !real.length) kind = 'NoPriorMutation';
     return {
       query: {
         file: this.site.file, line: this.site.line, column: this.site.column,
