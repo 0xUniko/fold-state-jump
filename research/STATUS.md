@@ -77,3 +77,23 @@ python3 tools/coverage.py
 ## 环境阻塞
 
 见 `research/reports/limitations.md`、`research/frameworks/licenses-and-versions.md`。
+
+## INCOMPLETE（本轮执行结束时的明确状态）
+
+新引擎已接入默认命令并通过 540 项回归，但**未达到最终完成标准**：
+
+- TypeScript Oracle 仍有 11 条 mismatch（48 条中），主要是 `start_session` ranges 构造/缓存资源、
+  DeepSeek FFN server 状态、pending reset、跨批 `run_batch`/`Generation` seed、retaining 指针折叠；
+- state-query-matrix 仍有 6,961 个 fold-context、1,722 个 mechanical site 未逐条建立 Oracle；
+- 跨 TU caller/summary、资源 ticket/内容、variant 状态机、磁盘图缓存尚未完成；
+- 未运行真实 Extension Host/VSIX（本轮不要求）。
+
+恢复入口：
+
+```bash
+cd /home/huawei/fold-state-jump-research
+bun check && bun test && bun run build
+bun tools/run_oracle_ts.ts
+```
+
+先按 `research/FAILURE-QUEUE.md` 的通用类别修复，不得按 nano-infer 字段名/行号加特例。
