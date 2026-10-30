@@ -53,3 +53,15 @@ bun test/project-state-sources.ts /home/huawei/nano-infer
 - 主要成本是 Clang 解析（15s/1GB）和 JSON 体积（78MB），不是查询；
 - 查询反向路径在 `MAX_DEPTH=24`/`MAX_NODES=400` 下被截断，Oracle 中大量 `boundaries` 是预算/未解析调用，不是无限循环；
 - 对更大项目需要：按文件筛选函数、持久化图、增量失效、跨 TU 摘要索引；当前实现未做这些工程优化。
+
+## 新 TypeScript 引擎（第二轮）
+
+| 指标 | 值 |
+|---|---:|
+| TS Oracle 48 条（加载 6 TU Program） | 1.54s wall / 1.50s user / 496MB |
+| 单条 `pipeline.h:872` origin（加载 cli inventory） | 0.21s / 206MB |
+| native fixture inventory + 查询测试 | 约 0.2s |
+| `bun check` | 87 files no type errors |
+| `bun test` | 540 pass / 0 fail / 36s |
+
+新引擎使用内存 `Program` 和 native inventory 缓存；未做磁盘图缓存/增量失效。编辑器冷查询仍受 Clang 提取（MiniCPM 约 15s）限制，后续需要把 inventory 缓存接到旧插件的 cache/prewarm 层。

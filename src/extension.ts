@@ -10,6 +10,7 @@ import path from 'node:path';
 import { Effect, Ref } from 'effect';
 import { analyzeQuery, callerLinksAt, byteOffsetFromUtf16, utf16OffsetFromByte, nodeRange, type AnalysisOptions, type AnalysisQuery, type AnalysisResult, type ReturnMapping, type ClangNode, type CallerLink, type FunctionInfo, type PreparedAst, type WrappedNode, type TraceCandidate, type OriginCandidate } from './analysis';
 import { discoverCallerLocations, type CallerLocation } from './caller-discovery';
+import { queryDocument, presentQuery, showBoundaries } from './state-trace/vscode';
 import type { DependencyManifest } from './dependencies';
 import { makeAstCache, invalidateAstCache, loadPreparedAst, affectedAstSources, dependencyIncludes, removeAstSources, type AstCache } from './ast-cache';
 import { emptyCompileDatabaseCache, resolveCompileCommandCached, type CompileCommand, type CompileDatabaseCache } from './services';
@@ -370,6 +371,34 @@ const runAnalysis = Effect.fnUntraced(function* (
   return { query: expanded.query, validate };
 });
 
+const runStateTrace = Effect.fnUntraced(function* (
+  document: vscode.TextDocument, mode: 'mutation' | 'origin', signal: AbortSignal,
+  extensionPath: string, runtime: ExtractionRuntime
+): Effect.fn.Return<void, Error> {
+  const config = vscode.workspace.getConfiguration('foldStateJump', document.uri);
+  const roots = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  const resolved = yield* resolveCompileCommandCached(
+    document.uri.fsPath, roots, config.get('clangPath', 'clang++'),
+    yield* Ref.get(runtime.compileDatabaseCache), config.get('compileCommandsPath', '') || undefined
+  ).pipe(Effect.mapError((error) => new Error(String(error))));
+  yield* Ref.set(runtime.compileDatabaseCache, resolved.cache);
+  const executable = config.get('stateTraceExtractorPath', '') ||
+    path.join(extensionPath, 'native', 'build', 'state-inventory');
+  const root = roots[0] ?? path.dirname(document.uri.fsPath);
+  const editor = vscode.window.activeTextEditor;
+  const offset = editor && editor.document === document
+    ? document.offsetAt(editor.selection.active) : 0;
+  const result = yield* Effect.tryPromise({
+    try: () => queryDocument(document, offset, mode, resolved.command, root, executable, signal),
+    catch: (error) => new Error('State Trace: ' + String(error)),
+  });
+  showBoundaries(result, runtime.output);
+  yield* Effect.tryPromise({
+    try: () => presentQuery(result),
+    catch: (error) => new Error('Could not present State Trace result: ' + String(error)),
+  });
+});
+
 const runMutationAnalysis = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) =>
   runAnalysis('mutation', document, signal, extensionPath, runtime);
 const runOriginAnalysis = (document: vscode.TextDocument, signal: AbortSignal, extensionPath: string, runtime: ExtractionRuntime) =>
@@ -569,6 +598,21 @@ export const activate = (context: vscode.ExtensionContext): void => {
         if (!document || !isCpp(document.languageId)) return;
         const saved = yield* saveIfDirty(document);
         if (!saved) return;
+        const engine = vscode.workspace.getConfiguration('foldStateJump', document.uri).get('analysisEngine', 'state-trace');
+        if (engine === 'state-trace') {
+          yield* Effect.tryPromise({
+            try: () => vscode.window.withProgress(
+              {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Tracing fold state mutations…',
+                cancellable: true
+              },
+              (_progress, token) => runWithCancellation(token, (signal) => runStateTrace(document, 'mutation', signal, context.extensionPath, runtime))
+            ),
+            catch: (error) => new Error(String(error))
+          });
+          return;
+        }
         const result = yield* Effect.tryPromise({
           try: () => vscode.window.withProgress(
             {
@@ -594,6 +638,21 @@ export const activate = (context: vscode.ExtensionContext): void => {
         if (!document || !isCpp(document.languageId)) return;
         const saved = yield* saveIfDirty(document);
         if (!saved) return;
+        const engine = vscode.workspace.getConfiguration('foldStateJump', document.uri).get('analysisEngine', 'state-trace');
+        if (engine === 'state-trace') {
+          yield* Effect.tryPromise({
+            try: () => vscode.window.withProgress(
+              {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Tracing fold state origin…',
+                cancellable: true
+              },
+              (_progress, token) => runWithCancellation(token, (signal) => runStateTrace(document, 'origin', signal, context.extensionPath, runtime))
+            ),
+            catch: (error) => new Error(String(error))
+          });
+          return;
+        }
         const result = yield* Effect.tryPromise({
           try: () => vscode.window.withProgress(
             {

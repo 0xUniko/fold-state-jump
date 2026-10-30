@@ -33,3 +33,28 @@ clang++-23 --analyze -Xanalyzer -analyzer-output=text \
 ## 结论
 
 Clang FlowSensitive 是“控制流/存储区域事实”的可靠来源，但不是现成的状态历史求解器。本研究复用 Clang CFG，自建 fold/摘要/边界；未来可以把 `MemRegion`/`RegionStore` 的 alias 能力作为可选后端，而不是整体替换查询引擎。
+
+## 第二轮真实实验（FlowSensitive API）
+
+新增 `prototype/native/flow-sensitive-probe.cpp`，实际继承 `clang::dataflow::DataflowAnalysis<ReachingDefs, Facts>`，使用：
+
+- `StorageLocation*` 作为 storage identity 键；
+- `transfer` 处理 DeclStmt、Assign、CompoundAssign、Inc/Dec；
+- `WatchedLiteralsSolver`、`DataflowAnalysisContext`、`Environment`、`runDataflowAnalysis`；
+- `CFGEltCallbacks` 打印查询点的 final lattice state。
+
+实测：
+
+```text
+overwritten line 16 -> defs {15:9}            (13/14 killed)
+exclusive line 25   -> defs {22:11,24:11}     (branch merge)
+sum_squares line 15 -> acc.total defs {13:15} (loop field; init field mapping incomplete)
+```
+
+局限：
+
+- `auto &bucket = acc.bucket; ++bucket.hits` 的 `bucket.hits` 在该探针中没有 reaching def；引用/子对象 location 需要 AST canonicalization 或自定义 `Environment` 绑定；
+- 聚合 `Acc acc{0,0}` 需要把每个 `InitListExpr` 成员映射到 `RecordStorageLocation` 子位置，FlowSensitive 本身不提供这个 provenance；
+- fold/跨函数/资源语义不在 API 内。
+
+详细日志：`research/experiments/frameworks/flow-sensitive-*`（如已保存）与 `prototype/native/flow-sensitive-probe.cpp`。

@@ -24,3 +24,10 @@ int exclusive(bool flag) {
     state = 20;
   return state;        // two may-definitions, not one
 }
+
+int snapshot_before_overwrite() {
+  int value = 1;
+  int copy = value;
+  value = 2;
+  return copy;
+}

@@ -19,3 +19,9 @@ target_include_directories(ast-inventory SYSTEM PRIVATE
   ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 target_compile_definitions(ast-inventory PRIVATE ${LLVM_DEFINITIONS})
 target_link_libraries(ast-inventory PRIVATE clang-cpp LLVM)
+
+add_executable(flow-sensitive-probe flow-sensitive-probe.cpp)
+target_include_directories(flow-sensitive-probe SYSTEM PRIVATE
+  ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+target_compile_definitions(flow-sensitive-probe PRIVATE ${LLVM_DEFINITIONS})
+target_link_libraries(flow-sensitive-probe PRIVATE clang-cpp LLVM)

@@ -8,7 +8,7 @@
 2. 建立 48 条独立 Oracle（JSONL）和 84 个 fold 源的完整分母；
 3. 实际运行 Clang/LLVM/Clang Static Analyzer，并尝试 PhASAR/SVF；记录版本/许可/构建结论；
 4. 从零实现独立 CLI 原型 `state-trace`（Clang 提取器 + Python 查询引擎），不依赖旧插件；
-5. 用通用 fixtures 和 nano-infer 双向验证，得到诚实的正确性/性能/限制结果。
+5. 用通用 fixtures 和 nano-infer 双向验证，得到诚实的正确性/性能/限制结果；第二轮又新增了真实 Clang FlowSensitive 实验、首轮 fold guard 纠错和接入 VS Code 命令的新 TypeScript 引擎（详见第 11 节）。
 
 核心结论：**旧插件需要持续补丁，不是某个 `bank_state` 分支写错，而是数据模型把“值、存储、资源、fold 状态”压缩成了过窄的表达式路径，并在控制流/跨函数/异步边界上逐点补丁。** 正确路径是源码语义图 + 显式状态版本/边界 + 通用 fold 契约；Clang AST 是当前最合适的主入口，LLVM MemorySSA 只适合作为别名补充。
 
@@ -22,9 +22,9 @@
 79 template instances
 181 records
 84 fold source sites / 86 semantic instances
-87,294 events
-7,801 write events
-9,134 transfer events
+87,372 events
+7,976 write events
+9,114 transfer events
 47 state-type closure records
 ```
 
@@ -204,8 +204,69 @@ tools/{aggregate_inventory,author_oracle,run_oracle,coverage}.py
 
 ## 10. 最终判断
 
-- 已知道 nano-infer 中同类状态追踪问题的**分母**：84 个 fold 源、86 个实例、7,801 个写事件、47 个状态记录；不是“一个 bank_state”。
+- 已知道 nano-infer 中同类状态追踪问题的**分母**：84 个 fold 源、86 个实例、7,976 个写事件、47 个状态记录；不是“一个 bank_state”。
 - 已对主要查询位置给出独立、语义正确的 Oracle；不是旧插件结果的自证。
 - 已明确哪些问题有成熟技术可用（Clang 字段/模板/CFG；LLVM 别名事实），哪些没有现成答案（fold 契约、资源内容、异步完成、源码字段映射）。
 - 已有不依赖 nano-infer 特例的通用实现基础；新表达式可归入“存储身份/值转移/控制流/摘要/边界”类别，而不是按业务对象继续打补丁。
 - 仍未完成完整覆盖；原型通过率有限，UI/跨 TU/性能工程未完成。这是研究结论的一部分，不是被隐藏的失败。
+
+---
+
+# 11. 第二轮续作：从研究原型到新引擎
+
+上一版报告不是终点。第二轮在 `research/state-trace` 上完成了以下增量，详细记录见 `research/reports/implementation-status.md`。
+
+## 11.1 Oracle 纠错
+
+独立复核发现 `Pipeline::execute` 的 `graph_builds`/`graph_reuses` 位于 `layer == 0` 分支。该分支只可能由 fold 首元素进入，因此**同一次 fold 的上一轮写不可能成为 history**。Oracle 已改为 seed + 上一批返回/会话初始化，并把 `registry` 的后续整体替换标为“同一迭代后续、不是 prior”；`graph_cache.tick` 同样纠正。
+
+## 11.2 真实框架实验补充
+
+新增 `prototype/native/flow-sensitive-probe.cpp`：实际继承 `clang::dataflow::DataflowAnalysis`，使用 `WatchedLiteralsSolver`/`DataflowAnalysisContext`/`Environment`/`runDataflowAnalysis`。实验证明：
+
+- 覆盖写杀死旧赋值（只返回最近写）；
+- if/else 合流得到两个 may 定义；
+- 循环字段得到固定点；
+- 引用/字段 location 需要额外 canonicalization；聚合字段初始化需要自行建模。
+
+因此新架构采用“Clang AST/CFG + 显式 ProgramGraph/worklist + 自建摘要”，而不是把 FlowSensitive 当成完整状态追踪器。LLVM MemorySSA/PhASAR/SVF 结论见框架报告。
+
+## 11.3 新 TypeScript 引擎
+
+新增 `src/state-trace/`：
+
+- `engine.ts`：存储路径/别名、CFG worklist、fold seed/backedge、首轮 guard、参数/返回摘要、Origin/Mutation/History/Provenance；
+- `native.ts`：调用独立 native `state-inventory`；
+- `vscode.ts`：查询结果到现有编辑器导航/QuickPick；
+- `cli.ts`：独立 CLI。
+
+旧 `src/analysis.ts` 不再作为默认路径；`analysisEngine=legacy` 只用于显式回归对照。现有两条命令已接入新引擎，`test/state-trace-command.ts` 实际通过 activate/native/命令/mock VS Code 验证。
+
+## 11.4 验证结果
+
+```text
+bun check                              no type errors (87 files)
+bun run build                          extension.js built
+bun test                               540 pass / 0 fail
+```
+
+独立语义测试 10 个通过（fold seed/backedge、首轮 guard、覆盖写、分支合流、同名对象、别名、动态下标 boundary、未来写、重命名/成员重排）。
+
+TypeScript 引擎 Oracle：
+
+```text
+48 entries
+correct-conditional        14
+correct-boundary            8
+correct-multiple            2
+targets-found-kind-mismatch 2
+unsupported-observed        1
+mismatch                   20
+required-target recall     42/121
+```
+
+这不是完成。剩余失败按 `FAILURE-QUEUE.md` 归入聚合返回、资源/异步、ranges pipeline、跨函数摘要等通用类别；没有新增业务字段/行号特例。
+
+## 11.5 当前结论
+
+已完成“审计 → Oracle 复核 → 框架实验 → 新语义模型 → 新引擎 → 插件命令接线 → 独立测试”的纵向闭环，但**尚未达到最终完成标准**：新引擎仍有 20 条 Oracle mismatch，且未实现完整跨 TU/资源/variant 摘要。应继续按通用语义类别修复，不应以本报告作为停机理由。

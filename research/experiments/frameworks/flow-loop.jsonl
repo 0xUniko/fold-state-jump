@@ -1,0 +1,7 @@
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc","expr":"acc","defs":[]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc.total","expr":"acc.total","defs":[]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc","expr":"acc","defs":["10:7"]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc.total","expr":"acc.total","defs":["13:15"]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc","expr":"acc","defs":["10:7"]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc.total","expr":"acc.total","defs":["13:15"]}
+{"fn":"sum_squares","path":"d:c:loop.cpp@109@F@sum_squares#I#@acc","expr":"acc","defs":["10:7"]}

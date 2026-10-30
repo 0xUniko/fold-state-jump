@@ -13,3 +13,11 @@ add_executable(fold-state-jump-ast ast-extractor.cpp)
 target_compile_features(fold-state-jump-ast PRIVATE cxx_std_17)
 target_include_directories(fold-state-jump-ast PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 target_link_libraries(fold-state-jump-ast PRIVATE clangUnifiedSymbolResolution clangTooling clangFrontend clangAST clangBasic clangLex)
+
+# New source-level state inventory (research engine frontend).  Kept as a
+# separate executable so the legacy extractor can remain available for comparison.
+add_executable(state-inventory ../prototype/native/ast-inventory.cpp)
+target_compile_features(state-inventory PRIVATE cxx_std_20)
+target_include_directories(state-inventory PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+target_compile_definitions(state-inventory PRIVATE ${LLVM_DEFINITIONS})
+target_link_libraries(state-inventory PRIVATE clang-cpp LLVM)

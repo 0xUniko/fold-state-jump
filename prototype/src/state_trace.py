@@ -86,6 +86,7 @@ class Fold:
     lambda_usr: str
     dest: str
     api: str
+    range_start: str = ""
     seed_fields: list = field(default_factory=list)
     back_edges: list = field(default_factory=list)
 
@@ -125,6 +126,7 @@ class Program:
         self.calls_by_callee = defaultdict(list)
         self.instances_by_pattern = defaultdict(list)
         self.captures_by_lambda = defaultdict(list)
+        self.branches = []
         self.files = set()
         self._load()
 
@@ -156,13 +158,15 @@ class Program:
                     self.captures_by_lambda[e.raw["lambda"]].append(e)
             elif k == "cfg-block":
                 self.cfg[(r.get("fn"), r.get("id"))] = r
+            elif k == "branch":
+                self.branches.append(r)
             elif k == "fold":
                 f = Fold(r.get("id"), r.get("fn"), r.get("file", ""),
                          r.get("line", 0), r.get("col", 0),
                          r.get("seedOffset", 0), r.get("seedLine", 0),
                          r.get("seedText", ""), r.get("seedType", ""),
                          r.get("lambdaUsr", ""), r.get("destStorage", ""),
-                         r.get("api", ""))
+                         r.get("api", ""), r.get("rangeStart", ""))
                 self.folds[f.id] = f
                 if f.lambda_usr:
                     self.fold_by_lambda[f.lambda_usr] = f
@@ -204,6 +208,30 @@ class Program:
     def lambda_param(self, usr):
         p = self.functions.get(usr, {}).get("params", [])
         return ("decl:" + p[0]["usr"]) if p else ""
+
+    def branch_guard(self, fn, e):
+        fold = self.fold_by_lambda.get(fn)
+        params = self.functions.get(fn, {}).get("params", [])
+        elem = params[1]["name"] if len(params) > 1 else ""
+        first = later = False
+        conditions = []
+        for b in self.branches:
+            if os.path.basename(b.get("file", "")) != os.path.basename(e.file):
+                continue
+            in_then = b.get("thenStart", 0) <= e.offset <= b.get("thenEnd", 0)
+            in_else = ("elseStart" in b and b["elseStart"] <= e.offset <= b.get("elseEnd", b["elseStart"]))
+            if not (in_then or in_else) or not fold or not fold.range_start or not elem:
+                continue
+            lhs, rhs = b.get("lhsText", "").strip(), b.get("rhsText", "").strip()
+            on_left = lhs == elem or lhs.endswith("." + elem)
+            on_right = rhs == elem or rhs.endswith("." + elem)
+            start_other = (on_left and rhs == fold.range_start) or (on_right and lhs == fold.range_start)
+            if b.get("op") in ("==", "!=") and start_other:
+                conditions.append(b.get("condition", ""))
+                eq = b.get("op") == "=="
+                if (eq and in_then) or (not eq and in_else): first = True
+                if (eq and in_else) or (not eq and in_then): later = True
+        return first, later, conditions
 
     def resolve_site(self, file, line, col):
         file = os.path.abspath(file)
@@ -675,11 +703,13 @@ class Tracer:
                     self.edge(d, s, "fold-seed-parameter",
                               "first iteration accumulator")
                     self.follow_value(s, s.value, depth + 1, "fold-seed")
-            for r in fold.back_edges:
-                sel = self._synthetic_backedge(r, acc, storage)
-                self.edge(d, sel, "fold-backedge",
-                          "previous iteration returned accumulator")
-                self.origin(sel, depth=depth + 1, relation="fold-previous")
+            guard_first, _, _ = self.p.branch_guard(d.fn, use)
+            if not guard_first:
+                for r in fold.back_edges:
+                    sel = self._synthetic_backedge(r, acc, storage)
+                    self.edge(d, sel, "fold-backedge",
+                              "previous iteration returned accumulator")
+                    self.origin(sel, depth=depth + 1, relation="fold-previous")
             if not fold.seed_fields and not fold.back_edges:
                 self.add_boundary(d, "fold lambda is not indexed")
             return
@@ -822,6 +852,8 @@ class Tracer:
                                 conditions=["fold iteration 0"])
                 continue
             if d.kind == "fold-backedge":
+                if self.p.branch_guard(d.fn, query)[0]:
+                    continue
                 self.loop = True
                 self.conditional = True
                 self.add_target(d, "fold-backedge", "loop-recurrence",

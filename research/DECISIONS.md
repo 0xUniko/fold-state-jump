@@ -56,3 +56,22 @@
 
 - 48 条中 26 mismatch；不通过删测试/改 Oracle/加业务名特例提高数字；
 - 失败按语义类别归档（跨函数、聚合返回、variant、资源、ranges），不按 `bank_state` 名字打补丁。
+
+## D9：flow-sensitive 只作为实验/可选局部后端
+
+真实 `DataflowAnalysis` 实验证明它能做 CFG join/fixpoint 和 storage location，但引用/字段 canonicalization、聚合字段、fold/跨函数/资源摘要仍需自建。正式引擎没有把 FlowSensitive 当成完整状态追踪器；保留其思想（CFG、Environment、StorageLocation、worklist）作为架构依据。
+
+## D10：fold 首轮 guard 是统一语义，不是 graph 计数器特例
+
+`layer == 0` 只可能由 fold 首元素进入，因此同 fold backedge 不可达，不能作为 history 的 prior mutation。实现使用 range 首元素 + 条件文本/AST 的通用 guard；否则 backedge 只能作为 Conditional。Oracle 已按此纠正，独立 fixture `fold_first_guard.cpp` 覆盖。
+
+## D11：新引擎是 TypeScript + native semantic frontend
+
+- native `state-inventory` 负责 Clang AST/CFG/字段/模板/源码事实；
+- `src/state-trace/engine.ts` 负责 worklist、别名、fold、跨函数、查询；
+- 旧 `src/analysis.ts` 只在 `analysisEngine=legacy` 下保留对照，默认 `state-trace`；
+- 不把 Python 研究原型作为插件运行时。
+
+## D12：矩阵/审计的 reviewed/mechanical 分层
+
+`state-query-matrix.json` 的 8,788 sites 中只有 107 个 oracle 锚点，其余 fold-context/mechanical 不得计入“已审查覆盖”。`fold-audit.json` 的 reviewed 只表示人工读过该生命周期，不等于自动化通过。

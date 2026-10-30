@@ -125,3 +125,58 @@ bun test/project-state-sources.ts /home/huawei/nano-infer
 ```
 
 结果：48 queries 1.47s/203MB；单查询 0.60s/123MB（含加载）。见 `performance-results.md`。
+
+## E12 真实 Clang FlowSensitive DataflowAnalysis（第二轮）
+
+```bash
+cmake --build prototype/native/build -j 8
+./prototype/native/build/flow-sensitive-probe -line 16 -function overwritten \
+  prototype/fixtures/negative_control.cpp -- -std=c++20
+./prototype/native/build/flow-sensitive-probe -line 25 -function exclusive \
+  prototype/fixtures/negative_control.cpp -- -std=c++20
+./prototype/native/build/flow-sensitive-probe -line 15 -function sum_squares \
+  prototype/fixtures/loop.cpp -- -std=c++20
+```
+
+结果：
+
+- `overwritten` 只得到 15:9（覆盖写杀死 13/14）；
+- `exclusive` 得到 22:11 和 24:11（分支合流）；
+- `sum_squares` 得到 `acc`/`acc.total` 的字段路径与循环写 13；
+- 引用/字段 location canonicalization 与聚合字段初始化仍需自建；
+- 证明 FlowSensitive 提供 CFG 固定点/Environment 基础设施，但不是完整状态追踪器。
+
+## E13 新 TypeScript 引擎与 native inventory
+
+```bash
+cmake -S native -B native/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_DIR=/usr/lib/llvm-23/lib/cmake/llvm \
+  -DClang_DIR=/usr/lib/llvm-23/lib/cmake/clang
+cmake --build native/build -j 8
+bun check
+bun test
+bun run build
+bun tools/run_oracle_ts.ts
+```
+
+结果：
+
+```text
+bun check:  no type errors (87 files)
+bun test:   540 pass / 0 fail
+bun build:  extension.js built
+Oracle TS: 14 correct-conditional / 8 correct-boundary / 2 correct-multiple /
+           2 targets-found-kind-mismatch / 1 unsupported / 21 mismatch
+```
+
+`test/state-trace-command.ts` 通过真实 activate/native/命令/mock VS Code，导航到目标行。
+
+## E14 状态查询矩阵 / fold audit
+
+```bash
+python3 tools/build_state_matrix.py   # 8,788 state-related sites
+python3 tools/build_fold_audit.py     # 84 sites / 86 instances
+python3 tools/coverage.py
+```
+
+矩阵状态分层：`oracle` 107、`fold-context` 6,959、`mechanical` 1,722。fold audit 的 reviewed/mechanical 分层记录在 `fold-audit.json`，不等于全部通过。

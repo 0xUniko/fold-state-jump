@@ -119,6 +119,22 @@
           "type": "boolean",
           "default": true,
           "description": "Schedule active saved files for background AST preparation."
+        },
+        "foldStateJump.analysisEngine": {
+          "type": "string",
+          "enum": [
+            "state-trace",
+            "legacy"
+          ],
+          "default": "state-trace",
+          "scope": "resource",
+          "description": "State analysis engine. state-trace uses the new semantic provenance engine; legacy keeps the previous source-order analyzer for comparison."
+        },
+        "foldStateJump.stateTraceExtractorPath": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Optional path to the state-inventory executable. Empty uses native/build/state-inventory in the extension directory."
         }
       }
     }

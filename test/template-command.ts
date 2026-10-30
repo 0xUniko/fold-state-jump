@@ -48,7 +48,7 @@ mock.module('vscode', () => ({
     workspaceFolders: [{ uri: uri(directory) }], textDocuments: [...documents.values()],
     openTextDocument: async (uri: { fsPath: string }) => { const document = documents.get(uri.fsPath); assert.ok(document); return document; },
     asRelativePath: (uri: { fsPath: string }) => path.basename(uri.fsPath),
-    getConfiguration: () => ({ get: (key: string, fallback: unknown) => key === 'prewarm.enabled' || key === 'cache.disk.enabled' ? false : fallback }),
+    getConfiguration: () => ({ get: (key: string, fallback: unknown) => key === 'analysisEngine' ? 'legacy' : key === 'prewarm.enabled' || key === 'cache.disk.enabled' ? false : fallback }),
     createFileSystemWatcher: () => ({ onDidChange: disposable, onDidCreate: disposable, onDidDelete: disposable, dispose() {} }),
     onDidSaveTextDocument: disposable, onDidChangeTextDocument: disposable, onDidChangeConfiguration: disposable, onDidChangeWorkspaceFolders: disposable
   },

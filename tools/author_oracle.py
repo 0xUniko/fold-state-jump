@@ -122,35 +122,47 @@ rows.append(entry(
 rows.append(entry(
     "minicpm.execute.lambda.graph_reuses.history", C+"pipeline.h", 884, 15,
     "++bank_state.counters.graph_reuses", "history", "Conditional",
-    [t(C+"pipeline.h", 884, "++bank_state.counters.graph_reuses", "prior-iteration-write"),
-     t(C+"pipeline.h", 869, "std::move(session_state.bank_state)", "seed"),
-     t(C+"pipeline.h", 1081, "bank_state = begin_decode_prefetch(", "whole-state-replacement")],
-    ["field-write", "fold-backedge", "whole-object-write"],
-    ["layer == 0", "graph cache hit", "any earlier iteration may have executed this branch"],
-    ["the number of earlier fold iterations is not statically fixed"],
+    [t(C+"pipeline.h", 869, "std::move(session_state.bank_state)", "seed"),
+     t(C+"pipeline.h", 1209, "session_state.position + int(nt)", "previous-batch-return"),
+     t(C+"pipeline.h", 1280, "std::move(bank_state)", "fresh-session-origin"),
+     t(C+"pipeline.h", 1299, "return {0, 0, std::move(session_state.caches)", "reset-session-origin")],
+    ["field-write", "argument-to-parameter", "return-value"],
+    ["layer == 0 (the only iteration that executes this branch)",
+     "graph cache hit",
+     "no earlier iteration of this fold can execute line 884"],
+    ["the previous batch's counter value is selected by runtime history; the whole-object replacement at 1081 is later in this iteration and is not a prior reaching definition for line 884",
+     "the number of prior batches is not statically fixed"],
     [e(C+"pipeline.h", 881, "if (language_graphs_found != graph_cache.graphs.end()) {"),
      e(C+"pipeline.h", 884, "++bank_state.counters.graph_reuses;"),
+     e(C+"pipeline.h", 1081, "bank_state = begin_decode_prefetch("),
      e(C+"pipeline.h", 1188, "return layer_execution;")],
     {"function": "Pipeline::execute::lambda", "statePath": ["bank_state", "counters", "graph_reuses"],
-     "foldSite": "pipeline.h:866"}))
+     "foldSite": "pipeline.h:866"},
+    "Corrected after independent review: layer == 0 means the current fold iteration is the first; a same-fold backedge is impossible here."))
 
 rows.append(entry(
     "minicpm.execute.lambda.graph_builds.history", C+"pipeline.h", 902, 15,
     "++bank_state.counters.graph_builds", "history", "Conditional",
-    [t(C+"pipeline.h", 902, "++bank_state.counters.graph_builds", "prior-iteration-write"),
-     t(C+"pipeline.h", 869, "std::move(session_state.bank_state)", "seed"),
-     t(C+"pipeline.h", 1081, "bank_state = begin_decode_prefetch(", "whole-state-replacement")],
-    ["field-write", "fold-backedge", "whole-object-write"],
-    ["layer == 0", "graph cache miss", "at most four cached graphs before eviction"],
-    ["iterator invalidation of graph_cache is not modeled as state provenance"],
+    [t(C+"pipeline.h", 869, "std::move(session_state.bank_state)", "seed"),
+     t(C+"pipeline.h", 1209, "session_state.position + int(nt)", "previous-batch-return"),
+     t(C+"pipeline.h", 1280, "std::move(bank_state)", "fresh-session-origin"),
+     t(C+"pipeline.h", 1299, "return {0, 0, std::move(session_state.caches)", "reset-session-origin")],
+    ["field-write", "argument-to-parameter", "return-value"],
+    ["layer == 0 (the only iteration that executes this branch)",
+     "graph cache miss",
+     "no earlier iteration of this fold can execute line 902"],
+    ["the previous batch's counter value is selected by runtime history; line 1081 is later in this iteration, not a prior reaching definition",
+     "iterator invalidation of graph_cache is not modeled as state provenance"],
     [e(C+"pipeline.h", 885, "} else {"),
-     e(C+"pipeline.h", 902, "++bank_state.counters.graph_builds;")],
+     e(C+"pipeline.h", 902, "++bank_state.counters.graph_builds;"),
+     e(C+"pipeline.h", 1081, "bank_state = begin_decode_prefetch(")],
     {"function": "Pipeline::execute::lambda", "statePath": ["bank_state", "counters", "graph_builds"],
-     "foldSite": "pipeline.h:866"}))
+     "foldSite": "pipeline.h:866"},
+    "Corrected after independent review: layer == 0 means the current fold iteration is the first; a same-fold backedge is impossible here."))
 
 rows.append(entry(
     "minicpm.execute.plan-slots.origin", C+"pipeline.h", 1001, 25,
-    "bank_state.slots = std::move(plan.slots)", "origin", "Multiple",
+    "plan.slots", "origin", "Multiple",
     [t(C+"experts.h", 424, "return {std::move(plan.slots)", "plan_shared_decode"),
      t(C+"ffn.h", 54, "inline PrefillPlan plan_prefill", "plan_prefill"),
      t(C+"experts.h", 501, "return {std::move(plan.slots)", "plan_cache_decode")],
@@ -214,7 +226,7 @@ rows.append(entry(
     "std::move(layer_execution.bank_state)", "provenance", "Exact",
     [t(C+"pipeline.h", 413, "SessionState session_state;", "BatchState-field"),
      t(C+"pipeline.h", 405, "BankState bank_state;", "SessionState-field"),
-     t(C+"pipeline.h", 1193, "layer_execution.bank_state.pending", "fold-result-source")],
+     t(C+"pipeline.h", 1188, "return layer_execution;", "fold-result-source")],
     ["aggregate-field", "member-order", "fold-result", "value-transfer"],
     ["the return is a nested aggregate BatchState{SessionState{...}, logits}"],
     [],
@@ -728,11 +740,11 @@ rows.append(entry(
     "minicpm.graph_cache.tick.recurrence", C+"pipeline.h", 882, 38,
     "graph_cache.tick", "history", "Conditional",
     [t(C+"pipeline.h", 861, "GraphCache graph_cache;", "field-declaration"),
-     t(C+"pipeline.h", 882, "++graph_cache.tick", "prior-iteration-increment"),
-     t(C+"pipeline.h", 898, "++graph_cache.tick", "build-path-increment")],
-    ["field-increment", "fold-recurrence", "branch"],
-    ["layer == 0", "either cache hit or build path"],
-    ["one increment per graph lookup/build at layer 0"],
+     t(C+"pipeline.h", 869, "std::move(session_state.graph_cache)", "fold-seed"),
+     t(C+"pipeline.h", 1209, "std::move(layer_execution.graph_cache)", "previous-batch-return")],
+    ["field-increment", "whole-state-transfer", "branch"],
+    ["layer == 0", "either cache hit or build path", "no earlier fold iteration reaches this branch"],
+    ["the current hit/build increment is not a prior iteration; prior batches supply the seed"],
     [e(C+"pipeline.h", 882, "language_graphs_found->second->age = ++graph_cache.tick;"),
      e(C+"pipeline.h", 898, "language_graphs->age = ++graph_cache.tick;")],
     {"function": "Pipeline::execute::lambda", "statePath": ["graph_cache", "tick"],
@@ -789,6 +801,20 @@ FOLD_SITE_BY_ID = {
 for r in rows:
     if r["id"] in FOLD_SITE_BY_ID:
         r["context"]["foldSite"] = FOLD_SITE_BY_ID[r["id"]]
+
+# Anchor columns are derived from the actual source line, not from analyzer
+# output.  This keeps the Oracle query stable while making the CLI column point
+# at the intended expression.
+for r in rows:
+    q = r["query"]
+    source = NANO / q["file"]
+    try:
+        text = source.read_text().splitlines()[q["line"] - 1]
+        pos = text.find(q["anchor"])
+        if pos >= 0:
+            q["column"] = pos + 1
+    except Exception:
+        pass
 
 DECL_ROLES = {
     "destination-member", "seed-aggregate", "record", "planning-field",

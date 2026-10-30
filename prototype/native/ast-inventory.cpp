@@ -159,6 +159,7 @@ struct Emitter {
 struct SPath {
   std::string root;
   std::string suffix;
+  std::string rootType;
   std::string full() const { return root + suffix; }
   bool known() const { return !root.empty(); }
 };
@@ -236,10 +237,16 @@ public:
       else
         break;
     }
-    if (auto *D = dyn_cast<DeclRefExpr>(X))
-      return {"decl:" + usrFor(D->getDecl()), {}};
-    if (isa<CXXThisExpr>(X))
-      return {CurrentThis, {}};
+    if (auto *D = dyn_cast<DeclRefExpr>(X)) {
+      const ValueDecl *VD = D->getDecl();
+      return {"decl:" + usrFor(VD), {}, E.typeStr(VD->getType())};
+    }
+    if (auto *T = dyn_cast<CXXThisExpr>(X)) {
+      QualType Ty = T->getType();
+      if (Ty->isPointerType())
+        Ty = Ty->getPointeeType();
+      return {CurrentThis, {}, E.typeStr(Ty)};
+    }
     if (auto *M = dyn_cast<CXXDependentScopeMemberExpr>(X)) {
       SPath Base = M->getBase() ? path(M->getBase(), Depth + 1) : SPath{CurrentThis, {}};
       if (!Base.known())
@@ -375,6 +382,59 @@ public:
     return X ? E.typeStr(X->getType()) : std::string();
   }
 
+  std::string literalText(const Expr *Raw) {
+    if (!Raw)
+      return {};
+    const Expr *X = strip(Raw);
+    if (auto *I = dyn_cast<IntegerLiteral>(X)) {
+      llvm::SmallString<32> B;
+      I->getValue().toString(B, 10, false);
+      return std::string(B.str());
+    }
+    if (auto *C = dyn_cast<CXXFunctionalCastExpr>(X))
+      return literalText(C->getSubExpr());
+    if (auto *I = dyn_cast<InitListExpr>(X)) {
+      if (I->getNumInits())
+        return literalText(I->getInit(0));
+    }
+    return {};
+  }
+
+  std::string firstInteger(const Expr *Raw) {
+    if (!Raw)
+      return {};
+    const Expr *X = strip(Raw);
+    if (auto *I = dyn_cast<IntegerLiteral>(X))
+      return literalText(I);
+    if (auto *C = dyn_cast<CXXFunctionalCastExpr>(X))
+      return firstInteger(C->getSubExpr());
+    if (auto *I = dyn_cast<InitListExpr>(X)) {
+      for (const Expr *Elt : I->inits()) {
+        std::string V = firstInteger(Elt);
+        if (!V.empty()) return V;
+      }
+      return {};
+    }
+    for (const Stmt *Child : X->children())
+      if (const auto *CE = dyn_cast<Expr>(Child)) {
+        std::string V = firstInteger(CE);
+        if (!V.empty()) return V;
+      }
+    return {};
+  }
+
+  std::string rangeStart(const CallExpr *CE, unsigned Base) {
+    // ranges::views::iota(start, end) or std::iota-like call.  Use the source
+    // spelling to recognize the CPO call, then take the first integer literal.
+    const Expr *R = CE->getNumArgs() > Base ? CE->getArg(Base) : nullptr;
+    if (!R)
+      return {};
+    std::string Text = E.text(R->getSourceRange());
+    if (Text.find("iota") == std::string::npos)
+      return {};
+    return firstInteger(R);
+  }
+
   void beginEvent(llvm::json::OStream &J, const char *Kind) {
     J.objectBegin();
     J.attribute("kind", "event");
@@ -405,6 +465,8 @@ public:
       J.attribute("storage", P.full());
       J.attribute("root", P.root);
       J.attribute("suffix", P.suffix);
+      if (!P.rootType.empty())
+        J.attribute("rootType", P.rootType);
     }
     if (X) {
       J.attribute("expr", E.text(X->getSourceRange()));
@@ -433,6 +495,8 @@ public:
       J.attribute("storage", P.full());
       J.attribute("root", P.root);
       J.attribute("suffix", P.suffix);
+      if (!P.rootType.empty())
+        J.attribute("rootType", P.rootType);
     }
     if (!Value.empty())
       J.attribute("value", Value);
@@ -463,9 +527,37 @@ public:
       J.attribute("storage", P.full());
       J.attribute("root", P.root);
       J.attribute("suffix", P.suffix);
+      if (!P.rootType.empty())
+        J.attribute("rootType", P.rootType);
     }
     if (!Value.empty())
       J.attribute("value", Value);
+    J.attribute("expr", E.text(R));
+    Emitter::locJson(J, E.loc(L, R));
+    J.objectEnd();
+    E.OS << "\n";
+  }
+
+  void emitWriteAt(SourceLocation L, SourceRange R, SPath Dest,
+                   std::string Value, llvm::StringRef Sub) {
+    unsigned Id = nextEvent();
+    Ids.push_back(Id);
+    llvm::json::OStream J(E.OS);
+    J.objectBegin();
+    J.attribute("kind", "event");
+    J.attribute("id", Id);
+    J.attribute("fn", Fn);
+    J.attribute("block", Block);
+    J.attribute("order", Order++);
+    J.attribute("event", "write");
+    if (!Sub.empty()) J.attribute("subkind", Sub);
+    if (Dest.known()) {
+      J.attribute("storage", Dest.full());
+      J.attribute("root", Dest.root);
+      J.attribute("suffix", Dest.suffix);
+      if (!Dest.rootType.empty()) J.attribute("rootType", Dest.rootType);
+    }
+    if (!Value.empty()) J.attribute("value", Value);
     J.attribute("expr", E.text(R));
     Emitter::locJson(J, E.loc(L, R));
     J.objectEnd();
@@ -568,7 +660,8 @@ public:
     return false;
   }
 
-  void writeDest(SPath Dest, const Expr *Rhs, const char *Kind) {
+  void writeDest(SPath Dest, const Expr *Rhs, const char *Kind,
+                 const Expr *Lhs = nullptr) {
     if (!Dest.known() || !Rhs)
       return;
     const Expr *R = strip(Rhs);
@@ -581,7 +674,11 @@ public:
     }
     if (!aggregateWrite(Dest, Rhs, Kind)) {
       SPath V = processExpr(Rhs);
-      emitValue("write", Rhs, Dest, V.known() ? V.full() : valueOf(Rhs), Kind);
+      if (Lhs)
+        emitWriteAt(Lhs->getBeginLoc(), Lhs->getSourceRange(), Dest,
+                    V.known() ? V.full() : valueOf(Rhs), Kind);
+      else
+        emitValue("write", Rhs, Dest, V.known() ? V.full() : valueOf(Rhs), Kind);
     }
   }
 
@@ -671,6 +768,13 @@ public:
     Emitter::locJson(J, CL);
     J.attribute("callText", E.text(CE->getSourceRange()));
     J.attribute("calleeText", E.text(CE->getCallee()->getSourceRange()));
+    if (CE->getNumArgs() > Base) {
+      const Expr *Range = CE->getArg(Base);
+      J.attribute("rangeText", E.text(Range->getSourceRange()));
+      std::string Start = rangeStart(CE, Base);
+      if (!Start.empty())
+        J.attribute("rangeStart", Start);
+    }
     if (Seed) {
       J.attribute("seedText", E.text(Seed->getSourceRange()));
       J.attribute("seedType", typeOf(Seed));
@@ -689,8 +793,10 @@ public:
     SPath Acc{"fold:" + std::to_string(FoldId), ":acc"};
     if (Lambda) {
       if (const CXXMethodDecl *Op = Lambda->getCallOperator()) {
-        if (Op->getNumParams() >= 1)
-          Acc = {"decl:" + usrFor(Op->getParamDecl(0)), {}};
+        if (Op->getNumParams() >= 1) {
+          const ParmVarDecl *P = Op->getParamDecl(0);
+          Acc = {"decl:" + usrFor(P), {}, E.typeStr(P->getType())};
+        }
       }
     }
     if (Seed) {
@@ -767,6 +873,22 @@ public:
       return path(CE);
     }
     const FunctionDecl *FD = CE->getDirectCallee();
+    if (!FD) {
+      const Expr *Cal = strip(CE->getCallee());
+      if (auto *D = dyn_cast<DeclRefExpr>(Cal))
+        FD = dyn_cast<FunctionDecl>(D->getDecl());
+      else if (auto *U = dyn_cast<UnresolvedLookupExpr>(Cal)) {
+        const FunctionDecl *Found = nullptr;
+        for (const NamedDecl *ND : U->decls()) {
+          if (const auto *F = dyn_cast<FunctionDecl>(ND)) {
+            if (Found && Found != F) { Found = nullptr; break; }
+            Found = F;
+          }
+        }
+        if (Found && Found->getNumParams() == CE->getNumArgs())
+          FD = Found;
+      }
+    }
     std::string Name = FD ? FD->getNameAsString() : "";
     if (auto *OC = dyn_cast<CXXOperatorCallExpr>(CE)) {
       if (Name == "operator->" && OC->getNumArgs() == 1) {
@@ -961,7 +1083,7 @@ public:
       }
       switch (BO->getOpcode()) {
       case BO_Assign:
-        writeDest(path(BO->getLHS()), BO->getRHS(), "assign");
+        writeDest(path(BO->getLHS()), BO->getRHS(), "assign", BO->getLHS());
         return path(BO->getLHS());
       case BO_Comma:
         processExpr(BO->getLHS());
@@ -1191,6 +1313,40 @@ public:
     if (auto *IS = dyn_cast<IfStmt>(S)) {
       processExpr(IS->getCond());
       emit("branch-condition", IS->getCond(), {}, "if");
+      const Expr *C = strip(IS->getCond());
+      std::string Op, LPath, RPath, LText, RText;
+      if (auto *BO = dyn_cast<BinaryOperator>(C)) {
+        Op = BO->getOpcodeStr().str();
+        LPath = path(BO->getLHS()).full();
+        RPath = path(BO->getRHS()).full();
+        LText = E.text(BO->getLHS()->getSourceRange());
+        RText = E.text(BO->getRHS()->getSourceRange());
+      }
+      Loc CL = E.loc(IS->getIfLoc(), IS->getSourceRange());
+      Loc TL = E.loc(IS->getThen()->getBeginLoc(), IS->getThen()->getSourceRange());
+      Loc EL = IS->getElse() ? E.loc(IS->getElse()->getBeginLoc(),
+                                     IS->getElse()->getSourceRange())
+                             : Loc{};
+      llvm::json::OStream J(E.OS);
+      J.objectBegin();
+      J.attribute("kind", "branch");
+      J.attribute("fn", Fn);
+      J.attribute("block", Block);
+      Emitter::locJson(J, CL);
+      J.attribute("condition", E.text(IS->getCond()->getSourceRange()));
+      J.attribute("op", Op);
+      J.attribute("lhsPath", LPath);
+      J.attribute("rhsPath", RPath);
+      J.attribute("lhsText", LText);
+      J.attribute("rhsText", RText);
+      J.attribute("thenStart", TL.offset);
+      J.attribute("thenEnd", TL.endOffset);
+      if (EL.valid) {
+        J.attribute("elseStart", EL.offset);
+        J.attribute("elseEnd", EL.endOffset);
+      }
+      J.objectEnd();
+      E.OS << "\n";
       return;
     }
     if (auto *FS = dyn_cast<ForStmt>(S)) {
@@ -1224,8 +1380,26 @@ public:
 class InventoryVisitor : public RecursiveASTVisitor<InventoryVisitor> {
 public:
   Emitter &E;
+  FunctionDecl *CurrentFD = nullptr;
 
   explicit InventoryVisitor(Emitter &E) : E(E) {}
+
+  bool TraverseFunctionDecl(FunctionDecl *FD) {
+    FunctionDecl *Old = CurrentFD;
+    CurrentFD = FD;
+    bool Result = RecursiveASTVisitor<InventoryVisitor>::TraverseFunctionDecl(FD);
+    CurrentFD = Old;
+    return Result;
+  }
+
+  bool TraverseLambdaExpr(LambdaExpr *L) {
+    FunctionDecl *Old = CurrentFD;
+    if (const CXXMethodDecl *Op = L->getCallOperator())
+      CurrentFD = const_cast<CXXMethodDecl *>(Op);
+    bool Result = RecursiveASTVisitor<InventoryVisitor>::TraverseLambdaExpr(L);
+    CurrentFD = Old;
+    return Result;
+  }
 
   bool shouldVisitTemplateInstantiations() const { return true; }
 
@@ -1315,6 +1489,43 @@ public:
     if (Op && Op->doesThisDeclarationHaveABody() &&
         E.inProject(Op->getLocation()) && !E.SeenFunctions.count(usrFor(Op)))
       VisitFunctionDecl(const_cast<CXXMethodDecl *>(Op));
+    return true;
+  }
+
+  bool VisitIfStmt(IfStmt *IS) {
+    const FunctionDecl *FD = CurrentFD;
+    if (!FD || !E.inProject(IS->getIfLoc()))
+      return true;
+    const Expr *C = IS->getCond()->IgnoreParenImpCasts();
+    std::string Op, LT, RT;
+    if (auto *BO = dyn_cast<BinaryOperator>(C)) {
+      Op = BO->getOpcodeStr().str();
+      LT = E.text(BO->getLHS()->getSourceRange());
+      RT = E.text(BO->getRHS()->getSourceRange());
+    }
+    Loc CL = E.loc(IS->getIfLoc(), IS->getSourceRange());
+    Loc TL = E.loc(IS->getThen()->getBeginLoc(), IS->getThen()->getSourceRange());
+    Loc EL = IS->getElse()
+                 ? E.loc(IS->getElse()->getBeginLoc(),
+                         IS->getElse()->getSourceRange())
+                 : Loc{};
+    llvm::json::OStream J(E.OS);
+    J.objectBegin();
+    J.attribute("kind", "branch");
+    J.attribute("fn", usrFor(FD));
+    Emitter::locJson(J, CL);
+    J.attribute("condition", E.text(IS->getCond()->getSourceRange()));
+    J.attribute("op", Op);
+    J.attribute("lhsText", LT);
+    J.attribute("rhsText", RT);
+    J.attribute("thenStart", TL.offset);
+    J.attribute("thenEnd", TL.endOffset);
+    if (EL.valid) {
+      J.attribute("elseStart", EL.offset);
+      J.attribute("elseEnd", EL.endOffset);
+    }
+    J.objectEnd();
+    E.OS << "\n";
     return true;
   }
 
