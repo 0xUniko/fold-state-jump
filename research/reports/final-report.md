@@ -22,9 +22,9 @@
 79 template instances
 181 records
 84 fold source sites / 86 semantic instances
-87,372 events
-7,976 write events
-9,114 transfer events
+91,165 events
+10,299 write events
+9,142 transfer events
 47 state-type closure records
 ```
 
@@ -204,7 +204,7 @@ tools/{aggregate_inventory,author_oracle,run_oracle,coverage}.py
 
 ## 10. 最终判断
 
-- 已知道 nano-infer 中同类状态追踪问题的**分母**：84 个 fold 源、86 个实例、7,976 个写事件、47 个状态记录；不是“一个 bank_state”。
+- 已知道 nano-infer 中同类状态追踪问题的**分母**：84 个 fold 源、86 个实例、10,299 个写事件、47 个状态记录；不是“一个 bank_state”。
 - 已对主要查询位置给出独立、语义正确的 Oracle；不是旧插件结果的自证。
 - 已明确哪些问题有成熟技术可用（Clang 字段/模板/CFG；LLVM 别名事实），哪些没有现成答案（fold 契约、资源内容、异步完成、源码字段映射）。
 - 已有不依赖 nano-infer 特例的通用实现基础；新表达式可归入“存储身份/值转移/控制流/摘要/边界”类别，而不是按业务对象继续打补丁。

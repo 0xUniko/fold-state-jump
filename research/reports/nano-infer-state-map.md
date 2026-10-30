@@ -25,9 +25,9 @@ lambda functions             295
 records                      181
 fold source sites             84
 semantic fold instances       86
-events                    87,372
-write events               7,976
-transfer events            9,114
+events                    91,165
+write events               10,299
+transfer events            9,142
 state-type closure            47
 query sites (mechanical)   5,783
 ```
@@ -216,7 +216,7 @@ acc_i = vector<float> input
 
 ## 4. 审计结论
 
-- 84 个 fold 源、86 个语义实例、7,976 个写事件进入清单；Oracle 只直接覆盖其中一部分，覆盖率见 `research/oracle/oracle-coverage.md`。
+- 84 个 fold 源、86 个语义实例、10,299 个写事件进入清单；Oracle 只直接覆盖其中一部分，覆盖率见 `research/oracle/oracle-coverage.md`。
 - 最重要的状态链不是单个 `bank_state` 跳转，而是：
   `SessionState → LayerExecution → Plan/Pending → BankState → BatchState → 下一批`。
 - 其中至少同时存在：值复制、移动、引用别名、指针借用、资源内容写、异步完成、variant/optional 分支、模板实例、动态容器索引。**单一 `rootId + members` 模型不足以表达这些关系。**
