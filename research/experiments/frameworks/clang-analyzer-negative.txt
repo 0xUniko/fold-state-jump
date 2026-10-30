@@ -1,0 +1,7 @@
+prototype/fixtures/negative_control.cpp:14:3: warning: Value stored to 'value' is never read [deadcode.DeadStores]
+   14 |   value = 2;
+      |   ^       ~
+prototype/fixtures/negative_control.cpp:14:3: note: Value stored to 'value' is never read
+   14 |   value = 2;
+      |   ^       ~
+1 warning generated.

@@ -6,3 +6,8 @@ bun.lock
 .vscode/launch.json
 native/build/
 build
+# Research prototype build output and regenerable raw AST/CFG dumps
+prototype/native/build/
+research/inventory/raw/
+__pycache__/
+*.pyc

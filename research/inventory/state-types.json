@@ -1,0 +1,2497 @@
+{
+  "project": "nano-infer",
+  "roots": [
+    "AttentionCaches",
+    "AttentionGraph",
+    "AttentionState",
+    "BankContext",
+    "BankState",
+    "BatchResult",
+    "BatchState",
+    "CacheDecodePlan",
+    "CompressionStatePlan",
+    "CompressionStateTensors",
+    "ExpertBank",
+    "Generation",
+    "GraphCache",
+    "IoTicket",
+    "LanguageGraphs",
+    "LayerExecution",
+    "LayerGraphs",
+    "LesCounters",
+    "PendingPrefetch",
+    "PhaseCounters",
+    "Planning",
+    "PrefillPlan",
+    "PrefillState",
+    "Prewarming",
+    "ReadCompletion",
+    "SessionState",
+    "SharedDecodePlan",
+    "SlotState",
+    "Warming"
+  ],
+  "stateTypes": [
+    {
+      "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming",
+        "name": "Prewarming",
+        "qualified": "Prewarming",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 750,
+        "col": 10,
+        "offset": 34006,
+        "endLine": 755,
+        "endCol": 3,
+        "endOffset": 34142,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "layer_banks",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@layer_banks",
+            "type": "std::vector<ExpertBank>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@slots",
+            "type": "SlotState",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "prewarm_loaded",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@prewarm_loaded",
+            "type": "uint64_t",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          },
+          {
+            "name": "prewarm_io",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@prewarm_io",
+            "type": "PhaseCounters",
+            "index": 3,
+            "offsetBits": 832,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming",
+        "name": "Warming",
+        "qualified": "Warming",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 771,
+        "col": 16,
+        "offset": 35009,
+        "endLine": 778,
+        "endCol": 9,
+        "endOffset": 35395,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 2,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming@FI@missing",
+            "type": "std::map<int32_t, size_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning",
+        "name": "Planning",
+        "qualified": "Planning",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 455,
+        "col": 10,
+        "offset": 21417,
+        "endLine": 467,
+        "endCol": 3,
+        "endOffset": 22078,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slot_ids",
+            "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@slot_ids",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@missing",
+            "type": "std::map<int32_t, size_t>",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          },
+          {
+            "name": "prefetched_count",
+            "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@prefetched_count",
+            "type": "size_t",
+            "index": 3,
+            "offsetBits": 1152,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning",
+        "name": "Planning",
+        "qualified": "Planning",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h",
+        "line": 65,
+        "col": 10,
+        "offset": 2958,
+        "endLine": 75,
+        "endCol": 3,
+        "endOffset": 3495,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@missing",
+            "type": "std::map<size_t, int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "copies",
+            "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@copies",
+            "type": "std::vector<RecordCopy>",
+            "index": 2,
+            "offsetBits": 960,
+            "bitWidth": 0
+          },
+          {
+            "name": "expert_slots",
+            "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@expert_slots",
+            "type": "std::vector<size_t>",
+            "index": 3,
+            "offsetBits": 1152,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning",
+        "name": "Planning",
+        "qualified": "Planning",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 398,
+        "col": 10,
+        "offset": 19046,
+        "endLine": 406,
+        "endCol": 3,
+        "endOffset": 19439,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slot_ids",
+            "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slot_ids",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@missing",
+            "type": "std::map<size_t, int32_t>",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation",
+        "name": "Generation",
+        "qualified": "Generation",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+        "line": 483,
+        "col": 10,
+        "offset": 22734,
+        "endLine": 497,
+        "endCol": 3,
+        "endOffset": 23500,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 5,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "batch_state",
+            "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@batch_state",
+            "type": "BatchState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "text",
+            "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@text",
+            "type": "std::string",
+            "index": 1,
+            "offsetBits": 5248,
+            "bitWidth": 0
+          },
+          {
+            "name": "done",
+            "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@done",
+            "type": "bool",
+            "index": 2,
+            "offsetBits": 5504,
+            "bitWidth": 0
+          },
+          {
+            "name": "decode_tokens",
+            "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@decode_tokens",
+            "type": "int32_t",
+            "index": 3,
+            "offsetBits": 5536,
+            "bitWidth": 0
+          },
+          {
+            "name": "decode_ns",
+            "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@decode_ns",
+            "type": "uint64_t",
+            "index": 4,
+            "offsetBits": 5568,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@S@BankContext",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@BankContext",
+        "name": "BankContext",
+        "qualified": "minicpm::BankContext",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 250,
+        "col": 8,
+        "offset": 12006,
+        "endLine": 254,
+        "endCol": 1,
+        "endOffset": 12134,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "store",
+            "usr": "c:@N@minicpm@S@BankContext@FI@store",
+            "type": "const std::shared_ptr<const ExpertStore>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "pool",
+            "usr": "c:@N@minicpm@S@BankContext@FI@pool",
+            "type": "const std::shared_ptr<IoPool>",
+            "index": 1,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "layout",
+            "usr": "c:@N@minicpm@S@BankContext@FI@layout",
+            "type": "const LesLayout",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@BankState",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@BankState",
+        "name": "BankState",
+        "qualified": "minicpm::BankState",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 269,
+        "col": 8,
+        "offset": 12770,
+        "endLine": 287,
+        "endCol": 1,
+        "endOffset": 13843,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "shared_bank",
+            "usr": "c:@N@minicpm@S@BankState@FI@shared_bank",
+            "type": "ExpertBank",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "layer_banks",
+            "usr": "c:@N@minicpm@S@BankState@FI@layer_banks",
+            "type": "std::vector<ExpertBank>",
+            "index": 1,
+            "offsetBits": 512,
+            "bitWidth": 0
+          },
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@S@BankState@FI@slots",
+            "type": "SlotState",
+            "index": 2,
+            "offsetBits": 704,
+            "bitWidth": 0
+          },
+          {
+            "name": "frequencies",
+            "usr": "c:@N@minicpm@S@BankState@FI@frequencies",
+            "type": "std::vector<std::vector<uint64_t>>",
+            "index": 3,
+            "offsetBits": 1280,
+            "bitWidth": 0
+          },
+          {
+            "name": "counters",
+            "usr": "c:@N@minicpm@S@BankState@FI@counters",
+            "type": "LesCounters",
+            "index": 4,
+            "offsetBits": 1472,
+            "bitWidth": 0
+          },
+          {
+            "name": "pending",
+            "usr": "c:@N@minicpm@S@BankState@FI@pending",
+            "type": "std::optional<PendingPrefetch>",
+            "index": 5,
+            "offsetBits": 3648,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@BatchState",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@BatchState",
+        "name": "BatchState",
+        "qualified": "minicpm::BatchState",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 412,
+        "col": 8,
+        "offset": 17522,
+        "endLine": 415,
+        "endCol": 1,
+        "endOffset": 17594,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 2,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "session_state",
+            "usr": "c:@N@minicpm@S@BatchState@FI@session_state",
+            "type": "SessionState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "logits",
+            "usr": "c:@N@minicpm@S@BatchState@FI@logits",
+            "type": "std::vector<float>",
+            "index": 1,
+            "offsetBits": 5056,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@CacheDecodePlan",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@CacheDecodePlan",
+        "name": "CacheDecodePlan",
+        "qualified": "minicpm::CacheDecodePlan",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 430,
+        "col": 8,
+        "offset": 20417,
+        "endLine": 436,
+        "endCol": 1,
+        "endOffset": 20604,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slot_ids",
+            "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@slot_ids",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "read",
+            "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@read",
+            "type": "CacheRead",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          },
+          {
+            "name": "prefetched_count",
+            "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@prefetched_count",
+            "type": "size_t",
+            "index": 3,
+            "offsetBits": 1344,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@CacheStagedCompletion",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@CacheStagedCompletion",
+        "name": "CacheStagedCompletion",
+        "qualified": "minicpm::CacheStagedCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 434,
+        "col": 8,
+        "offset": 18724,
+        "endLine": 447,
+        "endCol": 1,
+        "endOffset": 19416,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "records",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@records",
+            "type": "ggml_tensor *",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "record_bytes",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@record_bytes",
+            "type": "size_t",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@missing",
+            "type": "std::map<int32_t, size_t>",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "staging",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@staging",
+            "type": "std::vector<char>",
+            "index": 3,
+            "offsetBits": 512,
+            "bitWidth": 0
+          },
+          {
+            "name": "io",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@io",
+            "type": "IoCounters",
+            "index": 4,
+            "offsetBits": 704,
+            "bitWidth": 0
+          },
+          {
+            "name": "interval",
+            "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@interval",
+            "type": "ComputeInterval",
+            "index": 5,
+            "offsetBits": 960,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@ExpertBank",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@ExpertBank",
+        "name": "ExpertBank",
+        "qualified": "minicpm::ExpertBank",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 99,
+        "col": 8,
+        "offset": 4575,
+        "endLine": 114,
+        "endCol": 1,
+        "endOffset": 5419,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "context",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@context",
+            "type": "nano::Context",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "buffer",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@buffer",
+            "type": "nano::Buffer",
+            "index": 1,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "up",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@up",
+            "type": "ggml_tensor *",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "gate",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@gate",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 320,
+            "bitWidth": 0
+          },
+          {
+            "name": "down",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@down",
+            "type": "ggml_tensor *",
+            "index": 4,
+            "offsetBits": 384,
+            "bitWidth": 0
+          },
+          {
+            "name": "records",
+            "usr": "c:@N@minicpm@S@ExpertBank@FI@records",
+            "type": "ggml_tensor *",
+            "index": 5,
+            "offsetBits": 448,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@GraphCache",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@GraphCache",
+        "name": "GraphCache",
+        "qualified": "minicpm::GraphCache",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 387,
+        "col": 8,
+        "offset": 16280,
+        "endLine": 390,
+        "endCol": 1,
+        "endOffset": 16376,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 2,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "graphs",
+            "usr": "c:@N@minicpm@S@GraphCache@FI@graphs",
+            "type": "std::map<GraphKey, std::unique_ptr<LanguageGraphs>>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "tick",
+            "usr": "c:@N@minicpm@S@GraphCache@FI@tick",
+            "type": "uint64_t",
+            "index": 1,
+            "offsetBits": 384,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion",
+        "name": "IoTicket",
+        "qualified": "minicpm::IoTicket",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 469,
+        "col": 36,
+        "offset": 20319,
+        "endLine": 489,
+        "endCol": 1,
+        "endOffset": 20977,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "completion_future",
+            "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion@FI@completion_future",
+            "type": "std::future<std::variant<minicpm::LoadedExperts, minicpm::CacheStagedCompletion>>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion",
+        "name": "IoTicket",
+        "qualified": "minicpm::IoTicket",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 469,
+        "col": 36,
+        "offset": 20319,
+        "endLine": 489,
+        "endCol": 1,
+        "endOffset": 20977,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "completion_future",
+            "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion@FI@completion_future",
+            "type": "std::future<std::variant<minicpm::LoadedExperts, minicpm::SharedStagedCompletion>>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@IoTicket>#v",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@IoTicket>#v",
+        "name": "IoTicket",
+        "qualified": "minicpm::IoTicket",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 469,
+        "col": 36,
+        "offset": 20319,
+        "endLine": 489,
+        "endCol": 1,
+        "endOffset": 20977,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "completion_future",
+            "usr": "c:@N@minicpm@S@IoTicket>#v@FI@completion_future",
+            "type": "std::future<void>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@LanguageGraphs",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@LanguageGraphs",
+        "name": "LanguageGraphs",
+        "qualified": "minicpm::LanguageGraphs",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 380,
+        "col": 8,
+        "offset": 16031,
+        "endLine": 386,
+        "endCol": 1,
+        "endOffset": 16270,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "cpu_arenas",
+            "usr": "c:@N@minicpm@S@LanguageGraphs@FI@cpu_arenas",
+            "type": "std::unique_ptr<CpuStageArenas>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "layers",
+            "usr": "c:@N@minicpm@S@LanguageGraphs@FI@layers",
+            "type": "std::vector<LayerGraphs>",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "head_graph",
+            "usr": "c:@N@minicpm@S@LanguageGraphs@FI@head_graph",
+            "type": "HeadGraph",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "age",
+            "usr": "c:@N@minicpm@S@LanguageGraphs@FI@age",
+            "type": "uint64_t",
+            "index": 3,
+            "offsetBits": 768,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@LayerGraphs",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@LayerGraphs",
+        "name": "LayerGraphs",
+        "qualified": "minicpm::LayerGraphs",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 370,
+        "col": 8,
+        "offset": 15797,
+        "endLine": 374,
+        "endCol": 1,
+        "endOffset": 15923,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "routing_graph",
+            "usr": "c:@N@minicpm@S@LayerGraphs@FI@routing_graph",
+            "type": "RoutingGraph",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "shared_expert_graph",
+            "usr": "c:@N@minicpm@S@LayerGraphs@FI@shared_expert_graph",
+            "type": "SharedExpertGraph",
+            "index": 1,
+            "offsetBits": 1024,
+            "bitWidth": 0
+          },
+          {
+            "name": "routed_expert_graph",
+            "usr": "c:@N@minicpm@S@LayerGraphs@FI@routed_expert_graph",
+            "type": "RoutedExpertGraph",
+            "index": 2,
+            "offsetBits": 1472,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@LesCounters",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@LesCounters",
+        "name": "LesCounters",
+        "qualified": "minicpm::LesCounters",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 210,
+        "col": 8,
+        "offset": 9783,
+        "endLine": 231,
+        "endCol": 1,
+        "endOffset": 11077,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 10,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "prefill",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prefill",
+            "type": "PhaseCounters",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "decode",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@decode",
+            "type": "PhaseCounters",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "prewarm_io",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_io",
+            "type": "PhaseCounters",
+            "index": 2,
+            "offsetBits": 1152,
+            "bitWidth": 0
+          },
+          {
+            "name": "prefetch_issued",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_issued",
+            "type": "uint64_t",
+            "index": 3,
+            "offsetBits": 1728,
+            "bitWidth": 0
+          },
+          {
+            "name": "prefetch_used",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_used",
+            "type": "uint64_t",
+            "index": 4,
+            "offsetBits": 1792,
+            "bitWidth": 0
+          },
+          {
+            "name": "prefetch_wasted",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_wasted",
+            "type": "uint64_t",
+            "index": 5,
+            "offsetBits": 1856,
+            "bitWidth": 0
+          },
+          {
+            "name": "prewarm_loaded",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_loaded",
+            "type": "uint64_t",
+            "index": 6,
+            "offsetBits": 1920,
+            "bitWidth": 0
+          },
+          {
+            "name": "prewarm_from_prefill",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_from_prefill",
+            "type": "uint64_t",
+            "index": 7,
+            "offsetBits": 1984,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_builds",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@graph_builds",
+            "type": "uint64_t",
+            "index": 8,
+            "offsetBits": 2048,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_reuses",
+            "usr": "c:@N@minicpm@S@LesCounters@FI@graph_reuses",
+            "type": "uint64_t",
+            "index": 9,
+            "offsetBits": 2112,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@LoadedExperts",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@LoadedExperts",
+        "name": "LoadedExperts",
+        "qualified": "minicpm::LoadedExperts",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 409,
+        "col": 8,
+        "offset": 17516,
+        "endLine": 416,
+        "endCol": 1,
+        "endOffset": 17930,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "record_count",
+            "usr": "c:@N@minicpm@S@LoadedExperts@FI@record_count",
+            "type": "size_t",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "io",
+            "usr": "c:@N@minicpm@S@LoadedExperts@FI@io",
+            "type": "IoCounters",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "interval",
+            "usr": "c:@N@minicpm@S@LoadedExperts@FI@interval",
+            "type": "ComputeInterval",
+            "index": 2,
+            "offsetBits": 320,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@PendingPrefetch",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@PendingPrefetch",
+        "name": "PendingPrefetch",
+        "qualified": "minicpm::PendingPrefetch",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 234,
+        "col": 8,
+        "offset": 11164,
+        "endLine": 247,
+        "endCol": 1,
+        "endOffset": 11925,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 5,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "layer",
+            "usr": "c:@N@minicpm@S@PendingPrefetch@FI@layer",
+            "type": "uint32_t",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "keys",
+            "usr": "c:@N@minicpm@S@PendingPrefetch@FI@keys",
+            "type": "std::vector<ExpertKey>",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@S@PendingPrefetch@FI@slots",
+            "type": "std::vector<size_t>",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "issued",
+            "usr": "c:@N@minicpm@S@PendingPrefetch@FI@issued",
+            "type": "LesClock::time_point",
+            "index": 3,
+            "offsetBits": 448,
+            "bitWidth": 0
+          },
+          {
+            "name": "read_ticket",
+            "usr": "c:@N@minicpm@S@PendingPrefetch@FI@read_ticket",
+            "type": "CacheReadTicket",
+            "index": 4,
+            "offsetBits": 512,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@PhaseCounters",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@PhaseCounters",
+        "name": "PhaseCounters",
+        "qualified": "minicpm::PhaseCounters",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 190,
+        "col": 8,
+        "offset": 8638,
+        "endLine": 209,
+        "endCol": 1,
+        "endOffset": 9773,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 9,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "layer_count",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@layer_count",
+            "type": "uint64_t",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "hits",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@hits",
+            "type": "uint64_t",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "misses",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@misses",
+            "type": "uint64_t",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "read_bytes",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@read_bytes",
+            "type": "uint64_t",
+            "index": 3,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "read_calls",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@read_calls",
+            "type": "uint64_t",
+            "index": 4,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "mapped_bytes",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@mapped_bytes",
+            "type": "uint64_t",
+            "index": 5,
+            "offsetBits": 320,
+            "bitWidth": 0
+          },
+          {
+            "name": "mapped_records",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@mapped_records",
+            "type": "uint64_t",
+            "index": 6,
+            "offsetBits": 384,
+            "bitWidth": 0
+          },
+          {
+            "name": "overlap_ns",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@overlap_ns",
+            "type": "uint64_t",
+            "index": 7,
+            "offsetBits": 448,
+            "bitWidth": 0
+          },
+          {
+            "name": "wait_ns",
+            "usr": "c:@N@minicpm@S@PhaseCounters@FI@wait_ns",
+            "type": "uint64_t",
+            "index": 8,
+            "offsetBits": 512,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution",
+        "name": "LayerExecution",
+        "qualified": "LayerExecution",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 855,
+        "col": 12,
+        "offset": 37110,
+        "endLine": 864,
+        "endCol": 5,
+        "endOffset": 37544,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "caches",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@caches",
+            "type": "std::vector<LayerCache>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "bank_state",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@bank_state",
+            "type": "BankState",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_cache",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@graph_cache",
+            "type": "GraphCache",
+            "index": 2,
+            "offsetBits": 4544,
+            "bitWidth": 0
+          },
+          {
+            "name": "hidden",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@hidden",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 4992,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution",
+        "name": "LayerExecution",
+        "qualified": "LayerExecution",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 855,
+        "col": 12,
+        "offset": 37110,
+        "endLine": 864,
+        "endCol": 5,
+        "endOffset": 37544,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "caches",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@caches",
+            "type": "std::vector<LayerCache>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "bank_state",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@bank_state",
+            "type": "BankState",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_cache",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@graph_cache",
+            "type": "GraphCache",
+            "index": 2,
+            "offsetBits": 4544,
+            "bitWidth": 0
+          },
+          {
+            "name": "hidden",
+            "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@hidden",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 4992,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution",
+        "name": "LayerExecution",
+        "qualified": "LayerExecution",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 855,
+        "col": 12,
+        "offset": 37110,
+        "endLine": 864,
+        "endCol": 5,
+        "endOffset": 37544,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": true,
+        "fields": [
+          {
+            "name": "caches",
+            "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@caches",
+            "type": "std::vector<LayerCache>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "bank_state",
+            "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@bank_state",
+            "type": "BankState",
+            "index": 1,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_cache",
+            "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@graph_cache",
+            "type": "GraphCache",
+            "index": 2,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "hidden",
+            "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@hidden",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@N@minicpm@S@PrefillPlan",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@PrefillPlan",
+        "name": "PrefillPlan",
+        "qualified": "minicpm::PrefillPlan",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/ffn.h",
+        "line": 39,
+        "col": 8,
+        "offset": 1733,
+        "endLine": 50,
+        "endCol": 1,
+        "endOffset": 2216,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@S@PrefillPlan@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slot_ids",
+            "usr": "c:@N@minicpm@S@PrefillPlan@FI@slot_ids",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "read",
+            "usr": "c:@N@minicpm@S@PrefillPlan@FI@read",
+            "type": "SharedRead",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          },
+          {
+            "name": "copies",
+            "usr": "c:@N@minicpm@S@PrefillPlan@FI@copies",
+            "type": "std::vector<RecordCopy>",
+            "index": 3,
+            "offsetBits": 1344,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@CacheHostRead",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@CacheHostRead",
+        "name": "ReadCompletion",
+        "qualified": "minicpm::ReadCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 459,
+        "col": 20,
+        "offset": 19947,
+        "endLine": 461,
+        "endCol": 1,
+        "endOffset": 20015,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 0,
+        "dependent": false,
+        "fields": [],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@CacheStagedRead",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@CacheStagedRead",
+        "name": "ReadCompletion",
+        "qualified": "minicpm::ReadCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 462,
+        "col": 20,
+        "offset": 20037,
+        "endLine": 464,
+        "endCol": 1,
+        "endOffset": 20107,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 0,
+        "dependent": false,
+        "fields": [],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@SharedHostRead",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@SharedHostRead",
+        "name": "ReadCompletion",
+        "qualified": "minicpm::ReadCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 453,
+        "col": 20,
+        "offset": 19761,
+        "endLine": 455,
+        "endCol": 1,
+        "endOffset": 19831,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 0,
+        "dependent": false,
+        "fields": [],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@SharedStagedRead",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@ReadCompletion>#$@N@minicpm@S@SharedStagedRead",
+        "name": "ReadCompletion",
+        "qualified": "minicpm::ReadCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 456,
+        "col": 20,
+        "offset": 19853,
+        "endLine": 458,
+        "endCol": 1,
+        "endOffset": 19925,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 0,
+        "dependent": false,
+        "fields": [],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@SessionState",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@SessionState",
+        "name": "SessionState",
+        "qualified": "minicpm::SessionState",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+        "line": 394,
+        "col": 8,
+        "offset": 16567,
+        "endLine": 409,
+        "endCol": 1,
+        "endOffset": 17425,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 5,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "position",
+            "usr": "c:@N@minicpm@S@SessionState@FI@position",
+            "type": "int",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "rope_position",
+            "usr": "c:@N@minicpm@S@SessionState@FI@rope_position",
+            "type": "int",
+            "index": 1,
+            "offsetBits": 32,
+            "bitWidth": 0
+          },
+          {
+            "name": "caches",
+            "usr": "c:@N@minicpm@S@SessionState@FI@caches",
+            "type": "std::vector<LayerCache>",
+            "index": 2,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "bank_state",
+            "usr": "c:@N@minicpm@S@SessionState@FI@bank_state",
+            "type": "BankState",
+            "index": 3,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "graph_cache",
+            "usr": "c:@N@minicpm@S@SessionState@FI@graph_cache",
+            "type": "GraphCache",
+            "index": 4,
+            "offsetBits": 4608,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@SharedDecodePlan",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@SharedDecodePlan",
+        "name": "SharedDecodePlan",
+        "qualified": "minicpm::SharedDecodePlan",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 374,
+        "col": 8,
+        "offset": 18027,
+        "endLine": 378,
+        "endCol": 1,
+        "endOffset": 18117,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "slots",
+            "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@slots",
+            "type": "SlotState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "slot_ids",
+            "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@slot_ids",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "read",
+            "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@read",
+            "type": "SharedRead",
+            "index": 2,
+            "offsetBits": 768,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@SharedStagedCompletion",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@SharedStagedCompletion",
+        "name": "SharedStagedCompletion",
+        "qualified": "minicpm::SharedStagedCompletion",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 418,
+        "col": 8,
+        "offset": 17941,
+        "endLine": 431,
+        "endCol": 1,
+        "endOffset": 18628,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "records",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@records",
+            "type": "ggml_tensor *",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "record_bytes",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@record_bytes",
+            "type": "size_t",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "missing",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@missing",
+            "type": "std::map<size_t, int32_t>",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "staging",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@staging",
+            "type": "std::vector<char>",
+            "index": 3,
+            "offsetBits": 512,
+            "bitWidth": 0
+          },
+          {
+            "name": "io",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@io",
+            "type": "IoCounters",
+            "index": 4,
+            "offsetBits": 704,
+            "bitWidth": 0
+          },
+          {
+            "name": "interval",
+            "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@interval",
+            "type": "ComputeInterval",
+            "index": 5,
+            "offsetBits": 960,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@S@SlotState",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@S@SlotState",
+        "name": "SlotState",
+        "qualified": "minicpm::SlotState",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/experts.h",
+        "line": 173,
+        "col": 8,
+        "offset": 7792,
+        "endLine": 188,
+        "endCol": 1,
+        "endOffset": 8627,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 5,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "keys",
+            "usr": "c:@N@minicpm@S@SlotState@FI@keys",
+            "type": "std::vector<std::optional<ExpertKey>>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "ages",
+            "usr": "c:@N@minicpm@S@SlotState@FI@ages",
+            "type": "std::vector<uint64_t>",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "tick",
+            "usr": "c:@N@minicpm@S@SlotState@FI@tick",
+            "type": "uint64_t",
+            "index": 2,
+            "offsetBits": 384,
+            "bitWidth": 0
+          },
+          {
+            "name": "hits",
+            "usr": "c:@N@minicpm@S@SlotState@FI@hits",
+            "type": "uint64_t",
+            "index": 3,
+            "offsetBits": 448,
+            "bitWidth": 0
+          },
+          {
+            "name": "misses",
+            "usr": "c:@N@minicpm@S@SlotState@FI@misses",
+            "type": "uint64_t",
+            "index": 4,
+            "offsetBits": 512,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@minicpm@ST>1#T@IoTicket",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@minicpm@ST>1#T@IoTicket",
+        "name": "IoTicket",
+        "qualified": "minicpm::IoTicket",
+        "file": "/home/huawei/nano-infer/minicpm-v-4_7/expert_io.h",
+        "line": 469,
+        "col": 36,
+        "offset": 20319,
+        "endLine": 489,
+        "endCol": 1,
+        "endOffset": 20977,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": true,
+        "fields": [
+          {
+            "name": "completion_future",
+            "usr": "c:@N@minicpm@ST>1#T@IoTicket@FI@completion_future",
+            "type": "std::future<Completion>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@nano@S@Compute",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@nano@S@Compute",
+        "name": "Compute",
+        "qualified": "nano::Compute",
+        "file": "/home/huawei/nano-infer/shared/node_runtime.h",
+        "line": 70,
+        "col": 8,
+        "offset": 2208,
+        "endLine": 146,
+        "endCol": 1,
+        "endOffset": 4762,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "best",
+            "usr": "c:@N@nano@S@Compute@FI@best",
+            "type": "const Backend",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "cpu",
+            "usr": "c:@N@nano@S@Compute@FI@cpu",
+            "type": "const Backend",
+            "index": 1,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "sched",
+            "usr": "c:@N@nano@S@Compute@FI@sched",
+            "type": "const Scheduler",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@N@nano@S@RpcClient",
+      "record": {
+        "kind": "record",
+        "usr": "c:@N@nano@S@RpcClient",
+        "name": "RpcClient",
+        "qualified": "nano::RpcClient",
+        "file": "/home/huawei/nano-infer/shared/ffn_rpc.h",
+        "line": 342,
+        "col": 7,
+        "offset": 13019,
+        "endLine": 432,
+        "endCol": 1,
+        "endOffset": 16884,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "channel",
+            "usr": "c:@N@nano@S@RpcClient@FI@channel",
+            "type": "const std::shared_ptr<grpc::Channel>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "stub",
+            "usr": "c:@N@nano@S@RpcClient@FI@stub",
+            "type": "grpc::GenericStub",
+            "index": 1,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "timeout",
+            "usr": "c:@N@nano@S@RpcClient@FI@timeout",
+            "type": "const std::chrono::seconds",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@S@AttentionCaches",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@AttentionCaches",
+        "name": "AttentionCaches",
+        "qualified": "AttentionCaches",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1410,
+        "col": 8,
+        "offset": 59784,
+        "endLine": 1412,
+        "endCol": 1,
+        "endOffset": 59843,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "layers",
+            "usr": "c:@S@AttentionCaches@FI@layers",
+            "type": "const std::vector<LayerCaches>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@AttentionGraph",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@AttentionGraph",
+        "name": "AttentionGraph",
+        "qualified": "AttentionGraph",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 799,
+        "col": 8,
+        "offset": 33253,
+        "endLine": 808,
+        "endCol": 1,
+        "endOffset": 33663,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 8,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "graph",
+            "usr": "c:@S@AttentionGraph@FI@graph",
+            "type": "ggml_cgraph *",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "hidden",
+            "usr": "c:@S@AttentionGraph@FI@hidden",
+            "type": "ggml_tensor *",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "positions",
+            "usr": "c:@S@AttentionGraph@FI@positions",
+            "type": "ggml_tensor *",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "raw_indices",
+            "usr": "c:@S@AttentionGraph@FI@raw_indices",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "raw_read_indices",
+            "usr": "c:@S@AttentionGraph@FI@raw_read_indices",
+            "type": "ggml_tensor *",
+            "index": 4,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "raw_mask",
+            "usr": "c:@S@AttentionGraph@FI@raw_mask",
+            "type": "ggml_tensor *",
+            "index": 5,
+            "offsetBits": 320,
+            "bitWidth": 0
+          },
+          {
+            "name": "compression",
+            "usr": "c:@S@AttentionGraph@FI@compression",
+            "type": "CompressionGraph",
+            "index": 6,
+            "offsetBits": 384,
+            "bitWidth": 0
+          },
+          {
+            "name": "output",
+            "usr": "c:@S@AttentionGraph@FI@output",
+            "type": "ggml_tensor *",
+            "index": 7,
+            "offsetBits": 1024,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@AttentionPipeline",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@AttentionPipeline",
+        "name": "AttentionPipeline",
+        "qualified": "AttentionPipeline",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1565,
+        "col": 7,
+        "offset": 65980,
+        "endLine": 1735,
+        "endCol": 1,
+        "endOffset": 73107,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 5,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "model",
+            "usr": "c:@S@AttentionPipeline@FI@model",
+            "type": "const llama_model &",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "compute",
+            "usr": "c:@S@AttentionPipeline@FI@compute",
+            "type": "const nano::Compute &",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "ffn",
+            "usr": "c:@S@AttentionPipeline@FI@ffn",
+            "type": "nano::RpcClient &",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "info",
+            "usr": "c:@S@AttentionPipeline@FI@info",
+            "type": "const nano::ModelInfo",
+            "index": 3,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "context_limit",
+            "usr": "c:@S@AttentionPipeline@FI@context_limit",
+            "type": "const int",
+            "index": 4,
+            "offsetBits": 640,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@S@AttentionState",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@AttentionState",
+        "name": "AttentionState",
+        "qualified": "AttentionState",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1537,
+        "col": 7,
+        "offset": 65055,
+        "endLine": 1556,
+        "endCol": 1,
+        "endOffset": 65735,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 3,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "position",
+            "usr": "c:@S@AttentionState@FI@position",
+            "type": "InferenceProgress",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "cache",
+            "usr": "c:@S@AttentionState@FI@cache",
+            "type": "std::unique_ptr<AttentionCaches>",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "owner",
+            "usr": "c:@S@AttentionState@FI@owner",
+            "type": "const AttentionPipeline *",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@BatchResult",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@BatchResult",
+        "name": "BatchResult",
+        "qualified": "BatchResult",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1557,
+        "col": 8,
+        "offset": 65745,
+        "endLine": 1560,
+        "endCol": 1,
+        "endOffset": 65810,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 2,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "state",
+            "usr": "c:@S@BatchResult@FI@state",
+            "type": "AttentionState",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "logits",
+            "usr": "c:@S@BatchResult@FI@logits",
+            "type": "VocabularyLogits",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@CompressionStatePlan",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@CompressionStatePlan",
+        "name": "CompressionStatePlan",
+        "qualified": "CompressionStatePlan",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 54,
+        "col": 8,
+        "offset": 2073,
+        "endLine": 61,
+        "endCol": 1,
+        "endOffset": 2309,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "pos",
+            "usr": "c:@S@CompressionStatePlan@FI@pos",
+            "type": "std::vector<int32_t>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "persist_src_idxs",
+            "usr": "c:@S@CompressionStatePlan@FI@persist_src_idxs",
+            "type": "std::vector<int32_t>",
+            "index": 1,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "persist_dst_idxs",
+            "usr": "c:@S@CompressionStatePlan@FI@persist_dst_idxs",
+            "type": "std::vector<int32_t>",
+            "index": 2,
+            "offsetBits": 384,
+            "bitWidth": 0
+          },
+          {
+            "name": "read_idxs",
+            "usr": "c:@S@CompressionStatePlan@FI@read_idxs",
+            "type": "std::vector<int32_t>",
+            "index": 3,
+            "offsetBits": 576,
+            "bitWidth": 0
+          },
+          {
+            "name": "write_pos",
+            "usr": "c:@S@CompressionStatePlan@FI@write_pos",
+            "type": "std::vector<int32_t>",
+            "index": 4,
+            "offsetBits": 768,
+            "bitWidth": 0
+          },
+          {
+            "name": "write_idxs",
+            "usr": "c:@S@CompressionStatePlan@FI@write_idxs",
+            "type": "std::vector<int32_t>",
+            "index": 5,
+            "offsetBits": 960,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@CompressionStateTensors",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@CompressionStateTensors",
+        "name": "CompressionStateTensors",
+        "qualified": "CompressionStateTensors",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 65,
+        "col": 8,
+        "offset": 2442,
+        "endLine": 72,
+        "endCol": 1,
+        "endOffset": 2925,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 6,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "pos",
+            "usr": "c:@S@CompressionStateTensors@FI@pos",
+            "type": "ggml_tensor *",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "persist_src_idxs",
+            "usr": "c:@S@CompressionStateTensors@FI@persist_src_idxs",
+            "type": "ggml_tensor *",
+            "index": 1,
+            "offsetBits": 64,
+            "bitWidth": 0
+          },
+          {
+            "name": "persist_dst_idxs",
+            "usr": "c:@S@CompressionStateTensors@FI@persist_dst_idxs",
+            "type": "ggml_tensor *",
+            "index": 2,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "read_idxs",
+            "usr": "c:@S@CompressionStateTensors@FI@read_idxs",
+            "type": "ggml_tensor *",
+            "index": 3,
+            "offsetBits": 192,
+            "bitWidth": 0
+          },
+          {
+            "name": "write_pos",
+            "usr": "c:@S@CompressionStateTensors@FI@write_pos",
+            "type": "ggml_tensor *",
+            "index": 4,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "write_idxs",
+            "usr": "c:@S@CompressionStateTensors@FI@write_idxs",
+            "type": "ggml_tensor *",
+            "index": 5,
+            "offsetBits": 320,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": true
+    },
+    {
+      "usr": "c:@S@InferenceProgress",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@InferenceProgress",
+        "name": "InferenceProgress",
+        "qualified": "InferenceProgress",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1500,
+        "col": 7,
+        "offset": 63779,
+        "endLine": 1513,
+        "endCol": 1,
+        "endOffset": 64217,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "position",
+            "usr": "c:@S@InferenceProgress@FI@position",
+            "type": "int",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@S@LayerCaches",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@LayerCaches",
+        "name": "LayerCaches",
+        "qualified": "LayerCaches",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 779,
+        "col": 8,
+        "offset": 32710,
+        "endLine": 784,
+        "endCol": 1,
+        "endOffset": 32862,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 4,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "context",
+            "usr": "c:@S@LayerCaches@FI@context",
+            "type": "nano::Context",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          },
+          {
+            "name": "buffer",
+            "usr": "c:@S@LayerCaches@FI@buffer",
+            "type": "nano::Buffer",
+            "index": 1,
+            "offsetBits": 128,
+            "bitWidth": 0
+          },
+          {
+            "name": "raw",
+            "usr": "c:@S@LayerCaches@FI@raw",
+            "type": "ggml_tensor *",
+            "index": 2,
+            "offsetBits": 256,
+            "bitWidth": 0
+          },
+          {
+            "name": "compression",
+            "usr": "c:@S@LayerCaches@FI@compression",
+            "type": "CompressionCache",
+            "index": 3,
+            "offsetBits": 320,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    },
+    {
+      "usr": "c:@S@VocabularyLogits",
+      "record": {
+        "kind": "record",
+        "usr": "c:@S@VocabularyLogits",
+        "name": "VocabularyLogits",
+        "qualified": "VocabularyLogits",
+        "file": "/home/huawei/nano-infer/deepseek-v4-flash/attention_pipeline.h",
+        "line": 1514,
+        "col": 7,
+        "offset": 64226,
+        "endLine": 1535,
+        "endCol": 1,
+        "endOffset": 65021,
+        "isUnion": false,
+        "isLambda": false,
+        "fieldCount": 1,
+        "dependent": false,
+        "fields": [
+          {
+            "name": "storage",
+            "usr": "c:@S@VocabularyLogits@FI@storage",
+            "type": "std::vector<float>",
+            "index": 0,
+            "offsetBits": 0,
+            "bitWidth": 0
+          }
+        ],
+        "bases": []
+      },
+      "root": false
+    }
+  ],
+  "count": 47
+}

@@ -1,0 +1,498 @@
+[1/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/smtp-address-validator.cpp.o
+[2/1289] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o
+[3/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/json-uri.cpp.o
+[4/1289] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[5/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/isadetection.c.o
+[6/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/bitset_util.c.o
+[7/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/array_util.c.o
+[8/1289] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[9/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/json-schema-draft7.json.cpp.o
+[10/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/bitset.c.o
+[11/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/art/art.c.o
+[12/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/array.c.o
+[13/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/json-patch.cpp.o
+[14/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/convert.c.o
+[15/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/containers.c.o
+[16/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_intersection.c.o
+[17/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_union.c.o
+[18/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/bitset.c.o
+[19/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_equal.c.o
+[20/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_subset.c.o
+[21/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/memory.c.o
+[22/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_negation.c.o
+[23/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_xor.c.o
+[24/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/mixed_andnot.c.o
+[25/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/string-format-check.cpp.o
+[26/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/roaring_priority_queue.c.o
+[27/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/containers/run.c.o
+[28/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/roaring_array.c.o
+[29/1289] Building CXX object lib/AnalysisStrategy/CMakeFiles/phasar_analysis_strategy.dir/Strategies.cpp.o
+[30/1289] Linking CXX static library lib/AnalysisStrategy/libphasar_analysis_strategy.a
+[31/1289] Building CXX object lib/ControlFlow/CMakeFiles/phasar_controlflow.dir/CallGraphAnalysisType.cpp.o
+[32/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/roaring64.c.o
+[33/1289] Building CXX object lib/Config/CMakeFiles/phasar_config.dir/Configuration.cpp.o
+[34/1289] Building C object external/CRoaring/src/CMakeFiles/roaring.dir/roaring.c.o
+[35/1289] Building CXX object lib/ControlFlow/CMakeFiles/phasar_controlflow.dir/CallGraph.cpp.o
+[36/1289] Linking C static library external/CRoaring/src/libroaring.a
+[37/1289] Building CXX object lib/DataFlow/Mono/CMakeFiles/phasar_dataflow_mono.dir/phasar_dataflow_mono_dummysrc.cpp.o
+[38/1289] Linking CXX static library lib/DataFlow/Mono/libphasar_dataflow_mono.a
+[39/1289] Building CXX object lib/DataFlow/MonoIfds/CMakeFiles/phasar_dataflow_monoifds.dir/phasar_dataflow_monoifds_dummysrc.cpp.o
+[40/1289] Linking CXX static library lib/DataFlow/MonoIfds/libphasar_dataflow_monoifds.a
+[41/1289] Building CXX object lib/DataFlow/PathSensitivity/CMakeFiles/phasar_dataflow_pathsensitivity.dir/phasar_dataflow_pathsensitivity_dummysrc.cpp.o
+[42/1289] Linking CXX static library lib/DataFlow/PathSensitivity/libphasar_dataflow_pathsensitivity.a
+[43/1289] Building CXX object lib/Domain/CMakeFiles/phasar_domain.dir/phasar_domain_dummysrc.cpp.o
+[44/1289] Linking CXX static library lib/Domain/libphasar_domain.a
+[45/1289] Building CXX object lib/ControlFlow/CMakeFiles/phasar_controlflow.dir/SpecialMemberFunctionType.cpp.o
+[46/1289] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[47/1289] Linking CXX static library lib/libgtest.a
+[48/1289] Linking CXX static library lib/libgmock.a
+[49/1289] Linking CXX static library lib/libgmock_main.a
+[50/1289] Linking CXX static library lib/libgtest_main.a
+[51/1289] Building CXX object lib/DataFlow/IfdsIde/CMakeFiles/phasar_dataflow_ifdside.dir/Solver/DFIExplodedSupergraph.cpp.o
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.h:12,
+                 from /tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:10:
+/tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:186:24: warning: ‘gsl::Pointer’ scoped attribute directive ignored [-Wattributes]
+  186 | class [[gsl::Pointer]] DFISolverResults
+      |                        ^~~~~~~~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:14,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:17:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h: In instantiation of ‘void psr::detail::pearce4VisitIt(const G&, typename psr::GraphTraits<GraphTy>::vertex_t, psr::PearceSCCData<typename psr::GraphTraits<GraphTy>::vertex_t>&, OnDiscoverFn&, OnSCCFn&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; OnDiscoverFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>; typename psr::GraphTraits<GraphTy>::vertex_t = psr::dfi::LocalVertexId]’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:461:27:   required from ‘void psr::visitSCCsFrom(const G&, typename GraphTraits<GraphTy>::vertex_t, PearceSCCData<typename GraphTraits<GraphTy>::vertex_t>&, auto:66, auto:67, std::bool_constant<Iterative>) [with G = CsrGraph<dfi::LocalVertexId>; bool Iterative = true; auto:66 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(dfi::LocalVertexId)>; auto:67 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(IntervalReachabilityBuilder<dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<dfi::LocalVertexId>)>; typename GraphTraits<GraphTy>::vertex_t = dfi::LocalVertexId; std::bool_constant<Iterative> = std::integral_constant<bool, true>]’
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:265:22:   required from ‘void psr::IntervalReachabilityBuilder<VtxId>::build(const G&, llvm::ArrayRef<U>, IndexTy&, auto:70) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; auto:70 = psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>; VtxId = psr::dfi::LocalVertexId; IndexTy = psr::IntervalReachabilityIndex<psr::dfi::LocalVertexId>]’
+/tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:209:21:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:351:38: warning: parameter ‘V’ set but not used [-Wunused-but-set-parameter]
+  351 |   const auto PushFrames = [&](Vertex V, DfsFrame *Frame) {
+      |                               ~~~~~~~^
+In file included from /usr/include/string.h:548,
+                 from /usr/include/c++/13/cstring:42,
+                 from /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:25,
+                 from /usr/lib/llvm-23/include/llvm/Support/raw_ostream.h:17,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/Utils/TypeTraits.h:16,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:15:
+In function ‘void* memcpy(void*, const void*, size_t)’,
+    inlined from ‘void llvm::SmallVectorTemplateBase<T, true>::push_back(ValueParamT) [with T = psr::IntervalSetId]’ at /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:582:16,
+    inlined from ‘void psr::TypedVector<IdT, ValueT, SmallSize>::push_back(psr::ByConstRef<ValueT>) [with IdT = psr::SCCId<psr::dfi::LocalVertexId>; ValueT = psr::IntervalSetId; unsigned int SmallSize = 0]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/TypedVector.h:95:57,
+    inlined from ‘void psr::IntervalReachabilityBuilder<VtxId>::completeSCC(const G&, SCCIdTy, llvm::ArrayRef<U>, IndexTy&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; VtxId = psr::dfi::LocalVertexId]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:314:28,
+    inlined from ‘psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:260:18,
+    inlined from ‘constexpr _Res std::__invoke_impl(__invoke_other, _Fn&&, _Args&& ...) [with _Res = void; _Fn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/bits/invoke.h:61:36,
+    inlined from ‘constexpr typename std::__invoke_result<_Functor, _ArgTypes>::type std::__invoke(_Callable&&, _Args&& ...) [with _Callable = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/bits/invoke.h:96:40,
+    inlined from ‘constexpr std::invoke_result_t<_Fn, _Args ...> std::invoke(_Callable&&, _Args&& ...) [with _Callable = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/functional:113:27,
+    inlined from ‘void psr::detail::pearce4FinishSCC(psr::PearceSCCData<GraphNodeId>&, GraphNodeId, OnSCCFn&) [with GraphNodeId = psr::dfi::LocalVertexId; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:287:14,
+    inlined from ‘psr::detail::pearce4VisitIt<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, psr::GraphTraits<psr::CsrGraph<psr::dfi::LocalVertexId> >::vertex_t, psr::PearceSCCData<psr::dfi::LocalVertexId>&, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>&, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&)::<lambda(Vertex)>’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:395:23,
+    inlined from ‘void psr::detail::pearce4VisitIt(const G&, typename psr::GraphTraits<GraphTy>::vertex_t, psr::PearceSCCData<typename psr::GraphTraits<GraphTy>::vertex_t>&, OnDiscoverFn&, OnSCCFn&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; OnDiscoverFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:430:16,
+    inlined from ‘void psr::visitSCCsFrom(const G&, typename GraphTraits<GraphTy>::vertex_t, PearceSCCData<typename GraphTraits<GraphTy>::vertex_t>&, auto:66, auto:67, std::bool_constant<Iterative>) [with G = CsrGraph<dfi::LocalVertexId>; bool Iterative = true; auto:66 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(dfi::LocalVertexId)>; auto:67 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(IntervalReachabilityBuilder<dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:461:27,
+    inlined from ‘void psr::IntervalReachabilityBuilder<VtxId>::build(const G&, llvm::ArrayRef<U>, IndexTy&, auto:70) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; auto:70 = psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>; VtxId = psr::dfi::LocalVertexId]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:265:22,
+    inlined from ‘void psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)’ at /tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:209:21:
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:33: warning: ‘*(unsigned int*)((char*)&Reusable + offsetof(std::optional<psr::IntervalSetId>,std::optional<psr::IntervalSetId>::<unnamed>.std::_Optional_base<psr::IntervalSetId, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+   29 |   return __builtin___memcpy_chk (__dest, __src, __len,
+      |          ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+   30 |                                  __glibc_objsize0 (__dest));
+      |                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h: In member function ‘void psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:331:34: note: ‘*(unsigned int*)((char*)&Reusable + offsetof(std::optional<psr::IntervalSetId>,std::optional<psr::IntervalSetId>::<unnamed>.std::_Optional_base<psr::IntervalSetId, true, true>::<unnamed>))’ was declared here
+  331 |     std::optional<IntervalSetId> Reusable;
+      |                                  ^~~~~~~~
+[52/1289] Building CXX object lib/DataFlow/CMakeFiles/phasar_dataflow.dir/IfdsIde/Solver/DFIExplodedSupergraph.cpp.o
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.h:12,
+                 from /tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:10:
+/tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:186:24: warning: ‘gsl::Pointer’ scoped attribute directive ignored [-Wattributes]
+  186 | class [[gsl::Pointer]] DFISolverResults
+      |                        ^~~~~~~~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:14,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:17:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h: In instantiation of ‘void psr::detail::pearce4VisitIt(const G&, typename psr::GraphTraits<GraphTy>::vertex_t, psr::PearceSCCData<typename psr::GraphTraits<GraphTy>::vertex_t>&, OnDiscoverFn&, OnSCCFn&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; OnDiscoverFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>; typename psr::GraphTraits<GraphTy>::vertex_t = psr::dfi::LocalVertexId]’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:461:27:   required from ‘void psr::visitSCCsFrom(const G&, typename GraphTraits<GraphTy>::vertex_t, PearceSCCData<typename GraphTraits<GraphTy>::vertex_t>&, auto:66, auto:67, std::bool_constant<Iterative>) [with G = CsrGraph<dfi::LocalVertexId>; bool Iterative = true; auto:66 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(dfi::LocalVertexId)>; auto:67 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(IntervalReachabilityBuilder<dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<dfi::LocalVertexId>)>; typename GraphTraits<GraphTy>::vertex_t = dfi::LocalVertexId; std::bool_constant<Iterative> = std::integral_constant<bool, true>]’
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:265:22:   required from ‘void psr::IntervalReachabilityBuilder<VtxId>::build(const G&, llvm::ArrayRef<U>, IndexTy&, auto:70) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; auto:70 = psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>; VtxId = psr::dfi::LocalVertexId; IndexTy = psr::IntervalReachabilityIndex<psr::dfi::LocalVertexId>]’
+/tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:209:21:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:351:38: warning: parameter ‘V’ set but not used [-Wunused-but-set-parameter]
+  351 |   const auto PushFrames = [&](Vertex V, DfsFrame *Frame) {
+      |                               ~~~~~~~^
+In file included from /usr/include/string.h:548,
+                 from /usr/include/c++/13/cstring:42,
+                 from /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:25,
+                 from /usr/lib/llvm-23/include/llvm/Support/raw_ostream.h:17,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/Utils/TypeTraits.h:16,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/DFISolverResults.h:15:
+In function ‘void* memcpy(void*, const void*, size_t)’,
+    inlined from ‘void llvm::SmallVectorTemplateBase<T, true>::push_back(ValueParamT) [with T = psr::IntervalSetId]’ at /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:582:16,
+    inlined from ‘void psr::TypedVector<IdT, ValueT, SmallSize>::push_back(psr::ByConstRef<ValueT>) [with IdT = psr::SCCId<psr::dfi::LocalVertexId>; ValueT = psr::IntervalSetId; unsigned int SmallSize = 0]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/TypedVector.h:95:57,
+    inlined from ‘void psr::IntervalReachabilityBuilder<VtxId>::completeSCC(const G&, SCCIdTy, llvm::ArrayRef<U>, IndexTy&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; VtxId = psr::dfi::LocalVertexId]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:314:28,
+    inlined from ‘psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:260:18,
+    inlined from ‘constexpr _Res std::__invoke_impl(__invoke_other, _Fn&&, _Args&& ...) [with _Res = void; _Fn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/bits/invoke.h:61:36,
+    inlined from ‘constexpr typename std::__invoke_result<_Functor, _ArgTypes>::type std::__invoke(_Callable&&, _Args&& ...) [with _Callable = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/bits/invoke.h:96:40,
+    inlined from ‘constexpr std::invoke_result_t<_Fn, _Args ...> std::invoke(_Callable&&, _Args&& ...) [with _Callable = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&; _Args = {psr::SCCId<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>&}]’ at /usr/include/c++/13/functional:113:27,
+    inlined from ‘void psr::detail::pearce4FinishSCC(psr::PearceSCCData<GraphNodeId>&, GraphNodeId, OnSCCFn&) [with GraphNodeId = psr::dfi::LocalVertexId; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:287:14,
+    inlined from ‘psr::detail::pearce4VisitIt<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, psr::GraphTraits<psr::CsrGraph<psr::dfi::LocalVertexId> >::vertex_t, psr::PearceSCCData<psr::dfi::LocalVertexId>&, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>&, psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>&)::<lambda(Vertex)>’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:395:23,
+    inlined from ‘void psr::detail::pearce4VisitIt(const G&, typename psr::GraphTraits<GraphTy>::vertex_t, psr::PearceSCCData<typename psr::GraphTraits<GraphTy>::vertex_t>&, OnDiscoverFn&, OnSCCFn&) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; OnDiscoverFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::dfi::LocalVertexId)>; OnSCCFn = psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(psr::IntervalReachabilityBuilder<psr::dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<psr::dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:430:16,
+    inlined from ‘void psr::visitSCCsFrom(const G&, typename GraphTraits<GraphTy>::vertex_t, PearceSCCData<typename GraphTraits<GraphTy>::vertex_t>&, auto:66, auto:67, std::bool_constant<Iterative>) [with G = CsrGraph<dfi::LocalVertexId>; bool Iterative = true; auto:66 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(dfi::LocalVertexId)>; auto:67 = IntervalReachabilityBuilder<dfi::LocalVertexId>::build<psr::CsrGraph<psr::dfi::LocalVertexId>, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)> >(const psr::CsrGraph<psr::dfi::LocalVertexId>&, llvm::ArrayRef<psr::dfi::LocalVertexId>, IndexTy&, psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>)::<lambda(IntervalReachabilityBuilder<dfi::LocalVertexId>::SCCIdTy, llvm::ArrayRef<dfi::LocalVertexId>)>]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/SCCGeneric.h:461:27,
+    inlined from ‘void psr::IntervalReachabilityBuilder<VtxId>::build(const G&, llvm::ArrayRef<U>, IndexTy&, auto:70) [with G = psr::CsrGraph<psr::dfi::LocalVertexId>; auto:70 = psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)::<lambda(psr::dfi::LocalVertexId)>; VtxId = psr::dfi::LocalVertexId]’ at /tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:265:22,
+    inlined from ‘void psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)’ at /tmp/opencode/frameworks/phasar/lib/DataFlow/IfdsIde/Solver/DFIExplodedSupergraph.cpp:209:21:
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:33: warning: ‘*(unsigned int*)((char*)&Reusable + offsetof(std::optional<psr::IntervalSetId>,std::optional<psr::IntervalSetId>::<unnamed>.std::_Optional_base<psr::IntervalSetId, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+   29 |   return __builtin___memcpy_chk (__dest, __src, __len,
+      |          ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+   30 |                                  __glibc_objsize0 (__dest));
+      |                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h: In member function ‘void psr::detail::DFIExplodedSupergraph::indexFunction(psr::FunctionId)’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/IntervalReachability.h:331:34: note: ‘*(unsigned int*)((char*)&Reusable + offsetof(std::optional<psr::IntervalSetId>,std::optional<psr::IntervalSetId>::<unnamed>.std::_Optional_base<psr::IntervalSetId, true, true>::<unnamed>))’ was declared here
+  331 |     std::optional<IntervalSetId> Reusable;
+      |                                  ^~~~~~~~
+[53/1289] Linking CXX static library lib/DataFlow/IfdsIde/libphasar_dataflow_ifdside.a
+[54/1289] Linking CXX static library lib/DataFlow/libphasar_dataflow.a
+[55/1289] Building CXX object lib/ControlFlow/CMakeFiles/phasar_controlflow.dir/CallGraphData.cpp.o
+[56/1289] Building CXX object external/json-schema-validator/CMakeFiles/nlohmann_json_schema_validator.dir/src/json-validator.cpp.o
+[57/1289] Linking CXX static library external/json-schema-validator/libnlohmann_json_schema_validator.a
+[58/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/FunctionCompressor.cpp.o
+FAILED: lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/FunctionCompressor.cpp.o 
+/usr/bin/c++ -DPHASAR_BUILD_DIR=\"/tmp/opencode/frameworks/phasar/build-llvm23c\" -DPHASAR_SRC_DIR=\"/tmp/opencode/frameworks/phasar\" -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/usr/lib/llvm-23/include -I/tmp/opencode/frameworks/phasar/include -I/tmp/opencode/frameworks/phasar/build-llvm23c/include -I/tmp/opencode/frameworks/phasar/external/json/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/cpp -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -Wall -Wextra -Wno-unused-parameter -Werror=return-type -O3 -DNDEBUG -std=c++20 -fPIC -fvisibility-inlines-hidden -MD -MT lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/FunctionCompressor.cpp.o -MF lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/FunctionCompressor.cpp.o.d -o lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/FunctionCompressor.cpp.o -c /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/FunctionCompressor.cpp
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CallGraphBase.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CallGraph.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/LLVMBasedCallGraph.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/FunctionCompressor.h:12,
+                 from /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/FunctionCompressor.cpp:1:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h: In instantiation of ‘std::pair<IdT, bool> psr::Compressor<T, IdT>::insert(const T&) [with T = const llvm::Function*; IdT = psr::FunctionId]’:
+/tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/FunctionCompressor.cpp:19:37:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:153:18: error: ‘Id’ was not declared in this scope
+  153 |     auto Ret = Id(FromInt.size());
+      |                ~~^~~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:156:22: error: could not convert ‘{Ret, true}’ from ‘<brace-enclosed initializer list>’ to ‘std::pair<psr::FunctionId, bool>’
+  156 |     return {Ret, true};
+      |                      ^
+      |                      |
+      |                      <brace-enclosed initializer list>
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h: In instantiation of ‘static auto psr::Compressor<T, IdT>::DSI::isEqual(const T*, const T*) [with T = const llvm::Function*; IdT = psr::FunctionId]’:
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:735:11:   required from ‘const BucketT* llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::doFind(const LookupKeyT&) const [with LookupKeyT = const llvm::Function* const*; DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:745:56:   required from ‘BucketT* llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::doFind(const LookupKeyT&) [with LookupKeyT = const llvm::Function* const*; DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:237:33:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find_as(const LookupKeyT&) [with LookupKeyT = const llvm::Function* const*; DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>; iterator = llvm::DenseMapIterator<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>, false>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:224:19:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find(const_arg_type_t<KeyT>) [with DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>; iterator = llvm::DenseMapIterator<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>, false>; const_arg_type_t<KeyT> = const llvm::Function* const*]’
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:150:29:   required from ‘std::pair<IdT, bool> psr::Compressor<T, IdT>::insert(const T&) [with T = const llvm::Function*; IdT = psr::FunctionId]’
+/tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/FunctionCompressor.cpp:19:37:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+[59/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/EntryFunctionUtils.cpp.o
+[60/1289] Building CXX object lib/CMakeFiles/phasar.dir/LibPhasar.cpp.o
+FAILED: lib/CMakeFiles/phasar.dir/LibPhasar.cpp.o 
+/usr/bin/c++ -DPHASAR_BUILD_DIR=\"/tmp/opencode/frameworks/phasar/build-llvm23c\" -DPHASAR_SRC_DIR=\"/tmp/opencode/frameworks/phasar\" -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/usr/lib/llvm-23/include -I/tmp/opencode/frameworks/phasar/include -I/tmp/opencode/frameworks/phasar/build-llvm23c/include -I/tmp/opencode/frameworks/phasar/external/json/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/cpp -I/tmp/opencode/frameworks/phasar/external/json-schema-validator/src -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -Wall -Wextra -Wno-unused-parameter -Werror=return-type -O3 -DNDEBUG -std=c++20 -fPIC -fvisibility-inlines-hidden -MD -MT lib/CMakeFiles/phasar.dir/LibPhasar.cpp.o -MF lib/CMakeFiles/phasar.dir/LibPhasar.cpp.o.d -o lib/CMakeFiles/phasar.dir/LibPhasar.cpp.o -c /tmp/opencode/frameworks/phasar/lib/LibPhasar.cpp
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow.h:20,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar.h:19,
+                 from /tmp/opencode/frameworks/phasar/lib/LibPhasar.cpp:10:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:263:5: warning: multi-line comment [-Wcomment]
+  263 |     //                |\
+      |     ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:288:9: warning: multi-line comment [-Wcomment]
+  288 |         //                                          |  |\
+      |         ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:324:9: warning: multi-line comment [-Wcomment]
+  324 |         //              |  |\
+      |         ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:390:5: warning: multi-line comment [-Wcomment]
+  390 |     //              |  |\
+      |     ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:555:9: warning: multi-line comment [-Wcomment]
+  555 |         //              |\
+      |         ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:662:5: warning: multi-line comment [-Wcomment]
+  662 |     //             \
+      |     ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:814:5: warning: multi-line comment [-Wcomment]
+  814 |     //                       \
+      |     ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:845:5: warning: multi-line comment [-Wcomment]
+  845 |     //                \
+      |     ^
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:883:9: warning: multi-line comment [-Wcomment]
+  883 |         //                \
+      |         ^
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow.h:19,
+                 from /tmp/opencode/frameworks/phasar/include/phasar.h:17:
+/tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/FlowFunctions.h:947:21: error: template argument 2 is invalid
+  947 |       requires std::same_as<typename T::container_type,
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  948 |                             FFContainerType<typename T::FlowFunctionPtrType>>;
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMMMacros.h:22,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/FlowEdgeFunctionCache.h:19,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow.h:27:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr void psr::pamm::detail::CounterBase::add(ptrdiff_t)’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:172:18: warning: call to non-‘constexpr’ function ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::fetch_add(__int_type, std::memory_order) [with _ITp = long int; __int_type = long int]’ [-Winvalid-constexpr]
+  172 |     Ctr.fetch_add(Offset, std::memory_order_relaxed);
+      |     ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13/bits/shared_ptr_atomic.h:33,
+                 from /usr/include/c++/13/memory:81,
+                 from /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:30,
+                 from /usr/lib/llvm-23/include/llvm/Support/raw_ostream.h:17,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/AnalysisStrategy/Strategies.h:14,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/AnalysisStrategy.h:17,
+                 from /tmp/opencode/frameworks/phasar/include/phasar.h:13:
+/usr/include/c++/13/bits/atomic_base.h:633:7: note: ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::fetch_add(__int_type, std::memory_order) [with _ITp = long int; __int_type = long int]’ declared here
+  633 |       fetch_add(__int_type __i,
+      |       ^~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr ptrdiff_t psr::pamm::detail::CounterBase::value() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:176:20: warning: call to non-‘constexpr’ function ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::load(std::memory_order) const [with _ITp = long int; __int_type = long int]’ [-Winvalid-constexpr]
+  176 |     return Ctr.load(std::memory_order_relaxed);
+      |            ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/atomic_base.h:498:7: note: ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::load(std::memory_order) const [with _ITp = long int; __int_type = long int]’ declared here
+  498 |       load(memory_order __m = memory_order_seq_cst) const noexcept
+      |       ^~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr void psr::pamm::detail::MinMaxCounterBase::add(size_t)’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:187:18: warning: call to non-‘constexpr’ function ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::fetch_add(__int_type, std::memory_order) [with _ITp = long unsigned int; __int_type = long unsigned int]’ [-Winvalid-constexpr]
+  187 |     Sum.fetch_add(Offset, std::memory_order_relaxed);
+      |     ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/atomic_base.h:633:7: note: ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::fetch_add(__int_type, std::memory_order) [with _ITp = long unsigned int; __int_type = long unsigned int]’ declared here
+  633 |       fetch_add(__int_type __i,
+      |       ^~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr bool psr::pamm::detail::TimerBase::isStarted() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:233:27: warning: call to non-‘constexpr’ function ‘_Tp std::atomic<_Tp>::load(std::memory_order) const [with _Tp = std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > >]’ [-Winvalid-constexpr]
+  233 |     return StartPoint.load(std::memory_order_acquire) != None;
+      |            ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/EdgeFunction.h:28,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/DefaultEdgeFunctionSingletonCache.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow.h:13:
+/usr/include/c++/13/atomic:293:7: note: ‘_Tp std::atomic<_Tp>::load(std::memory_order) const [with _Tp = std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > >]’ declared here
+  293 |       load(memory_order __m = memory_order_seq_cst) const noexcept
+      |       ^~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr auto psr::pamm::detail::TimerBase::elapsedNanos() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:256:45: warning: call to non-‘constexpr’ function ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::load(std::memory_order) const [with _ITp = long int; __int_type = long int]’ [-Winvalid-constexpr]
+  256 |     return std::chrono::nanoseconds(Acc.load(std::memory_order_relaxed));
+      |                                     ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/atomic_base.h:498:7: note: ‘std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::load(std::memory_order) const [with _ITp = long int; __int_type = long int]’ declared here
+  498 |       load(memory_order __m = memory_order_seq_cst) const noexcept
+      |       ^~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h: In member function ‘constexpr std::chrono::nanoseconds psr::pamm::detail::TimerBase::pendingNanos() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/PAMM.h:261:44: warning: call to non-‘constexpr’ function ‘_Tp std::atomic<_Tp>::load(std::memory_order) const [with _Tp = std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > >]’ [-Winvalid-constexpr]
+  261 |     auto StartPoint = this->StartPoint.load(std::memory_order_relaxed);
+      |                       ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/atomic:293:7: note: ‘_Tp std::atomic<_Tp>::load(std::memory_order) const [with _Tp = std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > >]’ declared here
+  293 |       load(memory_order __m = memory_order_seq_cst) const noexcept
+      |       ^~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/Mono/Solver/IntraMonoSolver.h:21,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow.h:38:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Utils/LLVMShorthands.h: At global scope:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Utils/LLVMShorthands.h:286:70: warning: ‘BranchInst’ is deprecated: Use UncondBrInst/CondBrInst/Instruction instead [-Wdeprecated-declarations]
+  286 | isStaticVariableLazyInitializationBranch(const llvm::BranchInst *Inst);
+      |                                                                      ^
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/PathSensitivity/ExplodedSuperGraph.h:26,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow/IfdsIde/Solver/PathAwareIDESolver.h:16,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/DataFlow.h:31:
+/usr/lib/llvm-23/include/llvm/IR/Instructions.h:3126:5: note: declared here
+ 3126 |     BranchInst : public Instruction {
+      |     ^~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypePropagator.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/Resolver/VTAResolver.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow.h:24,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM.h:13:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h: In static member function ‘static llvm::DenseMapInfo<psr::vta::TAGNode>::TAGNode llvm::DenseMapInfo<psr::vta::TAGNode>::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h:86:63: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+   86 |     return {Variable{llvm::DenseMapInfo<const llvm::Value *>::getEmptyKey()}};
+      |                                                               ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h:86:77: error: could not convert ‘{<expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘llvm::DenseMapInfo<psr::vta::TAGNode>::TAGNode’ {aka ‘psr::vta::TAGNode’}
+   86 |     return {Variable{llvm::DenseMapInfo<const llvm::Value *>::getEmptyKey()}};
+      |                                                                             ^
+      |                                                                             |
+      |                                                                             <brace-enclosed initializer list>
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h: In static member function ‘static llvm::DenseMapInfo<psr::vta::TAGNode>::TAGNode llvm::DenseMapInfo<psr::vta::TAGNode>::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h:90:59: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+   90 |         Variable{llvm::DenseMapInfo<const llvm::Value *>::getTombstoneKey()}};
+      |                                                           ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h:90:77: error: could not convert ‘{<expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘llvm::DenseMapInfo<psr::vta::TAGNode>::TAGNode’ {aka ‘psr::vta::TAGNode’}
+   90 |         Variable{llvm::DenseMapInfo<const llvm::Value *>::getTombstoneKey()}};
+      |                                                                             ^
+      |                                                                             |
+      |                                                                             <brace-enclosed initializer list>
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEExtendedTaintAnalysis.h:19,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow.h:18:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h: In static member function ‘static psr::AbstractMemoryLocation llvm::DenseMapInfo<psr::AbstractMemoryLocation>::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h:214:66: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<psr::detail::AbstractMemoryLocationImpl*>’
+  214 |         DenseMapInfo<psr::detail::AbstractMemoryLocationImpl *>::getEmptyKey()};
+      |                                                                  ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h:214:79: error: could not convert ‘{<expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘psr::AbstractMemoryLocation’
+  214 |         DenseMapInfo<psr::detail::AbstractMemoryLocationImpl *>::getEmptyKey()};
+      |                                                                               ^
+      |                                                                               |
+      |                                                                               <brace-enclosed initializer list>
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h: In static member function ‘static psr::AbstractMemoryLocation llvm::DenseMapInfo<psr::AbstractMemoryLocation>::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h:218:53: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<psr::detail::AbstractMemoryLocationImpl*>’
+  218 |         psr::detail::AbstractMemoryLocationImpl *>::getTombstoneKey()};
+      |                                                     ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/ExtendedTaintAnalysis/AbstractMemoryLocation.h:218:70: error: could not convert ‘{<expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘psr::AbstractMemoryLocation’
+  218 |         psr::detail::AbstractMemoryLocationImpl *>::getTombstoneKey()};
+      |                                                                      ^
+      |                                                                      |
+      |                                                                      <brace-enclosed initializer list>
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h: In member function ‘typename psr::IDEInstInteractionAnalysisT<EdgeFactType, SyntacticAnalysisOnly, EnableIndirectTaints>::IDETabProblemType::FlowFunctionPtrType psr::IDEInstInteractionAnalysisT<EdgeFactType, SyntacticAnalysisOnly, EnableIndirectTaints>::getNormalFlowFunction(n_t, n_t)’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:276:49: warning: ‘BranchInst’ is deprecated: Use UncondBrInst/CondBrInst/Instruction instead [-Wdeprecated-declarations]
+  276 |       if (const auto *Br = llvm::dyn_cast<llvm::BranchInst>(Curr);
+      |                                                 ^~~~~~~~~~
+/usr/lib/llvm-23/include/llvm/IR/Instructions.h:3126:5: note: declared here
+ 3126 |     BranchInst : public Instruction {
+      |     ^~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h: In static member function ‘static psr::IDEIIAFlowFact llvm::DenseMapInfo<psr::IDEIIAFlowFact>::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:1211:44: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+ 1211 |         DenseMapInfo<const llvm::Value *>::getEmptyKey());
+      |                                            ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h: In static member function ‘static psr::IDEIIAFlowFact llvm::DenseMapInfo<psr::IDEIIAFlowFact>::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:1215:44: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+ 1215 |         DenseMapInfo<const llvm::Value *>::getTombstoneKey());
+      |                                            ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h: In static member function ‘static bool llvm::DenseMapInfo<psr::IDEIIAFlowFact>::isEqual(const psr::IDEIIAFlowFact&, const psr::IDEIIAFlowFact&)’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:1219:60: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+ 1219 |     const auto *Empty = DenseMapInfo<const llvm::Value *>::getEmptyKey();
+      |                                                            ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/DataFlow/IfdsIde/Problems/IDEInstInteractionAnalysis.h:1220:57: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+ 1220 |     const auto *TS = DenseMapInfo<const llvm::Value *>::getTombstoneKey();
+      |                                                         ^~~~~~~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM.h:20:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h: In static member function ‘static psr::PAGVariable llvm::DenseMapInfo<psr::PAGVariable>::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h:182:47: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  182 |     return DenseMapInfo<const llvm::Value *>::getEmptyKey();
+      |                                               ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h: In static member function ‘static psr::PAGVariable llvm::DenseMapInfo<psr::PAGVariable>::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h:185:47: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  185 |     return DenseMapInfo<const llvm::Value *>::getTombstoneKey();
+      |                                               ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h: In member function ‘constexpr size_t psr::AndersenOTFResult::size() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h:93:26: warning: call to non-‘constexpr’ function ‘size_t psr::TypedVector<IdT, ValueT, SmallSize>::size() const [with IdT = psr::ValueId; ValueT = psr::SparseBitSet<psr::ValueId>; unsigned int SmallSize = 0; size_t = long unsigned int]’ [-Winvalid-constexpr]
+   93 |     return AliasSets.size();
+      |            ~~~~~~~~~~~~~~^~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:16,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CallGraphBase.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CallGraph.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow.h:15,
+                 from /tmp/opencode/frameworks/phasar/include/phasar.h:15:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/TypedVector.h:63:24: note: ‘size_t psr::TypedVector<IdT, ValueT, SmallSize>::size() const [with IdT = psr::ValueId; ValueT = psr::SparseBitSet<psr::ValueId>; unsigned int SmallSize = 0; size_t = long unsigned int]’ declared here
+   63 |   [[nodiscard]] size_t size() const noexcept { return Vec.size(); }
+      |                        ^~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/FilteredLLVMAliasSet.h:13,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer.h:16:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h: In static member function ‘static psr::CachedLLVMAliasIterator::ReachableAllocationSitesKey psr::CachedLLVMAliasIterator::ReachableAllocationSitesKeyDMI::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h:107:44: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  107 |       return {{}, llvm::DenseMapInfo<v_t>::getEmptyKey()};
+      |                                            ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h:107:57: error: could not convert ‘{<brace-enclosed initializer list>(), <expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘psr::CachedLLVMAliasIterator::ReachableAllocationSitesKey’
+  107 |       return {{}, llvm::DenseMapInfo<v_t>::getEmptyKey()};
+      |                                                         ^
+      |                                                         |
+      |                                                         <brace-enclosed initializer list>
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h: In static member function ‘static psr::CachedLLVMAliasIterator::ReachableAllocationSitesKey psr::CachedLLVMAliasIterator::ReachableAllocationSitesKeyDMI::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h:110:44: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  110 |       return {{}, llvm::DenseMapInfo<v_t>::getTombstoneKey()};
+      |                                            ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/CachedLLVMAliasIterator.h:110:61: error: could not convert ‘{<brace-enclosed initializer list>(), <expression error>}’ from ‘<brace-enclosed initializer list>’ to ‘psr::CachedLLVMAliasIterator::ReachableAllocationSitesKey’
+  110 |       return {{}, llvm::DenseMapInfo<v_t>::getTombstoneKey()};
+      |                                                             ^
+      |                                                             |
+      |                                                             <brace-enclosed initializer list>
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMUnionFindAliasSet.h:12,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer.h:24:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMRawAliasSet.h: In member function ‘constexpr psr::AliasResult psr::LLVMRawAliasSet::alias(psr::LLVMRawAliasSetBase::v_t, psr::LLVMRawAliasSetBase::v_t, psr::LLVMRawAliasSetBase::n_t) const’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMRawAliasSet.h:141:17: warning: call to non-‘constexpr’ function ‘std::unique_ptr<_Tp, _Dp>::pointer std::unique_ptr<_Tp, _Dp>::operator->() const [with _Tp = psr::LLVMRawAliasSet::AAResultConcept; _Dp = std::default_delete<psr::LLVMRawAliasSet::AAResultConcept>; pointer = psr::LLVMRawAliasSet::AAResultConcept*]’ [-Winvalid-constexpr]
+  141 |     return AARes->alias(V1, V2, I);
+      |                 ^~
+In file included from /usr/include/c++/13/memory:78:
+/usr/include/c++/13/bits/unique_ptr.h:460:7: note: ‘std::unique_ptr<_Tp, _Dp>::pointer std::unique_ptr<_Tp, _Dp>::operator->() const [with _Tp = psr::LLVMRawAliasSet::AAResultConcept; _Dp = std::default_delete<psr::LLVMRawAliasSet::AAResultConcept>; pointer = psr::LLVMRawAliasSet::AAResultConcept*]’ declared here
+  460 |       operator->() const noexcept
+      |       ^~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h: In instantiation of ‘static auto psr::Compressor<T, IdT>::DSI::isEqual(const T*, const T*) [with T = psr::vta::TAGNode; IdT = psr::vta::TAGNodeId]’:
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:735:11:   required from ‘const BucketT* llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::doFind(const LookupKeyT&) const [with LookupKeyT = const psr::vta::TAGNode*; DerivedT = llvm::DenseMap<const psr::vta::TAGNode*, psr::vta::TAGNodeId, psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI, llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId> >; KeyT = const psr::vta::TAGNode*; ValueT = psr::vta::TAGNodeId; KeyInfoT = psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI; BucketT = llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:243:39:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::const_iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find_as(const LookupKeyT&) const [with LookupKeyT = const psr::vta::TAGNode*; DerivedT = llvm::DenseMap<const psr::vta::TAGNode*, psr::vta::TAGNodeId, psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI, llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId> >; KeyT = const psr::vta::TAGNode*; ValueT = psr::vta::TAGNodeId; KeyInfoT = psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI; BucketT = llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId>; const_iterator = llvm::DenseMapIterator<const psr::vta::TAGNode*, psr::vta::TAGNodeId, psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI, llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId>, true>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:227:19:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::const_iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find(const_arg_type_t<KeyT>) const [with DerivedT = llvm::DenseMap<const psr::vta::TAGNode*, psr::vta::TAGNodeId, psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI, llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId> >; KeyT = const psr::vta::TAGNode*; ValueT = psr::vta::TAGNodeId; KeyInfoT = psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI; BucketT = llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId>; const_iterator = llvm::DenseMapIterator<const psr::vta::TAGNode*, psr::vta::TAGNodeId, psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI, llvm::detail::DenseMapPair<const psr::vta::TAGNode*, psr::vta::TAGNodeId>, true>; const_arg_type_t<KeyT> = const psr::vta::TAGNode*]’
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:178:29:   required from ‘std::optional<_Up> psr::Compressor<T, IdT>::getOrNull(const T&) const [with T = psr::vta::TAGNode; IdT = psr::vta::TAGNodeId]’
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/VTA/TypeAssignmentGraph.h:136:27:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<psr::vta::TAGNode, psr::vta::TAGNodeId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+[61/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/ExternCallbackModel.cpp.o
+[62/1289] Building CXX object lib/PhasarLLVM/CMakeFiles/phasar_llvm.dir/HelperAnalyses.cpp.o
+FAILED: lib/PhasarLLVM/CMakeFiles/phasar_llvm.dir/HelperAnalyses.cpp.o 
+/usr/bin/c++ -DPHASAR_BUILD_DIR=\"/tmp/opencode/frameworks/phasar/build-llvm23c\" -DPHASAR_SRC_DIR=\"/tmp/opencode/frameworks/phasar\" -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/usr/lib/llvm-23/include -I/tmp/opencode/frameworks/phasar/include -I/tmp/opencode/frameworks/phasar/build-llvm23c/include -I/tmp/opencode/frameworks/phasar/external/json/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/include -I/tmp/opencode/frameworks/phasar/external/CRoaring/cpp -I/tmp/opencode/frameworks/phasar/external/json-schema-validator/src -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -Wall -Wextra -Wno-unused-parameter -Werror=return-type -O3 -DNDEBUG -std=c++20 -fPIC -fvisibility-inlines-hidden -MD -MT lib/PhasarLLVM/CMakeFiles/phasar_llvm.dir/HelperAnalyses.cpp.o -MF lib/PhasarLLVM/CMakeFiles/phasar_llvm.dir/HelperAnalyses.cpp.o.d -o lib/PhasarLLVM/CMakeFiles/phasar_llvm.dir/HelperAnalyses.cpp.o -c /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/HelperAnalyses.cpp
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h:13,
+                 from /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/HelperAnalyses.cpp:12:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h: In static member function ‘static psr::PAGVariable llvm::DenseMapInfo<psr::PAGVariable>::getEmptyKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h:182:47: error: ‘getEmptyKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  182 |     return DenseMapInfo<const llvm::Value *>::getEmptyKey();
+      |                                               ^~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h: In static member function ‘static psr::PAGVariable llvm::DenseMapInfo<psr::PAGVariable>::getTombstoneKey()’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMPointerAssignmentGraph.h:185:47: error: ‘getTombstoneKey’ is not a member of ‘llvm::DenseMapInfo<const llvm::Value*, void>’
+  185 |     return DenseMapInfo<const llvm::Value *>::getTombstoneKey();
+      |                                               ^~~~~~~~~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h: In member function ‘constexpr size_t psr::AndersenOTFResult::size() const’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/AndersenOTFAA.h:93:26: warning: call to non-‘constexpr’ function ‘size_t psr::TypedVector<IdT, ValueT, SmallSize>::size() const [with IdT = psr::ValueId; ValueT = psr::SparseBitSet<psr::ValueId>; unsigned int SmallSize = 0; size_t = long unsigned int]’ [-Winvalid-constexpr]
+   93 |     return AliasSets.size();
+      |            ~~~~~~~~~~~~~~^~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:16,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/Utils/FunctionId.h:12,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/HelperAnalyses.h:19,
+                 from /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/HelperAnalyses.cpp:1:
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/TypedVector.h:63:24: note: ‘size_t psr::TypedVector<IdT, ValueT, SmallSize>::size() const [with IdT = psr::ValueId; ValueT = psr::SparseBitSet<psr::ValueId>; unsigned int SmallSize = 0; size_t = long unsigned int]’ declared here
+   63 |   [[nodiscard]] size_t size() const noexcept { return Vec.size(); }
+      |                        ^~~~
+In file included from /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/HelperAnalyses.cpp:17:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMRawAliasSet.h: In member function ‘constexpr psr::AliasResult psr::LLVMRawAliasSet::alias(psr::LLVMRawAliasSetBase::v_t, psr::LLVMRawAliasSetBase::v_t, psr::LLVMRawAliasSetBase::n_t) const’:
+/tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/Pointer/LLVMRawAliasSet.h:141:17: warning: call to non-‘constexpr’ function ‘std::unique_ptr<_Tp, _Dp>::pointer std::unique_ptr<_Tp, _Dp>::operator->() const [with _Tp = psr::LLVMRawAliasSet::AAResultConcept; _Dp = std::default_delete<psr::LLVMRawAliasSet::AAResultConcept>; pointer = psr::LLVMRawAliasSet::AAResultConcept*]’ [-Winvalid-constexpr]
+  141 |     return AARes->alias(V1, V2, I);
+      |                 ^~
+In file included from /usr/include/c++/13/memory:78,
+                 from /usr/lib/llvm-23/include/llvm/ADT/SmallVector.h:30,
+                 from /usr/lib/llvm-23/include/llvm/Support/raw_ostream.h:17,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CallGraphAnalysisType.h:14,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/HelperAnalyses.h:13:
+/usr/include/c++/13/bits/unique_ptr.h:460:7: note: ‘std::unique_ptr<_Tp, _Dp>::pointer std::unique_ptr<_Tp, _Dp>::operator->() const [with _Tp = psr::LLVMRawAliasSet::AAResultConcept; _Dp = std::default_delete<psr::LLVMRawAliasSet::AAResultConcept>; pointer = psr::LLVMRawAliasSet::AAResultConcept*]’ declared here
+  460 |       operator->() const noexcept
+      |       ^~~~~~~~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h: In instantiation of ‘static auto psr::Compressor<T, IdT>::DSI::isEqual(const T*, const T*) [with T = const llvm::Function*; IdT = psr::FunctionId]’:
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:735:11:   required from ‘const BucketT* llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::doFind(const LookupKeyT&) const [with LookupKeyT = const llvm::Function* const*; DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:243:39:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::const_iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find_as(const LookupKeyT&) const [with LookupKeyT = const llvm::Function* const*; DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>; const_iterator = llvm::DenseMapIterator<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>, true>]’
+/usr/lib/llvm-23/include/llvm/ADT/DenseMap.h:227:19:   required from ‘llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::const_iterator llvm::DenseMapBase<DerivedT, KeyT, ValueT, KeyInfoT, BucketT>::find(const_arg_type_t<KeyT>) const [with DerivedT = llvm::DenseMap<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId> >; KeyT = const llvm::Function* const*; ValueT = psr::FunctionId; KeyInfoT = psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI; BucketT = llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>; const_iterator = llvm::DenseMapIterator<const llvm::Function* const*, psr::FunctionId, psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI, llvm::detail::DenseMapPair<const llvm::Function* const*, psr::FunctionId>, true>; const_arg_type_t<KeyT> = const llvm::Function* const*]’
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:178:29:   required from ‘std::optional<_Up> psr::Compressor<T, IdT>::getOrNull(const T&) const [with T = const llvm::Function*; IdT = psr::FunctionId]’
+/tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CGSCCs.h:139:45:   required from ‘psr::SCCDependencyGraph<psr::FunctionId> psr::computeCGSCCCallers(const CallGraph<N, F>&, const auto:72&, FunctionCompressor<F>&, const SCCHolder<FunctionId>&) [with N = const llvm::Instruction*; F = const llvm::Function*; auto:72 = LLVMBasedICFG; FunctionCompressor<F> = Compressor<const llvm::Function*, FunctionId>]’
+/tmp/opencode/frameworks/phasar/include/phasar/ControlFlow/CGSCCs.h:161:29:   required from ‘psr::SCCDependencyGraph<psr::FunctionId> psr::computeCGSCCCallers(const I&, FunctionCompressor<typename I::f_t>&, const SCCHolder<FunctionId>&) [with I = LLVMBasedICFG; FunctionCompressor<typename I::f_t> = Compressor<const llvm::Function*, FunctionId>; typename I::f_t = const llvm::Function*]’
+/tmp/opencode/frameworks/phasar/lib/PhasarLLVM/HelperAnalyses.cpp:216:28:   required from here
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:238:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  238 |       if (LHS == DSI::getEmptyKey() || LHS == DSI::getTombstoneKey() ||
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:34: error: ‘getEmptyKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                  ~~~~~~~~~~~~~~~~^~
+/tmp/opencode/frameworks/phasar/include/phasar/Utils/Compressor.h:239:67: error: ‘getTombstoneKey’ is not a member of ‘psr::Compressor<const llvm::Function*, psr::FunctionId>::DSI’
+  239 |           RHS == DSI::getEmptyKey() || RHS == DSI::getTombstoneKey()) {
+      |                                               ~~~~~~~~~~~~~~~~~~~~^~
+[63/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/GlobalCtorsDtorsModel.cpp.o
+[64/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/LLVMBasedBackwardCFG.cpp.o
+/tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/LLVMBasedBackwardCFG.cpp: In member function ‘bool psr::LLVMBasedBackwardCFG::isBranchTargetImpl(psr::CFGBase<psr::LLVMBasedBackwardCFG>::n_t, psr::CFGBase<psr::LLVMBasedBackwardCFG>::n_t) const’:
+/tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/LLVMBasedBackwardCFG.cpp:121:44: warning: ‘BranchInst’ is deprecated: Use UncondBrInst/CondBrInst/Instruction instead [-Wdeprecated-declarations]
+  121 |   if (const auto *B = llvm::dyn_cast<llvm::BranchInst>(Succ)) {
+      |                                            ^~~~~~~~~~
+In file included from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/LLVMBasedCFG.h:20,
+                 from /tmp/opencode/frameworks/phasar/include/phasar/PhasarLLVM/ControlFlow/LLVMBasedBackwardCFG.h:13,
+                 from /tmp/opencode/frameworks/phasar/lib/PhasarLLVM/ControlFlow/LLVMBasedBackwardCFG.cpp:10:
+/usr/lib/llvm-23/include/llvm/IR/Instructions.h:3126:5: note: declared here
+ 3126 |     BranchInst : public Instruction {
+      |     ^~~~~~~~~~
+[65/1289] Building CXX object lib/PhasarLLVM/ControlFlow/CMakeFiles/phasar_llvm_controlflow.dir/LLVMBasedBackwardICFG.cpp.o
+ninja: build stopped: subcommand failed.

@@ -1,0 +1,12 @@
+tool availability 2026-10-30T20:24:04+08:00
+phasar-cli       MISSING
+phasar-llvm      MISSING
+svf-svf          MISSING
+codeql           MISSING
+joern            MISSING
+infer            MISSING
+cppcheck         MISSING
+clang-tidy       MISSING
+scan-build       MISSING
+
+local source trees

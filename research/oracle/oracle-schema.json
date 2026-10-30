@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nano-infer state tracing Oracle",
+  "type": "object",
+  "required": ["id", "project", "sourceRevision", "query", "context", "expectation", "evidence", "reviewStatus"],
+  "properties": {
+    "id": {"type": "string", "description": "Stable semantic case id; never a line number alone."},
+    "project": {"const": "nano-infer"},
+    "sourceRevision": {"type": "string", "description": "Git commit plus dirty worktree marker/hashes."},
+    "sourceHashes": {"type": "object", "additionalProperties": {"type": "string"}},
+    "query": {
+      "type": "object",
+      "required": ["file", "anchor", "line", "column", "mode"],
+      "properties": {
+        "file": {"type": "string"},
+        "anchor": {"type": "string", "description": "Exact source text or stable semantic anchor."},
+        "line": {"type": "integer"},
+        "column": {"type": "integer"},
+        "mode": {"enum": ["origin", "mutation", "history", "provenance"]}
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "function": {"type": "string"},
+        "templateInstance": {"type": "string"},
+        "statePath": {"type": "array", "items": {"type": "string"}},
+        "foldSite": {"type": "string"}
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "required": ["kind", "targets", "requiredEdges", "conditions", "boundaries", "mayMust"],
+      "properties": {
+        "kind": {"enum": ["Exact", "Multiple", "Conditional", "Boundary", "Unsupported", "NoPriorMutation"]},
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "line", "anchor", "role"],
+            "properties": {
+              "file": {"type": "string"},
+              "line": {"type": "integer"},
+              "column": {"type": "integer"},
+              "anchor": {"type": "string"},
+              "role": {"type": "string"},
+              "required": {"type": "boolean", "default": true}
+            }
+          }
+        },
+        "requiredEdges": {"type": "array", "items": {"type": "string"}},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "boundaries": {"type": "array", "items": {"type": "string"}},
+        "mayMust": {"enum": ["may", "must", "mixed"]}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "quote"],
+        "properties": {
+          "file": {"type": "string"},
+          "line": {"type": "integer"},
+          "quote": {"type": "string"},
+          "kind": {"type": "string"}
+        }
+      }
+    },
+    "reviewStatus": {"enum": ["reviewed-manual", "pending-independent-review", "disputed"]},
+    "notes": {"type": "string"}
+  }
+}

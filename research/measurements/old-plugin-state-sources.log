@@ -1,0 +1,630 @@
+{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","extractAndPrepareMs":14291.053874,"astBytes":10444085}
+{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","extractAndPrepareMs":17763.930816,"astBytes":30235017}
+{"selection":"declaration","cursorByteOffset":35123,"nodes":[{"kind":"ParmVarDecl","id":"7BCA4C42AC00","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1","path":{"rootId":"7BCA4C42AC00","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"ParmVarDecl","id":"7BCA4A35E4D0","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA4A35E4D0","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"ParmVarDecl","id":"7BCA49D58010","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA49D58010","rootName":"session_state","members":[]},"parameterIndex":0}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{
+  "selection": "declaration",
+  "mode": "origin",
+  "result": "OriginCandidatesFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 301,
+        "offset": 14186
+      },
+      "frames": [
+        {
+          "caller": "run_embeddings",
+          "file": "pipeline.h",
+          "line": 1326,
+          "offset": 56666,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42BDD0",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 325,
+          "offset": 15767,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766686157D50",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 242,
+        "offset": 11293
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 244,
+          "offset": 11401,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7666864AF158",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 520,
+        "offset": 24477
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    }
+  ],
+  "diagnostics": [],
+  "boundaries": []
+}
+{
+  "selection": "declaration",
+  "mode": "mutation",
+  "result": "MutationFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 543,
+        "offset": 25430
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 518,
+          "offset": 24415,
+          "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:14186.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11293.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:24477.",
+    "No mutation is verified on this fold return path.",
+    "No mutation is verified on this fold return path."
+  ],
+  "boundaries": []
+}
+{"selection":"guard","cursorByteOffset":35615,"nodes":[{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1","path":{"rootId":"7BCA4C42AC00","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA4A35E4D0","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA49D58010","rootName":"session_state","members":[]},"parameterIndex":0}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{
+  "selection": "guard",
+  "mode": "origin",
+  "result": "OriginCandidatesFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 301,
+        "offset": 14186
+      },
+      "frames": [
+        {
+          "caller": "run_embeddings",
+          "file": "pipeline.h",
+          "line": 1326,
+          "offset": 56666,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42BDD0",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 325,
+          "offset": 15767,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766686157D50",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 242,
+        "offset": 11293
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 244,
+          "offset": 11401,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7666864AF158",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 520,
+        "offset": 24477
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    }
+  ],
+  "diagnostics": [],
+  "boundaries": []
+}
+{
+  "selection": "guard",
+  "mode": "mutation",
+  "result": "MutationFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 543,
+        "offset": 25430
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 518,
+          "offset": 24415,
+          "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:14186.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11293.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:24477.",
+    "No mutation is verified on this fold return path.",
+    "No mutation is verified on this fold return path."
+  ],
+  "boundaries": []
+}
+{"selection":"fold-seed","cursorByteOffset":37694,"nodes":[{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1","path":{"rootId":"7BCA4C42AC00","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA4A35E4D0","rootName":"session_state","members":[]},"parameterIndex":0},{"kind":"DeclRefExpr","owner":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","path":{"rootId":"7BCA49D58010","rootName":"session_state","members":[]},"parameterIndex":0}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":324,"character":23},"end":{"line":324,"character":46}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15767,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":15998,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_embeddings","symbol":"c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1321,"character":2},"end":{"line":1321,"character":2}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[{"caller":"run_embeddings","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56666,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":56774,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":243,"character":15},"end":{"line":243,"character":33}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11401,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":11605,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","range":{"start":{"line":543,"character":12},"end":{"line":543,"character":30}},"links":[{"caller":"operator()","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25467,"tokLen":8},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp","offset":25597,"tokLen":1}}}]}
+{"event":"verify-caller","function":"run_batch","symbol":"c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1331,"character":13},"end":{"line":1331,"character":13}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1325,"character":11},"end":{"line":1325,"character":18}},"links":[]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":1343,"character":11},"end":{"line":1343,"character":18}},"links":[{"caller":"run_batch","calleeSymbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","callRange":{"begin":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57518,"tokLen":7},"end":{"file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","offset":57618,"tokLen":1}}}]}
+{"event":"verify-caller","function":"execute","symbol":"c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1","file":"/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h","range":{"start":{"line":813,"character":13},"end":{"line":813,"character":13}},"links":[]}
+{
+  "selection": "fold-seed",
+  "mode": "origin",
+  "result": "OriginCandidatesFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 301,
+        "offset": 14186
+      },
+      "frames": [
+        {
+          "caller": "run_embeddings",
+          "file": "pipeline.h",
+          "line": 1326,
+          "offset": 56666,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42BDD0",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 325,
+          "offset": 15767,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766686157D50",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 242,
+        "offset": 11293
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 244,
+          "offset": 11401,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7666864AF158",
+            "rootName": "batch_state",
+            "members": [
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    },
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 520,
+        "offset": 24477
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        }
+      ],
+      "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+    }
+  ],
+  "diagnostics": [],
+  "boundaries": []
+}
+{
+  "selection": "fold-seed",
+  "mode": "mutation",
+  "result": "MutationFound",
+  "candidates": [
+    {
+      "target": {
+        "file": "cli.cpp",
+        "line": 543,
+        "offset": 25430
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "file": "pipeline.h",
+          "line": 1344,
+          "offset": 57518,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "7BCA4C42C550",
+            "rootName": "session_state",
+            "members": []
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 544,
+          "offset": 25467,
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "parameterIndex": 0,
+          "argument": {
+            "rootId": "766682D64448",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          }
+        },
+        {
+          "caller": "operator()",
+          "file": "cli.cpp",
+          "line": 518,
+          "offset": 24415,
+          "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:14186.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:11293.",
+    "Fold returned storage identity is not verified for batch_state.session_state.",
+    "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:24477.",
+    "No mutation is verified on this fold return path.",
+    "No mutation is verified on this fold return path."
+  ],
+  "boundaries": []
+}
+Current execute declaration and uses: both concrete instances, three CLI seeds and generation source-order wrap verified. Provider mode: mocked. No Extension Host/UI was started.

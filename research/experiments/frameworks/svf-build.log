@@ -1,0 +1,22 @@
+[1/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/CSC.cpp.o
+[2/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/Util/SVFUtil.cpp.o
+[3/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/Steensgaard.cpp.o
+[4/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/AndersenWaveDiff.cpp.o
+[5/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/AndersenSFR.cpp.o
+[6/42] Generating extapi.bc LLVM bitcode file...
+[7/42] Building CXX object svf-llvm/CMakeFiles/SvfLLVM.dir/lib/BreakConstantExpr.cpp.o
+FAILED: svf-llvm/CMakeFiles/SvfLLVM.dir/lib/BreakConstantExpr.cpp.o 
+/usr/bin/c++ -DLLVM_BUILD_STATIC -DSVF_INSTALL_EXTAPI_BC=\"/tmp/opencode/frameworks/SVF/build-llvm23b/lib/extapi.bc\" -D_GLIBCXX_USE_CXX11_ABI=1 -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/tmp/opencode/frameworks/SVF/svf-llvm/include -I/tmp/opencode/frameworks/SVF/build-llvm23b -I/tmp/opencode/frameworks/SVF/build-llvm23b/include -I/tmp/opencode/frameworks/SVF/build-llvm23b/include/SVF -I/tmp/opencode/frameworks/SVF/svf/include -isystem /usr/lib/llvm-23/include -Wno-error -O3 -DNDEBUG -std=gnu++17 -fPIC -Wall -Werror -Wno-deprecated-declarations -MD -MT svf-llvm/CMakeFiles/SvfLLVM.dir/lib/BreakConstantExpr.cpp.o -MF svf-llvm/CMakeFiles/SvfLLVM.dir/lib/BreakConstantExpr.cpp.o.d -o svf-llvm/CMakeFiles/SvfLLVM.dir/lib/BreakConstantExpr.cpp.o -c /tmp/opencode/frameworks/SVF/svf-llvm/lib/BreakConstantExpr.cpp
+In file included from /tmp/opencode/frameworks/SVF/svf-llvm/lib/BreakConstantExpr.cpp:52:
+/tmp/opencode/frameworks/SVF/svf-llvm/include/SVF-LLVM/BasicTypes.h:54:10: fatal error: llvm/Transforms/Utils/UnifyFunctionExitNodes.h: No such file or directory
+   54 | #include <llvm/Transforms/Utils/UnifyFunctionExitNodes.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+[8/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/FlowSensitiveStat.cpp.o
+[9/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/AndersenStat.cpp.o
+[10/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/FlowSensitive.cpp.o
+[11/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/TypeAnalysis.cpp.o
+[12/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/VersionedFlowSensitiveStat.cpp.o
+[13/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/WPAPass.cpp.o
+[14/42] Building CXX object svf/CMakeFiles/SvfCore.dir/lib/WPA/VersionedFlowSensitive.cpp.o
+ninja: build stopped: subcommand failed.

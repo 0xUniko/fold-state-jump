@@ -1,0 +1,2254 @@
+{
+  "project": "nano-infer",
+  "sourceRevision": "2e523d9e1d6c198988cab4193971093907f767f5",
+  "foldSourceSites": [
+    {
+      "siteId": "fold-site-001",
+      "file": "deepseek-v4-flash/attention_node.cpp",
+      "line": 42,
+      "col": 37,
+      "api": "fold_left",
+      "seedText": "PrefillState{pipeline.start_session()}",
+      "seedType": "PrefillState",
+      "seedOffset": 1777,
+      "seedLine": 44,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        tokens | ranges::views::chunk(batch_size),\n        PrefillState{pipeline.start_session()},\n        [&](PrefillState state, auto chunk) -> PrefillState {\n          const auto batch = chunk | ranges::to<std::vector<int32_t>>();\n\n          if (auto *initial = std::get_if<AttentionState>(&state)) {\n            return pipeline.run_batch(std::move(*initial), batch);\n          }\n\n          auto &previous = std::get<BatchResult>(state);\n\n          return pipeline.run_batch(std::move(previous.state), batch);\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@main#I#**C#",
+          "lambdaUsr": "c:attention_node.cpp@1864@1825@F@main#I#**C#@Sa@FT@>1#Toperator()#$@N@std@S@variant>#p2$@S@AttentionState$@S@BatchResult#t0.0#S2_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-002",
+      "file": "deepseek-v4-flash/attention_node.cpp",
+      "line": 57,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "Generation{std::move(std::get<BatchResult>(prefill))}",
+      "seedType": "Generation",
+      "seedOffset": 2316,
+      "seedLine": 59,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        ranges::views::iota(0, predict),\n        Generation{std::move(std::get<BatchResult>(prefill))},\n        [&](Generation state, int index) -> Generation {\n          if (std::holds_alternative<GenerationFinished>(state)) {\n            return state;\n          }\n\n          auto &current = std::get<BatchResult>(state);\n          const llama_token token = current.logits.greedy_token();\n          if (llama_vocab_is_eog(vocab, token)) {\n            return GenerationFinished{};\n          }\n\n          std::cout << token_piece(vocab, token) << std::flush;\n          if (index + 1 == predict) {\n            return GenerationFinished{};\n          }\n\n          return pipeline.run_batch(std::move(current.state), {token});\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@main#I#**C#",
+          "lambdaUsr": "c:attention_node.cpp@2415@2379@F@main#I#**C#@Sa@F@operator()#$@N@std@S@variant>#p2$@S@BatchResult$@S@GenerationFinished#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-003",
+      "file": "deepseek-v4-flash/attention_options.h",
+      "line": 21,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "AttentionOptions{has_address ? argv[3] : \"127.0.0.1:50051\"}",
+      "seedType": "AttentionOptions",
+      "seedOffset": 610,
+      "seedLine": 23,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(first_option, argc) | ranges::views::stride(2),\n      AttentionOptions{has_address ? argv[3] : \"127.0.0.1:50051\"},\n      [&](AttentionOptions options, int index) {\n        const std::string_view name(argv[index]);\n        if (index + 1 == argc) {\n          throw std::invalid_argument(\"missing value for \" + std::string(name));\n        }\n        const char *value = argv[index + 1];\n        if (name == \"--n_predict\") {\n          options.n_predict = nano::parse_integer(value, 0, 1048576);\n        } else if (name == \"--n_ctx\") {\n          options.n_ctx = nano::parse_integer(value, 1, 1048576);\n        } else if (name == \"--n_gpu_layers\") {\n          options.n_gpu_layers = nano::parse_integer(value, -1, 10000);\n        } else if (name == \"--mode\") {\n          options.mode = nano::parse_prompt_mode(value);\n        } else {\n          throw std::invalid_argument(\"unknown option: \" + std::string(name));\n        }\n        return options;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@parse_attention_options#I#**C#",
+          "lambdaUsr": "c:@F@parse_attention_options#I#**C#@Sa@F@operator()#$@S@AttentionOptions#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-004",
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "line": 98,
+      "col": 49,
+      "api": "fold_left",
+      "seedText": "std::vector<int32_t>(state_rows, -1)",
+      "seedType": "std::vector<int32_t>",
+      "seedOffset": 3905,
+      "seedLine": 100,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      batch_pos | ranges::views::enumerate,\n      std::vector<int32_t>(state_rows, -1),\n      [state_rows](std::vector<int32_t> sources, const auto &entry) {\n        sources[std::get<1>(entry) % state_rows] = std::get<0>(entry);\n        return sources;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@build_compression_state_plan#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@E@CompressionKind#L#",
+          "lambdaUsr": "c:@F@build_compression_state_plan#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@E@CompressionKind#L#@Sa@FT@>1#Toperator()#S1_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-005",
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "line": 214,
+      "col": 38,
+      "api": "fold_left",
+      "seedText": "std::vector<MaskValue>(n_kv * batch_pos.size(), masked)",
+      "seedType": "std::vector<MaskValue>",
+      "seedOffset": 8290,
+      "seedLine": 216,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      batch_pos | ranges::views::enumerate,\n      std::vector<MaskValue>(n_kv * batch_pos.size(), masked),\n      [=](std::vector<MaskValue> values, const auto &entry) {\n        const int64_t n_visible =\n            (static_cast<int64_t>(std::get<1>(entry)) + 1) / ratio;\n\n        GGML_ASSERT(n_visible <= n_kv);\n\n        std::fill_n(values.data() + std::get<0>(entry) * n_kv, n_visible,\n                    MaskValue{0});\n\n        return values;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@set_compressed_kq_mask#*$@S@ggml_tensor#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#",
+          "lambdaUsr": "c:@F@set_compressed_kq_mask#*$@S@ggml_tensor#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#s#$@N@std@S@allocator>#s#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-006",
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "line": 895,
+      "col": 45,
+      "api": "fold_left",
+      "seedText": "0",
+      "seedType": "int",
+      "seedOffset": 37131,
+      "seedLine": 896,
+      "seedCol": 41,
+      "callText": "ranges::fold_left(\n            ranges::views::iota(0, 32), 0,\n            [&](int sum, int bit) { return sum ^ ((bits >> bit) & 1u); })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@set_csa_inputs#&1$@S@CsaGraph#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#L#1",
+          "lambdaUsr": "c:@F@set_csa_inputs#&1$@S@CsaGraph#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#L#1@Sa@F@operator()#I#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-007",
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "line": 1422,
+      "col": 34,
+      "api": "fold_left",
+      "seedText": "std::vector<LayerCaches>{}",
+      "seedType": "std::vector<LayerCaches>",
+      "seedOffset": 60431,
+      "seedLine": 1424,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(uint32_t{0}, hp.n_layer()),\n      std::vector<LayerCaches>{},\n      [&](std::vector<LayerCaches> storage, uint32_t il) {\n        auto context = nano::make_context(16);\n        // Cache tensors: [width, 1, rows]; compressor state tensors: [width,\n        // rows].\n        const auto cache = [&](int64_t width, int64_t rows, ggml_type dtype) {\n          return ggml_new_tensor_3d(context.get(), dtype, width, 1, rows);\n        };\n\n        const auto state = [&](int64_t width, int64_t rows) -> CompressorCache {\n          return {\n              ggml_new_tensor_2d(context.get(), GGML_TYPE_F32, width, rows),\n              ggml_new_tensor_2d(context.get(), GGML_TYPE_F32, width, rows)};\n        };\n\n        const CompressionCache compression = [&]() -> CompressionCache {\n          switch (hp.dsv4_compress_ratios[il]) {\n          case 0:\n            return RawCache{};\n          case DSV4_CSA_RATIO:\n            return CsaCache{\n                cache(hp.n_embd_head_k(), csa_capacity, GGML_TYPE_F16),\n                cache(hp.indexer_head_size, csa_capacity, type),\n                state(2 * hp.n_embd_head_k(), 2 * DSV4_CSA_RATIO),\n                state(2 * hp.indexer_head_size, 2 * DSV4_CSA_RATIO)};\n          case DSV4_HCA_RATIO:\n            return HcaCache{\n                cache(hp.n_embd_head_k(), hca_capacity, GGML_TYPE_F16),\n                state(hp.n_embd_head_k(), DSV4_HCA_RATIO)};\n          default:\n            throw std::invalid_argument(\n                \"unsupported attention compression ratio\");\n          }\n        }();\n\n        const auto raw = cache(hp.n_embd_head_k(), raw_capacity, GGML_TYPE_F16);\n        // Match native KV placement. Putting CPU layers' compressor state on\n        // the GPU also moves their normalization and F16 cache rounding there.\n        nano::Buffer buffer(\n            ggml_backend_alloc_ctx_tensors(context.get(),\n                                           compute.layer_backend(model, il)),\n            ggml_backend_buffer_free);\n        if (!buffer) {\n          throw std::runtime_error(\"failed to allocate attention caches\");\n        }\n        ggml_backend_buffer_clear(buffer.get(), 0);\n        storage.push_back(\n            {std::move(context), std::move(buffer), raw, compression});\n        return storage;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@make_attention_caches#&1$@S@llama_model#&1$@N@nano@S@Compute#I#",
+          "lambdaUsr": "c:@F@make_attention_caches#&1$@S@llama_model#&1$@N@nano@S@Compute#I#@Sa@F@operator()#$@N@std@S@vector>#$@S@LayerCaches#$@N@std@S@allocator>#S5_#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-008",
+      "file": "deepseek-v4-flash/attention_pipeline.h",
+      "line": 1713,
+      "col": 42,
+      "api": "fold_left",
+      "seedText": "embedded",
+      "seedType": "std::vector<float>",
+      "seedOffset": 72390,
+      "seedLine": 1714,
+      "seedCol": 59,
+      "callText": "ranges::fold_left(\n        ranges::views::iota(uint32_t{0}, info.n_layer()), embedded,\n        [&](std::vector<float> input, uint32_t il) {\n          const auto &cache = state.cache->layers.at(il);\n\n          const auto attention_output =\n              execute_attention(cache, il, positions,\n                                input); // [4096,4,T], writes this layer's KV\n\n          const auto ffn_output = ffn.forward(\n              info, il, tokens, attention_output); // [4096,4,T], network RPC\n\n          return ffn_output;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@S@AttentionPipeline@F@run_batch#$@S@AttentionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@S@AttentionPipeline@F@run_batch#$@S@AttentionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#$@N@std@S@vector>#f#$@N@std@S@allocator>#f#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-009",
+      "file": "deepseek-v4-flash/dsv4_ffn.h",
+      "line": 117,
+      "col": 40,
+      "api": "fold_left",
+      "seedText": "expert_view(0)",
+      "seedType": "struct ggml_tensor *",
+      "seedOffset": 5420,
+      "seedLine": 118,
+      "seedCol": 46,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(int64_t{1}, used), expert_view(0),\n      [&](ggml_tensor *sum, int64_t slot) {\n        return ggml_add(ctx, sum, expert_view(slot));\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@build_selected_ffn#*$@S@ggml_context#*$@S@ggml_cgraph#*$@S@ggml_tensor#S4_#S4_#S4_#S4_#S4_#S4_#&1$@N@nano@S@ExpertWeights#&1$@S@llama_model#i#",
+          "lambdaUsr": "c:@N@nano@F@build_selected_ffn#*$@S@ggml_context#*$@S@ggml_cgraph#*$@S@ggml_tensor#S4_#S4_#S4_#S4_#S4_#S4_#&1$@N@nano@S@ExpertWeights#&1$@S@llama_model#i#@Sa@F@operator()#S4_#L#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node",
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-010",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 78,
+      "col": 41,
+      "api": "fold_left",
+      "seedText": "std::set<ggml_tensor *>{}",
+      "seedType": "std::set<ggml_tensor *>",
+      "seedOffset": 2900,
+      "seedLine": 79,
+      "seedCol": 58,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(0, ggml_graph_n_nodes(graph)), std::set<ggml_tensor *>{},\n      [&](std::set<ggml_tensor *> tensors, int index) {\n        const auto node = ggml_graph_node(graph, index);\n        tensors.insert(node);\n        ranges::for_each(node->src, [&](ggml_tensor *source) {\n          if (source) {\n            tensors.insert(source);\n          }\n        });\n        return tensors;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@allocate_ffn_graph#&1$@N@nano@S@Compute#*$@S@ggml_cgraph#&1$@N@std@S@vector>#$@N@nano@S@TensorBackend#$@N@std@S@allocator>#S6_#",
+          "lambdaUsr": "c:@N@nano@F@allocate_ffn_graph#&1$@N@nano@S@Compute#*$@S@ggml_cgraph#&1$@N@std@S@vector>#$@N@nano@S@TensorBackend#$@N@std@S@allocator>#S6_#@Sa@F@operator()#$@N@std@S@set>#*$@S@ggml_tensor#$@N@std@S@less>#S9_#$@N@std@S@allocator>#S9_#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-011",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 159,
+      "col": 41,
+      "api": "fold_left",
+      "seedText": "std::vector<std::vector<int32_t>>{}",
+      "seedType": "std::vector<std::vector<int32_t>>",
+      "seedOffset": 7016,
+      "seedLine": 161,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      request.tokens() | ranges::views::enumerate,\n      std::vector<std::vector<int32_t>>{},\n      [&](std::vector<std::vector<int32_t>> selections, const auto &entry) {\n        const size_t token_index = std::get<0>(entry);\n        if (hash) {\n          std::vector<int32_t> ids(used); // third-party tensor-get output\n          ggml_backend_tensor_get(layer.ffn_gate_tid2eid, ids.data(),\n              size_t(std::get<1>(entry)) * layer.ffn_gate_tid2eid->nb[1],\n              ids.size() * sizeof(int32_t));\n          selections.push_back(std::move(ids));\n        } else {\n          // Match the CPU argsort comparator, including its handling of ties.\n          const auto greater_score = [&](int32_t a, int32_t b) {\n            return scores[token_index * hp.n_expert + a] >\n                   scores[token_index * hp.n_expert + b];\n          };\n          const auto sorted_ids = ranges::views::iota(int32_t{0}, int32_t(hp.n_expert)) |\n              ranges::to<std::vector<int32_t>>() |\n              ranges::actions::sort(greater_score);\n          const auto ids = sorted_ids |\n              ranges::views::take(used) | ranges::to<std::vector<int32_t>>();\n          selections.push_back(ids);\n        }\n        if (!ranges::all_of(selections.back(), [&](int32_t id) {\n              return id >= 0 && uint32_t(id) < hp.n_expert;\n            })) {\n          throw std::runtime_error(\"router selected an invalid expert ID\");\n        }\n        return selections;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@route_ffn#&1$@N@nano@S@PreparedFfnGraph>#$@N@nano@S@FfnRouterGraph#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#",
+          "lambdaUsr": "c:@N@nano@F@route_ffn#&1$@N@nano@S@PreparedFfnGraph>#$@N@nano@S@FfnRouterGraph#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S8_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-012",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 483,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "FfnRuntime{}",
+      "seedType": "FfnRuntime",
+      "seedOffset": 22486,
+      "seedLine": 484,
+      "seedCol": 66,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(uint32_t{0}, model.hparams.n_layer()), FfnRuntime{},\n      [&](FfnRuntime state, uint32_t il) {\n        const auto start = InferenceClock::now();\n        std::fprintf(stderr, \"ffn prepare: layer=%u/%u starting\\n\",\n                     il, model.hparams.n_layer());\n        const auto placement = ffn_batch_placement(compute, model, il, 1);\n        const auto layout = expert_bank_layout(model, il, placement.expert_backends);\n        const size_t index = find_or_prepare_expert_bank(state, model, il, layout);\n        const auto &weights = state.banks[index]->weights;\n        auto router = prepare_ffn_router(compute, model, il, 1);\n        auto execution = prepare_ffn_execution(compute, model, il, 1, weights,\n                                               placement.matrices);\n        state.decode.push_back(std::make_unique<FfnDecodePlan>(FfnDecodePlan{\n            index, std::move(router), placement.matrices, std::move(execution)}));\n        std::fprintf(stderr,\n                     \"ffn prepare: layer=%u ready expert_bank=%zu total_banks=%zu elapsed_ms=%.3f\\n\",\n                     il, index, state.banks.size(), elapsed_ms(start));\n        return state;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@prepare_ffn_runtime#&1$@N@nano@S@Compute#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@F@prepare_ffn_runtime#&1$@N@nano@S@Compute#&1$@S@llama_model#@Sa@F@operator()#$@N@nano@S@FfnRuntime#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-013",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 560,
+      "col": 40,
+      "api": "fold_left",
+      "seedText": "Groups{}",
+      "seedType": "Groups",
+      "seedOffset": 26566,
+      "seedLine": 561,
+      "seedCol": 59,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, request.n_tokens()), Groups{},\n      [&](Groups groups, size_t token) {\n        groups[routing.experts[token]].push_back(token);\n        return groups;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#",
+          "lambdaUsr": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#@Sa@F@operator()#$@N@std@S@map>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@vector>#l#$@N@std@S@allocator>#l#$@N@std@S@less>#S9_#$@N@std@S@allocator>#$@N@std@S@pair>#1S9_#S11_#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-014",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 568,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "std::vector<float>(request.hidden().size())",
+      "seedType": "std::vector<float>",
+      "seedOffset": 26880,
+      "seedLine": 568,
+      "seedCol": 36,
+      "callText": "ranges::fold_left(groups, std::vector<float>(request.hidden().size()),\n      [&](std::vector<float> output, const auto &group) {\n        fill_expert_weights(bank.copy_views.get(), bank.weights, layer, group.first);\n        // Keep singleton prefill groups on the prefill kernel path. SYCL's\n        // single-token quantized path uses different activation precision.\n        const auto group_tokens = group.second.size() == 1 && request.n_tokens() > 1\n            ? std::vector<size_t>{group.second.front(), group.second.front()}\n            : group.second;\n        const auto &plan = prefill\n            ? prefill_execution(state, compute, model, request.layer(),\n                                group_tokens.size(), bank.weights, backends)\n            : decode.execution;\n        fill_ffn_inputs(plan.tensors, routing, request, group_tokens, model.hparams);\n        plan.compute();\n        const auto values = read_f32(plan.tensors.output);\n        return ranges::fold_left(group.second | ranges::views::enumerate,\n            std::move(output), [&](std::vector<float> result, const auto &entry) {\n              std::copy_n(values.begin() + std::get<0>(entry) * width, width,\n                           result.begin() + std::get<1>(entry) * width);\n              return result;\n            });\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#",
+          "lambdaUsr": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-015",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 583,
+      "col": 16,
+      "api": "fold_left",
+      "seedText": "std::move(output)",
+      "seedType": "typename std::remove_reference<std::vector<float, std::allocator<float>> &>::type",
+      "seedOffset": 27883,
+      "seedLine": 584,
+      "seedCol": 13,
+      "callText": "ranges::fold_left(group.second | ranges::views::enumerate,\n            std::move(output), [&](std::vector<float> result, const auto &entry) {\n              std::copy_n(values.begin() + std::get<0>(entry) * width, width,\n                           result.begin() + std::get<1>(entry) * width);\n              return result;\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1t0.0# #1",
+          "lambdaUsr": "c:@N@nano@F@execute_ffn#&$@N@nano@S@FfnRuntime#&1$@N@nano@S@Compute#&1$@S@llama_model#&1$@N@nano@S@ValidatedFfnRequest#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1t0.0# #1@Sa@FT@>1#Toperator()#S8_#&1t1.0#S12_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-016",
+      "file": "deepseek-v4-flash/ffn_service.h",
+      "line": 670,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "State{transport.await_call(), std::move(runtime)}",
+      "seedType": "State",
+      "seedOffset": 30883,
+      "seedLine": 671,
+      "seedCol": 17,
+      "callText": "ranges::fold_left(\n        events, State{transport.await_call(), std::move(runtime)},\n        [&](State state,\n            const std::optional<RpcTransport::Event> &event) {\n          auto next = transport.advance(std::move(state.rpc), *event);\n\n          if (auto *ready = std::get_if<RpcTransport::RequestReady>(&next)) {\n\n            const auto reply = handle_request(state.ffn, *ready);\n\n            return State{transport.finish_request(std::move(*ready), reply),\n                         std::move(state.ffn)};\n          }\n          return State{std::move(next), std::move(state.ffn)};\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@S@FfnServer@F@run#",
+          "lambdaUsr": "c:@N@nano@S@FfnServer@F@run#@Sa@F@operator()#$@N@nano@S@FfnServer@S@State#&1$@N@std@S@optional>#$@N@std@S@variant>#p2$@N@nano@S@RpcTransport@S@ShutdownRequested$@N@nano@S@RpcTransport@S@OperationCompleted#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-017",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 113,
+      "col": 35,
+      "api": "fold_left",
+      "seedText": "Parsing{environment_options(), false}",
+      "seedType": "Parsing",
+      "seedOffset": 5671,
+      "seedLine": 114,
+      "seedCol": 37,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(1, argc), Parsing{environment_options(), false},\n      [&](Parsing parsing, int i) {\n        if (parsing.consumed) {\n          parsing.consumed = false;\n          return parsing;\n        }\n        const std::string flag(argv[i]);\n        if (flag == \"--help\" || flag == \"-h\") {\n          parsing.options.help = true;\n          return parsing;\n        }\n        if (flag == \"--jinja\") {\n          parsing.options.jinja = true;\n          return parsing;\n        }\n        if (flag == \"--no-mmproj-offload\") {\n          parsing.options.vision_gpu = false;\n          return parsing;\n        }\n        if (flag == \"--mmap\" || flag == \"--no-mmap\") {\n          parsing.options.load = flag == \"--mmap\" ? LanguageLoad::Mmap\n                                                  : LanguageLoad::Copy;\n          return parsing;\n        }\n        if (flag == \"--check-tensors\") {\n          parsing.options.check_records = true;\n          return parsing;\n        }\n        if (i + 1 == argc)\n          throw std::invalid_argument(\"missing value for \" + flag);\n        const std::string value(argv[i + 1]);\n        if (flag == \"-m\" || flag == \"--model\")\n          parsing.options.model = value;\n        else if (flag == \"--mmproj\")\n          parsing.options.mmproj = value;\n        else if (flag == \"--moe-experts\")\n          parsing.options.experts = value;\n        else if (flag == \"--image\")\n          parsing.options.images.push_back(value);\n        else if (flag == \"-p\" || flag == \"--prompt\")\n          parsing.options.prompt = value;\n        else if (flag == \"--moe-slot-bank\")\n          parsing.options.shared_slot_count =\n              uint32_t(nano::parse_integer(value.c_str(), 1, 65536));\n        else if (flag == \"--moe-decode-window\") {\n          if (value == \"auto\")\n            parsing.options.cache.reset();\n          else\n            parsing.options.cache =\n                uint32_t(nano::parse_integer(value.c_str(), 0, 1024));\n        } else if (flag == \"--moe-lookahead\")\n          parsing.options.lookahead =\n              uint32_t(nano::parse_integer(value.c_str(), 0, 256));\n        else if (flag == \"--moe-prewarm\")\n          parsing.options.prewarm =\n              uint32_t(nano::parse_integer(value.c_str(), 0, 256));\n        else if (flag == \"--moe-prewarm-file\")\n          parsing.options.prewarm_file = value;\n        else if (flag == \"--moe-prewarm-save\")\n          parsing.options.prewarm_save = value;\n        else if (flag == \"--moe-io\") {\n          if (value == \"mmap\")\n            parsing.options.expert_io = ExpertIo::Mmap;\n          else if (value == \"pread\")\n            parsing.options.expert_io = ExpertIo::Pread;\n          else\n            throw std::invalid_argument(\"--moe-io requires mmap or pread\");\n        } else if (flag == \"-c\" || flag == \"--ctx-size\")\n          parsing.options.context_size =\n              nano::parse_integer(value.c_str(), 1, 1048576);\n        else if (flag == \"-n\" || flag == \"--n-predict\") {\n          const int predict =\n              nano::parse_integer(value.c_str(), -1, 1048576);\n          parsing.options.predict =\n              predict < 0 ? std::nullopt : std::optional<int>{predict};\n        } else if (flag == \"-ngl\" || flag == \"--n-gpu-layers\")\n          parsing.options.gpu_layers =\n              nano::parse_integer(value.c_str(), 0, 1000);\n        else if (flag == \"-t\" || flag == \"--threads\")\n          parsing.options.threads = nano::parse_integer(value.c_str(), 1, 1024);\n        else if (flag == \"--seed\")\n          parsing.options.seed =\n              nano::parse_integer(value.c_str(), 0, INT32_MAX);\n        else if (flag == \"--top-k\")\n          parsing.options.top_k =\n              nano::parse_integer(value.c_str(), 0, 1048576);\n        else if (flag == \"--top-p\") {\n          size_t parsed_length = 0; // std::stof output parameter\n          const float top_p = std::stof(value, &parsed_length);\n          if (parsed_length != value.size() || !std::isfinite(top_p) ||\n              top_p < 0 || top_p > 1)\n            throw std::invalid_argument(\"invalid top-p\");\n          parsing.options.top_p = top_p;\n        } else if (flag == \"--temp\") {\n          size_t parsed_length = 0; // std::stof output parameter\n          const float temperature = std::stof(value, &parsed_length);\n          if (parsed_length != value.size() || !std::isfinite(temperature) ||\n              temperature < 0)\n            throw std::invalid_argument(\"invalid temperature\");\n          parsing.options.temperature = temperature;\n        } else\n          throw std::invalid_argument(\"unknown option: \" + flag);\n        parsing.consumed = true;\n        return parsing;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@parse_options#I#**C#",
+          "lambdaUsr": "c:@N@minicpm@F@parse_options#I#**C#@Sa@F@operator()#$@N@minicpm@F@parse_options#I#S0_#@S@Parsing#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-018",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 239,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "BatchState{std::move(session_state), {}}",
+      "seedType": "BatchState",
+      "seedOffset": 11293,
+      "seedLine": 242,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, tokens.size()) |\n          ranges::views::stride(batch_capacity),\n      BatchState{std::move(session_state), {}},\n      [&](BatchState batch_state, size_t offset) {\n        return pipeline.run_batch(\n            std::move(batch_state.session_state),\n            {tokens.begin() + offset,\n             tokens.begin() +\n                 std::min(tokens.size(), offset + batch_capacity)});\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@prefill_text#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@prefill_text#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#$@N@minicpm@S@BatchState#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-019",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 259,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "BatchState{std::move(session_state), {}}",
+      "seedType": "BatchState",
+      "seedOffset": 12131,
+      "seedLine": 261,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, mtmd_input_chunks_size(chunks)),\n      BatchState{std::move(session_state), {}},\n      [&](BatchState batch_state, size_t i) {\n        const auto *chunk = mtmd_input_chunks_get(chunks, i);\n\n        switch (mtmd_input_chunk_get_type(chunk)) {\n        // \u6587\u672c\u5757\u53ef\u80fd\u4e3a\u7a7a\uff1b\u6b64\u65f6\u539f\u6837\u4f20\u9012\u72b6\u6001\u548c\u4e0a\u4e00\u5757 logits\u3002\n        case MTMD_INPUT_CHUNK_TYPE_TEXT: {\n          size_t count = 0; // mtmd C API output\n\n          const auto tokens = mtmd_input_chunk_get_tokens_text(chunk, &count);\n\n          if (!count)\n            return batch_state;\n\n          return prefill_text(pipeline, std::move(batch_state.session_state),\n                              {tokens, tokens + count});\n        }\n\n        case MTMD_INPUT_CHUNK_TYPE_IMAGE: {\n          // \u672c\u5730\u8bed\u8a00\u56fe\u4f7f\u7528\u56e0\u679c mask\uff0c\u9047\u5230\u8981\u6c42\u975e\u56e0\u679c\u56fe\u50cf\u6ce8\u610f\u529b\u7684\u914d\u7f6e\u5e94\u660e\u786e\u62d2\u7edd\u3002\n          if (mtmd_decode_use_non_causal(vision, chunk))\n            throw std::invalid_argument(\n                \"this pipeline requires causal image attention\");\n          if (mtmd_encode_chunk(vision, chunk))\n            throw std::runtime_error(\"image encoding failed\");\n          const auto image = mtmd_input_chunk_get_tokens_image(chunk);\n          const size_t count = mtmd_input_chunk_get_n_tokens(chunk);\n          // \u501f\u7528 mtmd \u8f93\u51fa\u7f13\u51b2\uff0c\u5e03\u5c40\u4e3a\u6bcf\u4e2a\u56fe\u50cf token \u8fde\u7eed width \u4e2a float\uff1b\n          // \u5728\u672c\u56fe\u50cf\u7684\u6240\u6709\u5206\u6279\u8bed\u8a00\u8ba1\u7b97\u7ed3\u675f\u524d\u4e0d\u518d\u8c03\u7528\u89c6\u89c9\u7f16\u7801\uff0c\u4fdd\u8bc1\u6307\u9488\u6709\u6548\u3002\n          const auto embeddings =\n              mtmd_get_output_embd(vision); // [2048, count] F32\uff0cwidth=2048\n          // \u56fe\u50cf\u5360\u7528\u7684\u903b\u8f91 RoPE \u4f4d\u7f6e\u6570\u53ef\u4e0d\u540c\u4e8e embedding \u6570\uff0cnext_rope \u5fc5\u987b\u91c7\u7528\n          // mtmd \u7ed9\u51fa\u7684\u8de8\u5ea6\u3002\n          const int base = batch_state.session_state.rope_position;\n          const int next_rope = base + mtmd_input_chunk_get_n_pos(chunk);\n          const size_t batch_capacity = pipeline.batch_capacity();\n\n          return ranges::fold_left(\n              ranges::views::iota(size_t{0}, count) |\n                  ranges::views::stride(batch_capacity),\n              std::move(batch_state),\n              [&](BatchState batch_state, size_t offset) {\n                const size_t nt = std::min(batch_capacity, count - offset);\n                // \u4f4d\u7f6e\u6309\u56db\u4e2a\u8f74\u5206\u6bb5\u5b58\u50a8\uff1b\u901a\u8fc7\u89e3\u7801\u5668\u5750\u6807 API \u4fdd\u7559\u56fe\u50cf\u7684\u7a7a\u95f4\u7ed3\u6784\u3002\n                // \u6bcf\u4e2a\u5206\u6279\u4f7f\u7528\u5168\u56fe\u504f\u79fb offset\uff0c\u907f\u514d\u5404\u6279\u56fe\u50cf\u5750\u6807\u91cd\u65b0\u4ece\u96f6\u5f00\u59cb\u3002\n                // positions: 4*nt \u4e2a I32\uff0c\u5c55\u5e73\u5e03\u5c40 [nt,4]\uff1b\u5207\u51fa\u7684 embeddings:\n                // [2048,nt] F32\u3002\n                const auto positions = ranges::views::iota(size_t{0}, 4 * nt) |\n                                       ranges::views::transform([&](size_t k) {\n                                         const auto pos =\n                                             mtmd_image_tokens_get_decoder_pos(\n                                                 image, base, offset + k % nt);\n                                         switch (k / nt) {\n                                         case 0:\n                                           return int32_t(pos.t);\n                                         case 1:\n                                           return int32_t(pos.y);\n                                         case 2:\n                                           return int32_t(pos.x);\n                                         default:\n                                           return int32_t(pos.z);\n                                         }\n                                       }) |\n                                       ranges::to<std::vector<int32_t>>();\n                return pipeline.run_embeddings(\n                    std::move(batch_state.session_state),\n                    {embeddings + offset * width,\n                     embeddings + (offset + nt) * width},\n                    positions, next_rope);\n              });\n        }\n        case MTMD_INPUT_CHUNK_TYPE_AUDIO:\n        case MTMD_INPUT_CHUNK_TYPE_COUNT:\n          throw std::invalid_argument(\"only text and image input is supported\");\n        }\n        throw std::invalid_argument(\"unknown multimodal chunk type\");\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@prefill#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#*$@S@mtmd_context#*1$@S@mtmd_input_chunks#l#",
+          "lambdaUsr": "c:@N@minicpm@F@prefill#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#*$@S@mtmd_context#*1$@S@mtmd_input_chunks#l#@Sa@F@operator()#$@N@minicpm@S@BatchState#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-020",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 298,
+      "col": 35,
+      "api": "fold_left",
+      "seedText": "std::move(batch_state)",
+      "seedType": "minicpm::BatchState",
+      "seedOffset": 14186,
+      "seedLine": 301,
+      "seedCol": 15,
+      "callText": "ranges::fold_left(\n              ranges::views::iota(size_t{0}, count) |\n                  ranges::views::stride(batch_capacity),\n              std::move(batch_state),\n              [&](BatchState batch_state, size_t offset) {\n                const size_t nt = std::min(batch_capacity, count - offset);\n                // \u4f4d\u7f6e\u6309\u56db\u4e2a\u8f74\u5206\u6bb5\u5b58\u50a8\uff1b\u901a\u8fc7\u89e3\u7801\u5668\u5750\u6807 API \u4fdd\u7559\u56fe\u50cf\u7684\u7a7a\u95f4\u7ed3\u6784\u3002\n                // \u6bcf\u4e2a\u5206\u6279\u4f7f\u7528\u5168\u56fe\u504f\u79fb offset\uff0c\u907f\u514d\u5404\u6279\u56fe\u50cf\u5750\u6807\u91cd\u65b0\u4ece\u96f6\u5f00\u59cb\u3002\n                // positions: 4*nt \u4e2a I32\uff0c\u5c55\u5e73\u5e03\u5c40 [nt,4]\uff1b\u5207\u51fa\u7684 embeddings:\n                // [2048,nt] F32\u3002\n                const auto positions = ranges::views::iota(size_t{0}, 4 * nt) |\n                                       ranges::views::transform([&](size_t k) {\n                                         const auto pos =\n                                             mtmd_image_tokens_get_decoder_pos(\n                                                 image, base, offset + k % nt);\n                                         switch (k / nt) {\n                                         case 0:\n                                           return int32_t(pos.t);\n                                         case 1:\n                                           return int32_t(pos.y);\n                                         case 2:\n                                           return int32_t(pos.x);\n                                         default:\n                                           return int32_t(pos.z);\n                                         }\n                                       }) |\n                                       ranges::to<std::vector<int32_t>>();\n                return pipeline.run_embeddings(\n                    std::move(batch_state.session_state),\n                    {embeddings + offset * width,\n                     embeddings + (offset + nt) * width},\n                    positions, next_rope);\n              })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@prefill#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#*$@S@mtmd_context#*1$@S@mtmd_input_chunks#l#@Sa@F@operator()#$@N@minicpm@S@BatchState#l#1",
+          "lambdaUsr": "c:@N@minicpm@F@prefill#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@SessionState#*$@S@mtmd_context#*1$@S@mtmd_input_chunks#l#@Sa@F@operator()#$@N@minicpm@S@BatchState#l#1@Sa@F@operator()#S7_#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-021",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 457,
+      "col": 47,
+      "api": "fold_left",
+      "seedText": "std::string{}",
+      "seedType": "std::string",
+      "seedOffset": 21622,
+      "seedLine": 458,
+      "seedCol": 15,
+      "callText": "ranges::fold_left(\n      images, std::string{}, [](std::string image_markers, const auto &) {\n        return image_markers + mtmd_default_marker() + \"\\n\";\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#",
+          "lambdaUsr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@Sa@FT@>1#Toperator()#S14_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-022",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 518,
+      "col": 38,
+      "api": "fold_left",
+      "seedText": "Generation{std::move(batch_state), {}, false, 0, 0}",
+      "seedType": "Generation",
+      "seedOffset": 24477,
+      "seedLine": 520,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(0, limit),\n      Generation{std::move(batch_state), {}, false, 0, 0},\n      [&](Generation generation, int) {\n        if (generation.done || generation.batch_state.session_state.position >=\n                                   options.context_size)\n          return generation;\n\n        // prefill/\u4e0a\u4e00\u6b65 decode \u7684\u6700\u540e\u4f4d\u7f6e logits \u9884\u6d4b\u5f53\u524d token\u3002\n        // \u8f93\u51fa\u540e\u518d\u5c06 token \u9001\u56de\u6a21\u578b\uff0c\u66f4\u65b0\u5168\u90e8\u5c42\u72b6\u6001\u5e76\u53d6\u5f97\u4e0b\u4e00\u6b65 logits\u3002\n        const auto token = sample(sampler, generation.batch_state.logits);\n\n        // \u7ec8\u6b62 token \u4e0d\u8f93\u51fa\uff0c\u4e5f\u4e0d\u5728\u6b64\u5904\u9001\u56de\u6a21\u578b\uff1b\u672c\u8f6e\u5df2\u751f\u6210\u7684\u6b63\u6587\u5199\u5165\u804a\u5929\u5386\u53f2\u3002\n        if (llama_vocab_is_eog(vocab, token)) {\n          generation.done = true;\n          return generation;\n        }\n\n        const auto piece = token_piece(vocab, token);\n        std::cout << piece << std::flush;\n\n        generation.text += piece;\n\n        const auto decode_begin = nano::InferenceClock::now();\n\n        generation.batch_state =\n            pipeline.run_batch(std::move(generation.batch_state.session_state),\n                               {token}, ExecutionPhase::Decode);\n\n        generation.decode_ns += elapsed_ns(decode_begin);\n        ++generation.decode_tokens;\n\n        return generation;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#",
+          "lambdaUsr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@Sa@F@operator()#$@N@minicpm@F@turn#S0_#S2_#S4_#S5_#S7_#S9_#S11_#S13_#S17_#@S@Generation#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-023",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 572,
+      "col": 24,
+      "api": "fold_left",
+      "seedText": "std::move(chat_state.history)",
+      "seedType": "std::vector<common_chat_msg>",
+      "seedOffset": 26794,
+      "seedLine": 573,
+      "seedCol": 25,
+      "callText": "ranges::fold_left(std::array{std::move(message), std::move(assistant)},\n                        std::move(chat_state.history),\n                        [](auto history, const common_chat_msg &message) {\n                          history.push_back(message);\n\n                          return history;\n                        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#",
+          "lambdaUsr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@Sa@FT@>1#Toperator()#t0.0#&1$@S@common_chat_msg# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-024",
+      "file": "minicpm-v-4_7/cli.cpp",
+      "line": 689,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "&interactive",
+      "seedType": "Interactive *",
+      "seedOffset": 31728,
+      "seedLine": 692,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        lines | ranges::views::take_while(\n                    [](const auto &line) { return line.has_value(); }),\n        &interactive,\n        [&](Interactive *interactive, const std::optional<std::string> &line) {\n          if (*line == \"/quit\" || *line == \"/exit\")\n            interactive->done = true;\n\n          // \u540c\u6b65\u91cd\u7f6e\u6a21\u578b\u7f13\u5b58\u3001\u5386\u53f2\u3001\u5f85\u53d1\u56fe\u7247\u548c\u91c7\u6837\u5668\uff0c\u4f7f\u65b0\u5bf9\u8bdd\u4ece\u7a7a\u4e0a\u4e0b\u6587\u5f00\u59cb\u3002\n          else if (*line == \"/clear\") {\n            interactive->chat_state = {\n                pipeline.clear_session(\n                    std::move(interactive->chat_state.session_state)),\n                {}};\n            interactive->images.clear();\n            llama_sampler_reset(sampler.get());\n\n          } else if (line->rfind(\"/image \", 0) == 0)\n            interactive->images.push_back(line->substr(7));\n\n          else if (!line->empty()) {\n            interactive->chat_state =\n                turn(options, pipeline, std::move(interactive->chat_state),\n                     templates.get(), vision.get(), vocab, sampler.get(), *line,\n                     interactive->images);\n            interactive->images.clear();\n          }\n\n          return interactive;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@main#I#**C#",
+          "lambdaUsr": "c:cli.cpp@31818@31750@F@main#I#**C#@Sa@F@operator()#*$@30555@F@main#I#S0_#@S@Interactive#&1$@N@std@S@optional>#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-025",
+      "file": "minicpm-v-4_7/expert_index.h",
+      "line": 116,
+      "col": 24,
+      "api": "fold_left",
+      "seedText": "std::map<std::string, ExpertSource>{}",
+      "seedType": "std::map<std::string, ExpertSource>",
+      "seedOffset": 4721,
+      "seedLine": 117,
+      "seedCol": 31,
+      "callText": "ranges::fold_left(\n          json.at(\"entries\"), std::map<std::string, ExpertSource>{},\n          [&](std::map<std::string, ExpertSource> tensors,\n              const nlohmann::json &entry) {\n            const auto family = entry.at(\"tensor_family\").get<std::string>();\n\n            if (ranges::find(expert_families, family) == expert_families.end())\n              throw std::invalid_argument(\n                  \"unsupported external tensor family: \" + family);\n\n            const auto type = expert_type(entry.at(\"quant_type\"));\n            const auto shape = entry.at(\"shape\").get<std::array<int64_t, 3>>();\n\n            if (shape[0] <= 0 || shape[1] <= 0 || shape[2] != expert_count ||\n                shape[0] % ggml_blck_size(type) != 0)\n              throw std::invalid_argument(\"invalid expert shape\");\n\n            // \u91cf\u5316\u77e9\u9635\u6309\u5757\u7f16\u7801\uff0c\u5fc5\u987b\u901a\u8fc7 ggml_row_size\n            // \u8ba1\u7b97\u884c\u5b57\u8282\u6570\uff0c\u4e0d\u80fd\u7528\u5143\u7d20\u6570\u4e58\u6807\u91cf\u5927\u5c0f\u3002\n            const auto bytes =\n                checked_mul(ggml_row_size(type, shape[0]), size_t(shape[1]));\n\n            const int layer = entry.at(\"layer\");\n            const std::string name = entry.at(\"tensor_name\");\n            const auto offset = entry.at(\"repacked_offset\").get<size_t>();\n            const auto stride = entry.at(\"expert_stride\").get<size_t>();\n            const auto path = manifest.parent_path() /\n                              entry.at(\"repacked_file\").get<std::string>();\n\n            // \u6838\u5bf9\u6807\u51c6\u5f20\u91cf\u540d\u3001\u5355\u4e13\u5bb6/\u5168\u90e8\u4e13\u5bb6\u5b57\u8282\u6570\uff0c\u4ee5\u53ca\u6700\u540e\u4e00\u4e2a\u4e13\u5bb6\u662f\u5426\u4ecd\u4f4d\u4e8e\u6587\u4ef6\u5185\u3002\n            if (layer < 0 ||\n                name !=\n                    \"blk.\" + std::to_string(layer) + \".\" + family + \".weight\" ||\n                entry.at(\"bytes_per_expert\").get<size_t>() != bytes ||\n                entry.at(\"exact_byte_length\").get<size_t>() !=\n                    checked_mul(bytes, expert_count) ||\n                stride < checked_add(offset, bytes) ||\n                std::filesystem::file_size(path) <\n                    checked_add(checked_mul(expert_count - 1, stride),\n                                checked_add(offset, bytes)))\n              throw std::invalid_argument(\"invalid expert extent: \" + name);\n\n            if (!tensors\n                     .emplace(name, ExpertSource{path, type, shape, offset,\n                                                 stride, bytes})\n                     .second)\n              throw std::invalid_argument(\"duplicate external tensor: \" + name);\n\n            return tensors;\n          })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_expert_index#&1$@N@std@N@filesystem@N@__cxx11@S@path#",
+          "lambdaUsr": "c:@N@minicpm@F@load_expert_index#&1$@N@std@N@filesystem@N@__cxx11@S@path#@Sa@F@operator()#$@N@std@S@map>#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertSource#$@N@std@S@less>#S3_#$@N@std@S@allocator>#$@N@std@S@pair>#1S3_#S6_#&1$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#S3_#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-026",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 105,
+      "col": 33,
+      "api": "fold_left",
+      "seedText": "std::map<std::filesystem::path, std::shared_ptr<const ExpertFile>>{}",
+      "seedType": "std::map<std::filesystem::path, std::shared_ptr<const ExpertFile>>",
+      "seedOffset": 4316,
+      "seedLine": 107,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      index.tensors | ranges::views::values,\n      std::map<std::filesystem::path, std::shared_ptr<const ExpertFile>>{},\n      [&](auto files, const ExpertSource &source) {\n        if (!files.count(source.path))\n          files.emplace(source.path, open_expert_file(source.path, mode));\n\n        return files;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@open_expert_store#&1$@N@minicpm@S@ExpertIndex#$@N@minicpm@E@ExpertIo#b#",
+          "lambdaUsr": "c:@N@minicpm@F@open_expert_store#&1$@N@minicpm@S@ExpertIndex#$@N@minicpm@E@ExpertIo#b#@Sa@FT@>1#Toperator()#t0.0#&1$@N@minicpm@S@ExpertSource# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-027",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 198,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "&progress",
+      "seedType": "struct Progress *",
+      "seedOffset": 8590,
+      "seedLine": 202,
+      "seedCol": 14,
+      "callText": "ranges::fold_left(\n             ranges::views::iota(size_t{0}) |\n                 ranges::views::take_while(\n                     [&](size_t) { return progress.filled_bytes < bytes; }),\n             &progress,\n             [&](Progress *progress, size_t) {\n               // iov_base \u6307\u5411\u672c\u6b21\u5c1a\u672a\u586b\u6ee1\u7684\u76ee\u6807\u5185\u5b58\uff0ciov_len \u662f\u5269\u4f59\u5b57\u8282\u6570\u3002\n               // destination \u7531 execute_io_task \u9009\u5b9a\uff0c\u53ef\u76f4\u63a5\u6307\u5411 bank \u69fd\u4f4d\uff0c\n               // \u4e5f\u53ef\u6307\u5411\u7a0d\u540e\u8981\u4e0a\u4f20\u8bbe\u5907\u7684\u4e3b\u673a staging\uff1b\u5b83\u5728\u8c03\u7528\u524d\u5df2\u7ecf\u5206\u914d\u3002\n               // POSIX output descriptor\n               iovec out{destination + progress->filled_bytes,\n                         bytes - progress->filled_bytes};\n\n               // preadv \u540c\u6b65\u586b\u5145 destination \u7684\u5269\u4f59\u524d\u7f00\uff1b\u5f02\u6b65\u6027\u6765\u81ea\u540e\u53f0\u7ebf\u7a0b\u6c60\u3002\n               const auto count = ::preadv(\n                   fd, &out, 1, off_t(offset + progress->filled_bytes));\n\n               ++progress->io.read_calls;\n\n               if (count < 0 && errno == EINTR)\n                 return progress;\n               if (count <= 0)\n                 throw std::runtime_error(\n                     \"failed or truncated positional expert read\");\n\n               // \u77ed\u8bfb\u65f6\u63a8\u8fdb\u201c\u6587\u4ef6\u504f\u79fb\u201d\u548c\u201c\u76ee\u6807\u5730\u5740\u201d\uff0c\u4e0b\u4e00\u6b21\u8865\u8bfb\u5269\u4f59\u5b57\u8282\uff1b\n               // \u76f4\u5230\u6574\u4e2a bytes \u8303\u56f4\u586b\u6ee1\u624d\u8fd4\u56de\uff0cEINTR \u5219\u4fdd\u6301\u8fdb\u5ea6\u91cd\u8bd5\u3002\n               progress->filled_bytes += size_t(count);\n               progress->io.read_bytes += uint64_t(count);\n\n               return progress;\n             })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@positional_read#I#l#*C#l#",
+          "lambdaUsr": "c:@N@minicpm@F@positional_read#I#l#*C#l#@Sa@F@operator()#*$@N@minicpm@F@positional_read#I#l#S0_#l#@S@Progress#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-028",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 282,
+      "col": 36,
+      "api": "fold_left",
+      "seedText": "IoCounters{}",
+      "seedType": "IoCounters",
+      "seedOffset": 12157,
+      "seedLine": 283,
+      "seedCol": 50,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, size_t{3}), IoCounters{},\n      [&](IoCounters io, size_t i) {\n        const auto &family = storage_scattered.families[i];\n\n        return sum_io(\n            io, read_range(*family.file,\n                           checked_add(family.offset,\n                                       checked_mul(key.expert, family.stride)),\n                           destination + store.offsets[i], family.bytes));\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@read_record#&1$@N@minicpm@S@ExpertStore#$@N@minicpm@S@ExpertKey#*C#",
+          "lambdaUsr": "c:@N@minicpm@F@read_record#&1$@N@minicpm@S@ExpertStore#$@N@minicpm@S@ExpertKey#*C#@Sa@F@operator()#$@N@minicpm@S@IoCounters#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-029",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 505,
+      "col": 20,
+      "api": "fold_left",
+      "seedText": "completion_staged.records",
+      "seedType": "ggml_tensor *",
+      "seedOffset": 21629,
+      "seedLine": 506,
+      "seedCol": 21,
+      "callText": "ranges::fold_left(completion_staged.missing | ranges::views::enumerate,\n                    completion_staged.records,\n                    [&](ggml_tensor *records, const auto &entry) {\n                      const auto &[i, placement] = entry;\n                      ggml_backend_tensor_set(\n                          records,\n                          completion_staged.staging.data() +\n                              i * completion_staged.record_bytes,\n                          placement.first *\n                              completion_staged.record_bytes,\n                          completion_staged.record_bytes);\n                      return records;\n                    })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@finish_shared_read#$@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion#",
+          "lambdaUsr": "c:@N@minicpm@F@finish_shared_read#$@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion#@Sa@FT@>1#Toperator()#*$@S@ggml_tensor#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-030",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 535,
+      "col": 20,
+      "api": "fold_left",
+      "seedText": "completion_staged.records",
+      "seedType": "ggml_tensor *",
+      "seedOffset": 22851,
+      "seedLine": 537,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      completion_staged.missing | ranges::views::enumerate,\n      completion_staged.records, [&](ggml_tensor *records, const auto &entry) {\n        const auto &[i, placement] = entry;\n        ggml_backend_tensor_set(records,\n                                completion_staged.staging.data() +\n                                    i * completion_staged.record_bytes,\n                                placement.second *\n                                    completion_staged.record_bytes,\n                                completion_staged.record_bytes);\n        return records;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@finish_cache_read#$@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion#",
+          "lambdaUsr": "c:@N@minicpm@F@finish_cache_read#$@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion#@Sa@FT@>1#Toperator()#*$@S@ggml_tensor#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-031",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 614,
+      "col": 20,
+      "api": "fold_left",
+      "seedText": "batch.records_destination",
+      "seedType": "char *",
+      "seedOffset": 26005,
+      "seedLine": 617,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      batch.copies | ranges::views::drop(task.worker) |\n          ranges::views::stride(task.workers),\n      batch.records_destination,\n      [&](char *records_destination, const RecordCopy &copy) {\n        std::memcpy(records_destination +\n                        copy.slot_destination * batch.record_bytes,\n                    batch.records_source +\n                        copy.slot_source * batch.record_bytes,\n                    batch.record_bytes);\n\n        return records_destination;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@execute_host_copies#&1$@N@minicpm@S@CopyTask#",
+          "lambdaUsr": "c:@N@minicpm@F@execute_host_copies#&1$@N@minicpm@S@CopyTask#@Sa@F@operator()#*C#&1$@N@minicpm@S@RecordCopy#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-032",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 763,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "RecordReadState{read.records, {}}",
+      "seedType": "RecordReadState",
+      "seedOffset": 31801,
+      "seedLine": 766,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        read.missing | ranges::views::drop(task.worker) |\n            ranges::views::stride(task.workers),\n        RecordReadState{read.records, {}},\n        [&](RecordReadState read_state, const auto &placement) {\n          const auto &[slot, expert] = placement;\n\n          read_state.io = sum_io(\n              read_state.io,\n              read_record(*task.batch->store, {read.layer, expert},\n                          read_state.records +\n                              slot * read.record_bytes));\n\n          return read_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@execute_shared_host_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedHostRead#",
+          "lambdaUsr": "c:@N@minicpm@F@execute_shared_host_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedHostRead#@Sa@FT@>1#Toperator()#$@N@minicpm@S@RecordReadState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-033",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 788,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "RecordReadState{read.staging.data(), {}}",
+      "seedType": "RecordReadState",
+      "seedOffset": 32692,
+      "seedLine": 792,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        read.missing | ranges::views::enumerate |\n            ranges::views::drop(task.worker) |\n            ranges::views::stride(task.workers),\n        RecordReadState{read.staging.data(), {}},\n        [&](RecordReadState read_state, const auto &entry) {\n          const auto &[i, placement] = entry;\n          const auto expert = placement.second;\n          read_state.io =\n              sum_io(read_state.io,\n                     read_record(*task.batch->store, {read.layer, expert},\n                                 read_state.records + i * read.record_bytes));\n          return read_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@execute_shared_staged_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedStagedRead#",
+          "lambdaUsr": "c:@N@minicpm@F@execute_shared_staged_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedStagedRead#@Sa@FT@>1#Toperator()#$@N@minicpm@S@RecordReadState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-034",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 811,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "RecordReadState{read.records, {}}",
+      "seedType": "RecordReadState",
+      "seedOffset": 33562,
+      "seedLine": 814,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        read.missing | ranges::views::drop(task.worker) |\n            ranges::views::stride(task.workers),\n        RecordReadState{read.records, {}},\n        [&](RecordReadState read_state, const auto &placement) {\n          const auto &[expert, slot] = placement;\n          read_state.io = sum_io(\n              read_state.io,\n              read_record(*task.batch->store, {read.layer, expert},\n                          read_state.records + slot * read.record_bytes));\n          return read_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@execute_cache_host_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheHostRead#",
+          "lambdaUsr": "c:@N@minicpm@F@execute_cache_host_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheHostRead#@Sa@FT@>1#Toperator()#$@N@minicpm@S@RecordReadState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-035",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 832,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "RecordReadState{read.staging.data(), {}}",
+      "seedType": "RecordReadState",
+      "seedOffset": 34418,
+      "seedLine": 836,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        read.missing | ranges::views::enumerate |\n            ranges::views::drop(task.worker) |\n            ranges::views::stride(task.workers),\n        RecordReadState{read.staging.data(), {}},\n        [&](RecordReadState read_state, const auto &entry) {\n          const auto &[i, placement] = entry;\n          const auto expert = placement.first;\n          read_state.io =\n              sum_io(read_state.io,\n                     read_record(*task.batch->store, {read.layer, expert},\n                                 read_state.records + i * read.record_bytes));\n          return read_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@execute_cache_staged_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheStagedRead#",
+          "lambdaUsr": "c:@N@minicpm@F@execute_cache_staged_read#&1$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheStagedRead#@Sa@FT@>1#Toperator()#$@N@minicpm@S@RecordReadState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-036",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 883,
+      "col": 28,
+      "api": "fold_left",
+      "seedText": "&stopped",
+      "seedType": "bool *",
+      "seedOffset": 36456,
+      "seedLine": 886,
+      "seedCol": 15,
+      "callText": "ranges::fold_left(\n              ranges::views::iota(size_t{0}) |\n                  ranges::views::take_while([&](size_t) { return !stopped; }),\n              &stopped, [&](bool *stopped, size_t) {\n                const auto task = take_io_task(*queue);\n\n                static_assert(std::variant_size_v<decltype(task)> == 2);\n\n                if (const auto *io_task = std::get_if<IoTask>(&task))\n                  execute_io_task(*io_task);\n                else\n                  *stopped = true;\n                return stopped;\n              })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@S@IoWorker@F@IoWorker#$@N@std@S@shared_ptr>#$@N@minicpm@S@IoQueue#@Sa@F@operator()#1",
+          "lambdaUsr": "c:@N@minicpm@S@IoWorker@F@IoWorker#$@N@std@S@shared_ptr>#$@N@minicpm@S@IoQueue#@Sa@F@operator()#1@Sa@F@operator()#*b#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-037",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 919,
+      "col": 34,
+      "api": "fold_left",
+      "seedText": "std::vector<IoWorker>{}",
+      "seedType": "std::vector<IoWorker>",
+      "seedOffset": 37816,
+      "seedLine": 925,
+      "seedCol": 13,
+      "callText": "ranges::fold_left(\n            ranges::views::iota(\n                size_t{0},\n                count > 0 && count <= 64\n                    ? count\n                    : throw std::invalid_argument(\"invalid I/O worker count\")),\n            std::vector<IoWorker>{}, [&](auto workers, size_t) {\n              workers.emplace_back(queue);\n\n              return workers;\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@S@IoPool@F@IoPool#l#",
+          "lambdaUsr": "c:@N@minicpm@S@IoPool@F@IoPool#l#@Sa@FT@>1#Toperator()#t0.0#l# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-038",
+      "file": "minicpm-v-4_7/expert_io.h",
+      "line": 946,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "&pool.queue->queue_state",
+      "seedType": "struct State *",
+      "seedOffset": 38599,
+      "seedLine": 947,
+      "seedCol": 16,
+      "callText": "ranges::fold_left(\n        tasks, &pool.queue->queue_state,\n        [](auto *queue_state, const IoTask &task) {\n          queue_state\n              ->tasks[(queue_state->begin + queue_state->count++) %\n                      queue_state->tasks.size()]\n              .emplace(task);\n\n          return queue_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@enqueue_io_tasks#&$@N@minicpm@S@IoPool#&1$@N@std@S@vector>#$@N@std@S@variant>#p5$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedHostRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedStagedRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheHostRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheStagedRead$@N@minicpm@S@CopyTask#$@N@std@S@allocator>#S4_#",
+          "lambdaUsr": "c:@N@minicpm@F@enqueue_io_tasks#&$@N@minicpm@S@IoPool#&1$@N@std@S@vector>#$@N@std@S@variant>#p5$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedHostRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@SharedStagedRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheHostRead$@N@minicpm@S@ReadTask>#$@N@minicpm@S@CacheStagedRead$@N@minicpm@S@CopyTask#$@N@std@S@allocator>#S4_#@Sa@FT@>1#Toperator()#*t0.0#&1S4_# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-039",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 353,
+      "col": 40,
+      "api": "fold_left",
+      "seedText": "std::optional<size_t>{}",
+      "seedType": "std::optional<size_t>",
+      "seedOffset": 17177,
+      "seedLine": 355,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(window.begin, window.begin + window.slot_count),\n      std::optional<size_t>{}, [&](auto victim, size_t slot) {\n        const auto &present = slots.keys[slot];\n        if (ranges::find(locked, slot) != locked.end() ||\n            (present && (!layer || present->layer == *layer) &&\n             required.count(present->expert)))\n          return victim;\n        if (!victim || (!present && slots.keys[*victim]) ||\n            (bool(present) == bool(slots.keys[*victim]) &&\n             slots.ages[slot] < slots.ages[*victim]))\n          return std::optional<size_t>{slot};\n        return victim;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@victim_slot#&1$@N@minicpm@S@SlotState#$@N@minicpm@S@SlotWindow#&1$@N@std@S@set>#I#$@N@std@S@less>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#$@N@std@S@optional>#i#",
+          "lambdaUsr": "c:@N@minicpm@F@victim_slot#&1$@N@minicpm@S@SlotState#$@N@minicpm@S@SlotWindow#&1$@N@std@S@set>#I#$@N@std@S@less>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#$@N@std@S@optional>#i#@Sa@FT@>1#Toperator()#t0.0#l# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-040",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 407,
+      "col": 32,
+      "api": "fold_left",
+      "seedText": "Planning{bank_state.slots, {}, {}}",
+      "seedType": "Planning",
+      "seedOffset": 19559,
+      "seedLine": 409,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, bank_context.layout.working.slot_count),\n      Planning{bank_state.slots, {}, {}}, [&](Planning plan, size_t i) {\n        const size_t slot{i};\n        const auto metadata = metadata_slot(bank_context.layout.working, slot);\n        if (i >= selected.size()) {\n          plan.slots.keys[metadata] = std::nullopt;\n          return plan;\n        }\n        const auto expert = selected[i];\n        plan.slots.keys[metadata] = ExpertKey{layer, expert};\n        plan.slots.ages[metadata] = ++plan.slots.tick;\n        ++plan.slots.misses;\n        plan.slot_ids.push_back(int32_t(slot));\n        plan.missing.emplace(slot, expert);\n        return plan;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#$@N@minicpm@F@plan_shared_decode#S0_#S2_#S4_#i#S6_#@S@Planning#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-041",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 469,
+      "col": 32,
+      "api": "fold_left",
+      "seedText": "Planning{bank_state.slots, {}, {}, {}}",
+      "seedType": "Planning",
+      "seedOffset": 22131,
+      "seedLine": 470,
+      "seedCol": 17,
+      "callText": "ranges::fold_left(\n      selected, Planning{bank_state.slots, {}, {}, {}},\n      [&](Planning plan, int32_t expert) {\n        const ExpertKey key{layer, expert};\n\n        // \u67e5\u539f\u5feb\u7167\uff1brequired \u4fdd\u62a4\u672c\u6b21\u5168\u90e8\u5b9e\u9645\u4e13\u5bb6\uff0c\u524d\u9762\u7684\u89c4\u5212\u4e0d\u4f1a\u6dd8\u6c70\u547d\u4e2d\u9879\u3002\n        const auto found = resident_slot(bank_state.slots, window, key);\n\n        const size_t slot =\n            found ? *found\n                  : victim_slot(plan.slots, window, required, locked, layer);\n\n        plan.slots.keys[slot] = key;\n        plan.slots.ages[slot] = ++plan.slots.tick;\n\n        if (!found) {\n          ++plan.slots.misses;\n\n          plan.missing.emplace(expert, bank_slot(window, slot));\n        } else if (ranges::find(predicted, key) != predicted.end()) {\n          ++plan.slots.misses;\n          ++plan.prefetched_count;\n        } else {\n          ++plan.slots.hits;\n        }\n\n        // GGML \u8ba1\u7b97\u4f7f\u7528\u7269\u7406 bank \u7684\u5c40\u90e8\u69fd\u53f7\u3002\n        plan.slot_ids.push_back(int32_t(bank_slot(window, slot)));\n\n        return plan;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#",
+          "lambdaUsr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@Sa@F@operator()#$@N@minicpm@F@plan_cache_decode#S0_#S2_#S4_#i#S6_#S9_#S13_#@S@Planning#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-042",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 565,
+      "col": 32,
+      "api": "fold_left",
+      "seedText": "PrefetchPlan{std::move(bank_state.slots), {}}",
+      "seedType": "PrefetchPlan",
+      "seedOffset": 26075,
+      "seedLine": 566,
+      "seedCol": 25,
+      "callText": "ranges::fold_left(\n      predicted_unique, PrefetchPlan{std::move(bank_state.slots), {}},\n      [&](PrefetchPlan plan, int32_t expert) {\n        const ExpertKey key{layer, expert};\n\n        if (resident_slot(plan.slots, window, key))\n          return plan;\n\n        const auto slot = victim_slot(plan.slots, window, predicted_unique);\n\n        plan.slots.keys[slot] = key;\n        plan.slots.ages[slot] = ++plan.slots.tick;\n\n        plan.placements.push_back(PrefetchPlacement{expert, slot});\n\n        return plan;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@begin_decode_prefetch#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@begin_decode_prefetch#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#$@N@minicpm@F@begin_decode_prefetch#S0_#S2_#i#S3_#@S@PrefetchPlan#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-043",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 645,
+      "col": 39,
+      "api": "fold_left",
+      "seedText": "std::set<ExpertFrequency>{}",
+      "seedType": "std::set<ExpertFrequency>",
+      "seedOffset": 29399,
+      "seedLine": 649,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(int32_t{0}, int32_t(frequencies.size())) |\n          ranges::views::filter(\n              [&](int32_t expert) { return frequencies[expert] > 0; }),\n      std::set<ExpertFrequency>{},\n      [&](std::set<ExpertFrequency> order, int32_t expert) {\n        order.insert({expert, frequencies[expert]});\n        return order;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@hot_experts#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#l#",
+          "lambdaUsr": "c:@N@minicpm@F@hot_experts#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#l#@Sa@F@operator()#$@N@std@S@set>#$@N@minicpm@F@hot_experts#S0_#l#@S@ExpertFrequency#$@N@std@S@less>#S4_#$@N@std@S@allocator>#S4_#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-044",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 690,
+      "col": 29,
+      "api": "fold_left",
+      "seedText": "std::vector<std::vector<int32_t>>{}",
+      "seedType": "std::vector<std::vector<int32_t>>",
+      "seedOffset": 31338,
+      "seedLine": 691,
+      "seedCol": 33,
+      "callText": "ranges::fold_left(\n        ranges::getlines(file), std::vector<std::vector<int32_t>>{},\n        [&](auto rows, const std::string &line) {\n          const size_t first = line.find_first_not_of(\" \\t\\r\");\n          if (first != std::string::npos && line[first] == '#')\n            return rows;\n          std::istringstream parser(line.substr(0, line.find('#')));\n          auto ids = ranges::istream_view<int32_t>(parser) |\n                     ranges::to<std::vector<int32_t>>();\n          if (!parser.eof())\n            throw std::invalid_argument(\"invalid text prewarm row\");\n          rows.push_back(std::move(ids));\n          return rows;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#l#i#@Sa@F@operator()#1",
+          "lambdaUsr": "c:@N@minicpm@F@load_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#l#i#@Sa@F@operator()#1@Sa@FT@>1#Toperator()#t0.0#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-045",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 728,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "&file",
+      "seedType": "std::ofstream *",
+      "seedOffset": 33012,
+      "seedLine": 728,
+      "seedCol": 30,
+      "callText": "ranges::fold_left(table, &file, [](auto *file, const auto &ids) {\n      const auto row = ranges::fold_left(\n          ids, std::string{}, [](std::string row, int32_t id) {\n            return row + (row.empty() ? \"\" : \" \") + std::to_string(id);\n          });\n      *file << row << '\\n';\n      return file;\n    })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@save_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S4_#",
+          "lambdaUsr": "c:@N@minicpm@F@save_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S4_#@Sa@FT@>2#T#Toperator()#*t0.0#&1t0.1# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-046",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 729,
+      "col": 24,
+      "api": "fold_left",
+      "seedText": "std::string{}",
+      "seedType": "std::string",
+      "seedOffset": 33110,
+      "seedLine": 730,
+      "seedCol": 16,
+      "callText": "ranges::fold_left(\n          ids, std::string{}, [](std::string row, int32_t id) {\n            return row + (row.empty() ? \"\" : \" \") + std::to_string(id);\n          })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@save_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S4_#@Sa@FT@>2#T#Toperator()#*t0.0#&1t0.1# #1",
+          "lambdaUsr": "c:@N@minicpm@F@save_prewarm_table#&1$@N@std@N@filesystem@N@__cxx11@S@path#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S4_#@Sa@FT@>2#T#Toperator()#*t0.0#&1t0.1# #1@Sa@F@operator()#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-047",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 756,
+      "col": 38,
+      "api": "fold_left",
+      "seedText": "Prewarming{std::move(bank_state.layer_banks), std::move(bank_state.slots),\n                 bank_state.counters.prewarm_loaded,\n                 bank_state.counters.prewarm_io}",
+      "seedType": "Prewarming",
+      "seedOffset": 34241,
+      "seedLine": 758,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, layer_count),\n      Prewarming{std::move(bank_state.layer_banks), std::move(bank_state.slots),\n                 bank_state.counters.prewarm_loaded,\n                 bank_state.counters.prewarm_io},\n      [&](Prewarming prewarming, size_t layer_index) {\n        const auto window = bank_context.layout.layers[layer_index];\n        const auto ids = prewarm_table[layer_index] |\n                         ranges::views::take(bank_context.layout.prewarm);\n        if (ids.size() != (ids | ranges::to<std::set<int32_t>>()).size() ||\n            !ranges::all_of(ids, [&](int32_t id) {\n              return id >= 0 &&\n                     size_t(id) < bank_state.frequencies[layer_index].size();\n            }))\n          throw std::invalid_argument(\"invalid prewarm expert IDs\");\n        struct Warming {\n          // \u63a5\u7ba1\u5f53\u524d bank \u7684\u69fd\u4f4d\u72b6\u6001\uff1b\u6309\u9884\u70ed\u8868\u987a\u5e8f\u8bbe\u7f6e\u672c\u5c42\u524d\u51e0\u4e2a\u69fd\u7684\u6807\u7b7e\u548c\n          // LRU\uff0c\u7ed3\u675f\u540e\u4ea4\u56de prewarming\u3002\n          SlotState slots;\n          // \u672c\u5c42\u9884\u70ed\u7684\u201c\u4e13\u5bb6 \u2192\n          // \u987a\u5e8f\u5c40\u90e8\u69fd\u201d\u8bfb\u53d6\u8868\uff1b\u4ece\u7a7a\u8868\u9010\u9879\u52a0\u5165\uff0c\u5f52\u7ea6\u540e\u540c\u6b65\u8bfb\u53d6\u5e76\u5b89\u88c5\u3002\n          std::map<int32_t, size_t> missing;\n        };\n        auto warming =\n            ranges::fold_left(ids | ranges::views::enumerate,\n                              Warming{std::move(prewarming.slots), {}},\n                              [&](Warming warming, const auto &entry) {\n                                const auto [i, expert] = entry;\n                                const auto slot =\n                                    metadata_slot(window, size_t(i));\n                                warming.slots.keys[slot] =\n                                    ExpertKey{uint32_t(layer_index), expert};\n                                warming.slots.ages[slot] = ++warming.slots.tick;\n                                warming.missing.emplace(expert, size_t(i));\n                                return warming;\n                              });\n        prewarming.slots = std::move(warming.slots);\n        const auto begin = LesClock::now();\n        const auto loaded = finish_cache_read(start_cache_read(\n            bank_context.store, bank_context.pool,\n            make_cache_read(\n                layer_index, prewarming.layer_banks.at(layer_index).records,\n                bank_context.store->record_bytes, std::move(warming.missing))));\n        prewarming.prewarm_loaded += loaded.record_count;\n        prewarming.prewarm_io =\n            account_io(prewarming.prewarm_io, loaded, {begin, begin},\n                       std::chrono::duration_cast<std::chrono::nanoseconds>(\n                           LesClock::now() - begin)\n                           .count());\n        ++prewarming.prewarm_io.layer_count;\n        return prewarming;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#",
+          "lambdaUsr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-048",
+      "file": "minicpm-v-4_7/experts.h",
+      "line": 780,
+      "col": 30,
+      "api": "fold_left",
+      "seedText": "Warming{std::move(prewarming.slots), {}}",
+      "seedType": "Warming",
+      "seedOffset": 35513,
+      "seedLine": 781,
+      "seedCol": 31,
+      "callText": "ranges::fold_left(ids | ranges::views::enumerate,\n                              Warming{std::move(prewarming.slots), {}},\n                              [&](Warming warming, const auto &entry) {\n                                const auto [i, expert] = entry;\n                                const auto slot =\n                                    metadata_slot(window, size_t(i));\n                                warming.slots.keys[slot] =\n                                    ExpertKey{uint32_t(layer_index), expert};\n                                warming.slots.ages[slot] = ++warming.slots.tick;\n                                warming.missing.emplace(expert, size_t(i));\n                                return warming;\n                              })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1",
+          "lambdaUsr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@Sa@FT@>1#Toperator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@Sa@F@operator()#S8_#l#1@S@Warming#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-049",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 77,
+      "col": 32,
+      "api": "fold_left",
+      "seedText": "Planning{bank_state.slots, {},\n               {},\n               std::vector<size_t>(index.expert_count)}",
+      "seedType": "Planning",
+      "seedOffset": 3588,
+      "seedLine": 79,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      selected_unique | ranges::views::enumerate,\n      Planning{bank_state.slots, {},\n               {},\n               std::vector<size_t>(index.expert_count)},\n      [&](Planning plan, const auto &entry) {\n        const auto [i, expert] = entry;\n\n        const size_t slot{size_t(i)};\n        plan.expert_slots[expert] = slot;\n\n        const auto metadata = metadata_slot(bank_context.layout.working, slot);\n\n        const ExpertKey key{layer, expert};\n\n        const auto cached = resident_slot(\n            bank_state.slots, bank_context.layout.layers.at(layer), key);\n\n        plan.slots.keys[metadata] = key;\n        plan.slots.ages[metadata] = ++plan.slots.tick;\n\n        if (cached) {\n          plan.copies.push_back(RecordCopy{\n              bank_slot(bank_context.layout.layers.at(layer), *cached), slot});\n\n          ++plan.slots.hits;\n        } else {\n          plan.missing.emplace(slot, expert);\n\n          ++plan.slots.misses;\n        }\n\n        return plan;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@FT@>1#Toperator()#$@N@minicpm@F@plan_prefill#S0_#S2_#S4_#i#S6_#@S@Planning#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-050",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 137,
+      "col": 20,
+      "api": "fold_left",
+      "seedText": "bank_state.shared_bank.records",
+      "seedType": "ggml_tensor *",
+      "seedOffset": 5709,
+      "seedLine": 137,
+      "seedCol": 29,
+      "callText": "ranges::fold_left(copies, bank_state.shared_bank.records,\n                    [&](ggml_tensor *records, const RecordCopy &copy) {\n                      copy_record(records_source, copy.slot_source, records,\n                                  copy.slot_destination,\n                                  bank_context.store->record_bytes);\n                      return records;\n                    })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@start_prefill_copies#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#$@N@std@S@vector>#$@N@minicpm@S@RecordCopy#$@N@std@S@allocator>#S5_#",
+          "lambdaUsr": "c:@N@minicpm@F@start_prefill_copies#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#$@N@std@S@vector>#$@N@minicpm@S@RecordCopy#$@N@std@S@allocator>#S5_#@Sa@F@operator()#*$@S@ggml_tensor#&1S5_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-051",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 174,
+      "col": 37,
+      "api": "fold_left",
+      "seedText": "Retaining{\n          &bank_state.slots, &bank_state.counters.prewarm_from_prefill, {}}",
+      "seedType": "Retaining",
+      "seedOffset": 7586,
+      "seedLine": 176,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      hot,\n      Retaining{\n          &bank_state.slots, &bank_state.counters.prewarm_from_prefill, {}},\n      [&](Retaining retaining, int32_t expert) {\n        const ExpertKey key{layer, expert};\n        const auto found = resident_slot(*retaining.slots, window, key);\n        const size_t target =\n            found ? *found\n                  : victim_slot(*retaining.slots, window, protected_ids);\n        if (!found) {\n          const auto shared_slot =\n              ranges::find(retaining.slots->keys.begin(),\n                           retaining.slots->keys.begin() +\n                               bank_context.layout.working.slot_count,\n                           std::optional<ExpertKey>{key});\n          if (shared_slot == retaining.slots->keys.begin() +\n                                 bank_context.layout.working.slot_count)\n            throw std::logic_error(\"prewarm expert absent from shared bank\");\n          retaining.copies.push_back(RecordCopy{\n              bank_slot(bank_context.layout.working,\n                        size_t(shared_slot - retaining.slots->keys.begin())),\n              bank_slot(window, target)});\n          ++*retaining.prewarm_from_prefill;\n        }\n        retaining.slots->keys[target] = key;\n        retaining.slots->ages[target] = ++retaining.slots->tick;\n        return retaining;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@begin_retain_prefill#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@begin_retain_prefill#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#$@N@minicpm@F@begin_retain_prefill#S0_#S2_#i#S4_#@S@Retaining#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-052",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 211,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "bank_state.layer_banks[layer].records",
+      "seedType": "ggml_tensor *",
+      "seedOffset": 9413,
+      "seedLine": 212,
+      "seedCol": 27,
+      "callText": "ranges::fold_left(\n        retaining.copies, bank_state.layer_banks[layer].records,\n        [&](ggml_tensor *records, const RecordCopy &copy) {\n          copy_record(bank_state.shared_bank.records, copy.slot_source, records,\n                      copy.slot_destination, bank_context.store->record_bytes);\n          return records;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@begin_retain_prefill#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@begin_retain_prefill#&1$@N@minicpm@S@BankContext#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@F@operator()#*$@S@ggml_tensor#&1$@N@minicpm@S@RecordCopy#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-053",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 225,
+      "col": 20,
+      "api": "fold_left",
+      "seedText": "&bank_state.frequencies.at(layer)",
+      "seedType": "value_type *",
+      "seedOffset": 10013,
+      "seedLine": 225,
+      "seedCol": 31,
+      "callText": "ranges::fold_left(selected, &bank_state.frequencies.at(layer),\n                    [](auto *frequencies, int32_t id) {\n                      ++(*frequencies)[id];\n                      return frequencies;\n                    })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@record_frequency#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#",
+          "lambdaUsr": "c:@N@minicpm@F@record_frequency#&$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@Sa@FT@>1#Toperator()#*t0.0#I# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-054",
+      "file": "minicpm-v-4_7/ffn.h",
+      "line": 426,
+      "col": 24,
+      "api": "fold_left",
+      "seedText": "view(0)",
+      "seedType": "struct ggml_tensor *",
+      "seedOffset": 18796,
+      "seedLine": 426,
+      "seedCol": 70,
+      "callText": "ranges::fold_left(ranges::views::iota(int64_t{1}, used_count), view(0),\n                        [&](ggml_tensor *sum, int64_t i) {\n                          return ggml_add(context, sum, view(i));\n                        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@build_routed_experts#*$@S@ggml_context#&1$@S@llama_model#*$@S@ggml_tensor#S4_#S4_#S4_#S4_#S4_#S4_#S4_#",
+          "lambdaUsr": "c:@N@minicpm@F@build_routed_experts#*$@S@ggml_context#&1$@S@llama_model#*$@S@ggml_tensor#S4_#S4_#S4_#S4_#S4_#S4_#S4_#@Sa@F@operator()#S4_#L#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-055",
+      "file": "minicpm-v-4_7/model.h",
+      "line": 147,
+      "col": 49,
+      "api": "fold_left",
+      "seedText": "header_bytes",
+      "seedType": "size_t",
+      "seedOffset": 7001,
+      "seedLine": 150,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(int64_t{0},\n                          gguf_get_n_tensors(model_description.get())),\n      header_bytes, [&](size_t metadata_size, int64_t id) {\n        return std::max(\n            metadata_size,\n            checked_add(\n                header_bytes,\n                checked_add(\n                    gguf_get_tensor_offset(model_description.get(), id),\n                    gguf_get_tensor_size(model_description.get(), id))));\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#",
+          "lambdaUsr": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#@Sa@F@operator()#l#L#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-056",
+      "file": "minicpm-v-4_7/model.h",
+      "line": 245,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "std::vector<nano::Buffer>(std::make_move_iterator(&buffer),\n                                  std::make_move_iterator(&buffer + 1))",
+      "seedType": "std::vector<nano::Buffer>",
+      "seedOffset": 11416,
+      "seedLine": 247,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        model->tensors_by_name,\n        std::vector<nano::Buffer>(std::make_move_iterator(&buffer),\n                                  std::make_move_iterator(&buffer + 1)),\n        [&](std::vector<nano::Buffer> resident_buffers, const auto &entry) {\n          const auto &[name, tensor] = entry;\n\n          if (routed_weight(name)) {\n            tensor->buffer = nullptr;\n            return resident_buffers;\n          }\n\n          const size_t offset =\n              resident_offset(language_gguf.get(), name, tensor);\n          const size_t bytes = ggml_nbytes(tensor);\n          const auto type = ggml_backend_buffer_get_type(tensor->buffer);\n          const auto device = ggml_backend_buft_get_device(type);\n\n          ggml_backend_dev_props properties{}; // capability API output\n\n          if (device)\n            ggml_backend_dev_get_props(device, &properties);\n\n          const bool cpu = device\n                               ? properties.type == GGML_BACKEND_DEVICE_TYPE_CPU\n                               : ggml_backend_buft_is_host(type);\n\n          // CPU \u4e13\u7528\u5e03\u5c40\u5fc5\u987b\u6574\u5f20\u5bfc\u5165\u5e76\u91cd\u6392\uff0c\u968f\u540e\u91ca\u653e\u6e90\u6620\u5c04\u4e2d\u7684\u5b8c\u6574\u9875\u3002\n          if (cpu && type != ggml_backend_cpu_buffer_type()) {\n            auto buffer = allocate_resident(tensor, type);\n\n            ggml_backend_tensor_set(tensor, mapping->at(offset, bytes), 0,\n                                    bytes);\n\n            mapping->release_pages(offset, bytes);\n\n            resident_buffers.push_back(std::move(buffer));\n\n            return resident_buffers;\n          }\n\n          if (cpu) {\n            bind_mapped_resident(tensor, resident_buffers.front().get(),\n                                 mapping->at(offset, bytes));\n\n            return resident_buffers;\n          }\n\n          if (properties.caps.buffer_from_host_ptr) {\n            // \u8bbe\u5907\u5bfc\u5165\u4e0e\u666e\u901a CPU \u7ed1\u5b9a\u6709\u4e0d\u540c\u7684 buffer \u6240\u6709\u6743\uff1b\u5355\u72ec\u590d\u7528\u672c\u8bbe\u5907\n            // \u5df2\u5bfc\u5165\u7684\u6620\u5c04\uff0c\u4e0d\u80fd\u628a GPU \u5f20\u91cf\u7ed1\u5b9a\u5230 CPU buffer\u3002\n            const auto existing =\n                ranges::find_if(resident_buffers, [&](const auto &buffer) {\n                  return ggml_backend_buffer_get_base(buffer.get()) ==\n                             mapping->address &&\n                         ggml_backend_buft_get_device(\n                             ggml_backend_buffer_get_type(buffer.get())) ==\n                             device;\n                });\n\n            if (existing != resident_buffers.end()) {\n              bind_mapped_resident(tensor, existing->get(),\n                                   mapping->at(offset, bytes));\n              return resident_buffers;\n            }\n\n            // \u6700\u5927\u5e38\u9a7b\u5f20\u91cf\u53ea\u4f9b\u8bbe\u5907\u5bfc\u5165\u6620\u5c04\u4f7f\u7528\uff1b\u4e0d\u8fdb\u5165\u53ef\u5199 resident_buffers\n            // \u7d2f\u52a0\u5668\u3002\n            const size_t max_resident_bytes = ranges::fold_left(\n                model->tensors_by_name, size_t{0},\n                [](size_t max_resident_bytes, const auto &entry) {\n                  return routed_weight(entry.first)\n                             ? max_resident_bytes\n                             : std::max(max_resident_bytes,\n                                        ggml_nbytes(entry.second));\n                });\n\n            nano::Buffer buffer(ggml_backend_dev_buffer_from_host_ptr(\n                                    device, mapping->address, mapping->size,\n                                    max_resident_bytes),\n                                ggml_backend_buffer_free);\n\n            if (!buffer)\n              throw std::runtime_error(\n                  \"cannot import mapped weights on model device\");\n\n            ggml_backend_buffer_set_usage(buffer.get(),\n                                          GGML_BACKEND_BUFFER_USAGE_WEIGHTS);\n\n            bind_mapped_resident(tensor, buffer.get(),\n                                 mapping->at(offset, bytes));\n\n            resident_buffers.push_back(std::move(buffer));\n\n            return resident_buffers;\n          }\n\n          // \u65e0\u6cd5\u5bfc\u5165\u6620\u5c04\u7684\u8bbe\u5907\u72ec\u7acb\u5206\u914d\uff0c\u518d\u4ece\u6620\u5c04\u4e0a\u4f20\u539f\u59cb\u91cf\u5316\u5b57\u8282\u3002\n          auto buffer = allocate_resident(tensor, type);\n\n          ggml_backend_tensor_set(tensor, mapping->at(offset, bytes), 0, bytes);\n\n          resident_buffers.push_back(std::move(buffer));\n\n          return resident_buffers;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#",
+          "lambdaUsr": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#$@N@std@S@unique_ptr>#$@S@ggml_backend_buffer#*Fv(#*S8_)#$@N@std@S@allocator>#S7_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-057",
+      "file": "minicpm-v-4_7/model.h",
+      "line": 313,
+      "col": 47,
+      "api": "fold_left",
+      "seedText": "size_t{0}",
+      "seedType": "size_t",
+      "seedOffset": 14257,
+      "seedLine": 314,
+      "seedCol": 41,
+      "callText": "ranges::fold_left(\n                model->tensors_by_name, size_t{0},\n                [](size_t max_resident_bytes, const auto &entry) {\n                  return routed_weight(entry.first)\n                             ? max_resident_bytes\n                             : std::max(max_resident_bytes,\n                                        ggml_nbytes(entry.second));\n                })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#$@N@std@S@unique_ptr>#$@S@ggml_backend_buffer#*Fv(#*S8_)#$@N@std@S@allocator>#S7_#&1t0.0# #1",
+          "lambdaUsr": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#$@N@std@S@unique_ptr>#$@S@ggml_backend_buffer#*Fv(#*S8_)#$@N@std@S@allocator>#S7_#&1t0.0# #1@Sa@FT@>1#Toperator()#l#&1t1.0#S15_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-058",
+      "file": "minicpm-v-4_7/model.h",
+      "line": 361,
+      "col": 44,
+      "api": "fold_left",
+      "seedText": "std::vector<nano::Buffer>{}",
+      "seedType": "std::vector<nano::Buffer>",
+      "seedOffset": 16117,
+      "seedLine": 362,
+      "seedCol": 31,
+      "callText": "ranges::fold_left(\n      model->tensors_by_name, std::vector<nano::Buffer>{},\n      [&](std::vector<nano::Buffer> resident_buffers, const auto &entry) {\n        const auto &[name, tensor] = entry;\n\n        if (routed_weight(name)) {\n          tensor->buffer = nullptr;\n          return resident_buffers;\n        }\n\n        const size_t offset =\n            resident_offset(language_gguf.get(), name, tensor);\n        const size_t bytes = ggml_nbytes(tensor);\n        const auto type = ggml_backend_buffer_get_type(tensor->buffer);\n        const auto device = ggml_backend_buft_get_device(type);\n\n        ggml_backend_dev_props properties{}; // capability API output\n        if (device)\n          ggml_backend_dev_get_props(device, &properties);\n\n        const bool cpu = device\n                             ? properties.type == GGML_BACKEND_DEVICE_TYPE_CPU\n                             : ggml_backend_buft_is_host(type);\n\n        auto buffer = allocate_resident(tensor, type);\n\n        file.seekg(std::streamoff(offset));\n\n        if (cpu && type != ggml_backend_cpu_buffer_type()) {\n          // CPU_REPACK \u7684 set_tensor \u5951\u7ea6\u8981\u6c42\u6574\u5f20\u539f\u59cb\u5f20\u91cf\uff0c\u4e0d\u80fd\u5206\u5757\u3002\n          std::vector<char> staging(bytes); // stream API output\n\n          if (!file.read(staging.data(), staging.size()))\n            throw std::runtime_error(\"truncated CPU resident weight: \" + name);\n\n          ggml_backend_tensor_set(tensor, staging.data(), 0, staging.size());\n        } else {\n          constexpr size_t chunk = 8 * 1024 * 1024;\n\n          // \u7d2f\u52a0\u5668\u53ea\u627f\u8f7d\u88ab\u6d41\u586b\u5145\u7684\u6682\u5b58\u5b57\u8282\uff1b\u76ee\u6807\u5f20\u91cf\u662f\u5f52\u7ea6\u5916\u7684\u56fa\u5b9a\u8f93\u5165\u3002\n          ranges::fold_left(\n              ranges::views::iota(size_t{0}, bytes) |\n                  ranges::views::stride(chunk),\n              std::vector<char>(std::min(bytes, chunk)),\n              [&](std::vector<char> staging, size_t start) {\n                const size_t length = std::min(chunk, bytes - start);\n\n                if (!file.read(staging.data(), length))\n                  throw std::runtime_error(\"truncated resident weight: \" +\n                                           name);\n\n                ggml_backend_tensor_set(tensor, staging.data(), start, length);\n\n                return staging;\n              });\n        }\n\n        // \u4e24\u79cd\u590d\u5236\u65b9\u5f0f\u6b64\u65f6\u90fd\u5df2\u5b8c\u6210\u5b89\u88c5\uff0c\u540e\u7eed\u53ea\u8f6c\u4ea4\u76f8\u540c\u7684 buffer \u6240\u6709\u6743\u3002\n        resident_buffers.push_back(std::move(buffer));\n\n        return resident_buffers;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#",
+          "lambdaUsr": "c:@N@minicpm@F@load_model#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertIndex#I#$@N@minicpm@E@LanguageLoad#@Sa@FT@>1#Toperator()#$@N@std@S@vector>#$@N@std@S@unique_ptr>#$@S@ggml_backend_buffer#*Fv(#*S8_)#$@N@std@S@allocator>#S7_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-059",
+      "file": "minicpm-v-4_7/pipeline.h",
+      "line": 719,
+      "col": 43,
+      "api": "fold_left",
+      "seedText": "ArenaSizes{}",
+      "seedType": "ArenaSizes",
+      "seedOffset": 31109,
+      "seedLine": 721,
+      "seedCol": 11,
+      "callText": "ranges::fold_left(\n          ranges::views::iota(uint32_t{0}, model.hparams.n_layer()),\n          ArenaSizes{}, [&](ArenaSizes sizes, uint32_t layer) {\n            const auto &bank =\n                key.phase == ExecutionPhase::Decode &&\n                        bank_context.layout.layers[layer].slot_count\n                    ? bank_state.layer_banks.at(layer)\n                    : bank_state.shared_bank;\n\n            const auto routing_graph =\n                build_routing_graph(caches[layer], key, layer);\n\n            const auto shared_expert_graph =\n                build_shared_graph(layer, routing_graph);\n\n            const auto routed_expert_graph =\n                build_routed_graph(layer, routing_graph, shared_expert_graph,\n                                   bank.up, bank.gate, bank.down);\n\n            sizes.routing =\n                std::max(sizes.routing, bytes(routing_graph.compute_graph));\n            sizes.shared = std::max(sizes.shared,\n                                    bytes(shared_expert_graph.compute_graph));\n            sizes.routed = std::max(sizes.routed,\n                                    bytes(routed_expert_graph.compute_graph));\n\n            return sizes;\n          })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@S@Pipeline@F@build_language_graphs#&$@N@std@S@vector>#$@N@std@S@variant>#p2$@N@minicpm@S@FullAttentionCache$@N@minicpm@S@DeltaNetCache#$@N@std@S@allocator>#S2_#&1$@N@minicpm@S@BankState#&1$@N@minicpm@S@GraphKey#1@Sa@F@operator()#1",
+          "lambdaUsr": "c:@N@minicpm@S@Pipeline@F@build_language_graphs#&$@N@std@S@vector>#$@N@std@S@variant>#p2$@N@minicpm@S@FullAttentionCache$@N@minicpm@S@DeltaNetCache#$@N@std@S@allocator>#S2_#&1$@N@minicpm@S@BankState#&1$@N@minicpm@S@GraphKey#1@Sa@F@operator()#1@Sa@F@operator()#$@N@minicpm@S@Pipeline@F@build_language_graphs#S0_#S6_#S8_#1@Sa@F@operator()#1@S@ArenaSizes#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-060",
+      "file": "minicpm-v-4_7/pipeline.h",
+      "line": 866,
+      "col": 28,
+      "api": "fold_left",
+      "seedText": "LayerExecution{std::move(session_state.caches),\n                       std::move(session_state.bank_state),\n                       std::move(session_state.graph_cache), nullptr}",
+      "seedType": "LayerExecution",
+      "seedOffset": 37669,
+      "seedLine": 868,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        ranges::views::iota(uint32_t{0}, model.hparams.n_layer()),\n        LayerExecution{std::move(session_state.caches),\n                       std::move(session_state.bank_state),\n                       std::move(session_state.graph_cache), nullptr},\n        [&](LayerExecution layer_execution, uint32_t layer) {\n          auto &bank_state = layer_execution.bank_state;\n          auto &graph_cache = layer_execution.graph_cache;\n\n          // build/get graphs\n          if (layer == 0) {\n            const auto graphs_begin = nano::InferenceClock::now();\n\n            const auto language_graphs_found = graph_cache.graphs.find(key);\n\n            if (language_graphs_found != graph_cache.graphs.end()) {\n              language_graphs_found->second->age = ++graph_cache.tick;\n\n              ++bank_state.counters.graph_reuses;\n            } else {\n              if (graph_cache.graphs.size() >= 4) {\n                const auto language_graphs_oldest = ranges::min_element(\n                    graph_cache.graphs, [](const auto &a, const auto &b) {\n                      return a.second->age < b.second->age;\n                    });\n\n                graph_cache.graphs.erase(language_graphs_oldest);\n              }\n\n              auto language_graphs = build_language_graphs(\n                  layer_execution.caches, bank_state, key);\n\n              language_graphs->age = ++graph_cache.tick;\n\n              graph_cache.graphs.emplace(key, std::move(language_graphs));\n\n              ++bank_state.counters.graph_builds;\n            }\n\n            if (profile)\n              std::fprintf(stderr,\n                           \"PROFILE graphs tokens=%zu elapsed_ms=%.3f\\n\", nt,\n                           nano::elapsed_ms(graphs_begin));\n          }\n\n          auto &language_graphs = *graph_cache.graphs.at(key);\n          auto &layer_graphs = language_graphs.layers[layer];\n\n          const auto layer_begin = nano::InferenceClock::now();\n\n          auto &routing_graph = layer_graphs.routing_graph;\n\n          if (layer_execution.hidden)\n            ggml_backend_tensor_copy(layer_execution.hidden,\n                                     routing_graph.hidden);\n\n          else\n            upload_input(routing_graph.hidden, input);\n\n          static_assert(std::variant_size_v<AttentionInputs> == 2);\n          // DeltaNet \u6ca1\u6709\u9010\u6279\u4e3b\u673a\u8f93\u5165\uff1bFullAttention \u660e\u786e\u4e0a\u4f20\u5750\u6807\u548c\n          // mask\u3002\n          if (const auto *attention_inputs_full =\n                  std::get_if<FullAttentionInputs>(\n                      &routing_graph.attention_inputs)) {\n            ggml_backend_tensor_set(\n                attention_inputs_full->positions, positions.data(), 0,\n                ggml_nbytes(attention_inputs_full->positions));\n\n            ggml_backend_tensor_set(\n                attention_inputs_full->cache_indices, indices.data(), 0,\n                ggml_nbytes(attention_inputs_full->cache_indices));\n\n            ggml_backend_tensor_set(attention_inputs_full->mask, masks.data(),\n                                    0,\n                                    ggml_nbytes(attention_inputs_full->mask));\n          }\n\n          // \u6267\u884c attention\uff08\u5199\u672c\u5c42 KV/\u9012\u5f52\u72b6\u6001\uff09\uff0c\u518d\u8bfb\u53d6\u771f\u5b9e\u8def\u7531\u548c\u9884\u6d4b\u3002\n          const auto routing_begin = nano::InferenceClock::now();\n\n          execute_compute_graph(routing_graph.compute_graph);\n\n          if (profile)\n            nano::report_layer_time(\"PROFILE routing\", layer, nt,\n                                    routing_begin);\n\n          const auto selected = tensor_ids(routing_graph.routing.selected);\n\n          auto &shared_expert_graph = layer_graphs.shared_expert_graph;\n\n          auto &routed_expert_graph = layer_graphs.routed_expert_graph;\n\n          // \u8fd9\u4e24\u4e2a\u64cd\u4f5c\u53ea\u6267\u884c\u5df2\u5efa\u597d\u7684\u7b97\u672f\u56fe\uff0c\u4e0d\u89e3\u91ca\u9636\u6bb5\u6216\u8bfb\u53d6\u51ed\u636e\u3002\n          const auto compute_shared = [&] {\n            const auto shared_begin = nano::InferenceClock::now();\n\n            execute_compute_graph(shared_expert_graph.compute_graph);\n\n            if (profile)\n              nano::report_layer_time(\"PROFILE shared\", layer, nt,\n                                      shared_begin);\n          };\n\n          const auto compute_routed =\n              [&](const std::vector<int32_t> &slot_ids) {\n                ggml_backend_tensor_set(\n                    routed_expert_graph.slot_ids, slot_ids.data(), 0,\n                    ggml_nbytes(routed_expert_graph.slot_ids));\n\n                const auto routed_begin = nano::InferenceClock::now();\n\n                execute_compute_graph(routed_expert_graph.compute_graph);\n\n                if (profile)\n                  nano::report_layer_time(\"PROFILE routed\", layer, nt,\n                                          routed_begin);\n              };\n\n          switch (phase) {\n          case ExecutionPhase::Prefill: {\n            if (bank_state.pending)\n              throw std::logic_error(\"prefill cannot consume decode prefetch\");\n\n            auto plan =\n                plan_prefill(index, bank_context, bank_state, layer, selected);\n\n            const size_t copied_count = plan.copies.size();\n\n            auto copy_ticket = start_prefill_copies(\n                bank_context, bank_state, layer, std::move(plan.copies));\n\n            auto demand_read_ticket = start_shared_read(\n                bank_context.store, bank_context.pool, std::move(plan.read));\n\n            bank_state.slots = std::move(plan.slots);\n\n            const auto shared_begin = LesClock::now();\n\n            compute_shared();\n\n            const auto wait_begin = LesClock::now();\n\n            const auto demand_loaded =\n                finish_shared_read(std::move(demand_read_ticket));\n\n            finish_host_copies(std::move(copy_ticket));\n\n            record_prefill(bank_state, layer, selected, copied_count,\n                           demand_loaded, {shared_begin, wait_begin},\n                           elapsed_ns(wait_begin));\n\n            auto retention_ticket =\n                begin_retain_prefill(bank_context, bank_state, layer, selected);\n\n            compute_routed(plan.slot_ids);\n\n            // \u4e0b\u4e00\u5c42\u4f1a\u8986\u76d6\u5171\u4eab bank\uff1b\u5148\u6c47\u5408\u5bf9\u5b83\u7684\u7559\u5b58\u8bfb\u53d6\u3002\n            finish_host_copies(std::move(retention_ticket));\n            break;\n          }\n          case ExecutionPhase::Decode: {\n            const auto window = bank_context.layout.layers.at(layer);\n\n            if (!window.slot_count) {\n              if (bank_state.pending)\n                throw std::logic_error(\n                    \"shared decode cannot consume cache prefetch\");\n\n              auto plan = plan_shared_decode(index, bank_context, bank_state,\n                                             layer, selected);\n\n              auto demand_read_ticket = start_shared_read(\n                  bank_context.store, bank_context.pool, std::move(plan.read));\n\n              bank_state.slots = std::move(plan.slots);\n\n              const auto shared_begin = LesClock::now();\n\n              compute_shared();\n\n              const auto wait_begin = LesClock::now();\n\n              const auto demand_loaded =\n                  finish_shared_read(std::move(demand_read_ticket));\n\n              record_shared_decode(bank_state, layer, selected, demand_loaded,\n                                   {shared_begin, wait_begin},\n                                   elapsed_ns(wait_begin));\n\n              compute_routed(plan.slot_ids);\n            } else if (!bank_state.pending) {\n              auto plan = plan_cache_decode(index, bank_context, bank_state,\n                                            layer, selected);\n\n              auto demand_read_ticket = start_cache_read(\n                  bank_context.store, bank_context.pool, std::move(plan.read));\n\n              bank_state.slots = std::move(plan.slots);\n\n              const auto shared_begin = LesClock::now();\n\n              compute_shared();\n\n              const auto wait_begin = LesClock::now();\n\n              const auto demand_loaded =\n                  finish_cache_read(std::move(demand_read_ticket));\n\n              record_cache_decode(bank_state, layer, selected,\n                                  plan.prefetched_count, demand_loaded,\n                                  {shared_begin, wait_begin},\n                                  elapsed_ns(wait_begin));\n\n              if (layer + 1 < bank_context.layout.layers.size())\n                bank_state = begin_decode_prefetch(\n                    bank_context, std::move(bank_state), layer + 1,\n                    tensor_ids(routing_graph.routing.predicted_next));\n\n              compute_routed(plan.slot_ids);\n            } else {\n              if (bank_state.pending->layer != layer)\n                throw std::logic_error(\"LES next-layer prefetch mismatch\");\n\n              auto pending = std::move(*bank_state.pending);\n\n              bank_state.pending.reset();\n\n              const auto started = LesClock::now();\n\n              if (window.slot_count <\n                  size_t(index.expert_used_count) + pending.slots.size()) {\n                // \u7f13\u5b58\u4e0d\u8db3\u4ee5\u4fdd\u62a4\u5728\u98de\u69fd\u5e76\u653e\u5165\u5168\u90e8\u771f\u5b9e\u8def\u7531\uff1b\u5148\u5b89\u88c5\uff0c\u518d\u89c4\u5212\u590d\u7528\u3002\n                const auto prefetch_loaded =\n                    finish_cache_read(std::move(pending.read_ticket));\n\n                const auto early_wait_ns = elapsed_ns(started);\n\n                auto plan = plan_cache_decode(index, bank_context, bank_state,\n                                              layer, selected, pending.keys);\n\n                auto demand_read_ticket =\n                    start_cache_read(bank_context.store, bank_context.pool,\n                                     std::move(plan.read));\n\n                bank_state.slots = std::move(plan.slots);\n\n                const auto shared_begin = LesClock::now();\n\n                compute_shared();\n\n                const auto wait_begin = LesClock::now();\n\n                const auto demand_loaded =\n                    finish_cache_read(std::move(demand_read_ticket));\n\n                record_cache_decode(bank_state, layer, selected,\n                                    plan.prefetched_count, demand_loaded,\n                                    {shared_begin, wait_begin},\n                                    early_wait_ns + elapsed_ns(wait_begin));\n\n                record_cache_prefetch(bank_state, plan.prefetched_count,\n                                      pending.keys.size(), prefetch_loaded,\n                                      demand_loaded, {pending.issued, started},\n                                      {shared_begin, wait_begin});\n\n                if (layer + 1 < bank_context.layout.layers.size())\n                  bank_state = begin_decode_prefetch(\n                      bank_context, std::move(bank_state), layer + 1,\n                      tensor_ids(routing_graph.routing.predicted_next));\n\n                compute_routed(plan.slot_ids);\n              } else {\n                // \u4fdd\u7559\u5728\u98de\u8bfb\u53d6\u7684\u9501\u69fd\uff1b\u9700\u6c42\u8bfb\u53d6\u548c\u5171\u4eab\u7b97\u672f\u4ecd\u53ef\u5e76\u884c\u3002\n                auto plan =\n                    plan_cache_decode(index, bank_context, bank_state, layer,\n                                      selected, pending.keys, pending.slots);\n\n                auto demand_read_ticket =\n                    start_cache_read(bank_context.store, bank_context.pool,\n                                     std::move(plan.read));\n\n                bank_state.slots = std::move(plan.slots);\n\n                const auto shared_begin = LesClock::now();\n\n                compute_shared();\n\n                const auto wait_begin = LesClock::now();\n\n                const auto prefetch_loaded =\n                    finish_cache_read(std::move(pending.read_ticket));\n\n                const auto demand_loaded =\n                    finish_cache_read(std::move(demand_read_ticket));\n\n                record_cache_decode(bank_state, layer, selected,\n                                    plan.prefetched_count, demand_loaded,\n                                    {shared_begin, wait_begin},\n                                    elapsed_ns(wait_begin));\n\n                record_cache_prefetch(bank_state, plan.prefetched_count,\n                                      pending.keys.size(), prefetch_loaded,\n                                      demand_loaded, {pending.issued, started},\n                                      {shared_begin, wait_begin});\n\n                if (layer + 1 < bank_context.layout.layers.size())\n                  bank_state = begin_decode_prefetch(\n                      bank_context, std::move(bank_state), layer + 1,\n                      tensor_ids(routing_graph.routing.predicted_next));\n\n                compute_routed(plan.slot_ids);\n              }\n            }\n            break;\n          }\n          }\n\n          if (profile)\n            nano::report_layer_time(\"PROFILE layer\", layer, nt, layer_begin);\n\n          layer_execution.hidden = routed_expert_graph.hidden;\n          return layer_execution;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1",
+          "lambdaUsr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@Sa@F@operator()#$@N@minicpm@S@Pipeline@FT@>2#T#NS0_execute#S1_#S2_#S3_#I#S6_#S7_#1@S@LayerExecution#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        },
+        {
+          "fn": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "lambdaUsr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@Sa@F@operator()#$@N@minicpm@S@Pipeline@F@execute<#S0_#VI0>#S1_#S0_#S2_#I#S5_#1@S@LayerExecution#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        },
+        {
+          "fn": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "lambdaUsr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@Sa@F@operator()#$@N@minicpm@S@Pipeline@F@execute<#S0_#VI0>#S1_#S0_#S2_#I#S5_#1@S@LayerExecution#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_cli",
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 3
+    },
+    {
+      "siteId": "fold-site-061",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 35,
+      "col": 41,
+      "api": "fold_left",
+      "seedText": "nlohmann::json::array()",
+      "seedType": "basic_json<>",
+      "seedOffset": 1293,
+      "seedLine": 36,
+      "seedCol": 44,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(0, layer_count), nlohmann::json::array(),\n      [&](nlohmann::json entries, int layer_index) {\n        const auto filename = \"layer_\" + std::to_string(layer_index) + \".bin\";\n        std::ofstream packed(directory / filename,\n                             std::ios::binary); // file output API\n        // stride \u4ece\u96f6\u5f00\u59cb\uff0c\u6309 gate/up/down\n        // \u7d2f\u52a0\u5355\u4e13\u5bb6\u77e9\u9635\u5b57\u8282\u6570\uff0c\u6700\u7ec8\u4f5c\u4e3a\u6253\u5305\u8bb0\u5f55\u7684\u4e13\u5bb6\u95f4\u6b65\u957f\u3002\n        const auto stride = ranges::fold_left(\n            minicpm::expert_families, size_t{0},\n            [&](size_t stride, const char *family) {\n              return stride +\n                     ggml_get_tensor(tensors.get(),\n                                     (\"blk.\" + std::to_string(layer_index) +\n                                      \".\" + family + \".weight\")\n                                         .c_str())\n                         ->nb[2];\n            });\n        ranges::for_each(ranges::views::iota(0, 16), [&](int expert) {\n          ranges::for_each(minicpm::expert_families, [&](const char *family) {\n            const auto tensor = ggml_get_tensor(\n                tensors.get(), (\"blk.\" + std::to_string(layer_index) + \".\" +\n                             family + \".weight\")\n                                .c_str());\n            packed.write(static_cast<char *>(tensor->data) +\n                             expert * tensor->nb[2],\n                         tensor->nb[2]);\n          });\n        });\n        struct Progress {\n          // \u63a5\u7eed\u4e4b\u524d\u5c42\u7684 manifest\n          // \u6761\u76ee\uff1b\u672c\u5c42\u6bcf\u5904\u7406\u4e00\u4e2a\u77e9\u9635\u65cf\u8ffd\u52a0\u4e00\u6761\uff0c\u7ed3\u675f\u540e\u4ea4\u56de\u5916\u5c42\u6761\u76ee\u5f52\u7ea6\u3002\n          nlohmann::json entries;\n          // \u5f53\u524d\u77e9\u9635\u5728\u6253\u5305\u4e13\u5bb6\u8bb0\u5f55\u5185\u7684\u5b57\u8282\u504f\u79fb\uff0c\u521d\u59cb\u96f6\uff1b\u6bcf\u6b65\u589e\u52a0\u8be5\u77e9\u9635\u5355\u4e13\u5bb6\u5b57\u8282\u6570\uff0c\u4f9b\u4e0b\u4e00\u77e9\u9635\u8bb0\u5f55\u504f\u79fb\u3002\n          size_t offset;\n        };\n        return ranges::fold_left(\n                   minicpm::expert_families, Progress{std::move(entries), 0},\n                   [&](Progress progress, const char *family) {\n                     const std::string name = \"blk.\" +\n                                              std::to_string(layer_index) +\n                                              \".\" + family + \".weight\";\n                     const auto tensor =\n                         ggml_get_tensor(tensors.get(), name.c_str());\n                     const auto type =\n                         minicpm::canonical_type_name(tensor->type);\n                     progress.entries.push_back(\n                         {{\"layer\", layer_index},\n                          {\"tensor_family\", family},\n                          {\"tensor_name\", name},\n                          {\"quant_type\", type},\n                          {\"shape\", {tensor->ne[0], tensor->ne[1], 16}},\n                          {\"exact_byte_length\", ggml_nbytes(tensor)},\n                          {\"bytes_per_expert\", tensor->nb[2]},\n                          {\"repacked_file\", filename},\n                          {\"repacked_offset\", progress.offset},\n                          {\"expert_stride\", stride}});\n                     progress.offset += tensor->nb[2];\n                     return progress;\n                   })\n            .entries;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#",
+          "lambdaUsr": "c:local_test.cpp@1367@1324@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#@Sa@F@operator()#$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-062",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 43,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "size_t{0}",
+      "seedType": "size_t",
+      "seedOffset": 1793,
+      "seedLine": 44,
+      "seedCol": 39,
+      "callText": "ranges::fold_left(\n            minicpm::expert_families, size_t{0},\n            [&](size_t stride, const char *family) {\n              return stride +\n                     ggml_get_tensor(tensors.get(),\n                                     (\"blk.\" + std::to_string(layer_index) +\n                                      \".\" + family + \".weight\")\n                                         .c_str())\n                         ->nb[2];\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@1367@1324@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#@Sa@F@operator()#$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#I#1",
+          "lambdaUsr": "c:local_test.cpp@1853@1816@1367@1324@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#@Sa@F@operator()#$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#I#1@Sa@F@operator()#l#*1C#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-063",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 71,
+      "col": 33,
+      "api": "fold_left",
+      "seedText": "Progress{std::move(entries), 0}",
+      "seedType": "Progress",
+      "seedOffset": 3202,
+      "seedLine": 72,
+      "seedCol": 46,
+      "callText": "ranges::fold_left(\n                   minicpm::expert_families, Progress{std::move(entries), 0},\n                   [&](Progress progress, const char *family) {\n                     const std::string name = \"blk.\" +\n                                              std::to_string(layer_index) +\n                                              \".\" + family + \".weight\";\n                     const auto tensor =\n                         ggml_get_tensor(tensors.get(), name.c_str());\n                     const auto type =\n                         minicpm::canonical_type_name(tensor->type);\n                     progress.entries.push_back(\n                         {{\"layer\", layer_index},\n                          {\"tensor_family\", family},\n                          {\"tensor_name\", name},\n                          {\"quant_type\", type},\n                          {\"shape\", {tensor->ne[0], tensor->ne[1], 16}},\n                          {\"exact_byte_length\", ggml_nbytes(tensor)},\n                          {\"bytes_per_expert\", tensor->nb[2]},\n                          {\"repacked_file\", filename},\n                          {\"repacked_offset\", progress.offset},\n                          {\"expert_stride\", stride}});\n                     progress.offset += tensor->nb[2];\n                     return progress;\n                   })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@1367@1324@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#@Sa@F@operator()#$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#I#1",
+          "lambdaUsr": "c:local_test.cpp@3295@3254@1367@1324@aN@F@split_experts#&1$@N@std@N@filesystem@N@__cxx11@S@path#S0_#S0_#I#@Sa@F@operator()#$@N@nlohmann@N@json_abi_v3_12_0@S@basic_json>#@N@std@ST>4#T#T#T#T@map#@N@std@ST>2#T#T@vector#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#b#L#l#d#@N@std@ST>1#T@allocator#@N@nlohmann@N@json_abi_v3_12_0@ST>2#T#T@adl_serializer#$@N@std@S@vector>#c#$@N@std@S@allocator>#c#v#I#1@Sa@F@operator()#$@2738@1367@1324@aN@F@split_experts#S0_#S0_#S0_#I#@Sa@F@operator()#S2_#I#1@S@Progress#*1C#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-064",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 131,
+      "col": 24,
+      "api": "fold_left",
+      "seedText": "std::array<bool, 40>{}",
+      "seedType": "std::array<bool, 40>",
+      "seedOffset": 6231,
+      "seedLine": 132,
+      "seedCol": 25,
+      "callText": "ranges::fold_left(ranges::views::iota(size_t{0}, size_t{40}),\n                        std::array<bool, 40>{}, [](auto flags, size_t i) {\n                          flags[i] = (i + 1) % 4 != 0;\n                          return flags;\n                        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@aN@F@check_full_40_layer_pipeline#&1$@N@std@N@filesystem@N@__cxx11@S@path#",
+          "lambdaUsr": "c:local_test.cpp@6278@6255@aN@F@check_full_40_layer_pipeline#&1$@N@std@N@filesystem@N@__cxx11@S@path#@Sa@FT@>1#Toperator()#t0.0#l# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-065",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 207,
+      "col": 43,
+      "api": "fold_left",
+      "seedText": "pipeline.start_session()",
+      "seedType": "SessionState",
+      "seedOffset": 10141,
+      "seedLine": 208,
+      "seedCol": 36,
+      "callText": "ranges::fold_left(\n        ranges::views::iota(0, 3), pipeline.start_session(),\n        [&](minicpm::SessionState session_state, int step) {\n          const std::vector<int32_t> token{3 + step};\n          // batch \u521d\u503c\u7531 get_one \u5305\u88c5\u672c\u6279 token\n          // \u5730\u5740\u4e0e\u6570\u91cf\uff1b\u63cf\u8ff0\u5b57\u6bb5\u4e4b\u540e\u4e0d\u4fee\u6539\uff0c llama_decode \u53ea\u8bfb\u53d6\u8f93\u5165\u800c\u66f4\u65b0 ref\n          // \u7684 KV/\u9012\u5f52\u72b6\u6001\uff0c\u4e0d\u56de\u5199 tokens\u3002\n          llama_batch batch =\n              llama_batch_get_one(const_cast<int32_t *>(token.data()), 1);\n          require(llama_decode(ref.get(), batch) == 0,\n                  \"40-layer reference decode failed\");\n          auto actual =\n              pipeline.run_batch(std::move(session_state), token,\n                                 step == 0 ? minicpm::ExecutionPhase::Prefill\n                                           : minicpm::ExecutionPhase::Decode);\n          const auto expected = llama_get_logits_ith(ref.get(), -1);\n          require(ranges::all_of(\n                      ranges::views::iota(size_t{0}, actual.logits.size()),\n                      [&](size_t i) {\n                        return std::isfinite(actual.logits[i]) &&\n                               std::abs(actual.logits[i] - expected[i]) <=\n                                   2e-4f + 2e-4f * std::abs(expected[i]);\n                      }),\n                  \"40-layer LES/reference logits mismatch\");\n          return std::move(actual.session_state);\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@9712@9676@aN@F@check_full_40_layer_pipeline#&1$@N@std@N@filesystem@N@__cxx11@S@path#@Sa@F@operator()#&1$@N@minicpm@S@LesConfig#1",
+          "lambdaUsr": "c:local_test.cpp@10224@10175@9712@9676@aN@F@check_full_40_layer_pipeline#&1$@N@std@N@filesystem@N@__cxx11@S@path#@Sa@F@operator()#&1$@N@minicpm@S@LesConfig#1@Sa@F@operator()#$@N@minicpm@S@SessionState#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-066",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 314,
+      "col": 51,
+      "api": "fold_left",
+      "seedText": "std::map<std::string, minicpm::ExpertSource>{}",
+      "seedType": "std::map<std::string, minicpm::ExpertSource>",
+      "seedOffset": 15730,
+      "seedLine": 315,
+      "seedCol": 22,
+      "callText": "ranges::fold_left(\n      index.tensors, std::map<std::string, minicpm::ExpertSource>{},\n      [&](std::map<std::string, minicpm::ExpertSource> scattered_tensors,\n          const auto &entry) {\n        const auto &[name, source] = entry;\n        const auto path = directory / (name + \".bin\");\n        std::filesystem::copy_file(\n            source.path, path,\n            std::filesystem::copy_options::overwrite_existing);\n        scattered_tensors.emplace(\n            name,\n            minicpm::ExpertSource{path, source.type, source.shape,\n                                  source.offset, source.stride, source.bytes});\n        return scattered_tensors;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@aN@F@check_record_layouts#&1$@N@minicpm@S@ExpertIndex#&1$@N@std@N@filesystem@N@__cxx11@S@path#",
+          "lambdaUsr": "c:local_test.cpp@15879@15784@aN@F@check_record_layouts#&1$@N@minicpm@S@ExpertIndex#&1$@N@std@N@filesystem@N@__cxx11@S@path#@Sa@FT@>1#Toperator()#$@N@std@S@map>#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@minicpm@S@ExpertSource#$@N@std@S@less>#S5_#$@N@std@S@allocator>#$@N@std@S@pair>#1S5_#S8_#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-067",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 399,
+      "col": 44,
+      "api": "fold_left",
+      "seedText": "minicpm::apply_prewarm(bank_context,\n                             minicpm::make_bank(index, bank_context),\n                             config.prewarm_table)",
+      "seedType": "BankState",
+      "seedOffset": 20104,
+      "seedLine": 401,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      std::array{2},\n      minicpm::apply_prewarm(bank_context,\n                             minicpm::make_bank(index, bank_context),\n                             config.prewarm_table),\n      [&](minicpm::BankState bank_state, uint32_t layer) {\n        const auto cache_keys = bank_state.slots.keys;\n        const auto window = bank_context.layout.layers[layer];\n        const auto slot = minicpm::metadata_slot(window, 7);\n        require(slot == window.begin + 7 &&\n                    minicpm::bank_slot(window, slot) == 7,\n                \"slot conversion lost window origin\");\n        rejects([&] { minicpm::bank_slot(window, {window.begin - 1}); });\n        rejects([&] {\n          minicpm::bank_slot(window, {window.begin + window.slot_count});\n        });\n        rejects([&] { minicpm::metadata_slot(window, {window.slot_count}); });\n\n        const std::vector<int32_t> selected{7, 0,  8, 3, 9, 2, 10, 1,\n                                            1, 10, 2, 9, 3, 8, 0,  7};\n        const std::vector<char> untouched(\n            ggml_nbytes(bank_state.shared_bank.records), char(0x55));\n        ggml_backend_tensor_set(bank_state.shared_bank.records,\n                                untouched.data(), 0, untouched.size());\n        auto plan = minicpm::plan_prefill(index, bank_context, bank_state,\n                                          layer, selected);\n        require(plan.copies.size() == 5 && plan.read.missing.size() == 3 &&\n                    bank_state.slots.keys == cache_keys,\n                \"prefill copy/read planning or published metadata mismatch\");\n        require(plan.slot_ids[1] == 0 &&\n                    *minicpm::resident_slot(bank_state.slots, window,\n                                            {layer, 0}) ==\n                        window.begin + 7,\n                \"prefill cache source was confused with shared destination\");\n        std::vector<char> actual(bank_context.store->record_bytes);\n        ggml_backend_tensor_get(bank_state.shared_bank.records,\n                                actual.data(), 0, actual.size());\n        require(actual == std::vector<char>(actual.size(), char(0x55)),\n                \"read-only prefill planning wrote shared weights\");\n        require(plan.copies.size() == 5 &&\n                    plan.copies.front().slot_source == 7 &&\n                    plan.copies.front().slot_destination == 0,\n                \"prefill copy plan lost source/destination slots\");\n\n        const size_t copied = plan.copies.size();\n        auto copy_ticket = minicpm::start_prefill_copies(\n            bank_context, bank_state, layer, std::move(plan.copies));\n        auto demand_read_ticket = minicpm::start_shared_read(\n            bank_context.store, bank_context.pool, std::move(plan.read));\n        bank_state.slots = std::move(plan.slots);\n        require(ranges::equal(cache_keys | ranges::views::drop(256),\n                              bank_state.slots.keys | ranges::views::drop(256)),\n                \"prefill changed independent decode cache labels\");\n        const auto demand_loaded =\n            minicpm::finish_shared_read(std::move(demand_read_ticket));\n        minicpm::finish_host_copies(std::move(copy_ticket));\n        minicpm::record_prefill(bank_state, layer, selected, copied,\n                                demand_loaded, {}, 0);\n        const auto &slot_ids = plan.slot_ids;\n        minicpm::finish_host_copies(minicpm::begin_retain_prefill(\n            bank_context, bank_state, layer, selected));\n        require(bank_state.counters.prefill.hits == 5 &&\n                    bank_state.counters.prefill.misses == 3 &&\n                    bank_state.counters.prefill.read_calls == 3,\n                \"prefill copied-cache and demand accounting mixed\");\n        ranges::for_each(\n            selected | ranges::views::enumerate, [&](const auto &entry) {\n              const auto [i, expert] = entry;\n              const size_t slot = size_t(slot_ids[i]);\n              require(bank_state.slots.keys[slot] ==\n                          minicpm::ExpertKey{layer, expert},\n                      \"prefill lost repeated top-k/token ordering\");\n              std::vector<char> expected(bank_context.store->record_bytes),\n                  actual(expected.size());\n              minicpm::read_record(*bank_context.store, {layer, expert},\n                                   expected.data());\n              ggml_backend_tensor_get(bank_state.shared_bank.records,\n                                      actual.data(), slot * actual.size(),\n                                      actual.size());\n              require(actual == expected,\n                      \"prefill shared bytes do not match routed expert\");\n            });\n        verify_cache_bytes(bank_context, bank_state);\n        const auto frequencies = bank_state.frequencies;\n        const auto counters = bank_state.counters;\n        const auto records = bank_state.shared_bank.records;\n        bank_state = minicpm::apply_prewarm(bank_context, std::move(bank_state),\n                                            config.prewarm_table);\n        require(\n            bank_state.frequencies == frequencies &&\n                bank_state.shared_bank.records == records &&\n                bank_state.counters.prefill.layer_count ==\n                    counters.prefill.layer_count &&\n                bank_state.counters.prefill.hits == counters.prefill.hits &&\n                bank_state.counters.prefill.misses == counters.prefill.misses &&\n                bank_state.counters.prefill.read_bytes ==\n                    counters.prefill.read_bytes &&\n                bank_state.counters.prewarm_from_prefill ==\n                    counters.prewarm_from_prefill &&\n                bank_state.counters.prewarm_loaded ==\n                    counters.prewarm_loaded + 32,\n            \"prewarm changed state outside its accumulator\");\n        verify_cache_bytes(bank_context, bank_state);\n        return bank_state;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@aN@F@check_prefill_sources#&1$@N@minicpm@S@ExpertIndex#",
+          "lambdaUsr": "c:local_test.cpp@20318@20269@aN@F@check_prefill_sources#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#$@N@minicpm@S@BankState#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-068",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 716,
+      "col": 50,
+      "api": "fold_left",
+      "seedText": "minicpm::make_bank(index, bank_context)",
+      "seedType": "BankState",
+      "seedOffset": 38126,
+      "seedLine": 718,
+      "seedCol": 13,
+      "callText": "ranges::fold_left(\n            layers | ranges::views::enumerate,\n            minicpm::make_bank(index, bank_context),\n            [&](minicpm::BankState bank_state, const auto &entry) {\n              const auto [step, layer] = entry;\n              if (step == 0) {\n                const auto selected_prefill =\n                    ranges::views::iota(0, 16) |\n                    ranges::to<std::vector<int32_t>>();\n                auto plan = minicpm::plan_prefill(\n                    index, bank_context, bank_state, layer, selected_prefill);\n                auto demand_read_ticket = minicpm::start_shared_read(\n                    bank_context.store, bank_context.pool,\n                    std::move(plan.read));\n                bank_state.slots = std::move(plan.slots);\n                const auto demand_loaded =\n                    minicpm::finish_shared_read(std::move(demand_read_ticket));\n                minicpm::record_prefill(bank_state, layer, selected_prefill,\n                                        plan.copies.size(), demand_loaded, {},\n                                        0);\n              }\n              const auto keys = bank_state.slots.keys;\n              const auto frequencies = bank_state.frequencies[layer];\n              auto plan = minicpm::plan_shared_decode(\n                  index, bank_context, bank_state, layer, selected);\n              require(bank_state.slots.keys == keys &&\n                          plan.read.missing.size() == selected.size(),\n                      \"shared decode planning published metadata or reused old \"\n                      \"weights\");\n              rejects<std::logic_error>([&] {\n                minicpm::plan_cache_decode(index, bank_context, bank_state,\n                                           layer, selected);\n              });\n              auto demand_read_ticket = minicpm::start_shared_read(\n                  bank_context.store, bank_context.pool, std::move(plan.read));\n              bank_state.slots = std::move(plan.slots);\n              const auto demand_loaded =\n                  minicpm::finish_shared_read(std::move(demand_read_ticket));\n              minicpm::record_shared_decode(bank_state, layer, selected,\n                                            demand_loaded, {}, 0);\n              const auto &slot_ids = plan.slot_ids;\n              ranges::for_each(\n                  selected | ranges::views::enumerate, [&](const auto &entry) {\n                    const auto [i, expert] = entry;\n                    const auto slot = size_t(slot_ids[i]);\n                    require(bank_state.slots.keys[slot] ==\n                                    minicpm::ExpertKey{layer, expert} &&\n                                bank_state.frequencies[layer][expert] ==\n                                    frequencies[expert] + 1,\n                            \"shared decode lost routing order, identity or \"\n                            \"frequency\");\n                    std::vector<char> expected(\n                        bank_context.store->record_bytes),\n                        actual(expected.size()); // read API outputs\n                    minicpm::read_record(*bank_context.store, {layer, expert},\n                                         expected.data());\n                    ggml_backend_tensor_get(bank_state.shared_bank.records,\n                                            actual.data(), slot * actual.size(),\n                                            actual.size());\n                    require(actual == expected,\n                            \"shared decode installed wrong bytes\");\n                  });\n              require(ranges::none_of(\n                          bank_state.slots.keys |\n                              ranges::views::drop(selected.size()),\n                          [](const auto &key) { return key.has_value(); }),\n                      \"shared decode retained unused shared labels\");\n              return bank_state;\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@37885@37859@aN@F@check_shared_decode#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#$@N@minicpm@E@ExpertIo#1",
+          "lambdaUsr": "c:local_test.cpp@38231@38179@37885@37859@aN@F@check_shared_decode#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#$@N@minicpm@E@ExpertIo#1@Sa@FT@>1#Toperator()#$@N@minicpm@S@BankState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-069",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 807,
+      "col": 46,
+      "api": "fold_left",
+      "seedText": "minicpm::begin_decode_prefetch(bank_context,\n                                       minicpm::make_bank(index, bank_context),\n                                       0, predicted)",
+      "seedType": "BankState",
+      "seedOffset": 43219,
+      "seedLine": 809,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        std::array{0},\n        minicpm::begin_decode_prefetch(bank_context,\n                                       minicpm::make_bank(index, bank_context),\n                                       0, predicted),\n        [&](minicpm::BankState bank_state, uint32_t layer) {\n          auto pending = std::move(*bank_state.pending);\n          bank_state.pending.reset();\n          const auto prefetch_loaded =\n              minicpm::finish_cache_read(std::move(pending.read_ticket));\n          auto plan = minicpm::plan_cache_decode(\n              index, bank_context, bank_state, layer, selected, pending.keys);\n          auto demand_read_ticket = minicpm::start_cache_read(\n              bank_context.store, bank_context.pool, std::move(plan.read));\n          bank_state.slots = std::move(plan.slots);\n          const auto demand_loaded =\n              minicpm::finish_cache_read(std::move(demand_read_ticket));\n          minicpm::record_cache_decode(bank_state, layer, selected,\n                                       plan.prefetched_count, demand_loaded,\n                                       {}, 0);\n          minicpm::record_cache_prefetch(bank_state, plan.prefetched_count,\n                                         pending.keys.size(), prefetch_loaded,\n                                         demand_loaded, {}, {});\n          const auto &slot_ids = plan.slot_ids;\n          require(\n              slot_ids.size() == 8 && !bank_state.pending &&\n                  bank_state.counters.prefetch_used == (correct ? 8 : 0) &&\n                  bank_state.counters.prefetch_wasted == (correct ? 0 : 8) &&\n                  bank_state.counters.decode.hits == 0 &&\n                  bank_state.counters.decode.misses == 8 &&\n                  bank_state.counters.decode.read_calls == (correct ? 8 : 16),\n              \"early-joined prefetch was re-consumed or accounted as resident\");\n          return bank_state;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@42906@42890@aN@F@check_early_prefetch#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#b#1",
+          "lambdaUsr": "c:local_test.cpp@43455@43406@42906@42890@aN@F@check_early_prefetch#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#b#1@Sa@F@operator()#$@N@minicpm@S@BankState#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-070",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 864,
+      "col": 50,
+      "api": "fold_left",
+      "seedText": "minicpm::make_bank(index, bank_context)",
+      "seedType": "BankState",
+      "seedOffset": 46241,
+      "seedLine": 865,
+      "seedCol": 28,
+      "callText": "ranges::fold_left(\n            std::array{0}, minicpm::make_bank(index, bank_context),\n            [&](minicpm::BankState bank_state, uint32_t layer) {\n              bank_state = minicpm::begin_decode_prefetch(\n                  bank_context, std::move(bank_state), layer, wrong);\n              require(bank_state.pending &&\n                          bank_state.pending->keys.size() == 8,\n                      \"LES did not issue asynchronous predictions\");\n              auto pending = std::move(*bank_state.pending);\n              bank_state.pending.reset();\n              auto plan = minicpm::plan_cache_decode(\n                  index, bank_context, bank_state, layer, selected,\n                  pending.keys, pending.slots);\n              auto demand_read_ticket = minicpm::start_cache_read(\n                  bank_context.store, bank_context.pool, std::move(plan.read));\n              bank_state.slots = std::move(plan.slots);\n              const auto prefetch_loaded =\n                  minicpm::finish_cache_read(std::move(pending.read_ticket));\n              const auto demand_loaded =\n                  minicpm::finish_cache_read(std::move(demand_read_ticket));\n              minicpm::record_cache_decode(bank_state, layer, selected,\n                                           plan.prefetched_count,\n                                           demand_loaded, {}, 0);\n              minicpm::record_cache_prefetch(\n                  bank_state, plan.prefetched_count, pending.keys.size(),\n                  prefetch_loaded, demand_loaded, {}, {});\n              const auto &slot_ids = plan.slot_ids;\n              require(\n                  slot_ids.size() == 8 &&\n                      bank_state.counters.prefetch_used == 0 &&\n                      bank_state.counters.prefetch_wasted == 8 &&\n                      bank_state.counters.decode.misses == 8 &&\n                      bank_state.counters.decode.read_bytes ==\n                          16 * bank_context.store->record_bytes,\n                  \"wrong prefetch demand fallback or byte accounting mismatch\");\n              require(mode == minicpm::ExpertIo::Mmap\n                          ? bank_state.counters.decode.read_calls == 0 &&\n                                bank_state.counters.decode.mapped_records == 16\n                          : bank_state.counters.decode.read_calls == 16 &&\n                                bank_state.counters.decode.mapped_records == 0,\n                      \"mmap/pread counters mixed\");\n              verify_cache_bytes(bank_context, bank_state);\n              const auto repeat = minicpm::plan_cache_decode(\n                  index, bank_context, bank_state, 0, selected);\n              require(repeat.prefetched_count == 0 &&\n                          repeat.read.missing.empty(),\n                      \"exact-demand experts did not remain cached\");\n              // Wrong predictions are retained in the unified window, rather\n              // than being immediately thrown away. They can become ordinary\n              // hits next time.\n              const auto next = minicpm::plan_cache_decode(\n                  index, bank_context, bank_state, 0, wrong);\n              require(\n                  next.prefetched_count == 0 && next.read.missing.empty(),\n                  \"unused predictions were not retained in the unified cache\");\n              const auto broken = truncated_store(*bank_context.store);\n              const bool failed = [&] {\n                try {\n                  minicpm::finish_shared_read(minicpm::start_shared_read(\n                      broken, bank_context.pool,\n                      minicpm::make_shared_read(\n                          0, bank_state.shared_bank.records,\n                          bank_context.store->record_bytes,\n                          {{0, 0}})));\n                  return false;\n                } catch (const std::runtime_error &) {\n                  return true;\n                }\n              }();\n              require(failed, \"asynchronous I/O error was swallowed\");\n              return bank_state;\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@45885@45859@aN@F@check_les#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#$@N@minicpm@E@ExpertIo#1",
+          "lambdaUsr": "c:local_test.cpp@46343@46294@45885@45859@aN@F@check_les#&1$@N@minicpm@S@ExpertIndex#@Sa@F@operator()#$@N@minicpm@E@ExpertIo#1@Sa@F@operator()#$@N@minicpm@S@BankState#i#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-071",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 999,
+      "col": 21,
+      "api": "fold_left",
+      "seedText": "Compared{pipeline.start_session(), pipeline.start_session()}",
+      "seedType": "Compared",
+      "seedOffset": 53252,
+      "seedLine": 1001,
+      "seedCol": 9,
+      "callText": "ranges::fold_left(\n        std::array<int, 5>{255, 1, 1, 2, 1},\n        Compared{pipeline.start_session(), pipeline.start_session()},\n        [&](auto sessions, int count) {\n          const auto tokens =\n              ranges::views::iota(0, count) |\n              ranges::views::transform([&](int i) {\n                return int32_t(\n                    (sessions.session_state_cached.position + i) % 29 + 2);\n              }) |\n              ranges::to<std::vector<int32_t>>();\n          llama_batch batch = llama_batch_get_one(\n              const_cast<int32_t *>(tokens.data()), tokens.size());\n          require(llama_decode(ref.get(), batch) == 0,\n                  \"cache-variant reference decode failed\");\n          const auto phase = count == 1 ? minicpm::ExecutionPhase::Decode\n                                        : minicpm::ExecutionPhase::Prefill;\n          auto batch_result_cached = pipeline.run_batch(\n              std::move(sessions.session_state_cached), tokens, phase);\n          sessions.session_state_rebuilt.graph_cache.graphs.clear();\n          auto batch_result_rebuilt = pipeline.run_batch(\n              std::move(sessions.session_state_rebuilt), tokens, phase);\n          require(batch_result_cached.logits == batch_result_rebuilt.logits,\n                  \"staged graph reuse changed logits \"\n                  \"versus rebuilding the same graph\");\n          const auto expected = llama_get_logits_ith(ref.get(), -1);\n          // The independent fused recurrent graph accumulates small FP32\n          // differences from libllama over 260 positions. Short-batch checks\n          // below retain 2e-4; this boundary test separately requires bitwise\n          // graph-reuse equivalence.\n          require(ranges::all_of(\n                      ranges::views::iota(size_t{0},\n                                          batch_result_cached.logits.size()),\n                      [&](size_t id) {\n                        return std::isfinite(batch_result_cached.logits[id]) &&\n                               std::abs(batch_result_cached.logits[id] -\n                                        expected[id]) <=\n                                   1e-3f + 1e-3f * std::abs(expected[id]);\n                      }),\n                  \"260-position cached/rebuilt graph diverged from reference\");\n          return Compared{std::move(batch_result_cached.session_state),\n                          std::move(batch_result_rebuilt.session_state)};\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@52163@52141@aN@F@check_graph_variants#&1$@N@minicpm@S@LocalModel#&1$@S@llama_model#&1$@N@nano@S@Compute#@Sa@FT@>1#Toperator()#&1t0.0# #1",
+          "lambdaUsr": "c:local_test.cpp@53350@53322@52163@52141@aN@F@check_graph_variants#&1$@N@minicpm@S@LocalModel#&1$@S@llama_model#&1$@N@nano@S@Compute#@Sa@FT@>1#Toperator()#&1t0.0# #1@Sa@FT@>1#Toperator()#t1.0#I#S8_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-072",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 1208,
+      "col": 41,
+      "api": "fold_left",
+      "seedText": "pipeline.start_session()",
+      "seedType": "SessionState",
+      "seedOffset": 64190,
+      "seedLine": 1209,
+      "seedCol": 47,
+      "callText": "ranges::fold_left(\n      std::array<int, 6>{1, 3, 32, 1, 63, 1}, pipeline.start_session(),\n      [&](minicpm::SessionState session_state, int requested) {\n        const int count = std::min(requested, int(pipeline.batch_capacity()));\n        const auto tokens =\n            ranges::views::iota(0, count) |\n            ranges::views::transform([&](int i) {\n              return int32_t((i + session_state.position) % 29 + 2);\n            }) |\n            ranges::to<std::vector<int32_t>>();\n        llama_batch batch = llama_batch_get_one(\n            const_cast<llama_token *>(tokens.data()), tokens.size());\n        require(llama_decode(ref.get(), batch) == 0, \"reference decode failed\");\n        const auto phase = count == 1 && session_state.position > 0\n                               ? minicpm::ExecutionPhase::Decode\n                               : minicpm::ExecutionPhase::Prefill;\n        auto result =\n            pipeline.run_batch(std::move(session_state), tokens, phase);\n        const auto expected = llama_get_logits_ith(ref.get(), -1);\n        ranges::for_each(ranges::views::iota(size_t{0}, result.logits.size()),\n                         [&](size_t id) {\n                           require(std::isfinite(result.logits[id]) &&\n                                       std::isfinite(expected[id]),\n                                   \"non-finite logits\");\n                           if (std::abs(result.logits[id] - expected[id]) >\n                               2e-4f + 2e-4f * std::abs(expected[id]))\n                             throw std::runtime_error(\n                                 \"logit mismatch id=\" + std::to_string(id) +\n                                 \" own=\" + std::to_string(result.logits[id]) +\n                                 \" reference=\" + std::to_string(expected[id]));\n                         });\n        return std::move(result.session_state);\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:local_test.cpp@aN@F@check#&1$@N@std@N@filesystem@N@__cxx11@S@path#$@E@ggml_type#I#",
+          "lambdaUsr": "c:local_test.cpp@64276@64222@aN@F@check#&1$@N@std@N@filesystem@N@__cxx11@S@path#$@E@ggml_type#I#@Sa@F@operator()#$@N@minicpm@S@SessionState#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-073",
+      "file": "minicpm-v-4_7/tests/local_test.cpp",
+      "line": 1395,
+      "col": 22,
+      "api": "fold_left",
+      "seedText": "&input_state",
+      "seedType": "struct InputState *",
+      "seedOffset": 74061,
+      "seedLine": 1398,
+      "seedCol": 23,
+      "callText": "ranges::fold_left(lines | ranges::views::take_while([](const auto &line) {\n                        return line.has_value();\n                      }),\n                      &input_state,\n                      [](InputState *input_state, const auto &line) {\n                        if (*line == \"/quit\")\n                          input_state->done = true;\n                        else\n                          input_state->lines.push_back(*line);\n                        return input_state;\n                      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@F@main#I#**C#",
+          "lambdaUsr": "c:local_test.cpp@74141@74097@F@main#I#**C#@Sa@FT@>1#Toperator()#*$@73395@F@main#I#S0_#@S@InputState#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-074",
+      "file": "shared/ffn_rpc.h",
+      "line": 57,
+      "col": 45,
+      "api": "fold_left",
+      "seedText": "std::string{}",
+      "seedType": "std::string",
+      "seedOffset": 2044,
+      "seedLine": 58,
+      "seedCol": 17,
+      "callText": "ranges::fold_left(\n      metadata, std::string{}, [](std::string acc, const auto &entry) {\n        return acc + std::to_string(entry.first.size()) + \":\" + entry.first +\n               std::to_string(entry.second.size()) + \":\" + entry.second;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@model_info#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@F@model_info#&1$@S@llama_model#@Sa@FT@>1#Toperator()#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node",
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-075",
+      "file": "shared/ffn_rpc.h",
+      "line": 64,
+      "col": 40,
+      "api": "fold_left",
+      "seedText": "description",
+      "seedType": "std::basic_string<char>",
+      "seedOffset": 2438,
+      "seedLine": 65,
+      "seedCol": 16,
+      "callText": "ranges::fold_left(\n      tensors, description, [](std::string acc, const auto &entry) {\n        const auto *tensor = entry.second;\n        return acc + entry.first + \":\" + std::to_string(tensor->type) + \":\" +\n               ranges::fold_left(tensor->ne, std::string{},\n                                 [](std::string dims, int64_t n) {\n                                   return dims + std::to_string(n) + \",\";\n                                 }) +\n               \";\";\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@model_info#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@F@model_info#&1$@S@llama_model#@Sa@FT@>1#Toperator()#$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1t0.0# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node",
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-076",
+      "file": "shared/ffn_rpc.h",
+      "line": 74,
+      "col": 49,
+      "api": "fold_left",
+      "seedText": "uint64_t{14695981039346656037ULL}",
+      "seedType": "uint64_t",
+      "seedOffset": 2946,
+      "seedLine": 75,
+      "seedCol": 15,
+      "callText": "ranges::fold_left(\n      layout, uint64_t{14695981039346656037ULL}, [](uint64_t hash, char c) {\n        return (hash ^ static_cast<unsigned char>(c)) * 1099511628211ULL;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@model_info#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@F@model_info#&1$@S@llama_model#@Sa@F@operator()#l#C#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "deepseek-v4-flash_attention_node",
+            "deepseek-v4-flash_ffn_node"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-077",
+      "file": "shared/model_loader.cpp",
+      "line": 48,
+      "col": 29,
+      "api": "fold_left",
+      "seedText": "std::vector<Shard>{}",
+      "seedType": "std::vector<Shard>",
+      "seedOffset": 1747,
+      "seedLine": 48,
+      "seedCol": 56,
+      "callText": "ranges::fold_left(ranges::views::single(0), std::vector<Shard>{},\n                             [&](std::vector<Shard> shards, int) {\n                               shards.push_back(std::move(first));\n                               return shards;\n                             })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@open_shards#*1C#",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@open_shards#*1C#@Sa@F@operator()#$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#I#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-078",
+      "file": "shared/model_loader.cpp",
+      "line": 59,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "std::vector<Shard>{}",
+      "seedType": "std::vector<Shard>",
+      "seedOffset": 2355,
+      "seedLine": 60,
+      "seedCol": 48,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(uint16_t{0}, count), std::vector<Shard>{},\n      [&](std::vector<Shard> shards, uint16_t i) {\n        if (i == 0) {\n          shards.push_back(std::move(first));\n        } else {\n          std::vector<char> name(std::strlen(path) + 1); // C API output buffer\n          if (llama_split_path(name.data(), name.size(), prefix.data(), i,\n                               count) <= 0) {\n            throw std::runtime_error(\"invalid GGUF split path\");\n          }\n          shards.push_back(open_shard(name.data()));\n        }\n        return shards;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@open_shards#*1C#",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@open_shards#*1C#@Sa@F@operator()#$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#s#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-079",
+      "file": "shared/model_loader.cpp",
+      "line": 81,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "std::map<std::string, TensorSource>{}",
+      "seedType": "std::map<std::string, TensorSource>",
+      "seedOffset": 3095,
+      "seedLine": 83,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      ranges::views::iota(size_t{0}, shards.size()),\n      std::map<std::string, TensorSource>{}, [&](auto sources, size_t i) {\n        const auto *meta = shards[i].metadata.get();\n        return ranges::fold_left(\n            ranges::views::iota(int64_t{0}, gguf_get_n_tensors(meta)),\n            std::move(sources), [&](auto index, int64_t id) {\n              if (!index\n                       .emplace(gguf_get_tensor_name(meta, id),\n                                TensorSource{i, id})\n                       .second) {\n                throw std::runtime_error(\"duplicate GGUF tensor\");\n              }\n              return index;\n            });\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@tensor_sources#&1$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@tensor_sources#&1$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#@Sa@FT@>1#Toperator()#t0.0#l# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-080",
+      "file": "shared/model_loader.cpp",
+      "line": 85,
+      "col": 16,
+      "api": "fold_left",
+      "seedText": "std::move(sources)",
+      "seedType": "<dependent type>",
+      "seedOffset": 3334,
+      "seedLine": 87,
+      "seedCol": 13,
+      "callText": "ranges::fold_left(\n            ranges::views::iota(int64_t{0}, gguf_get_n_tensors(meta)),\n            std::move(sources), [&](auto index, int64_t id) {\n              if (!index\n                       .emplace(gguf_get_tensor_name(meta, id),\n                                TensorSource{i, id})\n                       .second) {\n                throw std::runtime_error(\"duplicate GGUF tensor\");\n              }\n              return index;\n            })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@tensor_sources#&1$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#@Sa@FT@>1#Toperator()#t0.0#l# #1",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@tensor_sources#&1$@N@std@S@vector>#$@N@nano@N@model_loading@S@Shard#$@N@std@S@allocator>#S2_#@Sa@FT@>1#Toperator()#t0.0#l# #1@Sa@FT@>1#Toperator()#t1.0#L#S5_#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-081",
+      "file": "shared/model_loader.cpp",
+      "line": 110,
+      "col": 40,
+      "api": "fold_left",
+      "seedText": "std::map<ggml_backend_buffer_type_t, std::vector<ggml_tensor *>>{}",
+      "seedType": "std::map<ggml_backend_buffer_type_t, std::vector<ggml_tensor *>>",
+      "seedOffset": 4022,
+      "seedLine": 112,
+      "seedCol": 7,
+      "callText": "ranges::fold_left(\n      model.tensors_by_name,\n      std::map<ggml_backend_buffer_type_t, std::vector<ggml_tensor *>>{},\n      [](auto state, const auto &entry) {\n        if (!is_expert_weight(entry.first)) {\n          state[ggml_backend_buffer_get_type(entry.second->buffer)].push_back(\n              entry.second);\n        }\n        return state;\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@weight_blocks#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@weight_blocks#&1$@S@llama_model#@Sa@FT@>2#T#Toperator()#t0.0#&1t0.1# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-082",
+      "file": "shared/model_loader.cpp",
+      "line": 120,
+      "col": 27,
+      "api": "fold_left",
+      "seedText": "std::vector<WeightBlock>{}",
+      "seedType": "std::vector<WeightBlock>",
+      "seedOffset": 4370,
+      "seedLine": 121,
+      "seedCol": 15,
+      "callText": "ranges::fold_left(\n      groups, std::vector<WeightBlock>{}, [](auto blocks, const auto &group) {\n        const auto type = group.first;\n        const size_t alignment = ggml_backend_buft_get_alignment(type);\n        const size_t maximum = ggml_backend_buft_get_max_size(type);\n        // Limit each allocation while allowing a single larger tensor.\n        const size_t target = std::min(maximum, size_t{256} * 1024 * 1024);\n        return ranges::fold_left(\n            group.second, std::move(blocks),\n            [&](auto state, ggml_tensor *tensor) {\n              const size_t bytes =\n                  ggml_backend_buft_get_alloc_size(type, tensor);\n              if (bytes > maximum ||\n                  bytes >\n                      std::numeric_limits<size_t>::max() - (alignment - 1)) {\n                throw std::runtime_error(\n                    \"weight exceeds backend allocation limit\");\n              }\n              const size_t padded =\n                  ((bytes + alignment - 1) / alignment) * alignment;\n              if (padded > maximum) {\n                throw std::runtime_error(\n                    \"aligned weight exceeds backend allocation limit\");\n              }\n              if (state.empty() || state.back().type != type ||\n                  padded > target || state.back().bytes > target - padded) {\n                state.push_back({type, 0, {}});\n              }\n              state.back().tensors.push_back({tensor, state.back().bytes});\n              state.back().bytes += padded;\n              return state;\n            });\n      })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@N@model_loading@F@weight_blocks#&1$@S@llama_model#",
+          "lambdaUsr": "c:@N@nano@N@model_loading@F@weight_blocks#&1$@S@llama_model#@Sa@FT@>2#T#Toperator()#t0.0#&1t0.1# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-083",
+      "file": "shared/model_loader.cpp",
+      "line": 216,
+      "col": 37,
+      "api": "fold_left",
+      "seedText": "std::vector<Buffer>{}",
+      "seedType": "std::vector<Buffer>",
+      "seedOffset": 8675,
+      "seedLine": 217,
+      "seedCol": 17,
+      "callText": "ranges::fold_left(\n        blocks, std::vector<Buffer>{},\n        [&](auto buffers, const model_loading::WeightBlock &block) {\n          Buffer buffer(ggml_backend_buft_alloc_buffer(block.type, block.bytes),\n                        ggml_backend_buffer_free);\n          if (!buffer)\n            throw std::runtime_error(\"failed to allocate attention weights\");\n\n          ggml_backend_buffer_set_usage(buffer.get(),\n                                        GGML_BACKEND_BUFFER_USAGE_WEIGHTS);\n\n          ranges::for_each(\n              block.tensors, [&](const model_loading::Placement &placement) {\n                auto *tensor = placement.tensor;\n                tensor->buffer = nullptr; // replace the upstream no_alloc dummy\n                auto *address =\n                    static_cast<char *>(\n                        ggml_backend_buffer_get_base(buffer.get())) +\n                    placement.offset;\n                if (ggml_backend_tensor_alloc(buffer.get(), tensor, address) !=\n                    GGML_STATUS_SUCCESS) {\n                  throw std::runtime_error(\n                      \"failed to initialize attention weight\");\n                }\n                model_loading::read_weight(tensor, sources.at(tensor->name),\n                                           shards);\n              });\n          buffers.push_back(std::move(buffer));\n          return buffers;\n        })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@nano@F@load_distributed_model#*1C#I#$@N@nano@E@ModelRole#",
+          "lambdaUsr": "c:model_loader.cpp@8763@8706@N@nano@F@load_distributed_model#*1C#I#$@N@nano@E@ModelRole#@Sa@FT@>1#Toperator()#t0.0#&1$@N@nano@N@model_loading@S@WeightBlock# #1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "shared_model_loader"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    },
+    {
+      "siteId": "fold-site-084",
+      "file": "shared/tests/tiny_qwen35moe.h",
+      "line": 46,
+      "col": 42,
+      "api": "fold_left",
+      "seedText": "0",
+      "seedType": "int",
+      "seedOffset": 2970,
+      "seedLine": 46,
+      "seedCol": 49,
+      "callText": "ranges::fold_left(name, 0, [](int n, char c) { return n + c; })",
+      "destStorage": null,
+      "instances": [
+        {
+          "fn": "c:@N@qwen35moe_fixture@F@write_tiny_model#*1C#$@E@ggml_type#@Sa@F@operator()#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@std@S@initializer_list>#L#$@N@qwen35moe_fixture@F@write_tiny_model#S0_#S1_#@E@Init#1",
+          "lambdaUsr": "c:@N@qwen35moe_fixture@F@write_tiny_model#*1C#$@E@ggml_type#@Sa@F@operator()#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#$@N@std@S@initializer_list>#L#$@N@qwen35moe_fixture@F@write_tiny_model#S0_#S1_#@E@Init#1@Sa@F@operator()#I#C#1",
+          "api": "fold_left",
+          "destStorage": null,
+          "tuInstances": [
+            "minicpm-v-4_7_tests_local_test"
+          ]
+        }
+      ],
+      "instanceCount": 1
+    }
+  ],
+  "counts": {
+    "sites": 84,
+    "instances": 86
+  }
+}

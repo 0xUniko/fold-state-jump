@@ -1,0 +1,273 @@
+
+research/experiments/llvm/fold_recurrence.o:	file format elf64-x86-64
+
+Disassembly of section .text:
+
+0000000000000000 <carry(Box)>:
+;   box.bucket.hits += 1;
+       0: ff 46 18                     	incl	0x18(%rsi)
+       3: 48 89 f8                     	movq	%rdi, %rax
+; 	: _M_start(__x._M_start), _M_finish(__x._M_finish),
+       6: 0f 10 06                     	movups	(%rsi), %xmm0
+       9: 0f 11 07                     	movups	%xmm0, (%rdi)
+; 	  _M_end_of_storage(__x._M_end_of_storage)
+       c: 48 8b 4e 10                  	movq	0x10(%rsi), %rcx
+      10: 48 89 4f 10                  	movq	%rcx, 0x10(%rdi)
+; 	{ __x._M_start = __x._M_finish = __x._M_end_of_storage = pointer(); }
+      14: 0f 57 c0                     	xorps	%xmm0, %xmm0
+      17: 0f 11 06                     	movups	%xmm0, (%rsi)
+      1a: 48 c7 46 10 00 00 00 00      	movq	$0x0, 0x10(%rsi)
+; struct Box {
+      22: 0f 10 46 18                  	movups	0x18(%rsi), %xmm0
+      26: 0f 11 47 18                  	movups	%xmm0, 0x18(%rdi)
+;   return box;
+      2a: c3                           	retq
+      2b: 0f 1f 44 00 00               	nopl	(%rax,%rax)
+
+0000000000000030 <advance(Env, int)>:
+; int advance(Env env, int n) {
+      30: 55                           	pushq	%rbp
+      31: 41 57                        	pushq	%r15
+      33: 41 56                        	pushq	%r14
+      35: 41 55                        	pushq	%r13
+      37: 41 54                        	pushq	%r12
+      39: 53                           	pushq	%rbx
+      3a: 48 83 ec 78                  	subq	$0x78, %rsp
+; 	: _M_start(__x._M_start), _M_finish(__x._M_finish),
+      3e: 48 8b 47 08                  	movq	0x8(%rdi), %rax
+      42: 4c 8b 6f 10                  	movq	0x10(%rdi), %r13
+; 	  _M_end_of_storage(__x._M_end_of_storage)
+      46: 48 8b 4f 18                  	movq	0x18(%rdi), %rcx
+      4a: 48 89 4c 24 20               	movq	%rcx, 0x20(%rsp)
+; 	{ __x._M_start = __x._M_finish = __x._M_end_of_storage = pointer(); }
+      4f: 66 0f ef c0                  	pxor	%xmm0, %xmm0
+      53: f3 0f 7f 47 08               	movdqu	%xmm0, 0x8(%rdi)
+      58: 48 c7 47 18 00 00 00 00      	movq	$0x0, 0x18(%rdi)
+; 	if (__n > _S_max_size(_Tp_alloc_type(__a)))
+      60: 85 f6                        	testl	%esi, %esi
+      62: 48 89 44 24 08               	movq	%rax, 0x8(%rsp)
+      67: 0f 88 25 02 00 00            	js	0x292 <advance(Env, int)+0x262>
+      6d: 4c 8b 7f 20                  	movq	0x20(%rdi), %r15
+      71: 89 74 24 1c                  	movl	%esi, 0x1c(%rsp)
+; 	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
+      75: 0f 84 1d 01 00 00            	je	0x198 <advance(Env, int)+0x168>
+      7b: 48 63 de                     	movslq	%esi, %rbx
+; 	return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+      7e: 48 8d 3c 9d 00 00 00 00      	leaq	(,%rbx,4), %rdi
+      86: e8 00 00 00 00               	callq	0x8b <advance(Env, int)+0x5b>
+      8b: 49 89 c4                     	movq	%rax, %r12
+;       ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+      8e: c7 00 00 00 00 00            	movl	$0x0, (%rax)
+; 	      ++__first;
+      94: 48 8d 68 04                  	leaq	0x4(%rax), %rbp
+;       if (__n <= 0)
+      98: 49 89 de                     	movq	%rbx, %r14
+      9b: 49 ff ce                     	decq	%r14
+      9e: 74 17                        	je	0xb7 <advance(Env, int)+0x87>
+;       std::__fill_a(__first, __first + __n, __value);
+      a0: 4a 8d 14 b5 00 00 00 00      	leaq	(,%r14,4), %rdx
+; 	*__first = __tmp;
+      a8: 48 89 ef                     	movq	%rbp, %rdi
+      ab: 31 f6                        	xorl	%esi, %esi
+      ad: e8 00 00 00 00               	callq	0xb2 <advance(Env, int)+0x82>
+;       std::__fill_a(__first, __first + __n, __value);
+      b2: 4a 8d 6c b5 00               	leaq	(%rbp,%r14,4), %rbp
+      b7: 49 8d 04 9c                  	leaq	(%r12,%rbx,4), %rax
+      bb: 48 89 44 24 10               	movq	%rax, 0x10(%rsp)
+;       for (; __first != __last; ++__first)
+      c0: 48 89 ea                     	movq	%rbp, %rdx
+      c3: 4c 29 e2                     	subq	%r12, %rdx
+      c6: 48 83 c2 fc                  	addq	$-0x4, %rdx
+      ca: 31 c0                        	xorl	%eax, %eax
+      cc: 4c 89 e1                     	movq	%r12, %rcx
+;       for (; __first != __last; ++__first)
+      cf: 48 83 fa 1c                  	cmpq	$0x1c, %rdx
+      d3: 72 6b                        	jb	0x140 <advance(Env, int)+0x110>
+      d5: 48 c1 ea 02                  	shrq	$0x2, %rdx
+      d9: 48 ff c2                     	incq	%rdx
+      dc: 48 89 d0                     	movq	%rdx, %rax
+      df: 48 83 e0 f8                  	andq	$-0x8, %rax
+      e3: 49 8d 0c 84                  	leaq	(%r12,%rax,4), %rcx
+      e7: 66 0f 6f 05 00 00 00 00      	movdqa	(%rip), %xmm0           # 0xef <advance(Env, int)+0xbf>
+      ef: 31 f6                        	xorl	%esi, %esi
+      f1: 66 0f 6f 0d 00 00 00 00      	movdqa	(%rip), %xmm1           # 0xf9 <advance(Env, int)+0xc9>
+      f9: 66 0f 6f 15 00 00 00 00      	movdqa	(%rip), %xmm2           # 0x101 <advance(Env, int)+0xd1>
+     101: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 	nopw	%cs:(%rax,%rax)
+     110: 66 0f 6f d8                  	movdqa	%xmm0, %xmm3
+     114: 66 0f fe d9                  	paddd	%xmm1, %xmm3
+; 	  *__first = __value;
+     118: f3 41 0f 7f 04 b4            	movdqu	%xmm0, (%r12,%rsi,4)
+     11e: f3 41 0f 7f 5c b4 10         	movdqu	%xmm3, 0x10(%r12,%rsi,4)
+     125: 48 83 c6 08                  	addq	$0x8, %rsi
+     129: 66 0f fe c2                  	paddd	%xmm2, %xmm0
+;       for (; __first != __last; ++__first)
+     12d: 48 39 f0                     	cmpq	%rsi, %rax
+     130: 75 de                        	jne	0x110 <advance(Env, int)+0xe0>
+     132: 48 39 c2                     	cmpq	%rax, %rdx
+     135: 74 16                        	je	0x14d <advance(Env, int)+0x11d>
+     137: 66 0f 1f 84 00 00 00 00 00   	nopw	(%rax,%rax)
+; 	  *__first = __value;
+     140: 89 01                        	movl	%eax, (%rcx)
+; 	  ++__value;
+     142: ff c0                        	incl	%eax
+; 	++_M_current;
+     144: 48 83 c1 04                  	addq	$0x4, %rcx
+;     { return __lhs.base() == __rhs.base(); }
+     148: 48 39 e9                     	cmpq	%rbp, %rcx
+;       for (; __first != __last; ++__first)
+     14b: 75 f3                        	jne	0x140 <advance(Env, int)+0x110>
+; 	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
+     14d: 4c 2b 6c 24 08               	subq	0x8(%rsp), %r13
+     152: 74 59                        	je	0x1ad <advance(Env, int)+0x17d>
+; 	if (__builtin_expect(__n > this->_M_max_size(), false))
+     154: 48 b8 f8 ff ff ff ff ff ff 7f	movabsq	$0x7ffffffffffffff8, %rax # imm = 0x7FFFFFFFFFFFFFF8
+     15e: 48 83 c8 04                  	orq	$0x4, %rax
+     162: 49 39 c5                     	cmpq	%rax, %r13
+     165: 0f 87 22 01 00 00            	ja	0x28d <advance(Env, int)+0x25d>
+; 	return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+     16b: 4c 89 ef                     	movq	%r13, %rdi
+     16e: e8 00 00 00 00               	callq	0x173 <advance(Env, int)+0x143>
+     173: 49 89 c6                     	movq	%rax, %r14
+; 	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
+     176: 48 89 c3                     	movq	%rax, %rbx
+     179: 4c 01 eb                     	addq	%r13, %rbx
+; 	  if (__builtin_expect(_Num > 1, true))
+     17c: 49 83 fd 05                  	cmpq	$0x5, %r13
+     180: 0f 82 18 01 00 00            	jb	0x29e <advance(Env, int)+0x26e>
+; 	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+     186: 4c 89 f7                     	movq	%r14, %rdi
+     189: 48 8b 74 24 08               	movq	0x8(%rsp), %rsi
+     18e: 4c 89 ea                     	movq	%r13, %rdx
+     191: e8 00 00 00 00               	callq	0x196 <advance(Env, int)+0x166>
+     196: eb 1b                        	jmp	0x1b3 <advance(Env, int)+0x183>
+     198: 31 ed                        	xorl	%ebp, %ebp
+     19a: 45 31 e4                     	xorl	%r12d, %r12d
+     19d: 48 c7 44 24 10 00 00 00 00   	movq	$0x0, 0x10(%rsp)
+; 	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
+     1a6: 4c 2b 6c 24 08               	subq	0x8(%rsp), %r13
+     1ab: 75 a7                        	jne	0x154 <advance(Env, int)+0x124>
+     1ad: 45 31 f6                     	xorl	%r14d, %r14d
+     1b0: 4c 89 eb                     	movq	%r13, %rbx
+; struct Box {
+     1b3: 4c 89 f8                     	movq	%r15, %rax
+     1b6: 48 c1 e8 20                  	shrq	$0x20, %rax
+; 	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
+     1ba: 83 7c 24 1c 00               	cmpl	$0x0, 0x1c(%rsp)
+;       for (; __first != __last; ++__first)
+     1bf: 74 30                        	je	0x1f1 <advance(Env, int)+0x1c1>
+     1c1: 4c 89 e1                     	movq	%r12, %rcx
+     1c4: 66 66 66 2e 0f 1f 84 00 00 00 00 00  	nopw	%cs:(%rax,%rax)
+;         if (layer % 2 == 0)
+     1d0: 0f b6 11                     	movzbl	(%rcx), %edx
+     1d3: f6 c2 01                     	testb	$0x1, %dl
+     1d6: 89 c6                        	movl	%eax, %esi
+     1d8: 41 0f 44 f7                  	cmovel	%r15d, %esi
+     1dc: ff c6                        	incl	%esi
+;         if (layer % 2 == 0)
+     1de: f6 c2 01                     	testb	$0x1, %dl
+     1e1: 44 0f 44 fe                  	cmovel	%esi, %r15d
+     1e5: 0f 45 c6                     	cmovnel	%esi, %eax
+; 	++_M_current;
+     1e8: 48 83 c1 04                  	addq	$0x4, %rcx
+;     { return __lhs.base() == __rhs.base(); }
+     1ec: 48 39 e9                     	cmpq	%rbp, %rcx
+;       for (; __first != __last; ++__first)
+     1ef: 75 df                        	jne	0x1d0 <advance(Env, int)+0x1a0>
+; 	: _M_start(__x._M_start), _M_finish(__x._M_finish),
+     1f1: 4c 89 74 24 28               	movq	%r14, 0x28(%rsp)
+     1f6: 48 89 5c 24 30               	movq	%rbx, 0x30(%rsp)
+; 	  _M_end_of_storage(__x._M_end_of_storage)
+     1fb: 48 89 5c 24 38               	movq	%rbx, 0x38(%rsp)
+; struct Box {
+     200: 44 89 7c 24 40               	movl	%r15d, 0x40(%rsp)
+     205: 89 44 24 44                  	movl	%eax, 0x44(%rsp)
+     209: 48 c7 44 24 48 00 00 00 00   	movq	$0x0, 0x48(%rsp)
+     212: 48 8d 7c 24 50               	leaq	0x50(%rsp), %rdi
+     217: 48 8d 74 24 28               	leaq	0x28(%rsp), %rsi
+;   auto next = carry(std::move(result));
+     21c: e8 00 00 00 00               	callq	0x221 <advance(Env, int)+0x1f1>
+; 	_M_deallocate(_M_impl._M_start,
+     221: 48 8b 7c 24 28               	movq	0x28(%rsp), %rdi
+; 	if (__p)
+     226: 48 85 ff                     	testq	%rdi, %rdi
+     229: 74 0d                        	je	0x238 <advance(Env, int)+0x208>
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     22b: 48 8b 74 24 38               	movq	0x38(%rsp), %rsi
+     230: 48 29 fe                     	subq	%rdi, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     233: e8 00 00 00 00               	callq	0x238 <advance(Env, int)+0x208>
+; 	_M_deallocate(_M_impl._M_start,
+     238: 48 8b 7c 24 50               	movq	0x50(%rsp), %rdi
+; 	if (__p)
+     23d: 48 85 ff                     	testq	%rdi, %rdi
+     240: 74 0d                        	je	0x24f <advance(Env, int)+0x21f>
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     242: 48 8b 74 24 60               	movq	0x60(%rsp), %rsi
+     247: 48 29 fe                     	subq	%rdi, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     24a: e8 00 00 00 00               	callq	0x24f <advance(Env, int)+0x21f>
+; 	if (__p)
+     24f: 4d 85 e4                     	testq	%r12, %r12
+     252: 74 10                        	je	0x264 <advance(Env, int)+0x234>
+     254: 48 8b 74 24 10               	movq	0x10(%rsp), %rsi
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     259: 4c 29 e6                     	subq	%r12, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     25c: 4c 89 e7                     	movq	%r12, %rdi
+     25f: e8 00 00 00 00               	callq	0x264 <advance(Env, int)+0x234>
+     264: 48 8b 7c 24 08               	movq	0x8(%rsp), %rdi
+; 	if (__p)
+     269: 48 85 ff                     	testq	%rdi, %rdi
+     26c: 74 0d                        	je	0x27b <advance(Env, int)+0x24b>
+     26e: 48 8b 74 24 20               	movq	0x20(%rsp), %rsi
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     273: 48 29 fe                     	subq	%rdi, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     276: e8 00 00 00 00               	callq	0x27b <advance(Env, int)+0x24b>
+; }
+     27b: 44 89 f8                     	movl	%r15d, %eax
+     27e: 48 83 c4 78                  	addq	$0x78, %rsp
+     282: 5b                           	popq	%rbx
+     283: 41 5c                        	popq	%r12
+     285: 41 5d                        	popq	%r13
+     287: 41 5e                        	popq	%r14
+     289: 41 5f                        	popq	%r15
+     28b: 5d                           	popq	%rbp
+     28c: c3                           	retq
+; 	      std::__throw_bad_array_new_length();
+     28d: e8 00 00 00 00               	callq	0x292 <advance(Env, int)+0x262>
+; 	  __throw_length_error(
+     292: 48 8d 3d 00 00 00 00         	leaq	(%rip), %rdi            # 0x299 <advance(Env, int)+0x269>
+     299: e8 00 00 00 00               	callq	0x29e <advance(Env, int)+0x26e>
+; 	  else if (_Num == 1)
+     29e: 49 83 fd 04                  	cmpq	$0x4, %r13
+     2a2: 0f 85 0b ff ff ff            	jne	0x1b3 <advance(Env, int)+0x183>
+     2a8: 48 8b 44 24 08               	movq	0x8(%rsp), %rax
+; 	{ *__to = *__from; }
+     2ad: 8b 00                        	movl	(%rax), %eax
+     2af: 41 89 06                     	movl	%eax, (%r14)
+     2b2: e9 fc fe ff ff               	jmp	0x1b3 <advance(Env, int)+0x183>
+     2b7: 48 89 c3                     	movq	%rax, %rbx
+;   std::vector<int> layers(static_cast<size_t>(n));
+     2ba: eb 18                        	jmp	0x2d4 <advance(Env, int)+0x2a4>
+     2bc: 48 89 c3                     	movq	%rax, %rbx
+; 	if (__p)
+     2bf: 4d 85 e4                     	testq	%r12, %r12
+     2c2: 74 10                        	je	0x2d4 <advance(Env, int)+0x2a4>
+     2c4: 48 8b 74 24 10               	movq	0x10(%rsp), %rsi
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     2c9: 4c 29 e6                     	subq	%r12, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     2cc: 4c 89 e7                     	movq	%r12, %rdi
+     2cf: e8 00 00 00 00               	callq	0x2d4 <advance(Env, int)+0x2a4>
+     2d4: 48 8b 7c 24 08               	movq	0x8(%rsp), %rdi
+; 	if (__p)
+     2d9: 48 85 ff                     	testq	%rdi, %rdi
+     2dc: 74 0d                        	je	0x2eb <advance(Env, int)+0x2bb>
+     2de: 48 8b 74 24 20               	movq	0x20(%rsp), %rsi
+; 		      _M_impl._M_end_of_storage - _M_impl._M_start);
+     2e3: 48 29 fe                     	subq	%rdi, %rsi
+; 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+     2e6: e8 00 00 00 00               	callq	0x2eb <advance(Env, int)+0x2bb>
+     2eb: 48 89 df                     	movq	%rbx, %rdi
+     2ee: e8 00 00 00 00               	callq	0x2f3 <advance(Env, int)+0x2c3>

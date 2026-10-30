@@ -1,0 +1,823 @@
+MemorySSA for function: _Z5carry3Box
+; Function Attrs: mustprogress nofree noinline norecurse nosync nounwind willreturn memory(argmem: readwrite) uwtable
+define dso_local void @_Z5carry3Box(ptr dead_on_unwind noalias nofree writable writeonly sret(%struct.Box) align 8 captures(none) initializes((0, 40)) %0, ptr nofree noundef align 8 captures(none) %1) local_unnamed_addr #0 !dbg !651 {
+    #dbg_value(ptr %1, !655, !DIExpression(DW_OP_deref), !656)
+  %3 = getelementptr inbounds nuw i8, ptr %1, i64 24, !dbg !657
+; MemoryUse(liveOnEntry)
+  %4 = load i32, ptr %3, align 8, !dbg !658, !tbaa !659
+  %5 = add nsw i32 %4, 1, !dbg !668
+; 1 = MemoryDef(liveOnEntry)
+  store i32 %5, ptr %3, align 8, !dbg !669, !tbaa !659
+    #dbg_value(ptr %0, !670, !DIExpression(), !680)
+    #dbg_value(ptr %1, !678, !DIExpression(), !680)
+    #dbg_value(ptr %0, !682, !DIExpression(), !687)
+    #dbg_value(ptr %1, !685, !DIExpression(), !687)
+    #dbg_value(ptr %0, !689, !DIExpression(), !694)
+    #dbg_value(ptr %1, !692, !DIExpression(), !694)
+    #dbg_value(ptr %0, !696, !DIExpression(), !701)
+    #dbg_value(ptr %1, !699, !DIExpression(), !701)
+    #dbg_value(ptr %0, !703, !DIExpression(), !708)
+    #dbg_value(ptr %1, !706, !DIExpression(), !708)
+; MemoryUse(liveOnEntry)
+  %6 = load <2 x ptr>, ptr %1, align 8, !dbg !710, !tbaa !711
+; 2 = MemoryDef(1)
+  store <2 x ptr> %6, ptr %0, align 8, !dbg !712, !tbaa !711
+  %7 = getelementptr inbounds nuw i8, ptr %0, i64 16, !dbg !713
+  %8 = getelementptr inbounds nuw i8, ptr %1, i64 16, !dbg !714
+; MemoryUse(liveOnEntry)
+  %9 = load ptr, ptr %8, align 8, !dbg !715, !tbaa !716
+; 3 = MemoryDef(2)
+  store ptr %9, ptr %7, align 8, !dbg !717, !tbaa !716
+; 4 = MemoryDef(3)
+  tail call void @llvm.memset.p0.i64(ptr noundef nonnull align 8 dereferenceable(40) %1, i8 0, i64 24, i1 false), !dbg !718
+  %10 = getelementptr inbounds nuw i8, ptr %0, i64 24, !dbg !720
+; 5 = MemoryDef(4)
+  tail call void @llvm.memcpy.p0.p0.i64(ptr noundef nonnull align 8 dereferenceable(16) %10, ptr noundef nonnull align 8 dereferenceable(16) %3, i64 16, i1 false), !dbg !721
+  ret void, !dbg !722
+}
+MemorySSA for function: _Z7advance3Envi
+; Function Attrs: mustprogress uwtable
+define dso_local noundef i32 @_Z7advance3Envi(ptr nofree noundef align 8 captures(none) %0, i32 noundef %1) local_unnamed_addr #1 personality ptr @__gxx_personality_v0 !dbg !651 {
+    #dbg_value(ptr poison, !666, !DIExpression(), !672)
+    #dbg_value(ptr poison, !676, !DIExpression(), !716)
+    #dbg_value(ptr poison, !683, !DIExpression(), !717)
+    #dbg_value(ptr poison, !690, !DIExpression(), !718)
+    #dbg_value(ptr poison, !698, !DIExpression(), !719)
+    #dbg_value(ptr poison, !703, !DIExpression(), !720)
+    #dbg_value(ptr poison, !713, !DIExpression(), !721)
+    #dbg_value(ptr poison, !666, !DIExpression(), !722)
+    #dbg_value(ptr poison, !676, !DIExpression(), !730)
+    #dbg_value(ptr poison, !683, !DIExpression(), !731)
+    #dbg_value(ptr poison, !690, !DIExpression(), !732)
+    #dbg_value(ptr poison, !698, !DIExpression(), !733)
+    #dbg_value(ptr poison, !703, !DIExpression(), !734)
+    #dbg_value(ptr poison, !713, !DIExpression(), !735)
+    #dbg_value(ptr poison, !736, !DIExpression(), !740)
+    #dbg_value(ptr poison, !745, !DIExpression(), !757)
+    #dbg_value(ptr poison, !755, !DIExpression(), !758)
+    #dbg_value(ptr poison, !759, !DIExpression(), !764)
+    #dbg_value(ptr poison, !768, !DIExpression(), !782)
+    #dbg_value(ptr poison, !774, !DIExpression(), !783)
+    #dbg_value(ptr poison, !779, !DIExpression(), !784)
+    #dbg_value(ptr poison, !666, !DIExpression(), !785)
+    #dbg_value(ptr poison, !676, !DIExpression(), !792)
+    #dbg_value(ptr poison, !683, !DIExpression(), !793)
+    #dbg_value(ptr poison, !690, !DIExpression(), !794)
+    #dbg_value(ptr poison, !698, !DIExpression(), !795)
+    #dbg_value(ptr poison, !703, !DIExpression(), !796)
+    #dbg_value(ptr poison, !666, !DIExpression(), !797)
+    #dbg_value(ptr poison, !676, !DIExpression(), !804)
+    #dbg_value(ptr poison, !683, !DIExpression(), !805)
+    #dbg_value(ptr poison, !690, !DIExpression(), !806)
+    #dbg_value(ptr poison, !698, !DIExpression(), !807)
+    #dbg_value(ptr poison, !703, !DIExpression(), !808)
+    #dbg_value(ptr poison, !809, !DIExpression(), !814)
+    #dbg_value(ptr poison, !818, !DIExpression(), !849)
+    #dbg_value(ptr poison, !823, !DIExpression(), !850)
+    #dbg_value(ptr poison, !851, !DIExpression(), !862)
+    #dbg_value(ptr poison, !866, !DIExpression(), !870)
+    #dbg_value(ptr poison, !828, !DIExpression(), !871)
+    #dbg_value(ptr poison, !833, !DIExpression(), !872)
+    #dbg_value(ptr poison, !839, !DIExpression(), !873)
+    #dbg_value(ptr poison, !845, !DIExpression(), !874)
+    #dbg_value(ptr poison, !841, !DIExpression(DW_OP_LLVM_fragment, 0, 8), !873)
+    #dbg_value(ptr poison, !875, !DIExpression(DW_OP_LLVM_fragment, 0, 8), !879)
+    #dbg_value(ptr poison, !847, !DIExpression(DW_OP_LLVM_fragment, 0, 8), !874)
+    #dbg_value(ptr poison, !666, !DIExpression(), !881)
+    #dbg_value(ptr poison, !676, !DIExpression(), !889)
+    #dbg_value(ptr poison, !683, !DIExpression(), !890)
+    #dbg_value(ptr poison, !690, !DIExpression(), !891)
+    #dbg_value(ptr poison, !698, !DIExpression(), !892)
+    #dbg_value(ptr poison, !703, !DIExpression(), !893)
+    #dbg_value(ptr poison, !713, !DIExpression(), !894)
+    #dbg_value(ptr poison, !762, !DIExpression(), !895)
+    #dbg_value(ptr poison, !770, !DIExpression(), !909)
+    #dbg_value(ptr poison, !775, !DIExpression(), !910)
+    #dbg_value(ptr poison, !780, !DIExpression(), !911)
+    #dbg_value(ptr poison, !907, !DIExpression(), !912)
+    #dbg_value(ptr poison, !759, !DIExpression(), !913)
+    #dbg_value(ptr poison, !768, !DIExpression(), !933)
+    #dbg_value(ptr poison, !774, !DIExpression(), !934)
+    #dbg_value(ptr poison, !779, !DIExpression(), !935)
+    #dbg_value(ptr poison, !906, !DIExpression(), !936)
+    #dbg_value(ptr poison, !666, !DIExpression(), !937)
+    #dbg_value(ptr poison, !676, !DIExpression(), !945)
+    #dbg_value(ptr poison, !683, !DIExpression(), !946)
+    #dbg_value(ptr poison, !690, !DIExpression(), !947)
+    #dbg_value(ptr poison, !698, !DIExpression(), !948)
+    #dbg_value(ptr poison, !703, !DIExpression(), !949)
+    #dbg_value(ptr poison, !713, !DIExpression(), !950)
+    #dbg_value(ptr poison, !666, !DIExpression(), !951)
+    #dbg_value(ptr poison, !676, !DIExpression(), !959)
+    #dbg_value(ptr poison, !683, !DIExpression(), !960)
+    #dbg_value(ptr poison, !690, !DIExpression(), !961)
+    #dbg_value(ptr poison, !698, !DIExpression(), !962)
+    #dbg_value(ptr poison, !703, !DIExpression(), !963)
+    #dbg_value(ptr poison, !713, !DIExpression(), !964)
+    #dbg_value(ptr poison, !762, !DIExpression(), !913)
+    #dbg_value(ptr poison, !770, !DIExpression(), !933)
+    #dbg_value(ptr poison, !775, !DIExpression(), !934)
+    #dbg_value(ptr poison, !780, !DIExpression(), !935)
+    #dbg_value(ptr poison, !907, !DIExpression(), !936)
+    #dbg_value(ptr poison, !762, !DIExpression(), !965)
+    #dbg_value(ptr poison, !770, !DIExpression(), !973)
+    #dbg_value(ptr poison, !775, !DIExpression(), !974)
+    #dbg_value(ptr poison, !780, !DIExpression(), !975)
+    #dbg_value(ptr poison, !907, !DIExpression(), !976)
+    #dbg_value(ptr poison, !977, !DIExpression(), !987)
+    #dbg_value(ptr poison, !809, !DIExpression(), !990)
+    #dbg_value(ptr poison, !818, !DIExpression(), !997)
+    #dbg_value(ptr poison, !823, !DIExpression(), !998)
+    #dbg_value(ptr poison, !828, !DIExpression(), !999)
+    #dbg_value(ptr poison, !833, !DIExpression(), !1000)
+    #dbg_value(ptr poison, !839, !DIExpression(), !1001)
+    #dbg_value(ptr poison, !744, !DIExpression(), !757)
+    #dbg_value(ptr poison, !754, !DIExpression(), !758)
+  %3 = alloca %struct.Box, align 8, !DIAssignID !1002
+    #dbg_assign(i1 poison, !664, !DIExpression(), !1002, ptr %3, !DIExpression(), !1003)
+  %4 = alloca %struct.Box, align 8
+    #dbg_value(ptr %0, !659, !DIExpression(DW_OP_deref), !1003)
+    #dbg_value(i32 %1, !660, !DIExpression(), !1003)
+  %5 = getelementptr inbounds nuw i8, ptr %0, i64 8, !dbg !1004
+    #dbg_value(ptr undef, !779, !DIExpression(), !784)
+    #dbg_value(ptr %5, !780, !DIExpression(), !784)
+    #dbg_value(ptr undef, !774, !DIExpression(), !783)
+    #dbg_value(ptr %5, !775, !DIExpression(), !783)
+    #dbg_value(ptr undef, !768, !DIExpression(), !782)
+    #dbg_value(ptr %5, !770, !DIExpression(), !782)
+    #dbg_value(ptr undef, !759, !DIExpression(), !764)
+    #dbg_value(ptr %5, !762, !DIExpression(), !764)
+; MemoryUse(liveOnEntry)
+  %6 = load ptr, ptr %5, align 8, !dbg !1005, !tbaa !1006
+    #dbg_value(ptr %6, !661, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+  %7 = getelementptr inbounds nuw i8, ptr %0, i64 16, !dbg !1010
+; MemoryUse(liveOnEntry)
+  %8 = load ptr, ptr %7, align 8, !dbg !1011, !tbaa !1012
+    #dbg_value(ptr %8, !661, !DIExpression(DW_OP_LLVM_fragment, 64, 64), !1003)
+  %9 = getelementptr inbounds nuw i8, ptr %0, i64 24, !dbg !1013
+; MemoryUse(liveOnEntry)
+  %10 = load ptr, ptr %9, align 8, !dbg !1014, !tbaa !1015
+    #dbg_value(ptr %10, !661, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+; 1 = MemoryDef(liveOnEntry)
+  tail call void @llvm.memset.p0.i64(ptr noundef nonnull align 8 dereferenceable(24) %5, i8 0, i64 24, i1 false), !dbg !1016
+  %11 = getelementptr inbounds nuw i8, ptr %0, i64 32, !dbg !1018
+; MemoryUse(liveOnEntry)
+  %12 = load i64, ptr %11, align 8, !dbg !1019
+    #dbg_value(i64 %12, !661, !DIExpression(DW_OP_LLVM_fragment, 192, 64), !1003)
+    #dbg_value(ptr null, !661, !DIExpression(DW_OP_LLVM_fragment, 256, 64), !1003)
+  %13 = sext i32 %1 to i64, !dbg !1020
+    #dbg_value(ptr undef, !845, !DIExpression(), !874)
+    #dbg_value(i64 %13, !846, !DIExpression(), !874)
+    #dbg_value(ptr undef, !847, !DIExpression(), !874)
+    #dbg_value(i64 %13, !878, !DIExpression(), !879)
+    #dbg_value(ptr undef, !875, !DIExpression(), !879)
+  %14 = icmp slt i32 %1, 0, !dbg !1021
+  br i1 %14, label %15, label %17, !dbg !1023
+
+15:                                               ; preds = %2
+; 2 = MemoryDef(1)
+  invoke void @_ZSt20__throw_length_errorPKc(ptr noundef nonnull @.str) #7
+          to label %16 unwind label %145, !dbg !1024
+
+16:                                               ; preds = %15
+  unreachable, !dbg !1024
+
+17:                                               ; preds = %2
+    #dbg_value(ptr undef, !839, !DIExpression(), !873)
+    #dbg_value(i64 %13, !840, !DIExpression(), !873)
+    #dbg_value(ptr undef, !841, !DIExpression(), !873)
+    #dbg_value(ptr null, !662, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+    #dbg_value(ptr null, !662, !DIExpression(DW_OP_LLVM_fragment, 64, 64), !1003)
+    #dbg_value(ptr null, !662, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+    #dbg_value(ptr undef, !833, !DIExpression(), !872)
+    #dbg_value(i64 %13, !834, !DIExpression(), !872)
+    #dbg_value(ptr undef, !828, !DIExpression(), !871)
+    #dbg_value(i64 %13, !829, !DIExpression(), !871)
+  %18 = icmp eq i32 %1, 0, !dbg !1025
+  br i1 %18, label %67, label %19, !dbg !1026
+
+19:                                               ; preds = %17
+    #dbg_value(ptr undef, !823, !DIExpression(), !850)
+    #dbg_value(i64 %13, !824, !DIExpression(), !850)
+    #dbg_value(ptr undef, !818, !DIExpression(), !849)
+    #dbg_value(i64 %13, !819, !DIExpression(), !849)
+    #dbg_value(ptr undef, !809, !DIExpression(), !814)
+    #dbg_value(i64 %13, !812, !DIExpression(), !814)
+    #dbg_value(ptr null, !813, !DIExpression(), !814)
+  %20 = shl nuw nsw i64 %13, 2, !dbg !1027
+; 3 = MemoryDef(1)
+  %21 = invoke noalias noundef nonnull ptr @_Znwm(i64 noundef %20) #8
+          to label %22 unwind label %145, !dbg !1028
+
+22:                                               ; preds = %19
+    #dbg_value(ptr %21, !662, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+  %23 = ptrtoint ptr %21 to i64, !dbg !1029
+  %24 = getelementptr inbounds nuw [4 x i8], ptr %21, i64 %13, !dbg !1029
+    #dbg_value(ptr %24, !662, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+    #dbg_value(ptr undef, !866, !DIExpression(), !870)
+    #dbg_value(i64 %13, !867, !DIExpression(), !870)
+    #dbg_value(ptr %21, !857, !DIExpression(), !862)
+    #dbg_value(i64 %13, !858, !DIExpression(), !862)
+    #dbg_value(ptr undef, !851, !DIExpression(), !862)
+    #dbg_value(ptr %21, !1030, !DIExpression(), !1038)
+    #dbg_value(i64 %13, !1035, !DIExpression(), !1038)
+    #dbg_value(i8 1, !1036, !DIExpression(), !1038)
+    #dbg_value(ptr %21, !1040, !DIExpression(), !1058)
+    #dbg_value(i64 %13, !1047, !DIExpression(), !1058)
+    #dbg_value(ptr %21, !1048, !DIExpression(), !1060)
+    #dbg_value(ptr %21, !1061, !DIExpression(), !1069)
+; 4 = MemoryDef(3)
+  store i32 0, ptr %21, align 4, !dbg !1071, !tbaa !1072
+  %25 = getelementptr i8, ptr %21, i64 4, !dbg !1073
+    #dbg_value(ptr %25, !1040, !DIExpression(), !1058)
+  %26 = add nsw i64 %13, -1, !dbg !1074
+    #dbg_value(ptr %25, !1075, !DIExpression(), !1085)
+    #dbg_value(i64 %26, !1081, !DIExpression(), !1085)
+    #dbg_value(ptr %21, !1082, !DIExpression(), !1085)
+    #dbg_value(ptr %25, !1087, !DIExpression(), !1107)
+    #dbg_value(i64 %26, !1102, !DIExpression(), !1107)
+    #dbg_value(ptr %21, !1103, !DIExpression(), !1107)
+  %27 = icmp eq i64 %26, 0, !dbg !1109
+  br i1 %27, label %31, label %28, !dbg !1111
+
+28:                                               ; preds = %22
+  %29 = shl nuw nsw i64 %26, 2, !dbg !1112
+    #dbg_value(ptr %25, !1113, !DIExpression(), !1122)
+    #dbg_value(ptr %30, !1118, !DIExpression(), !1122)
+    #dbg_value(ptr poison, !1119, !DIExpression(), !1122)
+    #dbg_value(ptr %25, !1124, !DIExpression(), !1139)
+    #dbg_value(ptr %30, !1135, !DIExpression(), !1139)
+    #dbg_value(ptr poison, !1136, !DIExpression(), !1139)
+    #dbg_value(i32 0, !1137, !DIExpression(), !1139)
+; 5 = MemoryDef(4)
+  tail call void @llvm.memset.p0.i64(ptr align 4 %25, i8 0, i64 %29, i1 false), !dbg !1141, !tbaa !1072
+    #dbg_value(ptr poison, !1124, !DIExpression(), !1139)
+  %30 = getelementptr inbounds nuw i8, ptr %25, i64 %29, !dbg !1112
+    #dbg_value(ptr %21, !662, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+    #dbg_value(ptr %24, !662, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+    #dbg_value(ptr %30, !1040, !DIExpression(), !1058)
+    #dbg_value(ptr %30, !662, !DIExpression(DW_OP_LLVM_fragment, 64, 64), !1003)
+    #dbg_value(ptr poison, !1144, !DIExpression(), !1148)
+    #dbg_value(ptr %21, !1156, !DIExpression(), !1162)
+    #dbg_value(ptr %30, !1157, !DIExpression(), !1162)
+    #dbg_value(i32 0, !1158, !DIExpression(), !1162)
+    #dbg_value(ptr undef, !1163, !DIExpression(), !1170)
+    #dbg_value(ptr undef, !1169, !DIExpression(), !1170)
+  br label %31, !dbg !1172
+
+31:                                               ; preds = %28, %22
+; 39 = MemoryPhi({%22,4},{%28,5})
+  %32 = phi ptr [ %30, %28 ], [ %25, %22 ]
+  %33 = ptrtoint ptr %32 to i64, !dbg !1173
+  %34 = add i64 %33, -4, !dbg !1173
+  %35 = sub i64 %34, %23, !dbg !1173
+  %36 = lshr i64 %35, 2, !dbg !1173
+  %37 = add nuw nsw i64 %36, 1, !dbg !1173
+  %38 = icmp ult i64 %35, 28, !dbg !1173
+  br i1 %38, label %56, label %39, !dbg !1173
+
+39:                                               ; preds = %31
+  %40 = and i64 %37, 9223372036854775800
+  %41 = trunc i64 %40 to i32
+  %42 = shl i64 %40, 2
+  %43 = getelementptr i8, ptr %21, i64 %42
+  br label %44, !dbg !1173
+
+44:                                               ; preds = %44, %39
+; 31 = MemoryPhi({%39,39},{%44,7})
+  %45 = phi i64 [ 0, %39 ], [ %51, %44 ]
+  %46 = phi <4 x i32> [ <i32 0, i32 1, i32 2, i32 3>, %39 ], [ %52, %44 ]
+  %47 = add nuw nsw <4 x i32> %46, splat (i32 4)
+  %48 = shl i64 %45, 2
+  %49 = getelementptr i8, ptr %21, i64 %48
+  %50 = getelementptr i8, ptr %49, i64 16, !dbg !1174
+; 6 = MemoryDef(31)
+  store <4 x i32> %46, ptr %49, align 4, !dbg !1174, !tbaa !1072
+; 7 = MemoryDef(6)
+  store <4 x i32> %47, ptr %50, align 4, !dbg !1174, !tbaa !1072
+  %51 = add nuw i64 %45, 8
+  %52 = add nuw nsw <4 x i32> %46, splat (i32 8)
+  %53 = icmp eq i64 %51, %40, !dbg !1176
+  br i1 %53, label %54, label %44, !dbg !1176, !llvm.loop !1177
+
+54:                                               ; preds = %44
+  %55 = icmp eq i64 %37, %40, !dbg !1176
+  br i1 %55, label %65, label %56, !dbg !1176
+
+56:                                               ; preds = %54, %31
+; 33 = MemoryPhi({%31,39},{%54,7})
+  %57 = phi i32 [ 0, %31 ], [ %41, %54 ]
+  %58 = phi ptr [ %21, %31 ], [ %43, %54 ]
+  br label %59, !dbg !1176
+
+59:                                               ; preds = %59, %56
+; 34 = MemoryPhi({%56,33},{%59,8})
+  %60 = phi i32 [ %62, %59 ], [ %57, %56 ]
+  %61 = phi ptr [ %63, %59 ], [ %58, %56 ]
+    #dbg_value(i32 %60, !1158, !DIExpression(), !1162)
+    #dbg_value(ptr %61, !1156, !DIExpression(), !1162)
+; 8 = MemoryDef(34)
+  store i32 %60, ptr %61, align 4, !dbg !1174, !tbaa !1072
+  %62 = add nuw nsw i32 %60, 1, !dbg !1181
+    #dbg_value(i32 %62, !1158, !DIExpression(), !1162)
+    #dbg_value(ptr undef, !1144, !DIExpression(), !1148)
+  %63 = getelementptr inbounds nuw i8, ptr %61, i64 4, !dbg !1182
+    #dbg_value(ptr %63, !1156, !DIExpression(), !1162)
+    #dbg_value(ptr undef, !1163, !DIExpression(), !1170)
+    #dbg_value(ptr undef, !1169, !DIExpression(), !1170)
+  %64 = icmp eq ptr %63, %32, !dbg !1183
+  br i1 %64, label %65, label %59, !dbg !1176, !llvm.loop !1184
+
+65:                                               ; preds = %59, %54
+; 32 = MemoryPhi({%59,8},{%54,7})
+  %66 = ptrtoint ptr %24 to i64, !dbg !1185
+  br label %67, !dbg !1186
+
+67:                                               ; preds = %65, %17
+; 36 = MemoryPhi({%17,1},{%65,32})
+  %68 = phi ptr [ null, %17 ], [ %32, %65 ]
+  %69 = phi ptr [ null, %17 ], [ %21, %65 ]
+  %70 = phi i64 [ 0, %17 ], [ %66, %65 ]
+    #dbg_value(ptr undef, !754, !DIExpression(), !758)
+    #dbg_value(ptr undef, !755, !DIExpression(), !758)
+    #dbg_value(ptr poison, !841, !DIExpression(DW_OP_LLVM_fragment, 0, 8), !1001)
+    #dbg_value(ptr undef, !744, !DIExpression(), !757)
+    #dbg_value(ptr undef, !745, !DIExpression(), !757)
+    #dbg_value(ptr undef, !736, !DIExpression(), !740)
+  %71 = ptrtoint ptr %8 to i64, !dbg !1186
+  %72 = ptrtoint ptr %6 to i64, !dbg !1186
+  %73 = sub i64 %71, %72, !dbg !1186
+    #dbg_value(ptr undef, !839, !DIExpression(), !1001)
+    #dbg_value(i64 %73, !840, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1001)
+    #dbg_value(ptr undef, !841, !DIExpression(), !1001)
+    #dbg_value(ptr undef, !833, !DIExpression(), !1000)
+    #dbg_value(i64 %73, !834, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1000)
+    #dbg_value(ptr undef, !828, !DIExpression(), !999)
+    #dbg_value(i64 %73, !829, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !999)
+  %74 = icmp eq ptr %8, %6, !dbg !1187
+  br i1 %74, label %75, label %77, !dbg !1188
+
+75:                                               ; preds = %67
+  %76 = getelementptr inbounds i8, ptr null, i64 %73, !dbg !1189
+    #dbg_value(ptr %6, !982, !DIExpression(), !987)
+    #dbg_value(ptr %8, !983, !DIExpression(), !987)
+    #dbg_value(ptr null, !984, !DIExpression(), !987)
+    #dbg_value(ptr undef, !977, !DIExpression(), !987)
+    #dbg_value(ptr %6, !1190, !DIExpression(), !1200)
+    #dbg_value(ptr %8, !1195, !DIExpression(), !1200)
+    #dbg_value(ptr null, !1196, !DIExpression(), !1200)
+    #dbg_value(i8 1, !1197, !DIExpression(), !1200)
+    #dbg_value(i8 1, !1198, !DIExpression(), !1200)
+    #dbg_value(ptr %6, !1202, !DIExpression(), !1211)
+    #dbg_value(ptr %8, !1209, !DIExpression(), !1211)
+    #dbg_value(ptr null, !1210, !DIExpression(), !1211)
+    #dbg_value(ptr %6, !1213, !DIExpression(), !1220)
+    #dbg_value(ptr %8, !1216, !DIExpression(), !1220)
+    #dbg_value(ptr null, !1217, !DIExpression(), !1220)
+    #dbg_value(ptr %6, !1222, !DIExpression(), !1229)
+    #dbg_value(ptr %8, !1225, !DIExpression(), !1229)
+    #dbg_value(ptr null, !1226, !DIExpression(), !1229)
+    #dbg_value(ptr %6, !1231, !DIExpression(), !1240)
+    #dbg_value(ptr %8, !1236, !DIExpression(), !1240)
+    #dbg_value(ptr null, !1237, !DIExpression(), !1240)
+    #dbg_value(ptr %6, !1242, !DIExpression(), !1247)
+    #dbg_value(ptr %8, !1245, !DIExpression(), !1247)
+    #dbg_value(ptr null, !1246, !DIExpression(), !1247)
+    #dbg_value(ptr %6, !1249, !DIExpression(), !1264)
+    #dbg_value(ptr %8, !1260, !DIExpression(), !1264)
+    #dbg_value(ptr null, !1261, !DIExpression(), !1264)
+    #dbg_value(i64 %73, !1262, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1264)
+  br label %91, !dbg !1266
+
+77:                                               ; preds = %67
+    #dbg_value(i64 %73, !840, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1001)
+    #dbg_value(i64 %73, !834, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1000)
+    #dbg_value(i64 %73, !829, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !999)
+    #dbg_value(ptr undef, !823, !DIExpression(), !998)
+    #dbg_value(i64 %73, !824, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !998)
+    #dbg_value(ptr undef, !818, !DIExpression(), !997)
+    #dbg_value(i64 %73, !819, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !997)
+    #dbg_value(ptr undef, !809, !DIExpression(), !990)
+    #dbg_value(i64 %73, !812, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !990)
+    #dbg_value(ptr null, !813, !DIExpression(), !990)
+  %78 = icmp ugt i64 %73, 9223372036854775804, !dbg !1269
+  br i1 %78, label %79, label %81, !dbg !1271, !prof !1272
+
+79:                                               ; preds = %77
+; 9 = MemoryDef(36)
+  invoke void @_ZSt28__throw_bad_array_new_lengthv() #7
+          to label %80 unwind label %147, !dbg !1273
+
+80:                                               ; preds = %79
+  unreachable, !dbg !1273
+
+81:                                               ; preds = %77
+; 10 = MemoryDef(36)
+  %82 = invoke noalias noundef nonnull ptr @_Znwm(i64 noundef %73) #8
+          to label %83 unwind label %147, !dbg !1276
+
+83:                                               ; preds = %81
+  %84 = getelementptr inbounds nuw i8, ptr %82, i64 %73, !dbg !1277
+    #dbg_value(ptr %6, !982, !DIExpression(), !987)
+    #dbg_value(ptr %8, !983, !DIExpression(), !987)
+    #dbg_value(ptr %82, !984, !DIExpression(), !987)
+    #dbg_value(ptr undef, !977, !DIExpression(), !987)
+    #dbg_value(ptr %6, !1190, !DIExpression(), !1200)
+    #dbg_value(ptr %8, !1195, !DIExpression(), !1200)
+    #dbg_value(ptr %82, !1196, !DIExpression(), !1200)
+    #dbg_value(i8 1, !1197, !DIExpression(), !1200)
+    #dbg_value(i8 1, !1198, !DIExpression(), !1200)
+    #dbg_value(ptr %6, !1202, !DIExpression(), !1211)
+    #dbg_value(ptr %8, !1209, !DIExpression(), !1211)
+    #dbg_value(ptr %82, !1210, !DIExpression(), !1211)
+    #dbg_value(ptr %6, !1213, !DIExpression(), !1220)
+    #dbg_value(ptr %8, !1216, !DIExpression(), !1220)
+    #dbg_value(ptr %82, !1217, !DIExpression(), !1220)
+    #dbg_value(ptr %6, !1222, !DIExpression(), !1229)
+    #dbg_value(ptr %8, !1225, !DIExpression(), !1229)
+    #dbg_value(ptr %82, !1226, !DIExpression(), !1229)
+    #dbg_value(ptr %6, !1231, !DIExpression(), !1240)
+    #dbg_value(ptr %8, !1236, !DIExpression(), !1240)
+    #dbg_value(ptr %82, !1237, !DIExpression(), !1240)
+    #dbg_value(ptr %6, !1242, !DIExpression(), !1247)
+    #dbg_value(ptr %8, !1245, !DIExpression(), !1247)
+    #dbg_value(ptr %82, !1246, !DIExpression(), !1247)
+    #dbg_value(ptr %6, !1249, !DIExpression(), !1264)
+    #dbg_value(ptr %8, !1260, !DIExpression(), !1264)
+    #dbg_value(ptr %82, !1261, !DIExpression(), !1264)
+    #dbg_value(i64 %73, !1262, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1264)
+  %85 = icmp samesign ugt i64 %73, 4, !dbg !1278
+  br i1 %85, label %86, label %87, !dbg !1279, !prof !1280
+
+86:                                               ; preds = %83
+; 11 = MemoryDef(10)
+  tail call void @llvm.memmove.p0.p0.i64(ptr nonnull align 4 %82, ptr align 4 %6, i64 %73, i1 false), !dbg !1281
+  br label %91, !dbg !1282
+
+87:                                               ; preds = %83
+  %88 = icmp eq i64 %73, 4, !dbg !1283
+  br i1 %88, label %89, label %91, !dbg !1284
+
+89:                                               ; preds = %87
+    #dbg_value(ptr %82, !1285, !DIExpression(), !1297)
+    #dbg_value(ptr %6, !1296, !DIExpression(), !1297)
+; MemoryUse(10)
+  %90 = load i32, ptr %6, align 4, !dbg !1299, !tbaa !1072
+; 12 = MemoryDef(10)
+  store i32 %90, ptr %82, align 4, !dbg !1300, !tbaa !1072
+  br label %91, !dbg !1301
+
+91:                                               ; preds = %89, %87, %86, %75
+; 29 = MemoryPhi({%75,36},{%86,11},{%87,10},{%89,12})
+  %92 = phi ptr [ %84, %86 ], [ %84, %87 ], [ %84, %89 ], [ %76, %75 ]
+  %93 = phi ptr [ %82, %86 ], [ %82, %87 ], [ %82, %89 ], [ null, %75 ]
+  %94 = trunc i64 %12 to i32, !dbg !1302
+  %95 = lshr i64 %12, 32, !dbg !1302
+  %96 = trunc nuw i64 %95 to i32, !dbg !1302
+    #dbg_value(ptr null, !926, !DIExpression(DW_OP_LLVM_fragment, 256, 64), !1303)
+    #dbg_value(ptr poison, !1144, !DIExpression(), !1304)
+    #dbg_value(ptr poison, !759, !DIExpression(), !1306)
+    #dbg_value(ptr poison, !768, !DIExpression(), !1326)
+    #dbg_value(ptr poison, !774, !DIExpression(), !1327)
+    #dbg_value(ptr poison, !779, !DIExpression(), !1328)
+    #dbg_value(ptr poison, !906, !DIExpression(), !1329)
+    #dbg_value(ptr poison, !762, !DIExpression(), !1306)
+    #dbg_value(ptr poison, !770, !DIExpression(), !1326)
+    #dbg_value(ptr poison, !775, !DIExpression(), !1327)
+    #dbg_value(ptr poison, !780, !DIExpression(), !1328)
+    #dbg_value(ptr poison, !907, !DIExpression(), !1329)
+    #dbg_value(ptr poison, !759, !DIExpression(), !965)
+    #dbg_value(ptr poison, !768, !DIExpression(), !973)
+    #dbg_value(ptr poison, !774, !DIExpression(), !974)
+    #dbg_value(ptr poison, !779, !DIExpression(), !975)
+    #dbg_value(ptr poison, !906, !DIExpression(), !976)
+    #dbg_value(ptr %69, !924, !DIExpression(), !1303)
+    #dbg_value(ptr %68, !925, !DIExpression(), !1303)
+    #dbg_value(ptr undef, !926, !DIExpression(DW_OP_deref), !1303)
+    #dbg_value(ptr undef, !1163, !DIExpression(), !1330)
+    #dbg_value(ptr undef, !1169, !DIExpression(), !1330)
+  br i1 %18, label %110, label %97, !dbg !1332
+
+97:                                               ; preds = %97, %91
+  %98 = phi i32 [ %107, %97 ], [ %96, %91 ], !dbg !1333
+  %99 = phi i32 [ %106, %97 ], [ %94, %91 ], !dbg !1333
+  %100 = phi ptr [ %108, %97 ], [ %69, %91 ]
+    #dbg_value(ptr %100, !924, !DIExpression(), !1303)
+    #dbg_value(ptr undef, !906, !DIExpression(), !976)
+    #dbg_value(ptr undef, !907, !DIExpression(), !976)
+    #dbg_value(ptr undef, !779, !DIExpression(), !975)
+    #dbg_value(ptr undef, !780, !DIExpression(), !975)
+    #dbg_value(ptr undef, !774, !DIExpression(), !974)
+    #dbg_value(ptr undef, !775, !DIExpression(), !974)
+    #dbg_value(ptr undef, !768, !DIExpression(), !973)
+    #dbg_value(ptr undef, !770, !DIExpression(), !973)
+    #dbg_value(ptr undef, !759, !DIExpression(), !965)
+    #dbg_value(ptr undef, !762, !DIExpression(), !965)
+    #dbg_value(ptr poison, !1321, !DIExpression(DW_OP_LLVM_fragment, 256, 64), !1334)
+; MemoryUse(36)
+  %101 = load i32, ptr %100, align 4, !dbg !1335, !tbaa !1072, !noalias !1336
+    #dbg_value(ptr poison, !1319, !DIExpression(), !1334)
+    #dbg_value(ptr undef, !1321, !DIExpression(DW_OP_deref), !1334)
+    #dbg_value(i32 %101, !1322, !DIExpression(), !1334)
+    #dbg_value(ptr undef, !1323, !DIExpression(DW_OP_plus_uconst, 24, DW_OP_stack_value), !1334)
+  %102 = and i32 %101, 1, !dbg !1339
+  %103 = icmp eq i32 %102, 0, !dbg !1339
+  %104 = select i1 %103, i32 %99, i32 %98, !dbg !1341
+  %105 = add nsw i32 %104, 1, !dbg !1341
+  %106 = select i1 %103, i32 %105, i32 %99, !dbg !1341
+  %107 = select i1 %103, i32 %98, i32 %105, !dbg !1341
+    #dbg_value(ptr undef, !906, !DIExpression(), !1329)
+    #dbg_value(ptr undef, !907, !DIExpression(), !1329)
+    #dbg_value(ptr undef, !779, !DIExpression(), !1328)
+    #dbg_value(ptr undef, !780, !DIExpression(), !1328)
+    #dbg_value(ptr undef, !774, !DIExpression(), !1327)
+    #dbg_value(ptr undef, !775, !DIExpression(), !1327)
+    #dbg_value(ptr undef, !768, !DIExpression(), !1326)
+    #dbg_value(ptr undef, !770, !DIExpression(), !1326)
+    #dbg_value(ptr undef, !759, !DIExpression(), !1306)
+    #dbg_value(ptr undef, !762, !DIExpression(), !1306)
+    #dbg_value(ptr undef, !1144, !DIExpression(), !1304)
+  %108 = getelementptr inbounds nuw i8, ptr %100, i64 4, !dbg !1342
+    #dbg_value(ptr %108, !924, !DIExpression(), !1303)
+    #dbg_value(ptr undef, !1163, !DIExpression(), !1330)
+    #dbg_value(ptr undef, !1169, !DIExpression(), !1330)
+  %109 = icmp eq ptr %108, %68, !dbg !1343
+  br i1 %109, label %110, label %97, !dbg !1344, !llvm.loop !1345
+
+110:                                              ; preds = %97, %91
+  %111 = phi i32 [ %96, %91 ], [ %107, %97 ], !dbg !1003
+  %112 = phi i32 [ %94, %91 ], [ %106, %97 ], !dbg !1003
+    #dbg_value(ptr undef, !906, !DIExpression(), !936)
+    #dbg_value(ptr undef, !907, !DIExpression(), !936)
+    #dbg_value(ptr undef, !779, !DIExpression(), !935)
+    #dbg_value(ptr undef, !780, !DIExpression(), !935)
+    #dbg_value(ptr undef, !774, !DIExpression(), !934)
+    #dbg_value(ptr undef, !775, !DIExpression(), !934)
+    #dbg_value(ptr undef, !768, !DIExpression(), !933)
+    #dbg_value(ptr undef, !770, !DIExpression(), !933)
+    #dbg_value(ptr undef, !759, !DIExpression(), !913)
+    #dbg_value(ptr undef, !762, !DIExpression(), !913)
+    #dbg_value(ptr %93, !663, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+    #dbg_value(ptr %92, !663, !DIExpression(DW_OP_LLVM_fragment, 64, 64), !1003)
+    #dbg_value(ptr %92, !663, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+    #dbg_value(i32 %112, !663, !DIExpression(DW_OP_LLVM_fragment, 192, 32), !1003)
+    #dbg_value(i32 %111, !663, !DIExpression(DW_OP_LLVM_fragment, 224, 32), !1003)
+    #dbg_value(ptr null, !663, !DIExpression(DW_OP_LLVM_fragment, 256, 64), !1003)
+    #dbg_value(ptr undef, !713, !DIExpression(), !964)
+    #dbg_value(ptr undef, !703, !DIExpression(), !963)
+    #dbg_value(ptr undef, !698, !DIExpression(), !962)
+    #dbg_value(ptr undef, !690, !DIExpression(), !961)
+    #dbg_value(ptr null, !692, !DIExpression(), !961)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !961)
+; 13 = MemoryDef(29)
+  call void @llvm.lifetime.start.p0(ptr nonnull %3) #9, !dbg !1348
+    #dbg_value(ptr %4, !906, !DIExpression(), !912)
+    #dbg_value(ptr undef, !907, !DIExpression(), !912)
+    #dbg_value(ptr %4, !779, !DIExpression(), !911)
+    #dbg_value(ptr undef, !780, !DIExpression(), !911)
+    #dbg_value(ptr %4, !774, !DIExpression(), !910)
+    #dbg_value(ptr undef, !775, !DIExpression(), !910)
+    #dbg_value(ptr %4, !768, !DIExpression(), !909)
+    #dbg_value(ptr undef, !770, !DIExpression(), !909)
+    #dbg_value(ptr %4, !759, !DIExpression(), !895)
+    #dbg_value(ptr undef, !762, !DIExpression(), !895)
+; 14 = MemoryDef(13)
+  store ptr %93, ptr %4, align 8, !dbg !1349, !tbaa !1006
+  %113 = getelementptr inbounds nuw i8, ptr %4, i64 8, !dbg !1350
+; 15 = MemoryDef(14)
+  store ptr %92, ptr %113, align 8, !dbg !1351, !tbaa !1012
+  %114 = getelementptr inbounds nuw i8, ptr %4, i64 16, !dbg !1352
+; 16 = MemoryDef(15)
+  store ptr %92, ptr %114, align 8, !dbg !1353, !tbaa !1015
+    #dbg_value(ptr null, !663, !DIExpression(DW_OP_LLVM_fragment, 0, 64), !1003)
+    #dbg_value(ptr null, !663, !DIExpression(DW_OP_LLVM_fragment, 64, 64), !1003)
+    #dbg_value(ptr null, !663, !DIExpression(DW_OP_LLVM_fragment, 128, 64), !1003)
+  %115 = getelementptr inbounds nuw i8, ptr %4, i64 24, !dbg !1354
+; 17 = MemoryDef(16)
+  store i32 %112, ptr %115, align 8, !dbg !1355
+  %116 = getelementptr inbounds nuw i8, ptr %4, i64 28, !dbg !1355
+; 18 = MemoryDef(17)
+  store i32 %111, ptr %116, align 4, !dbg !1355
+  %117 = getelementptr inbounds nuw i8, ptr %4, i64 32, !dbg !1355
+; 19 = MemoryDef(18)
+  store ptr null, ptr %117, align 8, !dbg !1355
+; 20 = MemoryDef(19)
+  call void @_Z5carry3Box(ptr dead_on_unwind nonnull writable sret(%struct.Box) align 8 %3, ptr noundef nonnull align 8 %4), !dbg !1356
+    #dbg_value(ptr %4, !713, !DIExpression(), !1357)
+    #dbg_value(ptr %4, !703, !DIExpression(), !1359)
+    #dbg_value(ptr %4, !698, !DIExpression(), !1361)
+; MemoryUse(20)
+  %118 = load ptr, ptr %4, align 8, !dbg !1363, !tbaa !1006
+    #dbg_value(ptr %4, !690, !DIExpression(), !1364)
+    #dbg_value(ptr %118, !692, !DIExpression(), !1364)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1364)
+  %119 = icmp eq ptr %118, null, !dbg !1366
+  br i1 %119, label %125, label %120, !dbg !1367
+
+120:                                              ; preds = %110
+; MemoryUse(20)
+  %121 = load ptr, ptr %114, align 8, !dbg !1368, !tbaa !1015
+    #dbg_value(!DIArgList(ptr %121, ptr %118), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1364)
+  %122 = ptrtoint ptr %121 to i64, !dbg !1369
+    #dbg_value(!DIArgList(i64 %122, ptr %118), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1364)
+  %123 = ptrtoint ptr %118 to i64, !dbg !1369
+    #dbg_value(!DIArgList(i64 %122, i64 %123), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1364)
+  %124 = sub i64 %122, %123, !dbg !1369
+    #dbg_value(i64 %124, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1364)
+    #dbg_value(ptr %4, !683, !DIExpression(), !1370)
+    #dbg_value(ptr %118, !684, !DIExpression(), !1370)
+    #dbg_value(i64 %124, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1370)
+    #dbg_value(ptr %4, !676, !DIExpression(), !1372)
+    #dbg_value(ptr %118, !678, !DIExpression(), !1372)
+    #dbg_value(i64 %124, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1372)
+    #dbg_value(ptr %4, !666, !DIExpression(), !1374)
+    #dbg_value(ptr %118, !669, !DIExpression(), !1374)
+    #dbg_value(i64 %124, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1374)
+; 21 = MemoryDef(20)
+  tail call void @_ZdlPvm(ptr noundef nonnull %118, i64 noundef %124) #10, !dbg !1376
+  br label %125, !dbg !1377
+
+125:                                              ; preds = %120, %110
+; 38 = MemoryPhi({%110,20},{%120,21})
+    #dbg_value(ptr %3, !713, !DIExpression(), !1378)
+    #dbg_value(ptr %3, !703, !DIExpression(), !1380)
+    #dbg_value(ptr %3, !698, !DIExpression(), !1382)
+; MemoryUse(20)
+  %126 = load ptr, ptr %3, align 8, !dbg !1384, !tbaa !1006
+    #dbg_value(ptr %3, !690, !DIExpression(), !1385)
+    #dbg_value(ptr %126, !692, !DIExpression(), !1385)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1385)
+  %127 = icmp eq ptr %126, null, !dbg !1387
+  br i1 %127, label %134, label %128, !dbg !1388
+
+128:                                              ; preds = %125
+  %129 = getelementptr inbounds nuw i8, ptr %3, i64 16, !dbg !1389
+; MemoryUse(20)
+  %130 = load ptr, ptr %129, align 8, !dbg !1389, !tbaa !1015
+    #dbg_value(!DIArgList(ptr %130, ptr %126), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1385)
+  %131 = ptrtoint ptr %130 to i64, !dbg !1390
+    #dbg_value(!DIArgList(i64 %131, ptr %126), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1385)
+  %132 = ptrtoint ptr %126 to i64, !dbg !1390
+    #dbg_value(!DIArgList(i64 %131, i64 %132), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1385)
+  %133 = sub i64 %131, %132, !dbg !1390
+    #dbg_value(i64 %133, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1385)
+    #dbg_value(ptr %3, !683, !DIExpression(), !1391)
+    #dbg_value(ptr %126, !684, !DIExpression(), !1391)
+    #dbg_value(i64 %133, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1391)
+    #dbg_value(ptr %3, !676, !DIExpression(), !1393)
+    #dbg_value(ptr %126, !678, !DIExpression(), !1393)
+    #dbg_value(i64 %133, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1393)
+    #dbg_value(ptr %3, !666, !DIExpression(), !1395)
+    #dbg_value(ptr %126, !669, !DIExpression(), !1395)
+    #dbg_value(i64 %133, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !1395)
+; 22 = MemoryDef(38)
+  tail call void @_ZdlPvm(ptr noundef nonnull %126, i64 noundef %133) #10, !dbg !1397
+  br label %134, !dbg !1398
+
+134:                                              ; preds = %128, %125
+; 35 = MemoryPhi({%125,38},{%128,22})
+; 23 = MemoryDef(35)
+  call void @llvm.lifetime.end.p0(ptr nonnull %3) #9, !dbg !1399
+    #dbg_value(ptr undef, !713, !DIExpression(), !894)
+    #dbg_value(ptr undef, !703, !DIExpression(), !893)
+    #dbg_value(ptr undef, !698, !DIExpression(), !892)
+    #dbg_value(ptr undef, !690, !DIExpression(), !891)
+    #dbg_value(ptr null, !692, !DIExpression(), !891)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !891)
+    #dbg_value(ptr undef, !703, !DIExpression(), !808)
+    #dbg_value(ptr undef, !698, !DIExpression(), !807)
+    #dbg_value(ptr undef, !690, !DIExpression(), !806)
+    #dbg_value(ptr %69, !692, !DIExpression(), !806)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !806)
+  %135 = icmp eq ptr %69, null, !dbg !1400
+  br i1 %135, label %139, label %136, !dbg !1401
+
+136:                                              ; preds = %134
+    #dbg_value(!DIArgList(i64 %70, ptr %69), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !806)
+    #dbg_value(!DIArgList(i64 %70, ptr %69), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !806)
+  %137 = ptrtoint ptr %69 to i64, !dbg !1402
+    #dbg_value(!DIArgList(i64 %70, i64 %137), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !806)
+  %138 = sub i64 %70, %137, !dbg !1402
+    #dbg_value(i64 %138, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !806)
+    #dbg_value(ptr undef, !683, !DIExpression(), !805)
+    #dbg_value(ptr %69, !684, !DIExpression(), !805)
+    #dbg_value(i64 %138, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !805)
+    #dbg_value(ptr undef, !676, !DIExpression(), !804)
+    #dbg_value(ptr %69, !678, !DIExpression(), !804)
+    #dbg_value(i64 %138, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !804)
+    #dbg_value(ptr undef, !666, !DIExpression(), !797)
+    #dbg_value(ptr %69, !669, !DIExpression(), !797)
+    #dbg_value(i64 %138, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !797)
+; 24 = MemoryDef(23)
+  tail call void @_ZdlPvm(ptr noundef nonnull %69, i64 noundef %138) #10, !dbg !1403
+  br label %139, !dbg !1404
+
+139:                                              ; preds = %136, %134
+; 30 = MemoryPhi({%134,23},{%136,24})
+    #dbg_value(ptr undef, !713, !DIExpression(), !735)
+    #dbg_value(ptr undef, !703, !DIExpression(), !734)
+    #dbg_value(ptr undef, !698, !DIExpression(), !733)
+    #dbg_value(ptr undef, !690, !DIExpression(), !732)
+    #dbg_value(ptr %6, !692, !DIExpression(), !732)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !732)
+  %140 = icmp eq ptr %6, null, !dbg !1405
+  br i1 %140, label %144, label %141, !dbg !1406
+
+141:                                              ; preds = %139
+    #dbg_value(!DIArgList(ptr %10, ptr %6), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !732)
+  %142 = ptrtoint ptr %10 to i64, !dbg !1407
+    #dbg_value(!DIArgList(i64 %142, i64 %72), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !732)
+  %143 = sub i64 %142, %72, !dbg !1407
+    #dbg_value(i64 %143, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !732)
+    #dbg_value(ptr undef, !683, !DIExpression(), !731)
+    #dbg_value(ptr %6, !684, !DIExpression(), !731)
+    #dbg_value(i64 %143, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !731)
+    #dbg_value(ptr undef, !676, !DIExpression(), !730)
+    #dbg_value(ptr %6, !678, !DIExpression(), !730)
+    #dbg_value(i64 %143, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !730)
+    #dbg_value(ptr undef, !666, !DIExpression(), !722)
+    #dbg_value(ptr %6, !669, !DIExpression(), !722)
+    #dbg_value(i64 %143, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !722)
+; 25 = MemoryDef(30)
+  tail call void @_ZdlPvm(ptr noundef nonnull %6, i64 noundef %143) #10, !dbg !1408
+  br label %144, !dbg !1409
+
+144:                                              ; preds = %141, %139
+; 28 = MemoryPhi({%139,30},{%141,25})
+  ret i32 %112, !dbg !1410
+
+145:                                              ; preds = %19, %15
+; 41 = MemoryPhi({%15,2},{%19,3})
+  %146 = landingpad { ptr, i32 }
+          cleanup, !dbg !1399
+  br label %153, !dbg !1411
+
+147:                                              ; preds = %81, %79
+; 40 = MemoryPhi({%79,9},{%81,10})
+  %148 = landingpad { ptr, i32 }
+          cleanup, !dbg !1399
+    #dbg_value(ptr undef, !703, !DIExpression(), !796)
+    #dbg_value(ptr undef, !698, !DIExpression(), !795)
+    #dbg_value(ptr undef, !690, !DIExpression(), !794)
+    #dbg_value(ptr %69, !692, !DIExpression(), !794)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !794)
+  %149 = icmp eq ptr %69, null, !dbg !1412
+  br i1 %149, label %153, label %150, !dbg !1413
+
+150:                                              ; preds = %147
+    #dbg_value(!DIArgList(i64 %70, ptr %69), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !794)
+    #dbg_value(!DIArgList(i64 %70, ptr %69), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !794)
+  %151 = ptrtoint ptr %69 to i64, !dbg !1185
+    #dbg_value(!DIArgList(i64 %70, i64 %151), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !794)
+  %152 = sub i64 %70, %151, !dbg !1185
+    #dbg_value(i64 %152, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !794)
+    #dbg_value(ptr undef, !683, !DIExpression(), !793)
+    #dbg_value(ptr %69, !684, !DIExpression(), !793)
+    #dbg_value(i64 %152, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !793)
+    #dbg_value(ptr undef, !676, !DIExpression(), !792)
+    #dbg_value(ptr %69, !678, !DIExpression(), !792)
+    #dbg_value(i64 %152, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !792)
+    #dbg_value(ptr undef, !666, !DIExpression(), !785)
+    #dbg_value(ptr %69, !669, !DIExpression(), !785)
+    #dbg_value(i64 %152, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !785)
+; 26 = MemoryDef(40)
+  tail call void @_ZdlPvm(ptr noundef nonnull %69, i64 noundef %152) #10, !dbg !1414
+  br label %153, !dbg !1415
+
+153:                                              ; preds = %150, %147, %145
+; 37 = MemoryPhi({%145,41},{%147,40},{%150,26})
+  %154 = phi { ptr, i32 } [ %146, %145 ], [ %148, %147 ], [ %148, %150 ]
+    #dbg_value(ptr undef, !713, !DIExpression(), !721)
+    #dbg_value(ptr undef, !703, !DIExpression(), !720)
+    #dbg_value(ptr undef, !698, !DIExpression(), !719)
+    #dbg_value(ptr undef, !690, !DIExpression(), !718)
+    #dbg_value(ptr %6, !692, !DIExpression(), !718)
+    #dbg_value(!DIArgList(ptr poison, ptr poison), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !718)
+  %155 = icmp eq ptr %6, null, !dbg !1416
+  br i1 %155, label %160, label %156, !dbg !1417
+
+156:                                              ; preds = %153
+    #dbg_value(!DIArgList(ptr %10, ptr %6), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !718)
+  %157 = ptrtoint ptr %10 to i64, !dbg !1418
+    #dbg_value(!DIArgList(i64 %157, ptr %6), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !718)
+  %158 = ptrtoint ptr %6 to i64, !dbg !1418
+    #dbg_value(!DIArgList(i64 %157, i64 %158), !693, !DIExpression(DW_OP_LLVM_arg, 0, DW_OP_LLVM_arg, 1, DW_OP_minus, DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !718)
+  %159 = sub i64 %157, %158, !dbg !1418
+    #dbg_value(i64 %159, !693, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !718)
+    #dbg_value(ptr undef, !683, !DIExpression(), !717)
+    #dbg_value(ptr %6, !684, !DIExpression(), !717)
+    #dbg_value(i64 %159, !685, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !717)
+    #dbg_value(ptr undef, !676, !DIExpression(), !716)
+    #dbg_value(ptr %6, !678, !DIExpression(), !716)
+    #dbg_value(i64 %159, !679, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !716)
+    #dbg_value(ptr undef, !666, !DIExpression(), !672)
+    #dbg_value(ptr %6, !669, !DIExpression(), !672)
+    #dbg_value(i64 %159, !670, !DIExpression(DW_OP_constu, 2, DW_OP_shra, DW_OP_stack_value), !672)
+; 27 = MemoryDef(37)
+  tail call void @_ZdlPvm(ptr noundef nonnull %6, i64 noundef %159) #10, !dbg !1419
+  br label %160, !dbg !1420
+
+160:                                              ; preds = %156, %153
+; 42 = MemoryPhi({%153,37},{%156,27})
+  resume { ptr, i32 } %154, !dbg !1399
+}

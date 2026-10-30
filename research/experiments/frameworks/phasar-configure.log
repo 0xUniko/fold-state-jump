@@ -1,0 +1,147 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Selected Release Build
+-- Performing Test GDB_INDEX_SUPPORTED
+-- Performing Test GDB_INDEX_SUPPORTED - Failed
+-- Performing Test MARCH_SUPPORTED
+-- Performing Test MARCH_SUPPORTED - Failed
+CMake Warning at CMakeLists.txt:128 (message):
+  Target architecture 'native' not supported.  Fallback to generic build
+
+
+-- IPO/LTO not supported: Change Dir: '/tmp/opencode/frameworks/phasar/build-llvm23c/CMakeFiles/_CMakeLTOTest-CXX/bin'
+
+Run Build Command(s): /usr/bin/ninja -v
+[1/4] /usr/bin/c++   -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -g -fno-omit-frame-pointer -gsplit-dwarf -flto=auto -fno-fat-lto-objects -o CMakeFiles/foo.dir/foo.cpp.o -c /tmp/opencode/frameworks/phasar/build-llvm23c/CMakeFiles/_CMakeLTOTest-CXX/src/foo.cpp
+FAILED: CMakeFiles/foo.dir/foo.cpp.o 
+/usr/bin/c++   -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -g -fno-omit-frame-pointer -gsplit-dwarf -flto=auto -fno-fat-lto-objects -o CMakeFiles/foo.dir/foo.cpp.o -c /tmp/opencode/frameworks/phasar/build-llvm23c/CMakeFiles/_CMakeLTOTest-CXX/src/foo.cpp
+cc1plus: note: ‘-gsplit-dwarf’ is not supported with LTO, disabling
+cc1plus: error: to generate dependencies you must specify either ‘-M’ or ‘-MM’
+[2/4] /usr/bin/c++   -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -g -fno-omit-frame-pointer -gsplit-dwarf -flto=auto -fno-fat-lto-objects -o CMakeFiles/boo.dir/main.cpp.o -c /tmp/opencode/frameworks/phasar/build-llvm23c/CMakeFiles/_CMakeLTOTest-CXX/src/main.cpp
+FAILED: CMakeFiles/boo.dir/main.cpp.o 
+/usr/bin/c++   -MP -fstack-protector-strong -ffunction-sections -fdata-sections -pipe -g -fno-omit-frame-pointer -gsplit-dwarf -flto=auto -fno-fat-lto-objects -o CMakeFiles/boo.dir/main.cpp.o -c /tmp/opencode/frameworks/phasar/build-llvm23c/CMakeFiles/_CMakeLTOTest-CXX/src/main.cpp
+cc1plus: note: ‘-gsplit-dwarf’ is not supported with LTO, disabling
+cc1plus: error: to generate dependencies you must specify either ‘-M’ or ‘-MM’
+ninja: build stopped: subcommand failed.
+
+
+-- PAMM metric severity level: Off
+-- Dynamic log enabled
+-- Looking for C++ include filesystem
+-- Looking for C++ include filesystem - not found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Using the multi-header code from /tmp/opencode/frameworks/phasar/external/json/include/
+-- JsonValidator: Configured for Release
+-- JsonValidator: nlohmann_json_VERSION is not set. Possible value: v3.11.2
+Cloning into 'googletest-src'...
+HEAD is now at 52eb8108 Prepare for v1.17.0 (#4757)
+-- Performing Test HAVE_FFI_CALL
+-- Performing Test HAVE_FFI_CALL - Success
+-- Found FFI: /usr/lib/x86_64-linux-gnu/libffi.so
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")
+-- Could NOT find zstd (missing: zstd_LIBRARY zstd_INCLUDE_DIR) 
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.14")
+-- Could NOT find CURL (missing: CURL_LIBRARY CURL_INCLUDE_DIR) 
+-- Link against individual LLVM modules
+-- Tests are disabled, you can enabled them by setting ENABLE_ROARING_TESTS to ON
+-- BENCHMARK_DATA_DIR: /tmp/opencode/frameworks/phasar/external/CRoaring/benchmarks/realdata/
+-- TEST_DATA_DIR: /tmp/opencode/frameworks/phasar/external/CRoaring/tests/testdata/
+-- Building a static library.
+-- ROARING_LIB_TYPE: STATIC
+-- Library output directory (does not apply to Visual Studio): /tmp/opencode/frameworks/phasar/build-llvm23c
+-- Amalgamation tests disabled
+-- You may enable microbenchmarks by setting ENABLE_ROARING_MICROBENCHMARKS to ON 
+Not compiling LLVMPathConstraints.cpp since Z3 is disabled.
+Remaining PathSensitivity targets to build: PathSensitivityManagerBase.cpp
+-- Set-up phasar-tool: call-graph
+-- Set-up phasar-tool: example-tool
+-- Set-up phasar-tool: phasar-cli
+-- Set-up phasar-tool: ptaben
+Phasar unittests
+Set-up unittest: LLVMBasedCFGTest.cpp
+Set-up unittest: LLVMBasedICFGTest.cpp
+Set-up unittest: LLVMBasedICFG_CHATest.cpp
+Set-up unittest: LLVMBasedICFG_OTFTest.cpp
+Set-up unittest: LLVMBasedICFG_RTATest.cpp
+Set-up unittest: LLVMBasedICFG_RTA_MultipleInheritanceTest.cpp
+Set-up unittest: LLVMBasedBackwardCFGTest.cpp
+Set-up unittest: LLVMBasedBackwardICFGTest.cpp
+Set-up unittest: LLVMBasedICFGExportTest.cpp
+Set-up unittest: LLVMBasedICFGExternCallbackTest.cpp
+Set-up unittest: LLVMBasedICFGGlobCtorDtorTest.cpp
+Set-up unittest: LLVMBasedICFGSerializationTest.cpp
+Set-up unittest: LLVMVFTableProviderTest.cpp
+Set-up unittest: VTACallGraphTest.cpp
+Set-up unittest: IFDSConstAnalysisTest.cpp
+Set-up unittest: IFDSTaintAnalysisTest.cpp
+Set-up unittest: IDEInstInteractionAnalysisTest.cpp
+Set-up unittest: IDELinearConstantAnalysisTest.cpp
+Set-up unittest: IDELinearConstantAnalysis_DotTest.cpp
+Set-up unittest: IFDSUninitializedVariablesTest.cpp
+Set-up unittest: IDEGeneralizedLCATest.cpp
+Set-up unittest: IDEExtendedTaintAnalysisTest.cpp
+Set-up unittest: IDETSAnalysisFileIOTest.cpp
+Set-up unittest: IDEFeatureTaintAnalysisTest.cpp
+Set-up unittest: DefaultFlowFunctionTest.cpp
+Set-up unittest: EdgeFunctionComposerTest.cpp
+Set-up unittest: EdgeFunctionSingletonCacheTest.cpp
+Set-up unittest: InteractiveIDESolverTest.cpp
+Set-up unittest: SparseIDESolverTest.cpp
+Set-up unittest: IterativeIDESolverTest.cpp
+Set-up unittest: DFISolverTest.cpp
+Set-up unittest: CFLFieldSensTest.cpp
+Set-up unittest: WPDSSolverTest.cpp
+Set-up unittest: InterMonoFullConstantPropagationTest.cpp
+Set-up unittest: InterMonoTaintAnalysisTest.cpp
+Set-up unittest: IntraMonoUninitVariablesTest.cpp
+Set-up unittest: IntraMonoFullConstantPropagationTest.cpp
+Set-up unittest: /tmp/opencode/frameworks/phasar/unittests/PhasarLLVM/DataFlow/MonoIfds/Problems/MonoIFDSTaintAnalysisTest.cpp
+Set-up unittest: LatticeDomainTest.cpp
+Set-up unittest: AndersenOTFAATest.cpp
+Set-up unittest: LLVMAliasSetTest.cpp
+Set-up unittest: LLVMAliasSetSerializationTest.cpp
+Set-up unittest: FilteredLLVMAliasSetTest.cpp
+Set-up unittest: LLVMUnionFindAATest.cpp
+Set-up unittest: TaintConfigTest.cpp
+Set-up unittest: DIBasedTypeHierarchySerializationTest.cpp
+Set-up unittest: DIBasedTypeHierarchyTest.cpp
+Set-up unittest: CompilationTests.cpp
+Set-up unittest: BitVectorSetTest.cpp
+Set-up unittest: EquivalenceClassMapTest.cpp
+Set-up unittest: IOTest.cpp
+Set-up unittest: LLVMIRToSrcTest.cpp
+Set-up unittest: LLVMShorthandsTest.cpp
+Set-up unittest: PAMMTest.cpp
+Set-up unittest: StableVectorTest.cpp
+Set-up unittest: ValueIdMapTest.cpp
+Set-up unittest: AnalysisPrinterTest.cpp
+Set-up unittest: OnTheFlyAnalysisPrinterTest.cpp
+Set-up unittest: SourceMgrPrinterTest.cpp
+Set-up unittest: SCCGenericTest.cpp
+Set-up unittest: IntervalReachabilityTest.cpp
+Set-up unittest: LoggerTest.cpp
+Building IR test code
+-- HINTS to find clang/clang++/opt: /usr/lib/llvm-23/bin;/bin;/usr/lib/llvm-23/bin;/usr/local/llvm-23/bin;/usr/lib/llvm-23/bin/
+--   - validate_binary_version of "/usr/lib/llvm-23/bin/clang-23"
+--   - validate_binary_version of "/bin/clang++-23"
+--   - validate_binary_version of "/bin/opt-23"
+-- found clang binary in "/usr/lib/llvm-23/bin/clang-23"
+-- found clang++ binary in "/bin/clang++-23"
+-- found opt binary in "/bin/opt-23"
+-- Linker detection: GNU ld
+-- Configuring done (32.0s)
+-- Generating done (0.4s)
+-- Build files have been written to: /tmp/opencode/frameworks/phasar/build-llvm23c

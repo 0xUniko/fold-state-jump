@@ -1,0 +1,98 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Using SVF build configuration:
+  Project:                                          SVF
+  SVF version:                                      3.4
+  SVF root directory:                               /tmp/opencode/frameworks/SVF
+  SVF binary directory:                             /tmp/opencode/frameworks/SVF/build-llvm23b
+  Project root directory:                           /tmp/opencode/frameworks/SVF
+  Project binary directory:                         /tmp/opencode/frameworks/SVF/build-llvm23b
+
+  Installing executables to:                        bin
+  Installing libraries to:                          lib
+  Installing headers to:                            include
+  Installing extapi.bc to:                          lib
+  Installing pkgconfig to:                          lib/pkgconfig
+  Installing CMake package to:                      lib/cmake/SVF
+
+  SVF option - Build type:                          Release
+  SVF option - Building shared libs:                
+  SVF option - Enabled exception handling:          ON
+  SVF option - Enabled runtime type information:    ON
+  SVF option - Enabling position-independent code:  ON
+  SVF option - Enabling link-time optimisations:    OFF
+  SVF option - Using ld.lld as default linker:      OFF
+  SVF option - Enabling coverage build:             OFF
+  SVF option - Treating warnings as errors:         OFF
+  SVF option - Generating debug information:        ON
+  SVF option - Exporting all dynamic symbols:       OFF
+  SVF option - Forcefully enabling assertions:      OFF
+
+  CMake root directory:                             /tmp/opencode/frameworks/SVF
+  CMake binary directory:                           /tmp/opencode/frameworks/SVF/build-llvm23b
+  Current CMake root directory:                     /tmp/opencode/frameworks/SVF
+  Current CMake binary directory:                   /tmp/opencode/frameworks/SVF/build-llvm23b
+
+  CMake generator:                                  Ninja
+  CMake C compiler:                                 GNU
+  CMake C++ compiler:                               GNU
+  Using CMake C standard:                           11
+  Using CMake C++ standard:                         17
+  Current CMake install prefix:                     /usr/local
+-- Failed to find upstream/system Z3 package; reverting to manual search
+-- Extracted Z3 version information from /usr/include/z3_version.h
+-- Parsed Z3 version: 4.8.12.0
+-- Found Z3: /usr/include (found version "4.8.12.0")
+-- Manually found Z3 (libs: /usr/lib/x86_64-linux-gnu/libz3.so; public headers: /usr/include)
+-- Using Z3 package:
+  Z3 major version:     4
+  Z3 minor version:     8
+  Z3 patch version:     12
+  Z3 tweak version:     0
+  Z3 version string:    4.8.12.0
+  Z3 link libraries:    z3::libz3
+  Z3 C include dirs:    /usr/include
+  Z3 C++ include dirs:  /usr/include
+-- Performing Test HAVE_FFI_CALL
+-- Performing Test HAVE_FFI_CALL - Success
+-- Found FFI: /usr/lib/x86_64-linux-gnu/libffi.so
+-- Could NOT find LibEdit (missing: LibEdit_INCLUDE_DIRS LibEdit_LIBRARIES) 
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")
+-- Could NOT find zstd (missing: zstd_LIBRARY zstd_INCLUDE_DIR) 
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.14")
+-- Could NOT find CURL (missing: CURL_LIBRARY CURL_INCLUDE_DIR) 
+-- Linker detection: GNU ld
+-- Using LLVM package:
+  LLVM major version:         23
+  LLVM minor version:         1
+  LLVM patch version:         4
+  LLVM version string:        23.1.4
+  LLVM host triple:           x86_64-pc-linux-gnu
+  LLVM target triple:         x86_64-pc-linux-gnu
+  LLVM build type:            RelWithDebInfo
+  LLVM link dynamic lib:      OFF
+  LLVM enable RTTI:           ON
+  LLVM enable exceptions:     OFF
+  LLVM compiler definitions:  -D_GNU_SOURCE -D_GLIBCXX_USE_CXX11_ABI=1 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
+  LLVM libraries:             LLVMAnalysis;LLVMBitWriter;LLVMCore;LLVMInstCombine;LLVMInstrumentation;LLVMipo;LLVMIRReader;LLVMLinker;LLVMScalarOpts;LLVMSupport;LLVMTarget;LLVMTransformUtils;LLVMDemangle;LLVMPasses
+  LLVM includes dir:          /usr/lib/llvm-23/include
+  LLVM libraries dir:         /usr/lib/llvm-23/lib
+  LLVM executables dir:       /usr/lib/llvm-23
+  LLVM executable tools dir:  /usr/lib/llvm-23/bin
+-- Found extapi.c input file at: /tmp/opencode/frameworks/SVF/svf-llvm/lib/extapi.c
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (12.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/opencode/frameworks/SVF/build-llvm23b

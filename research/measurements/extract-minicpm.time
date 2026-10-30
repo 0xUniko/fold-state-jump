@@ -1,0 +1,136 @@
+In file included from /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:4:
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:410:44: warning: captured structured bindings are a C++20 extension [-Wc++20-extensions]
+  410 |                                            name);
+      |                                            ^
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:405:60: note: while substituting into a lambda expression here
+  405 |               [&](std::vector<char> staging, size_t start) {
+      |                                                            ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/functional/invoke.hpp:140:25: note: in instantiation of function template specialization 'minicpm::load_model(const std::string &, ExpertIndex, int, LanguageLoad)::(lambda)::operator()<std::pair<std::basic_string<char>, ggml_tensor *>>' requested here
+  140 |             -> decltype(((F&&) f)((Args&&) args...))
+      |                         ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/functional/concepts.hpp:43:13: note: while substituting deduced template arguments into function template 'operator()' [with F = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7) &, Args = <std::vector<std::unique_ptr<ggml_backend_buffer, void (*)(ggml_backend_buffer *)>>, std::pair<std::basic_string<char>, ggml_tensor *> &>]
+   43 |             invoke((Fun &&) fn, std::declval<Args>()...)
+      |             ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:480:46: note: expanded from macro 'CPP_requires'
+  480 |     CPP_REQUIRES_AUX_(NAME, CPP_REQUIRES_ ## REQS)
+      |                                              ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:491:36: note: expanded from macro 'CPP_REQUIRES_RETURN_'
+  491 | #define CPP_REQUIRES_RETURN_(...) (__VA_ARGS__, void()) {}
+      |                                    ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:495:5: note: expanded from macro 'CPP_REQUIRES_AUX_'
+  495 |     __VA_ARGS__                                                                 \
+      |     ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/functional/concepts.hpp:40:5: note: while substituting deduced template arguments into function template 'invocable_requires_test_' [with Fun = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7) &, Args = (no value)]
+   40 |     CPP_requires(invocable_,
+      |     ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:480:5: note: expanded from macro 'CPP_requires'
+  480 |     CPP_REQUIRES_AUX_(NAME, CPP_REQUIRES_ ## REQS)
+      |     ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:499:19: note: expanded from macro 'CPP_REQUIRES_AUX_'
+  499 |         decltype(&CPP_PP_CAT(NAME, requires_test_)<As...>) = nullptr)           \
+      |                   ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:67:30: note: expanded from macro 'CPP_PP_CAT'
+   67 | #define CPP_PP_CAT(X, ...)   CPP_PP_CAT_(X, __VA_ARGS__)
+      |                              ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:66:30: note: expanded from macro 'CPP_PP_CAT_'
+   66 | #define CPP_PP_CAT_(X, ...)  X ## __VA_ARGS__
+      |                              ^
+<scratch space>:94:1: note: expanded from here
+   94 | invocable_requires_test_
+      | ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/functional/concepts.hpp:49:26: note: while substituting deduced template arguments into function template 'invocable_requires_' [with As = <(lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7) &, std::vector<std::unique_ptr<ggml_backend_buffer, void (*)(ggml_backend_buffer *)>>, std::pair<std::basic_string<char>, ggml_tensor *> &>]
+   49 |         CPP_requires_ref(ranges::invocable_, Fun, Args...);
+      |                          ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:483:30: note: expanded from macro 'CPP_requires_ref'
+  483 |     (1u == sizeof(CPP_PP_CAT(NAME, requires_)(                                  \
+      |                              ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:67:42: note: expanded from macro 'CPP_PP_CAT'
+   67 | #define CPP_PP_CAT(X, ...)   CPP_PP_CAT_(X, __VA_ARGS__)
+      |                                          ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:66:30: note: expanded from macro 'CPP_PP_CAT_'
+   66 | #define CPP_PP_CAT_(X, ...)  X ## __VA_ARGS__
+      |                              ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:45:9: note: in instantiation of variable template specialization 'ranges::invocable<(lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7) &, std::vector<std::unique_ptr<ggml_backend_buffer, void (*)(ggml_backend_buffer *)>>, std::pair<std::basic_string<char>, ggml_tensor *> &>' requested here
+   45 |         invocable<F&, T, iter_reference_t<I>> &&
+      |         ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:78:17: note: in instantiation of variable template specialization 'ranges::indirectly_binary_left_foldable<(lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7), std::vector<std::unique_ptr<ggml_backend_buffer, void (*)(ggml_backend_buffer *)>>, __gnu_cxx::__normal_iterator<std::pair<std::basic_string<char>, ggml_tensor *> *, std::vector<std::pair<std::basic_string<char>, ggml_tensor *>>>>' requested here
+   78 |                 indirectly_binary_left_foldable<Op, T, iterator_t<Rng>>) //
+      |                 ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/prologue.hpp:35:26: note: expanded from macro 'template'
+   35 |     template<__VA_ARGS__ CPP_TEMPLATE_AUX_                                      \
+      |                          ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:270:27: note: expanded from macro 'CPP_TEMPLATE_AUX_'
+  270 | #define CPP_TEMPLATE_AUX_ CPP_TEMPLATE_SFINAE_AUX_
+      |                           ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:292:55: note: expanded from macro 'CPP_TEMPLATE_SFINAE_AUX_'
+  292 |         CPP_TEMPLATE_SFINAE_AUX_WHICH_(__VA_ARGS__,))(__VA_ARGS__)
+      |                                                       ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:299:48: note: expanded from macro 'CPP_TEMPLATE_SFINAE_AUX_0'
+  299 |         CPP_PP_CAT(CPP_TEMPLATE_SFINAE_AUX_3_, __VA_ARGS__) &&                  \
+      |                                                ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:67:45: note: expanded from macro 'CPP_PP_CAT'
+   67 | #define CPP_PP_CAT(X, ...)   CPP_PP_CAT_(X, __VA_ARGS__)
+      |                                             ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/concepts/concepts.hpp:66:35: note: expanded from macro 'CPP_PP_CAT_'
+   66 | #define CPP_PP_CAT_(X, ...)  X ## __VA_ARGS__
+      |                                   ^
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:80:13: note: while substituting prior template arguments into non-type template parameter [with Rng = std::vector<std::pair<std::string, struct ggml_tensor *>> &, T = std::vector<nano::Buffer>, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7), CPP_true = true, $4 = 0]
+   80 |             RANGES_FUNC(fold_left)(Rng && rng, T init, Op op)
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   81 |         {
+      |         ~
+   82 |             return (*this)(begin(rng), end(rng), std::move(init), std::move(op));
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   83 |         }
+      |         ~
+/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/detail/config.hpp:636:27: note: expanded from macro 'RANGES_FUNC'
+  636 | #define RANGES_FUNC(NAME) operator() RANGES_FUNC_CONST_ /**/
+      |                           ^
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:361:44: note: while substituting deduced template arguments into function template 'operator()' [with Rng = std::vector<std::pair<std::string, struct ggml_tensor *>> &, T = std::vector<nano::Buffer>, Op = (lambda at /home/huawei/nano-infer/minicpm-v-4_7/model.h:363:7), CPP_true = (no value), $4 = (no value), $5 = (no value)]
+  361 |   auto resident_buffers = ranges::fold_left(
+      |                                            ^
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:364:22: note: 'name' declared here
+  364 |         const auto &[name, tensor] = entry;
+      |                      ^
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:412:41: warning: captured structured bindings are a C++20 extension [-Wc++20-extensions]
+  412 |                 ggml_backend_tensor_set(tensor, staging.data(), start, length);
+      |                                         ^
+/home/huawei/nano-infer/minicpm-v-4_7/model.h:364:28: note: 'tensor' declared here
+  364 |         const auto &[name, tensor] = entry;
+      |                            ^
+In file included from /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:1:
+In file included from /home/huawei/nano-infer/llama.cpp/common/./chat.h:7:
+In file included from /home/huawei/nano-infer/llama.cpp/common/./jinja/parser.h:3:
+/home/huawei/nano-infer/llama.cpp/common/./jinja/lexer.h:49:20: warning: unused function 'type_to_string' [-Wunused-function]
+   49 | static std::string type_to_string(token::type t) {
+      |                    ^~~~~~~~~~~~~~
+In file included from /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:1:
+In file included from /home/huawei/nano-infer/llama.cpp/common/./chat.h:7:
+In file included from /home/huawei/nano-infer/llama.cpp/common/./jinja/parser.h:4:
+/home/huawei/nano-infer/llama.cpp/common/./jinja/runtime.h:734:20: warning: unused function 'render_string_parts' [-Wunused-function]
+  734 | static std::string render_string_parts(const value_string & parts) {
+      |                    ^~~~~~~~~~~~~~~~~~~
+4 warnings generated.
+	Command being timed: "/home/huawei/fold-state-jump-research/prototype/native/build/ast-inventory -p /tmp/opencode/nano-db -root /home/huawei/nano-infer minicpm-v-4_7/cli.cpp"
+	User time (seconds): 14.59
+	System time (seconds): 0.69
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:15.30
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1062316
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 260562
+	Voluntary context switches: 0
+	Involuntary context switches: 65
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

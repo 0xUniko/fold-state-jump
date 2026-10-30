@@ -1,0 +1,147 @@
+{
+  "project": "nano-infer",
+  "sourceRevision": "2e523d9e1d6c198988cab4193971093907f767f5",
+  "worktreeDirty": true,
+  "translationUnits": [
+    {
+      "tu": "deepseek-v4-flash_attention_node",
+      "records": {
+        "record": 44,
+        "function": 152,
+        "cfg-block": 872,
+        "event": 13753,
+        "fold": 24
+      }
+    },
+    {
+      "tu": "deepseek-v4-flash_ffn_node",
+      "records": {
+        "function": 147,
+        "cfg-block": 712,
+        "event": 10601,
+        "record": 38,
+        "fold": 24
+      }
+    },
+    {
+      "tu": "deepseek-v4-flash_main",
+      "records": {
+        "function": 3,
+        "cfg-block": 12,
+        "event": 90
+      }
+    },
+    {
+      "tu": "minicpm-v-4_7_cli",
+      "records": {
+        "function": 340,
+        "cfg-block": 2028,
+        "event": 30715,
+        "record": 115,
+        "fold": 87
+      }
+    },
+    {
+      "tu": "minicpm-v-4_7_tests_local_test",
+      "records": {
+        "function": 426,
+        "cfg-block": 2343,
+        "event": 34476,
+        "record": 114,
+        "fold": 94
+      }
+    },
+    {
+      "tu": "shared_model_loader",
+      "records": {
+        "function": 41,
+        "cfg-block": 207,
+        "event": 1729,
+        "record": 9,
+        "fold": 18
+      }
+    }
+  ],
+  "files": [
+    "deepseek-v4-flash/attention_log.h",
+    "deepseek-v4-flash/attention_node.cpp",
+    "deepseek-v4-flash/attention_options.h",
+    "deepseek-v4-flash/attention_pipeline.h",
+    "deepseek-v4-flash/dsv4_ffn.h",
+    "deepseek-v4-flash/ffn_node.cpp",
+    "deepseek-v4-flash/ffn_service.h",
+    "deepseek-v4-flash/main.cpp",
+    "deepseek-v4-flash/node_runtime.h",
+    "minicpm-v-4_7/cli.cpp",
+    "minicpm-v-4_7/cpu_arena.h",
+    "minicpm-v-4_7/expert_index.h",
+    "minicpm-v-4_7/expert_io.h",
+    "minicpm-v-4_7/experts.h",
+    "minicpm-v-4_7/ffn.h",
+    "minicpm-v-4_7/input.h",
+    "minicpm-v-4_7/mapped_file.h",
+    "minicpm-v-4_7/model.h",
+    "minicpm-v-4_7/pipeline.h",
+    "minicpm-v-4_7/runtime.h",
+    "minicpm-v-4_7/tests/local_test.cpp",
+    "minicpm-v-4_7/vision.h",
+    "shared/ffn_rpc.h",
+    "shared/model_loader.cpp",
+    "shared/model_loader.h",
+    "shared/model_loader.h",
+    "shared/node_runtime.h",
+    "shared/node_runtime.h",
+    "shared/node_runtime.h",
+    "shared/prompt.h",
+    "shared/tests/tiny_qwen35moe.h"
+  ],
+  "counts": {
+    "translationUnits": 6,
+    "files": 31,
+    "functions": 680,
+    "functionTemplateInstances": 79,
+    "lambdaFunctions": 295,
+    "records": 181,
+    "foldInstances": 86,
+    "foldSourceSites": 84,
+    "events": 87294,
+    "writes": 7801,
+    "transfers": 9134,
+    "stateRecords": 47
+  },
+  "sourceHashes": {
+    "shared/model_loader.h": "42d91df8e0ab0e8ee1c83c40bbbdca7a31672072c49a2545675f1f6328bdb7a1",
+    "shared/node_runtime.h": "6f88a8eb3b2a8742b771147e392abe7e46659507f506128631e0418dbf8bf990",
+    "deepseek-v4-flash/attention_log.h": "178932beaab03fbc12d04ff0ef9e28f0cb742282c061f37570ba06fdc92d6f71",
+    "deepseek-v4-flash/attention_node.cpp": "b2ea07061ad1e431e0e101a2215adebc99919331400995e27067ec995208ce36",
+    "deepseek-v4-flash/attention_options.h": "cb5c14ec18620a242e317160c32db5c8a2f5fb3d176c88a449d9408ae7656768",
+    "deepseek-v4-flash/attention_pipeline.h": "bab99feda6b9d575f4150fb8415814092dc3738fae91c0bd6c2d583395bba8fe",
+    "deepseek-v4-flash/dsv4_ffn.h": "5a93a938e9f79f1bd5a5963440b6a0c94c40344c4b53cab48c626339c3bbd1e6",
+    "deepseek-v4-flash/ffn_node.cpp": "2d0eb8d9216c5fb5d8a15432388ec37be102624c44a9e29115d0cf117c314900",
+    "deepseek-v4-flash/ffn_service.h": "b1b44362f96e7a4d39ef2e6321ce77022ebf33f6410fd4327973a2a67d5caac7",
+    "deepseek-v4-flash/main.cpp": "57b10123cc8f22764ddf79a8b5856d665620d8d267274bf579f4866bf6130ab5",
+    "deepseek-v4-flash/node_runtime.h": "c1477678fb0f6952229dfb7b476648d3c15ac69e3206c1c7e157fdee06a09726",
+    "minicpm-v-4_7/cli.cpp": "b13946df795f6f2cba7f590d62f5e7bf38adf0d12b41afad0ce13e5eb628417c",
+    "minicpm-v-4_7/cpu_arena.h": "12c620f83ae165cb6921ee4249f08052a7127fb2cf0b84870330b45dcf1e720f",
+    "minicpm-v-4_7/expert_index.h": "52dac0dc171690813d9c5715323709b6b0f823bac3c2b6eb06d5a05a730fb55f",
+    "minicpm-v-4_7/expert_io.h": "73de050e830fc8bd9f8515b38f01a0a2ec563f2da6eb753e05fe9c9f42f4607a",
+    "minicpm-v-4_7/experts.h": "a38c4864645d24912b144318ae1f264b4caf6e69883550c77167b29fa863695f",
+    "minicpm-v-4_7/ffn.h": "fc3ebb7500a8391ae6ba575fd7eed2be4564c39a9110311f3521d43536d864a9",
+    "minicpm-v-4_7/input.h": "24708f33402b60ae1d847a541805b9e0d7a12d7594ea80ca10ec07aa1b0a90c5",
+    "minicpm-v-4_7/mapped_file.h": "8a7558a746a29f024c686fd4acab1a8561847a41d4a186fab1ba985b592b1393",
+    "minicpm-v-4_7/model.h": "534802a1b59eba2a6af3096b3dd844e29b22ea88091295bf4024eee5a292325e",
+    "minicpm-v-4_7/pipeline.h": "682f66b9f878f59d0fc7afcb06ac89f70d2c96e421d3f0656c3022aa6b0a139f",
+    "minicpm-v-4_7/runtime.h": "579168b719c162b946f38dad917ea218a7b78d3c09a4d22b776c343e6f128421",
+    "shared/tests/tiny_qwen35moe.h": "18d3b9ad4d58f551923c2bcafa2a576cf68b0bd3fd142d810d34a29648c96bc8",
+    "minicpm-v-4_7/tests/local_test.cpp": "70ef43137e5829ee2cca9a8a678fd54679c4f81346fdf0518474d5dbccf583c4",
+    "minicpm-v-4_7/vision.h": "2b0381e73c8d4b6759dea161b0d75d03af357393dd02710afb3e0c1e8434153f",
+    "shared/ffn_rpc.h": "2dde732520abfbd49e8951aa0cbe0c0f4edb1b439d54db9f946875bad0b59571",
+    "shared/model_loader.cpp": "7427ece8f4708b8e15d2d2a8ffb9932ef058e8e7ce9f32e237d2786b3240d5ae",
+    "shared/prompt.h": "3e50aa2d21342d033704e8c38edb66678226632e791a29d72fe8d88f4910411e"
+  },
+  "methods": [
+    "Clang 23 LibTooling AST + CFG; no regular-expression inventory",
+    "Template pattern and implicit instantiation functions are distinct USRs",
+    "Dependent member expressions are recorded as field paths"
+  ]
+}
