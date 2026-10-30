@@ -1,5 +1,139 @@
 # 跨函数状态追踪排查与修复
 
+## 2026-10-30：当前 execute(SessionState, Input) 模板选择修复
+
+本轮基线 `9415d6845`，nano-infer 为
+`2e523d9e1d6c198988cab4193971093907f767f5`；开始时两个工作区均干净。
+远端已删除旧 feature 分支，本轮从干净的当前提交建立 `feat/multi-funcs`。
+nano-infer 只读。下文 2026-10-25 的 Session/聚合参数排查是历史记录，
+**不适用于当前 execute 的签名**。
+
+### 首次失败位置与实际证据
+
+`test/project-state-sources.ts` 的旧入口首先因为找不到
+`BatchState{std::move(session.session_state), {}}` 失败。更新入口后，
+使用当前真实 AST 回放旧分析模块才暴露本轮产品缺陷：
+`resolveSelection → findNodeAt → preferIdentifier` 将一个源码 token 对应的
+多个语义实例压成一个节点。排序先排除 dependent pattern，再以 AST 顺序
+选择了 `EmbeddingInput` 实例，整个 `TokenInput` 实例从未进入调用者分析。
+
+当前 pipeline.h 的原生 AST 同时含有：
+
+| 节点 | 函数身份 | 形参索引 | 本地调用 |
+| --- | --- | --- | --- |
+| execute pattern 的 ParmVarDecl | `Pipeline@FT@>1#Texecute…` | 0 | 没有直接指向 pattern 的调用 |
+| execute<EmbeddingInput> 的 ParmVarDecl | `Pipeline@F@execute<…EmbeddingInput>…` | 0 | run_embeddings，pipeline.h:1310 |
+| execute<TokenInput> 的 ParmVarDecl | `Pipeline@F@execute<…TokenInput>…` | 0 | run_batch，pipeline.h:1328 |
+
+三者形参 token 的 UTF-8 偏移均为 **34446**，函数 token 偏移为 **34425**，
+但函数 ID、形参 ID、USR 和第二形参类型各自独立。ExpressionPath 都是
+`{rootId: 该实例 params[0].id, rootName: 'session_state', members: []}`。
+函数体 guard 和 layer fold seed 的同一根对象 token 也有各实例的 DeclRefExpr。
+这排除了“Clang 没有提取 execute 形参/实例/调用”的解释。
+
+选中 EmbeddingInput 后，旧 `callerLinks` 正确找到 run_embeddings，
+`mappedArgument/valueSource` 正确穿过隐式移动构造与 std::move，
+将参数映射为 run_embeddings 的 `session_state`。旧模块在完整提供真实 CLI
+调用点后，Origin **只有 cli.cpp:293 一个 seed**，Mutation 为
+**AnalysisFailure**，保留 `Fold returned storage identity is not verified for
+batch_state.session_state`。这些边界对该路径成立，但不能代表被丢弃的 run_batch 路径。
+
+实际 clangd 23 返回 execute 两个模板调用的引用位置。对 EmbeddingInput
+查询，pipeline.h:1310 验证通过，:1328 因具体 USR 不同被拒绝；TokenInput
+查询则反过来。声明引用也被调用范围验证拒绝。
+因此 `callerLinksAt` 对具体实例的严格拒绝在这里是正确行为，不能改为按函数名合并。
+CLI 返回位置也通过了 UTF-16 → UTF-8、调用范围及 callee 范围验证：
+run_batch 在 cli.cpp:236、:536，run_embeddings 在 :317。
+
+完整 USR、真实节点 ID/ExpressionPath、provider 范围、每个验证结果、各层
+参数映射、终点和诊断保存在
+[测量与证据](measurements/execute-session-state.json)。同一组新 AST 上，
+保存的旧分析模块回放得到一个 Origin 与 Mutation failure；新模块得到下述结果。
+新模板测试在旧模块上为 **2 pass / 5 fail**，新模块为 **7 pass / 0 fail**。
+
+### 修复与身份约束
+
+- Native 同时为函数节点和 callee 提取 Clang
+  `getTemplateInstantiationPattern()` 的 USR，作为 `templatePatternSymbol`。
+  具体实例仍保留原有 USR；显式 specialization 没有被当作 primary pattern 的实例。
+- `findNodesAt/resolveSelection` 保留同一 token、同一 compiler pattern 的每个
+  concrete selection，分别使用各自函数、类型、参数 ID 与 prepared AST 调用原分析器。
+  同一实例在 compact AST 中重复序列化时，按函数 ID 选择更深的语义节点，
+  避免将根级副本当成另一实例；原 generic-this 回归保持原有两个来源。
+- 仅有 dependent header pattern 时，发现位置可以凭 compiler pattern 关系
+  找到另一个 TU 中**实际存在的 concrete body**。在那个 AST 中重新解析光标后，
+  才按具体 USR 继续分析。缺 concrete body、缺符号、错 overload、显式 specialization、
+  实参内部的函数引用均不能据此产生调用边。
+- `callerLinks` 不把 pattern 发现关系当作依赖模板正文的直接调用；没有成功解析
+  concrete selection 时仍停在明确形参边界。类型、存储与参数值映射规则未放宽。
+- `src/extension.ts` 和 `src/caller-discovery.ts` 的生产实现无需改动。
+  已检查其 provider union、位置转换、按文件加载、递归展开、边界日志、候选选择及
+  导航版本验证。多个语义 selection 复用现有分析、发现和导航流程。
+
+### 当前真实调用链
+
+| 路径 | 第一次参数映射 | CLI 实参映射 | Origin | Previous Mutation |
+| --- | --- | --- | --- | --- |
+| execute<EmbeddingInput> → run_embeddings → 图像 fold | session_state，后缀 `[]` | batch_state.session_state | cli.cpp:293 的 `std::move(batch_state)` seed | returned storage identity 未验证，保留边界 |
+| execute<TokenInput> → run_batch → prefill_text fold | session_state，后缀 `[]` | batch_state.session_state | cli.cpp:234 的 `BatchState{std::move(session_state), {}}` | 同上 |
+| execute<TokenInput> → run_batch → generation fold | session_state，后缀 `[]` | generation.batch_state.session_state | cli.cpp:512 的 `Generation{std::move(batch_state), {}, false, 0, 0}` | cli.cpp:535 的 `generation.batch_state = pipeline.run_batch(...)` |
+
+最后一个修改是**上一轮源码顺序候选**，wrapped=true，并包含 fold return witness；
+第一轮使用 seed，其他轮仍取决于分支 guards。另两条路径的诊断没有被成功候选抹掉，
+也没有将 execute 内部后续计算误当作进入 execute 之前的历史修改。
+
+### 执行的验证与未通过项目
+
+| 命令/回放 | 实际结果 |
+| --- | --- |
+| `bun --version`；package/tsconfig 检查 | Bun 1.4.3，ES2022/strict，未改构建或检查配置 |
+| 最初沙箱内 `bun test` | 490 pass / 41 fail，native worker IPC 受限；同一完整测试在沙箱外重跑，未修改或跳过断言 |
+| 修改前 `bun test`（允许 native IPC 的沙箱外） | 531 pass / 0 fail |
+| `bun run build:native` | LLVM/Clang 23.1.4，构建成功 |
+| `bun test test/template-state.test.ts` | 7 pass，涵盖 free/member templates、header-only pattern → TU instances、双 caller/两层调用、move、overload、显式 specialization、缺 concrete body 与错误范围 |
+| `bun test/template-command.ts` | 16 个真实 activate/native/递归/QuickPick/最终导航案例通过；VS Code APIs 为 mock |
+| 最终 `bun test`（允许 native IPC 的沙箱外） | 539 pass / 0 fail，27 files；含原嵌套聚合、fold seed、上一轮状态、自定义构造与错误跳转回归 |
+| `bun check` | 80 files，无类型错误；未改用 tsc |
+| `bun run build` | 扩展构建成功 |
+| `native/build/fold-state-jump-ast --source "$PWD/test/fixtures/native-fold.cpp" -- -std=c++23 > /tmp/fold-state-jump-ast.json`；`bun test/native-integration.ts` | 直接与跨函数 mutation 通过 |
+| `bun test/project-state-sources.ts /home/huawei/nano-infer` | 当前形参声明、guard、fold seed：各有 3 Origin 和 generation Mutation，通过 |
+| `FSJ_CLANGD=/usr/bin/clangd-23 bun test/project-state-sources.ts /home/huawei/nano-infer` | 实际 clangd 23.1.4、实际 Incoming Calls/References、UTF-16，全部上述断言通过；后台磁盘索引关闭，两个明确文档在内存中打开 |
+| `bun test/project-integration.ts /home/huawei/nano-infer` | **未通过**：旧 `++session_state.bank_state.counters.graph_builds;` 已删除；ffn/experts 的旧 bank regex 得到 0 项，不能算覆盖 |
+| `FSJ_AUDIT_AST_DIRECTORY=/tmp/fsj-audit bun test/project-state-audit.ts /home/huawei/nano-infer` | **未通过**：首个旧 `return {std::move(session_state), std::move(logits)};` 已改为嵌套聚合返回。旧脚本后续审计没有执行，不能称为全项目审计通过 |
+| `git diff --check` | 通过 |
+
+旧两份广泛审计脚本的业务重构迁移不在此次修复范围；保留失败而没有跳过旧断言。
+本轮针对当前 execute 的真实回归是更新后的 project-state-sources；其严格断言不依赖
+旧 Session、take_batch_state 或已删除 counters。nano-infer 源码及 Git 状态未改变。
+
+保存模块的实际采样命令为 `bun build src/analysis.ts --target=node --format=esm --outfile=/tmp/fsj-analysis-before.mjs`
+（修改前）和 `--outfile=/tmp/fsj-analysis-after-final.mjs`（最终），再分别执行
+`bun test/analysis-performance.ts /tmp/fsj-analysis-before.mjs 10000` 与
+`bun test/analysis-performance.ts /tmp/fsj-analysis-after-final.mjs 10000`。
+对当前 AST 的旧模块 Origin 回放为 `bun /tmp/fsj-project-baseline.ts /home/huawei/nano-infer`
+（1 !== 3），Mutation 对比为 `bun /tmp/fsj-baseline-mutation.ts`
+（AnalysisFailure → MutationFound）；这两个临时脚本复用生产分析并明确提供两份真实 AST 中的调用位置，
+不声称它们本身验证了语言服务。
+
+性能为相同输入、相同 Bun、两个保存的 bundle 各 10,000 次查询的单次本机采样：
+20,000 无关写入为 4.22 → 5.72 µs，历史写入为 3.04 → 2.82 µs，
+20,000 helper 为 6.02 → 7.78 µs，2,000 引用别名为 16.89 → 17.08 µs。
+这些单次结果包含多 selection 收集/合并的微秒级成本与采样噪声；没有声称性能不变或统计尾延迟保证。
+Native JSON 在当前相同源码上由 10,639,118 / 29,779,096 字节变为
+10,797,476 / 30,530,919 字节（pipeline/CLI），增加约 1.5% / 2.5%。
+Native 可执行文件 identity 改变会使旧磁盘 AST 失效，不要求用户手动清缓存。
+
+没有启动实际 Extension Host/UI：环境中有 remote VS Code server 与 clangd，
+没有本地桌面 Electron/显示环境。实际语言服务验证止于 LSP + 生产 discovery/analyzer；
+命令到导航由 mock VS Code harness 独立验证。未证明 workspace caller 全集，
+未执行模型/GPU/gRPC 推理。无法证明的 fold 返回身份、间接/虚调用、自定义构造、
+不可获得的具体模板正文等仍是显式边界。
+
+---
+
+## 2026-10-25 历史记录
+
+
 验证日期：2026-10-25。起点为 `feat/multi-funcs` / `57988639d`，工作区原本干净。
 未切换分支，未提交、推送或修改 vendored 仓库、nano-infer 源码。
 

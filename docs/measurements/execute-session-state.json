@@ -1,0 +1,1184 @@
+{
+  "date": "2026-10-30",
+  "baseline": "9415d6845",
+  "nanoInfer": "2e523d9e1d6c198988cab4193971093907f767f5",
+  "sources": {
+    "minicpm-v-4_7/pipeline.h": "c2ea6a61d18c404e06457d9995e82a05c81b82e859d8ae9e05bcad89be1460e9",
+    "minicpm-v-4_7/cli.cpp": "7f0cdbeae22b3712ed7b6640e1ffaa9badfb131837b10627466e3ed6ab422ded"
+  },
+  "scope": "Real native Clang 23 ASTs and actual clangd LSP; mocked VS Code API bridge. No Extension Host/UI or inference runtime.",
+  "clangd": {
+    "event": "clangd-initialize",
+    "server": {
+      "name": "clangd",
+      "version": "Ubuntu clangd version 23.1.4 (++20261018124056+71c76755a8ff-1~exp1~20261018124211.83) linux x86_64-pc-linux-gnu"
+    },
+    "capabilities": {
+      "callHierarchy": true,
+      "references": true,
+      "positionEncoding": "utf-16",
+      "offsetEncoding": "utf-16"
+    }
+  },
+  "clangdDiagnostics": [
+    {
+      "event": "clangd-diagnostics",
+      "file": "file:///home/huawei/.config/clangd/config.yaml",
+      "errors": []
+    },
+    {
+      "event": "clangd-diagnostics",
+      "file": "file:///home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "errors": []
+    },
+    {
+      "event": "clangd-diagnostics",
+      "file": "file:///home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+      "errors": []
+    }
+  ],
+  "selections": [
+    {
+      "selection": "declaration",
+      "cursorByteOffset": 34446,
+      "nodes": [
+        {
+          "kind": "ParmVarDecl",
+          "id": "76E41700C808",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@FT@>1#Texecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1",
+          "path": {
+            "rootId": "76E41700C808",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "ParmVarDecl",
+          "id": "76E414F8CA00",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E414F8CA00",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "ParmVarDecl",
+          "id": "76E4149835F8",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E4149835F8",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        }
+      ]
+    },
+    {
+      "selection": "guard",
+      "cursorByteOffset": 34938,
+      "nodes": [
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@FT@>1#Texecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1",
+          "path": {
+            "rootId": "76E41700C808",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E414F8CA00",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E4149835F8",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        }
+      ]
+    },
+    {
+      "selection": "fold-seed",
+      "cursorByteOffset": 37017,
+      "nodes": [
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@FT@>1#Texecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1",
+          "path": {
+            "rootId": "76E41700C808",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E414F8CA00",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        },
+        {
+          "kind": "DeclRefExpr",
+          "owner": "execute",
+          "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "path": {
+            "rootId": "76E4149835F8",
+            "rootName": "session_state",
+            "members": []
+          },
+          "parameterIndex": 0
+        }
+      ]
+    }
+  ],
+  "callerVerification": [
+    {
+      "event": "verify-caller",
+      "function": "run_embeddings",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+      "range": {
+        "end": {
+          "character": 46,
+          "line": 316
+        },
+        "start": {
+          "character": 32,
+          "line": 316
+        }
+      },
+      "links": [
+        {
+          "caller": "operator()",
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "callRange": {
+            "begin": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 15220,
+              "tokLen": 8
+            },
+            "end": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 15451,
+              "tokLen": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "verify-caller",
+      "function": "run_embeddings",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 1305
+        },
+        "start": {
+          "character": 2,
+          "line": 1305
+        }
+      },
+      "links": []
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1327
+        },
+        "start": {
+          "character": 11,
+          "line": 1327
+        }
+      },
+      "links": []
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1309
+        },
+        "start": {
+          "character": 11,
+          "line": 1309
+        }
+      },
+      "links": [
+        {
+          "caller": "run_embeddings",
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "callRange": {
+            "begin": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+              "offset": 55936,
+              "tokLen": 7
+            },
+            "end": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+              "offset": 56044,
+              "tokLen": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 20,
+          "line": 799
+        },
+        "start": {
+          "character": 13,
+          "line": 799
+        }
+      },
+      "links": []
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1327
+        },
+        "start": {
+          "character": 11,
+          "line": 1327
+        }
+      },
+      "links": [
+        {
+          "caller": "run_batch",
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+          "callRange": {
+            "begin": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+              "offset": 56788,
+              "tokLen": 7
+            },
+            "end": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+              "offset": 56888,
+              "tokLen": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1309
+        },
+        "start": {
+          "character": 11,
+          "line": 1309
+        }
+      },
+      "links": []
+    },
+    {
+      "event": "verify-caller",
+      "function": "execute",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 20,
+          "line": 799
+        },
+        "start": {
+          "character": 13,
+          "line": 799
+        }
+      },
+      "links": []
+    },
+    {
+      "event": "verify-caller",
+      "function": "run_batch",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+      "range": {
+        "end": {
+          "character": 33,
+          "line": 235
+        },
+        "start": {
+          "character": 24,
+          "line": 235
+        }
+      },
+      "links": [
+        {
+          "caller": "operator()",
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "callRange": {
+            "begin": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 10854,
+              "tokLen": 8
+            },
+            "end": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 11058,
+              "tokLen": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "verify-caller",
+      "function": "run_batch",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+      "range": {
+        "end": {
+          "character": 30,
+          "line": 535
+        },
+        "start": {
+          "character": 21,
+          "line": 535
+        }
+      },
+      "links": [
+        {
+          "caller": "operator()",
+          "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+          "callRange": {
+            "begin": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 24940,
+              "tokLen": 8
+            },
+            "end": {
+              "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+              "offset": 25070,
+              "tokLen": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "verify-caller",
+      "function": "run_batch",
+      "symbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+      "file": "/home/huawei/nano-infer/minicpm-v-4_7/pipeline.h",
+      "range": {
+        "end": {
+          "character": 22,
+          "line": 1315
+        },
+        "start": {
+          "character": 13,
+          "line": 1315
+        }
+      },
+      "links": []
+    }
+  ],
+  "baselineOrigin": {
+    "result": "OriginFound",
+    "candidates": [
+      {
+        "target": {
+          "file": "cli.cpp",
+          "line": 293,
+          "offset": 13639
+        },
+        "frames": [
+          {
+            "caller": "run_embeddings",
+            "file": "pipeline.h",
+            "line": 1310,
+            "offset": 55936,
+            "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+            "parameterIndex": 0,
+            "argument": {
+              "rootId": "7F674250E9E0",
+              "rootName": "session_state",
+              "members": []
+            }
+          },
+          {
+            "caller": "operator()",
+            "file": "cli.cpp",
+            "line": 317,
+            "offset": 15220,
+            "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+            "parameterIndex": 0,
+            "argument": {
+              "rootId": "784553D0A190",
+              "rootName": "batch_state",
+              "members": [
+                "session_state"
+              ]
+            }
+          }
+        ],
+        "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+      }
+    ],
+    "diagnostics": [],
+    "boundaries": []
+  },
+  "fixedQueries": [
+    {
+      "selection": "declaration",
+      "mode": "origin",
+      "result": "OriginCandidatesFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 293,
+            "offset": 13639
+          },
+          "frames": [
+            {
+              "caller": "run_embeddings",
+              "file": "pipeline.h",
+              "line": 1310,
+              "offset": 55936,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700D9E0",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 317,
+              "offset": 15220,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5A0B190",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 234,
+            "offset": 10746
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 236,
+              "offset": 10854,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5961598",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 512,
+            "offset": 23950
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        }
+      ],
+      "diagnostics": [],
+      "boundaries": []
+    },
+    {
+      "selection": "declaration",
+      "mode": "mutation",
+      "result": "MutationFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 535,
+            "offset": 24903
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 510,
+              "offset": 23888,
+              "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+            }
+          ]
+        }
+      ],
+      "diagnostics": [
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:10746.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:23950.",
+        "No mutation is verified on this fold return path.",
+        "No mutation is verified on this fold return path."
+      ],
+      "boundaries": []
+    },
+    {
+      "selection": "guard",
+      "mode": "origin",
+      "result": "OriginCandidatesFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 293,
+            "offset": 13639
+          },
+          "frames": [
+            {
+              "caller": "run_embeddings",
+              "file": "pipeline.h",
+              "line": 1310,
+              "offset": 55936,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700D9E0",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 317,
+              "offset": 15220,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5A0B190",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 234,
+            "offset": 10746
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 236,
+              "offset": 10854,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5961598",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 512,
+            "offset": 23950
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        }
+      ],
+      "diagnostics": [],
+      "boundaries": []
+    },
+    {
+      "selection": "guard",
+      "mode": "mutation",
+      "result": "MutationFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 535,
+            "offset": 24903
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 510,
+              "offset": 23888,
+              "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+            }
+          ]
+        }
+      ],
+      "diagnostics": [
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:10746.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:23950.",
+        "No mutation is verified on this fold return path.",
+        "No mutation is verified on this fold return path."
+      ],
+      "boundaries": []
+    },
+    {
+      "selection": "fold-seed",
+      "mode": "origin",
+      "result": "OriginCandidatesFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 293,
+            "offset": 13639
+          },
+          "frames": [
+            {
+              "caller": "run_embeddings",
+              "file": "pipeline.h",
+              "line": 1310,
+              "offset": 55936,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700D9E0",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 317,
+              "offset": 15220,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_embeddings#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#f#$@N@std@S@allocator>#f#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5A0B190",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 234,
+            "offset": 10746
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 236,
+              "offset": 10854,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86A5961598",
+                "rootName": "batch_state",
+                "members": [
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        },
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 512,
+            "offset": 23950
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            }
+          ],
+          "boundary": "Fold seed identifies the initial storage; the current member value may be carried from a previous iteration."
+        }
+      ],
+      "diagnostics": [],
+      "boundaries": []
+    },
+    {
+      "selection": "fold-seed",
+      "mode": "mutation",
+      "result": "MutationFound",
+      "candidates": [
+        {
+          "target": {
+            "file": "cli.cpp",
+            "line": 535,
+            "offset": 24903
+          },
+          "frames": [
+            {
+              "caller": "run_batch",
+              "file": "pipeline.h",
+              "line": 1328,
+              "offset": 56788,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "76E41700E160",
+                "rootName": "session_state",
+                "members": []
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 536,
+              "offset": 24940,
+              "calleeSymbol": "c:@N@minicpm@S@Pipeline@F@run_batch#$@N@minicpm@S@SessionState#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@minicpm@E@ExecutionPhase#1",
+              "parameterIndex": 0,
+              "argument": {
+                "rootId": "7E86B408D128",
+                "rootName": "generation",
+                "members": [
+                  "batch_state",
+                  "session_state"
+                ]
+              }
+            },
+            {
+              "caller": "operator()",
+              "file": "cli.cpp",
+              "line": 510,
+              "offset": 23888,
+              "calleeSymbol": "/home/huawei/nano-infer/vcpkg_installed/x64-linux/include/range/v3/algorithm/fold_left.hpp:c:@N@ranges@S@fold_left_fn@F@operator()<#$@N@ranges@S@iota_view>#I#I#$@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S16_#$@N@std@S@allocator>#S16_#@S@Generation#$@N@minicpm@F@turn#S2_#S4_#S6_#S7_#S9_#S11_#S13_#S15_#S19_#@Sa#Vb1#VI0#VI0>#&&S0_#S1_#S22_#1"
+            }
+          ]
+        }
+      ],
+      "diagnostics": [
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:10746.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:23950.",
+        "No mutation is verified on this fold return path.",
+        "No mutation is verified on this fold return path."
+      ],
+      "boundaries": []
+    }
+  ],
+  "performance": {
+    "repetitions": 10000,
+    "scope": "Same bundled modules, same inputs; single local samples, warm OS caches; no tail or statistical guarantee.",
+    "before": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 49.28,
+        "queryUs": 4.22
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 30.63,
+        "queryUs": 3.04
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 52.53,
+        "queryUs": 6.02
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 4.41,
+        "queryUs": 16.89
+      }
+    ],
+    "after": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 53.99,
+        "queryUs": 5.72
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 39.6,
+        "queryUs": 2.82
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 60.02,
+        "queryUs": 7.78
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 4.53,
+        "queryUs": 17.08
+      }
+    ],
+    "afterInitial": [
+      {
+        "name": "unrelated writes",
+        "operations": 20000,
+        "prepareMs": 48.84,
+        "queryUs": 5.94
+      },
+      {
+        "name": "historical write",
+        "operations": 20000,
+        "prepareMs": 40.57,
+        "queryUs": 3.63
+      },
+      {
+        "name": "latest helper call",
+        "operations": 20000,
+        "prepareMs": 63.74,
+        "queryUs": 7.69
+      },
+      {
+        "name": "reference aliases",
+        "operations": 2000,
+        "prepareMs": 4.51,
+        "queryUs": 18.23
+      }
+    ]
+  },
+  "mutationComparison": {
+    "before": {
+      "tag": "AnalysisFailure",
+      "reason": "No earlier mutation or supported fold wrap-around was found along verified caller paths. Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639. Fold returned storage identity is not verified for batch_state.session_state.",
+      "diagnostics": [
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639.",
+        "Fold returned storage identity is not verified for batch_state.session_state."
+      ]
+    },
+    "after": {
+      "tag": "MutationFound",
+      "diagnostics": [
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:13639.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:10746.",
+        "Fold returned storage identity is not verified for batch_state.session_state.",
+        "Fold previous-iteration candidates require an earlier iteration and their branch guards; the first iteration uses the initial state at /home/huawei/nano-infer/minicpm-v-4_7/cli.cpp:23950.",
+        "No mutation is verified on this fold return path.",
+        "No mutation is verified on this fold return path."
+      ],
+      "mutation": {
+        "begin": {
+          "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+          "offset": 24903,
+          "tokLen": 10
+        },
+        "end": {
+          "file": "/home/huawei/nano-infer/minicpm-v-4_7/cli.cpp",
+          "offset": 25070,
+          "tokLen": 1
+        }
+      },
+      "frames": [
+        {
+          "caller": "run_batch",
+          "argument": {
+            "rootId": "7F674250F160",
+            "rootName": "session_state",
+            "members": []
+          },
+          "fold": false
+        },
+        {
+          "caller": "operator()",
+          "argument": {
+            "rootId": "78456238C128",
+            "rootName": "generation",
+            "members": [
+              "batch_state",
+              "session_state"
+            ]
+          },
+          "fold": false
+        },
+        {
+          "caller": "operator()",
+          "fold": true
+        }
+      ]
+    }
+  }
+}

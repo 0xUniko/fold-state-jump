@@ -497,6 +497,8 @@ public:
           output.attributeObject("callee", [&] {
             output.attribute("id", identity(callee));
             output.attribute("symbol", symbol(callee));
+            if (const auto *pattern = callee->getTemplateInstantiationPattern())
+              output.attribute("templatePatternSymbol", symbol(pattern));
             output.attribute("name", callee->getNameAsString());
             output.attribute("qualifiedName", callee->getQualifiedNameAsString());
             output.attributeObject("definition", [&] {
@@ -621,6 +623,8 @@ public:
           llvm::isa<CXXMethodDecl>(function) ? "CXXMethodDecl" : "FunctionDecl");
       output.attribute("id", identity(function));
       output.attribute("symbol", symbol(function));
+      if (const auto *pattern = function->getTemplateInstantiationPattern())
+        output.attribute("templatePatternSymbol", symbol(pattern));
       output.attribute("name", function->getNameAsString());
       output.attribute("dependent", function->isDependentContext());
       if (function->getReturnType()->isReferenceType()) output.attribute("returnBorrow", "reference");

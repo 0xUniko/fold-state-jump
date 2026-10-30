@@ -35,9 +35,11 @@ export type ClangNode = {
   readonly value?: string;
   readonly castKind?: string;
   readonly symbol?: string;
+  readonly templatePatternSymbol?: string;
   readonly dependent?: boolean;
   readonly referencedMemberDecl?: string;
   readonly callee?: { readonly id: string; readonly name: string; readonly qualifiedName?: string; readonly symbol?: string;
+    readonly templatePatternSymbol?: string;
     readonly definition?: { readonly kind: 'unavailable' } | {
       readonly kind: 'user' | 'system-excluded'; readonly id: string; readonly loc: ClangLocation
     };
@@ -606,33 +608,46 @@ const preferIdentifier = (
   return candidate.order < selected.order ? candidate : selected;
 };
 
-const findIndexedIdentifier = (
+const findIndexedIdentifiers = (
   tree: IdentifierTree | undefined,
-  offset: number,
-  selected?: IndexedIdentifier
-): IndexedIdentifier | undefined => {
-  if (!tree || offset >= tree.maxEnd) return selected;
-  const left = findIndexedIdentifier(tree.left, offset, selected);
+  offset: number
+): readonly IndexedIdentifier[] => {
+  if (!tree || offset >= tree.maxEnd) return [];
+  const left = findIndexedIdentifiers(tree.left, offset);
   const identifier = tree.identifier;
   if (offset < identifier.range.start) return left;
-  const current = offset < identifier.range.end ? preferIdentifier(left, identifier) : left;
-  return findIndexedIdentifier(tree.right, offset, current);
+  return [...left, ...(offset < identifier.range.end ? [identifier] : []), ...findIndexedIdentifiers(tree.right, offset)];
 };
 
-const findNodeAt = (
+const findNodesAt = (
   index: AstIndex,
   file: string,
   offset: number,
   sourceTextByFile: ReadonlyMap<string, string>
-): WrappedNode | undefined => {
+): readonly WrappedNode[] => {
   const identifiers = index.identifiersByFile.get(normalized(file));
-  if (!identifiers) return undefined;
-  return identifiers.unresolved.reduce((selected, { wrapped, order }) => {
+  if (!identifiers) return [];
+  const matches = identifiers.unresolved.reduce<readonly IndexedIdentifier[]>((matches, { wrapped, order }) => {
     const range = identifierRange(wrapped, sourceTextByFile);
     return range && offset >= range.start && offset < range.end
-      ? preferIdentifier(selected, { wrapped, range, order, dependent: isDependent(wrapped) })
-      : selected;
-  }, findIndexedIdentifier(identifiers.tree, offset))?.wrapped;
+      ? [...matches, { wrapped, range, order, dependent: isDependent(wrapped) }] : matches;
+  }, findIndexedIdentifiers(identifiers.tree, offset));
+  const selected = matches.reduce<IndexedIdentifier | undefined>(preferIdentifier, undefined);
+  if (!selected) return [];
+  const owner = enclosingFunction(selected.wrapped, index);
+  const pattern = owner?.wrapped.node.templatePatternSymbol ?? (owner?.wrapped.node.dependent ? owner.wrapped.node.symbol : undefined);
+  if (!pattern) return [selected.wrapped];
+  // One source token can represent multiple concrete functions. Keep each
+  // compiler-proven instantiation and its own parameter IDs/types; never map
+  // an instance's callers onto a different instance's body.
+  const instances = matches.filter((match) => !match.dependent &&
+    match.range.start === selected.range.start && match.range.end === selected.range.end &&
+    enclosingFunction(match.wrapped, index)?.wrapped.node.templatePatternSymbol === pattern);
+  return instances.length ? [...instances.reduce((instances, match) => {
+    const owner = enclosingFunction(match.wrapped, index)!;
+    instances.set(owner.id, preferIdentifier(instances.get(owner.id), match));
+    return instances;
+  }, new Map<string, IndexedIdentifier>()).values()].map((match) => match.wrapped) : [selected.wrapped];
 };
 
 const isDependent = (wrapped: WrappedNode): boolean =>
@@ -1519,7 +1534,11 @@ const callerLinks = (fn: FunctionInfo, index: AstIndex, options: TraceOptions): 
     const caller = enclosingFunction(callsite, index);
     return caller ? [{ prepared: { ast: index.all[0].node, index }, callsite, caller }] : [];
   });
-  return uniqueCallerLinks([...local, ...(options.externalCallers?.get(fn.wrapped.node) ?? [])]);
+  // A pattern relation discovers concrete bodies; it is not permission to
+  // apply a concrete call's arguments to the dependent pattern's body.
+  const external = (options.externalCallers?.get(fn.wrapped.node) ?? []).filter((link) =>
+    !fn.wrapped.node.dependent || link.callsite.node.callee?.symbol === fn.wrapped.node.symbol);
+  return uniqueCallerLinks([...local, ...external]);
 };
 
 const callKey = (call: WrappedNode): string =>
@@ -1856,6 +1875,8 @@ const captureSource = (fn: FunctionInfo, target: ExpressionPath, index: AstIndex
 
 // Language-service ranges identify candidates; the caller's Clang symbol proves
 // the semantic call target, including overloads. A missing symbol is a boundary.
+// For a dependent selection, a compiler-proven pattern relation only admits an
+// available concrete body, which analyzeQuery selects in that body's own AST.
 export const callerLinksAt = (
   prepared: PreparedAst, file: string, start: number, end: number, fn: FunctionInfo
 ): readonly CallerLink[] => {
@@ -1866,7 +1887,12 @@ export const callerLinksAt = (
   const calls = (prepared.index.callsByFile.get(normalized(file)) ?? []).filter((callsite) => {
     const range = nodeRange(callsite);
     const calleeRange = callsite.children[0] && nodeRange(callsite.children[0]);
-    return callsite.file === normalized(file) && !callsite.node.callee?.virtual && callsite.node.callee?.symbol === symbol &&
+    const callee = callsite.node.callee;
+    const instance = callee && prepared.index.functionsById.get(callee.id);
+    const targetMatches = callee?.symbol === symbol || fn.wrapped.node.dependent &&
+      callee?.templatePatternSymbol === symbol && instance?.wrapped.node.templatePatternSymbol === symbol &&
+      instance.wrapped.node.symbol === callee.symbol;
+    return callsite.file === normalized(file) && !callee?.virtual && targetMatches &&
       range && range.start <= start && range.end >= end &&
       // A function reference used as an argument is not a call to that reference.
       !!calleeRange && calleeRange.start < Math.max(end, start + 1) && calleeRange.end > start;
@@ -2214,31 +2240,31 @@ const resolveSelection = (
   ast: ClangNode,
   options: AnalysisOptions,
   prepared?: PreparedAst
-): AnalysisSelection | Extract<AnalysisResult, { readonly _tag: 'AnalysisFailure' }> => {
+): readonly AnalysisSelection[] | Extract<AnalysisResult, { readonly _tag: 'AnalysisFailure' }> => {
   const sourceTextByFile = new Map([
     ...(options.sourceTextByFile ?? []),
     [normalized(options.file), options.sourceText] as const
   ]);
   const index = prepared?.index ?? prepareAst(ast).index;
-  const selected = findNodeAt(index, options.file, options.cursorByteOffset, sourceTextByFile);
-  if (!selected) {
+  const selections = findNodesAt(index, options.file, options.cursorByteOffset, sourceTextByFile);
+  if (selections.length === 0) {
     return { _tag: 'AnalysisFailure', reason: 'No supported variable or member expression found at the cursor.' };
   }
-  const selectedExpression = [...selected.ancestors].reverse().reduce<{ readonly expression: WrappedNode; readonly stopped: boolean }>(
-    (selection, node) => {
-      if (selection.stopped) return selection;
-      if ((TRANSPARENT_EXPRESSIONS as readonly string[]).includes(node.kind)) return selection;
-      const expression = index.wrappedByNode.get(node);
-      return expression && ((node.kind === 'UnaryOperator' && node.opcode === '*') ||
-        node.kind === 'ArraySubscriptExpr' && unwrap(expression.children[0])?.node === selection.expression.node)
-        ? { expression, stopped: false } : { ...selection, stopped: true };
-    }, { expression: selected, stopped: false }).expression;
-  const target = pathAt(selectedExpression, index);
-  const current = enclosingFunction(selected, index);
-  if (!target || !current) {
-    return { _tag: 'AnalysisFailure', reason: 'Could not resolve the expression path or enclosing function.' };
-  }
-  return { index, current, target, sourceTextByFile, selected: selectedExpression };
+  const resolved = selections.flatMap((selected): readonly AnalysisSelection[] => {
+    const selectedExpression = [...selected.ancestors].reverse().reduce<{ readonly expression: WrappedNode; readonly stopped: boolean }>(
+      (selection, node) => {
+        if (selection.stopped) return selection;
+        if ((TRANSPARENT_EXPRESSIONS as readonly string[]).includes(node.kind)) return selection;
+        const expression = index.wrappedByNode.get(node);
+        return expression && ((node.kind === 'UnaryOperator' && node.opcode === '*') ||
+          node.kind === 'ArraySubscriptExpr' && unwrap(expression.children[0])?.node === selection.expression.node)
+          ? { expression, stopped: false } : { ...selection, stopped: true };
+      }, { expression: selected, stopped: false }).expression;
+    const target = pathAt(selectedExpression, index);
+    const current = enclosingFunction(selected, index);
+    return target && current ? [{ index, current, target, sourceTextByFile, selected: selectedExpression }] : [];
+  });
+  return resolved.length ? resolved : { _tag: 'AnalysisFailure', reason: 'Could not resolve the expression path or enclosing function.' };
 };
 
 const mutationResult = (candidates: readonly TraceCandidate[]): AnalysisResult =>
@@ -2263,11 +2289,22 @@ export type AnalysisQuery = {
 export const analyzeQuery = (
   mode: 'origin' | 'mutation', ast: ClangNode, options: AnalysisOptions, prepared?: PreparedAst
 ): AnalysisQuery => {
-  const selection = resolveSelection(ast, options, prepared);
-  if ('_tag' in selection) return { result: selection, boundaries: [] };
-  const { current, target, index, sourceTextByFile } = selection;
+  const selections = resolveSelection(ast, options, prepared);
+  if ('_tag' in selections) return { result: selections, boundaries: [] };
+  const resolved = selections.flatMap((selection) => {
+    if (!selection.current.wrapped.node.dependent) return [selection];
+    const links = options.externalCallers?.get(selection.current.wrapped.node) ?? [];
+    const instances = links.flatMap((link) => {
+      const instances = resolveSelection(link.prepared.ast, options, link.prepared);
+      return '_tag' in instances ? [] : instances.filter((instance) =>
+        instance.current.wrapped.node.templatePatternSymbol === selection.current.wrapped.node.symbol &&
+        instance.current.wrapped.node.symbol === link.callsite.node.callee?.symbol);
+    });
+    return instances.length ? instances : [selection];
+  });
   if (mode === 'origin') {
-    const search = originFor(current, target, index, options, [], options.cursorByteOffset);
+    const search = combineSearches(resolved.map(({ current, target, index }) =>
+      originFor(current, target, index, options, [], options.cursorByteOffset)));
     const candidates = uniqueByPath(search.candidates, (candidate) => candidate.origin, (candidate) => candidate.frames);
     const result: AnalysisResult = candidates.length === 1
       ? { _tag: 'OriginFound', origin: candidates[0].origin, kind: candidates[0].kind, boundary: candidates[0].boundary, frames: candidates[0].frames, returnMapping: candidates[0].returnMapping }
@@ -2275,8 +2312,8 @@ export const analyzeQuery = (
       : { _tag: 'AnalysisFailure', reason: 'No supported initialization, fold seed, or parameter declaration was found for this expression.' };
     return { result, boundaries: search.boundaries, diagnostics: search.diagnostics ?? [], returnMapping: search.returnMapping };
   }
-  const search = traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile,
-    { ...options, observations: [selection.selected] });
+  const search = combineSearches(resolved.map(({ current, target, index, sourceTextByFile, selected }) =>
+    traceMutations(current, target, options.cursorByteOffset, index, sourceTextByFile, { ...options, observations: [selected] })));
   const candidates = uniqueByPath(search.candidates, (candidate) => candidate.mutation, (candidate) => candidate.frames);
   return {
     result: candidates.length > 0 ? mutationResult(candidates) : {

@@ -286,3 +286,12 @@ This is still a prototype, not a complete C++ static analyzer:
 - Fold detection is heuristic and currently targets inline lambdas passed to `fold_left`. A helper shared by several identifiable folds produces separate paths. Stored callbacks, arbitrary fold wrappers, recursive edges, and general pointer provenance remain boundaries.
 
 Unsupported or ambiguous cases should be treated as analysis limitations, not proof that no mutation exists.
+
+For the current `execute(SessionState, Input)` path in nano-infer, run
+`bun test/project-state-sources.ts /path/to/nano-infer`. Set `FSJ_CLANGD=/path/to/clangd`
+to use actual Incoming Calls and References over LSP; otherwise the provider
+responses are deterministic mocks. Both modes verify real native ASTs, concrete
+template identities, all three CLI seed origins and the generation recurrence.
+This does not launch VS Code Extension Host. See
+[the current investigation](docs/cross-function-state-tracing.md) for evidence,
+remaining boundaries and the separate legacy audits invalidated by source refactoring.

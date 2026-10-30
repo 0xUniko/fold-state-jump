@@ -17,3 +17,8 @@ test('cross-file member command adapter and independent caller providers with re
   const result = spawnSync(process.execPath, ['test/members-command.ts'], { encoding: 'utf8', timeout: 60000 });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
+
+test('template declarations and uses retain both concrete navigation paths', { skip: !existsSync('native/build/fold-state-jump-ast') }, () => {
+  const result = spawnSync(process.execPath, ['test/template-command.ts'], { encoding: 'utf8', timeout: 60000 });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
