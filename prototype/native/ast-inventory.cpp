@@ -885,7 +885,8 @@ public:
             Found = F;
           }
         }
-        if (Found && Found->getNumParams() == CE->getNumArgs())
+        if (Found && U->getName() == Found->getDeclName() &&
+            Found->getNumParams() == CE->getNumArgs())
           FD = Found;
       }
     }
