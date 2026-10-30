@@ -52,7 +52,7 @@ export interface RawEvent {
   syntheticRelation?: string;
   returnEvent?: number;
   lambda?: string;
-  args?: Array<{ index: number; storage?: string; param?: string; paramUsr?: string; paramType?: string; text?: string }>;
+  args?: Array<{ index: number; storage?: string; value?: string; param?: string; paramUsr?: string; paramType?: string; text?: string }>;
 }
 
 export interface Event extends SourceLoc {
@@ -120,9 +120,32 @@ export interface FunctionInfo {
   params: Array<{ name: string; usr: string; type: string; index: number; line?: number; col?: number }>;
   bodyStart?: number;
   bodyEnd?: number;
+  declFile?: string;
+  declLine?: number;
+  declColumn?: number;
+  declText?: string;
   patternUsr?: string;
   templateArgs?: string;
   isLambda?: boolean;
+}
+
+export interface FieldInfo {
+  name: string;
+  usr: string;
+  type: string;
+  index: number;
+  line?: number;
+  col?: number;
+}
+
+export interface RecordInfo {
+  usr: string;
+  name: string;
+  qualified: string;
+  file: string;
+  line: number;
+  column: number;
+  fields: FieldInfo[];
 }
 
 export interface CfgBlock {
@@ -224,6 +247,9 @@ const isDescendant = (child: string, parent: string): boolean =>
 
 const dynamicNormalize = (s: string): string => s.replace(/\[[^\]]*\]/g, '[*]');
 
+const storageSuffix = (storage: string, base: string): string =>
+  base && isDescendant(storage, base) ? storage.slice(base.length) : '';
+
 /** A write to d supplies q only when d is q or a parent of q. */
 export const defSupplies = (d: string, q: string): boolean => {
   if (!d || !q) return false;
@@ -234,6 +260,13 @@ export const defSupplies = (d: string, q: string): boolean => {
 };
 
 const unique = <T,>(xs: T[]): T[] => [...new Set(xs)];
+
+/** Target kinds that constitute alternative state sources.  Presentation nodes
+ *  (calls, returns, assignments to the query site itself) are provenance
+ *  evidence, not competing origins. */
+const SOURCE_KINDS = new Set(['write', 'mutation', 'prior-write', 'prior-history',
+  'fold-seed', 'fold-backedge', 'fold-result', 'loop-recurrence', 'pointee-write',
+  'aggregate-field', 'field']);
 
 interface FlowState { values: Map<string, Set<number>> }
 
@@ -271,6 +304,8 @@ export class Program {
   readonly aliases = new Map<string, Map<string, string>>();
   readonly callsByCallee = new Map<string, Event[]>();
   readonly capturesByLambda = new Map<string, Event[]>();
+  readonly records = new Map<string, RecordInfo>();
+  readonly pointerAliases = new Map<string, string>();
   readonly instancesByPattern = new Map<string, string[]>();
   private readonly flowCache = new Map<string, LocalFlow>();
   private pseudoId = -1;
@@ -286,6 +321,8 @@ export class Program {
           usr: r.usr, qualified: r.qualified, name: r.name, file: r.file,
           line: r.line, column: r.col, params: r.params ?? [],
           bodyStart: r.bodyStart, bodyEnd: r.bodyEnd,
+          declFile: r.declFile, declLine: r.declLine, declColumn: r.declCol,
+          declText: r.declText,
           patternUsr: r.patternUsr, templateArgs: r.templateArgs, isLambda: r.isLambda,
         };
         this.functions.set(f.usr, f);
@@ -333,6 +370,9 @@ export class Program {
           succ: (r.succ ?? []).map((x: any) => x.id), events: r.events ?? [],
           terminator: r.terminator });
         this.cfg.set(r.fn, by);
+      } else if (r.kind === 'record') {
+        this.records.set(r.usr, { usr: r.usr, name: r.name, qualified: r.qualified,
+          file: r.file, line: r.line, column: r.col ?? 0, fields: r.fields ?? [] });
       } else if (r.kind === 'branch') {
         this.branches.push({ fn: r.fn, file: r.file, line: r.line, offset: r.offset,
           condition: r.condition ?? '', op: r.op ?? '', lhsText: r.lhsText ?? '',
@@ -349,22 +389,80 @@ export class Program {
       }
       f.returns = lam.filter((e) => e.kind === 'return');
     }
+    // Address-of initialization establishes a pointer-member pointee identity.
+    const addressOf = new Set<string>();
+    for (const e of this.events) if (e.kind === 'address-of' && e.storage) addressOf.add(e.fn + '|' + e.storage);
+    for (const e of this.events) {
+      if (!e.storage || !e.value) continue;
+      if (e.kind !== 'write' && e.kind !== 'fold-seed' && e.kind !== 'construct') continue;
+      if (e.storage === e.value) continue;
+      if (!addressOf.has(e.fn + '|' + e.value)) continue;
+      if (isDescendant(e.storage, e.value)) continue;
+      this.pointerAliases.set(e.storage, e.value);
+    }
   }
 
-  resolveSite(file: string, line: number, column: number, preferWrite = false): Event | undefined {
+  resolvePointer(p: string, depth = 0): string {
+    if (!p || depth > 8) return p;
+    for (const [dst, src] of this.pointerAliases) {
+      if (p === dst) return this.resolvePointer(src, depth + 1);
+      if (p.startsWith(dst + '->'))
+        return this.resolvePointer(src + '.' + p.slice(dst.length + 2), depth + 1);
+    }
+    return p;
+  }
+
+  /**
+   * A source position inside a template (or a header included by several TUs)
+   * denotes one semantic site with several concrete activation contexts.  A
+   * source-level query must therefore return every event instance at that
+   * position, not an arbitrary first one.  Non-template positions naturally
+   * yield a single event.
+   */
+  resolveSites(file: string, line: number, column: number, preferWrite = false): Event[] {
     const base = path.basename(file);
     const same = this.events.filter((e) => path.basename(e.file) === base && e.line === line);
     const priority = (e: Event): number => e.kind === 'read' ? (preferWrite ? 2 : 0) :
       e.kind === 'write' ? (preferWrite ? 0 : 1) :
       e.kind === 'alias' ? 2 : e.kind === 'fold-seed' ? 5 : 3;
+    const order = (a: Event, b: Event): number =>
+      priority(a) - priority(b) || (a.endOffset - a.offset) - (b.endOffset - b.offset) ||
+      b.storage.length - a.storage.length;
     const exact = same.filter((e) => e.column <= column && column <= Math.max(e.endColumn, e.column))
-      .sort((a, b) => priority(a) - priority(b) || (a.endOffset - a.offset) - (b.endOffset - b.offset) || b.storage.length - a.storage.length);
-    if (exact.length) return exact[0];
-    const nearest = same.filter((e) => e.storage || e.kind === 'fold-seed' || e.kind === 'alias' ||
-      e.kind === 'write' || e.kind === 'call' || e.kind === 'return')
-      .sort((a, b) => Number(Boolean(b.storage)) - Number(Boolean(a.storage)) ||
-        Math.abs(a.column - column) - Math.abs(b.column - column));
-    return nearest[0];
+      .sort(order);
+    const pool = exact.length ? exact : same.filter((e) => e.storage || e.kind === 'fold-seed' ||
+      e.kind === 'alias' || e.kind === 'write' || e.kind === 'call' || e.kind === 'return');
+    const best = exact.length ? exact[0] : pool.sort((a, b) =>
+      Number(Boolean(b.storage)) - Number(Boolean(a.storage)) ||
+      Math.abs(a.column - column) - Math.abs(b.column - column))[0];
+    if (!best) return [];
+    // Keep the semantic expression selected by the ranking, plus the same
+    // expression in every other instantiation of the enclosing function.
+    return pool.filter((e) => e.kind === best.kind && e.column === best.column &&
+      e.endOffset === best.endOffset && e.expr === best.expr);
+  }
+
+  resolveSite(file: string, line: number, column: number, preferWrite = false): Event | undefined {
+    return this.resolveSites(file, line, column, preferWrite)[0];
+  }
+
+  findPointerFieldDecl(storage: string): Event | undefined {
+    const [root, suffix] = splitPath(storage);
+    const name = suffix.startsWith('.') ? suffix.slice(1) : suffix;
+    if (!root || !name) return undefined;
+    const recordMatches = [...root.matchAll(/@S@([A-Za-z_]\w*)/g)];
+    const recordName = recordMatches.length ? recordMatches[recordMatches.length - 1][1] : undefined;
+    for (const record of this.records.values()) {
+      if (!root.includes(record.usr) && record.name !== recordName) continue;
+      const field = record.fields.find((f) => f.name === name && f.line);
+      if (!field?.line) continue;
+      const e = this.pseudo('field', record.usr, 'decl:' + field.usr, '', this.events[0], 'pointer-field');
+      e.file = record.file; e.line = field.line; e.column = field.col ?? 1;
+      e.offset = 0; e.endOffset = 0; e.endLine = e.line; e.endColumn = e.column;
+      e.expr = field.type.trimEnd() + field.name;
+      return e;
+    }
+    return undefined;
   }
 
   lambdaParam(fn: string): string {
@@ -375,11 +473,13 @@ export class Program {
   resolve(fn: string, p: string, depth = 0): string {
     if (!p || depth > 8) return p;
     const aliases = this.aliases.get(fn);
-    if (!aliases) return p;
-    for (const [src, dst] of [...aliases].sort((a, b) => b[0].length - a[0].length)) {
-      if (isDescendant(p, src)) return this.resolve(fn, dst + p.slice(src.length), depth + 1);
+    if (aliases) {
+      for (const [src, dst] of [...aliases].sort((a, b) => b[0].length - a[0].length)) {
+        if (isDescendant(p, src)) return this.resolve(fn, dst + p.slice(src.length), depth + 1);
+      }
     }
-    return p;
+    const pointer = this.resolvePointer(p, depth);
+    return pointer === p ? p : this.resolve(fn, pointer, depth + 1);
   }
 
   flow(fn: string): LocalFlow { return this.flowCache.get(fn) ?? this.makeFlow(fn); }
@@ -501,7 +601,15 @@ export class LocalFlow {
         e.kind === 'copy' || e.kind === 'forward') return;
     if (e.kind === 'write' || e.kind === 'call-effect' || e.kind === 'method-mutation' ||
         e.kind === 'fold-seed' || e.kind === 'fold-result') {
-      if (e.storage) replaceKilled(st, this.prog.resolve(this.fn, e.storage), e.id);
+      if (!e.storage) return;
+      const p = this.prog.resolve(this.fn, e.storage);
+      if (e.subkind === 'aggregate') {
+        // The aggregate's field writes are emitted after this event; do not
+        // discard them, but make the whole-object write itself reachable.
+        const set = st.values.get(p) ?? new Set<number>();
+        set.add(e.id);
+        st.values.set(p, set);
+      } else replaceKilled(st, p, e.id);
     }
   }
 
@@ -541,7 +649,26 @@ export class LocalFlow {
   defsBefore(e: Event, p: string): Event[] {
     const st = this.before(e);
     const ids = new Set<number>();
-    for (const [key, vals] of st.values) if (defSupplies(key, p)) vals.forEach((id) => ids.add(id));
+    for (const [rawKey, vals] of st.values) {
+      const key = this.prog.resolve(this.fn, rawKey);
+      if (defSupplies(key, p)) vals.forEach((id) => ids.add(id));
+    }
+    return [...ids].map((id) => this.prog.byId.get(id)).filter((x): x is Event => Boolean(x));
+  }
+
+  /**
+   * Field writes contribute to the value of the enclosing aggregate.  A whole
+   * object read therefore observes writes to its subobjects even though those
+   * writes did not overwrite the object as a whole.
+   */
+  defsContainedUnder(e: Event, p: string, limit = 64): Event[] {
+    const st = this.before(e);
+    const ids = new Set<number>();
+    for (const [rawKey, vals] of st.values) {
+      const key = this.prog.resolve(this.fn, rawKey);
+      if (key === p || !isDescendant(key, p)) continue;
+      vals.forEach((id) => { if (ids.size < limit) ids.add(id); });
+    }
     return [...ids].map((id) => this.prog.byId.get(id)).filter((x): x is Event => Boolean(x));
   }
 }
@@ -557,19 +684,59 @@ export class Engine {
 
   static fromPrograms(programs: Program[]): Engine { return new Engine(programs); }
 
-  query(q: { file: string; line: number; column: number; mode: Mode }): QueryResult {
+  query(q: { file: string; line: number; column: number; mode: Mode; maxSteps?: number }): QueryResult {
     const file = path.resolve(q.file);
     const preferWrite = q.mode === 'mutation' || q.mode === 'history';
     const candidates = [...this.programs.values()]
-      .map((p) => ({ p, e: p.resolveSite(file, q.line, q.column, preferWrite) }))
-      .filter((x) => x.e) as Array<{ p: Program; e: Event }>;
+      .flatMap((p) => p.resolveSites(file, q.line, q.column, preferWrite).map((e) => ({ p, e })));
     if (!candidates.length) throw new Error('no inventory event at requested source position');
-    const { p, e } = candidates.sort((a, b) => (b.p.byFn.get(b.e.fn)?.length ?? 0) - (a.p.byFn.get(a.e.fn)?.length ?? 0))[0];
-    const tracer = new Tracer(p, e, q.mode);
-    tracer.run();
-    return tracer.result();
+    const results = candidates.map(({ p, e }) => {
+      const tracer = new Tracer(p, e, q.mode, q.maxSteps);
+      tracer.run();
+      return tracer.result();
+    });
+    return results.length === 1 ? results[0] : mergeActivations(results);
   }
 }
+
+const mergeKey = (t: Target): string => [t.file, t.line, t.column, t.relation, t.kind, t.anchor].join('|');
+
+/**
+ * Merge the answers of several concrete activations of one source site.
+ * The union is a may-answer: the same source expression may observe different
+ * objects in different instantiations, so it can not be presented as Exact.
+ */
+const mergeActivations = (results: QueryResult[]): QueryResult => {
+  const first = results[0];
+  const targets = new Map<string, Target>();
+  const boundaries = new Map<string, Boundary>();
+  const provenance = new Map<string, Edge>();
+  for (const r of results) {
+    for (const t of r.targets) {
+      const key = mergeKey(t);
+      const current = targets.get(key);
+      if (current) current.conditions = unique([...current.conditions, ...t.conditions]);
+      else targets.set(key, { ...t, conditions: [...t.conditions] });
+    }
+    for (const b of r.boundaries) boundaries.set([b.file, b.line, b.reason].join('|'), b);
+    for (const e of r.provenance) provenance.set(JSON.stringify(e), e);
+  }
+  const real = [...targets.values()].filter((t) => SOURCE_KINDS.has(t.kind));
+  const kind: ResultKind = real.length > 1 ? 'Multiple'
+    : real.length === 1 ? 'Conditional'
+    : boundaries.size > 0 ? 'Boundary'
+    : first.kind === 'NoPriorMutation' ? 'NoPriorMutation'
+    : first.kind;
+  return {
+    query: first.query,
+    kind,
+    targets: [...targets.values()],
+    provenance: [...provenance.values()],
+    boundaries: [...boundaries.values()],
+    limitations: unique([...results.flatMap((r) => r.limitations),
+      'source site is instantiated in multiple activation contexts; targets are a union']),
+  };
+};
 
 export class Tracer {
   readonly p: Program;
@@ -581,15 +748,20 @@ export class Tracer {
   readonly conditions: string[] = [];
   private visited = new Set<string>();
   private originSeen = new Set<string>();
+  private returnSeen = new Set<string>();
   private nodes = 0;
   private loop = false;
   private conditional = false;
   private emptyState = false;
+  private budgetReported = false;
 
-  constructor(p: Program, site: Event, mode: Mode) {
+  private readonly maxSteps: number;
+
+  constructor(p: Program, site: Event, mode: Mode, maxSteps = 1200) {
     this.p = p;
     this.site = site;
     this.mode = mode;
+    this.maxSteps = maxSteps;
     this.conditions = p.branchGuard(site.fn, site).conditions;
   }
 
@@ -628,12 +800,37 @@ export class Tracer {
 
   run(): void {
     this.addTarget(this.site, 'selected', 'selected', false);
-    if (this.mode === 'origin' || this.mode === 'provenance') this.origin(this.site, 0, 'selected');
-    else this.mutation(this.site, this.mode === 'history');
+    if (this.mode === 'origin' || this.mode === 'provenance') {
+      this.variantGuards();
+      this.origin(this.site, 0, 'selected');
+      this.forwardTransfers();
+    } else this.mutation(this.site, this.mode === 'history');
+  }
+
+  private overBudget(): boolean {
+    if (this.nodes++ <= this.maxSteps) return false;
+    if (!this.budgetReported) {
+      this.budgetReported = true;
+      this.addBoundary(this.site, 'analysis budget exhausted');
+    }
+    return true;
   }
 
   private origin(e: Event, depth: number, relation: string): void {
-    if (depth > 18 || this.nodes++ > 400) { this.addBoundary(e, 'analysis budget exhausted'); return; }
+    if (depth > 18 || this.overBudget()) return;
+    // A write/initialization is itself the definition: its value comes from the
+    // assigned expression, not from an earlier reaching definition.
+    if (e.kind === 'write' || e.kind === 'fold-seed' || e.kind === 'call-effect' ||
+        e.kind === 'method-mutation') {
+      this.addTarget(e, 'write', 'mutation');
+      if (e.value) this.followValue(e, e.value, depth + 1, 'write-value');
+      else {
+        // Aggregate assignment: its field writes immediately following the
+        // whole-object write carry the member values.
+        this.aggregateFields(e);
+      }
+      return;
+    }
     const key = e.fn + '|' + e.storage + '|' + relation;
     if (this.originSeen.has(key)) return;
     this.originSeen.add(key);
@@ -658,12 +855,30 @@ export class Tracer {
     if (storage.startsWith('fold:')) { this.expandFoldResult(e, storage, depth); return; }
     if (storage.includes('[*:') || storage.includes('[at:'))
       this.addBoundary(e, 'dynamic container index may alias other elements', storage);
-    const defs = this.p.flow(e.fn).defsBefore(e, storage);
+    const flow = this.p.flow(e.fn);
+    const defs = [...new Map([...flow.defsBefore(e, storage),
+      ...flow.defsContainedUnder(e, storage)].map((d) => [d.id, d])).values()]
+      .sort((a, b) => Number(a.kind === 'param') - Number(b.kind === 'param'));
     if (!defs.length) { this.addBoundary(e, 'no reaching definition in this translation unit'); return; }
     for (const d of defs) this.visitDef(d, storage, e, depth, relation);
   }
 
+  private aggregateFields(e: Event): number {
+    const storage = this.p.resolve(e.fn, e.storage);
+    let fields = 0;
+    for (const x of this.p.byFn.get(e.fn) ?? []) {
+      if (x.id === e.id || x.block !== e.block || x.order <= e.order ||
+          x.order > e.order + 48 || x.kind !== 'write') continue;
+      if (!isDescendant(this.p.resolve(x.fn, x.storage), storage)) continue;
+      this.edge(x, e, 'aggregate-field', x.storage);
+      this.addTarget(x, 'aggregate-field', 'field');
+      fields++;
+    }
+    return fields;
+  }
+
   private visitDef(d: Event, storage: string, use: Event, depth: number, relation: string): void {
+    if (this.overBudget()) return;
     if (d.kind === 'param') { this.followParam(d, storage, depth); return; }
     if (d.kind === 'fold-seed' || d.kind === 'fold-backedge') this.addFoldParameterTarget(d);
     if (d.kind === 'capture') { this.followCapture(d, storage, depth); return; }
@@ -679,8 +894,8 @@ export class Tracer {
       this.loop = true; this.conditional = true;
       this.edge(d, use, 'fold-backedge', 'previous iteration returned accumulator');
       this.addTarget(d, 'fold-backedge', 'loop-recurrence', true, ['fold iteration > 0']);
-      const ret = this.p.byId.get(d.raw.id as number);
-      if (ret) this.followReturn(r0(d), depth + 1);
+      const ret = this.previousReturn(d);
+      if (ret) this.followReturnSite(ret, depth + 1);
       return;
     }
     if (d.kind === 'fold-result') { this.expandFoldResult(d, storage, depth); return; }
@@ -692,14 +907,16 @@ export class Tracer {
     if (d.kind === 'write') {
       this.edge(d, use, 'reaching-write', d.subkind);
       this.addTarget(d, 'write', 'write');
-      const suffix = storage.startsWith(d.storage) ? storage.slice(d.storage.length) : '';
+      const suffix = storageSuffix(storage, this.p.resolve(d.fn, d.storage));
       const value = suffix && d.value ? d.value + suffix : d.value;
       if (value === 'increment' || value === 'compound' || value === storage) {
         this.loop = true;
         const prev = this.p.flow(d.fn).defsBefore(d, storage).filter((x) => x.id !== d.id);
         for (const x of prev) this.visitDef(x, storage, use, depth + 1, 'loop-recurrence');
       } else if (value) this.followValue(d, value, depth + 1, 'write-value');
-      else this.addBoundary(d, 'write value is opaque');
+      else {
+        if (!this.aggregateFields(d)) this.addBoundary(d, 'write value is opaque');
+      }
       return;
     }
     this.addBoundary(d, 'unmodeled definition');
@@ -720,18 +937,22 @@ export class Tracer {
   }
 
   private followValue(src: Event, value: string, depth: number, relation: string): void {
-    if (depth > 18 || this.nodes++ > 400) { this.addBoundary(src, 'analysis budget exhausted'); return; }
+    if (depth > 18 || this.overBudget()) return;
     if (!value) { this.addBoundary(src, 'empty value provenance'); return; }
     if (value.startsWith('call:')) { this.followCall(src, value, depth); return; }
     if (value.startsWith('expr:')) { this.addBoundary(src, 'opaque expression value: ' + value.slice(5)); return; }
     if (value.startsWith('fold:')) { this.expandFoldResult(src, src.storage, depth); return; }
     if (value.startsWith('return:')) return;
-    const defs = this.p.flow(src.fn).defsBefore(src, value);
+    const flow = this.p.flow(src.fn);
+    const defs = [...new Map([...flow.defsBefore(src, value),
+      ...flow.defsContainedUnder(src, value)].map((d) => [d.id, d])).values()]
+      .sort((a, b) => Number(a.kind === 'param') - Number(b.kind === 'param'));
     if (!defs.length) { this.addBoundary(src, 'no reaching definition for transferred value', value); return; }
     for (const d of defs) this.visitDef(d, value, src, depth, relation);
   }
 
   private followParam(d: Event, storage: string, depth: number): void {
+    if (this.overBudget()) return;
     const fn = this.p.functions.get(d.fn);
     let idx = -1;
     for (const p of fn?.params ?? []) if (d.storage === 'decl:' + p.usr || d.storage.startsWith('decl:' + p.usr + '.')) { idx = p.index; break; }
@@ -740,13 +961,13 @@ export class Tracer {
       if (idx !== 0) { this.addBoundary(d, 'fold element identity is not statically fixed'); return; }
       this.loop = true; this.conditional = true;
       const acc = this.p.lambdaParam(d.fn);
-      const suffix = storage.startsWith(d.storage) ? storage.slice(d.storage.length) : '';
+      const suffix = storageSuffix(storage, d.storage);
       const guard = this.p.branchGuard(d.fn, this.site);
       if (!guard.first) {
         for (const s of fold.seedEvents) {
           if (!suffix || defSupplies(s.storage, acc + suffix)) {
             this.edge(d, s, 'fold-seed-parameter', 'first iteration accumulator');
-            this.followValue(s, s.value, depth + 1, 'fold-seed');
+            this.followValue(s, s.value + suffix, depth + 1, 'fold-seed');
           }
         }
       }
@@ -762,16 +983,17 @@ export class Tracer {
     const sites: Array<{ call: Event; arg: string }> = [];
     for (const key of [d.fn, ...(this.p.instancesByPattern.get(d.fn) ?? [])]) {
       for (const call of this.p.callsByCallee.get(key) ?? []) {
-        if (idx >= 0 && idx < call.args.length) sites.push({ call, arg: call.args[idx].storage ?? '' });
+        if (idx >= 0 && idx < call.args.length) sites.push({ call, arg: call.args[idx].storage ?? call.args[idx].value ?? '' });
         else if (idx < 0 && call.receiver) sites.push({ call, arg: call.receiver });
       }
     }
     if (!sites.length) { this.addBoundary(d, 'no call site in analyzed translation units'); return; }
     if (sites.length > 1) this.conditional = true;
+    const suffix = storageSuffix(storage, d.storage);
     for (const { call, arg } of sites.slice(0, 8)) {
       if (!arg) { this.addBoundary(call, 'call argument has no storage path'); continue; }
       this.edge(call, d, 'argument-to-parameter', 'argument -> parameter');
-      const read = this.p.pseudo('read', call.fn, arg, '', call, 'argument');
+      const read = this.p.pseudo('read', call.fn, arg + suffix, '', call, 'argument');
       this.origin(read, depth + 1, 'argument');
     }
     this.addTarget(d, 'parameter-binding', 'parameter');
@@ -788,11 +1010,120 @@ export class Tracer {
     this.origin(read, depth + 1, 'capture');
   }
 
-  private followReturn(r: Event, depth: number, suffix = ''): void {
-    if (!r.value) { this.addBoundary(r, 'return value is empty'); return; }
+  /**
+   * An aggregate `return {a, b}` has an empty whole-value expression but emits
+   * one return-field per member.  Those fields are the actual value edges.
+   */
+  private followReturnSite(r: Event, depth: number, suffix = ''): void {
     if (depth > 28) return;
-    this.edge(r, undefined, 'return-value', r.value + suffix);
-    this.followValue(r, r.value + suffix, depth + 1, 'return');
+    const key = [r.fn, r.line, r.offset, suffix].join('|');
+    if (this.returnSeen.has(key)) return;
+    this.returnSeen.add(key);
+    if (r.value) {
+      this.edge(r, undefined, 'return-value', r.value + suffix);
+      this.followValue(r, r.value + suffix, depth + 1, 'return');
+      return;
+    }
+    const fields = (this.p.byFn.get(r.fn) ?? []).filter((e) =>
+      e.kind === 'return-field' && e.line === r.line);
+    if (!fields.length) { this.addBoundary(r, 'return value is empty'); return; }
+    for (const f of fields) {
+      this.edge(f, r, 'return-field', f.storage);
+      this.addTarget(f, 'return-field', 'return');
+      this.followValue(f, f.value, depth + 1, 'return-field');
+    }
+  }
+
+  private synthetic(fn: string, file: string, line: number, column: number,
+                    expr: string, kind: string): Event {
+    const anchor = this.p.byFn.get(fn)?.[0] ?? this.site;
+    const e = this.p.pseudo(kind, fn, '', '', anchor, kind);
+    e.file = file; e.line = line; e.column = column;
+    e.offset = 0; e.endOffset = 0; e.endLine = line; e.endColumn = column;
+    e.expr = expr;
+    return e;
+  }
+
+  /**
+   * A higher-order standard-library algorithm computes its result from the
+   * returns of the callables nested in its source expression.  This is a
+   * generic contract for ranges/std algorithms, not a business-specific rule.
+   */
+  private isRangePipeline(call: Event): boolean {
+    return /\branges::|\bstd::ranges::/.test(call.callee) ||
+      /ranges::(?:views|_to_|to_container|fold_left)/.test(call.expr);
+  }
+
+  private nestedLambdas(call: Event, start: number, end: number): Event[] {
+    const out: Event[] = [];
+    for (const fn of this.p.functions.values()) {
+      if (!fn.isLambda || fn.file !== call.file || fn.bodyStart === undefined ||
+          fn.bodyEnd === undefined) continue;
+      if (fn.bodyStart >= start && fn.bodyEnd <= end) {
+        const anchor = this.p.byFn.get(fn.usr)?.[0];
+        if (anchor) out.push(anchor);
+      }
+    }
+    return out;
+  }
+
+  private followAlgorithmLambdas(call: Event, src: Event, depth: number): void {
+    const start = Math.min(...[call.offset, src.offset].filter((x) => x > 0));
+    const end = Math.max(call.endOffset || 0, src.endOffset || 0);
+    if (start && end) {
+      // Conversion/adaptor calls rewritten by the library are part of the
+      // pipeline value even when the outer operator has no source location.
+      for (const e of this.p.byFn.get(src.fn) ?? []) {
+        if (e.kind !== 'call' || e.id === call.id || !e.offset) continue;
+        if (e.offset < start || e.endOffset > end) continue;
+        if (!/\branges::|\bstd::ranges::/.test(e.callee)) continue;
+        this.addTarget(e, 'algorithm-call', 'call');
+      }
+    }
+    for (const anchor of this.nestedLambdas(call, start, end)) {
+      for (const r of this.p.byFn.get(anchor.fn) ?? []) {
+        if (r.kind !== 'return' && r.kind !== 'return-field') continue;
+        this.edge(r, call, 'algorithm-element-return', r.value);
+        this.addTarget(r, 'transform-return', 'return');
+        this.followValue(r, r.value, depth + 1, 'transform-return');
+      }
+    }
+  }
+
+  /**
+   * A constructed variant alternative is guarded earlier in the function by a
+   * `holds_alternative<T>` / `get_if<T>` test on the same alternative type.
+   * That test is path evidence for the new alternative.
+   */
+  private variantGuards(): void {
+    const m = /^\s*([A-Za-z_]\w*)\s*\{/.exec(this.site.expr) ||
+      /\b([A-Za-z_]\w*)\s*\{\s*\}/.exec(this.site.expr);
+    const alternative = m?.[1];
+    if (!alternative) return;
+    for (const b of this.p.branches) {
+      if (b.file !== this.site.file || b.line >= this.site.line) continue;
+      if (!new RegExp(`(?:holds_alternative|get_if|get)\\s*<\\s*${alternative}\\s*>`).test(b.condition)) continue;
+      const condition = (this.p.byFn.get(this.site.fn) ?? []).find((e) =>
+        e.kind === 'branch-condition' && e.line === b.line);
+      if (condition) this.addTarget(condition, 'path-condition', 'condition');
+      else {
+        const synthetic = this.synthetic(this.site.fn, b.file, b.line, 1,
+          b.condition, 'condition');
+        this.addTarget(synthetic, 'path-condition', 'condition');
+      }
+    }
+  }
+
+  private forwardTransfers(): void {
+    const storage = this.p.resolve(this.site.fn, this.site.storage);
+    if (!storage || storage.endsWith('.<ret>')) return;
+    for (const e of this.p.byFn.get(this.site.fn) ?? []) {
+      if (e.offset <= this.site.offset) continue;
+      if (e.kind !== 'move' && e.kind !== 'return-field' && e.kind !== 'return') continue;
+      if (e.storage !== storage && e.value !== storage) continue;
+      this.edge(this.site, e, 'value-transfer', e.kind);
+      this.addTarget(e, 'value-transfer', 'transfer');
+    }
   }
 
   private followCall(src: Event, value: string, depth: number): void {
@@ -807,10 +1138,20 @@ export class Tracer {
       this.origin(read, depth + 1, 'move-argument');
       return;
     }
-    const callee = call.calleeUsr;
-    if (!callee || !this.p.functions.has(callee)) { this.addBoundary(call, 'external or indirect callee'); return; }
     const suffix = value.slice(m[0].length);
+    this.addTarget(call, 'call-result', 'call');
+    if (this.isRangePipeline(call)) this.followAlgorithmLambdas(call, src, depth);
+    const callee = call.calleeUsr;
+    const calleeInfo = callee ? this.p.functions.get(callee) : undefined;
+    if (!calleeInfo) { this.addBoundary(call, 'external or indirect callee'); return; }
     this.edge(call, src, 'call-return', call.callee);
+    // The declared transformation itself is part of the value's provenance.
+    const declaration = this.synthetic(calleeInfo.usr,
+      calleeInfo.declFile || calleeInfo.file,
+      calleeInfo.declLine ?? calleeInfo.line,
+      calleeInfo.declColumn ?? calleeInfo.column,
+      calleeInfo.declText || calleeInfo.name, 'callee-declaration');
+    this.addTarget(declaration, 'callee-declaration', 'function');
     const returns = (this.p.byFn.get(callee) ?? []).filter((e) => e.kind === 'return-field');
     const fields = returns.filter((e) => !suffix || e.storage.endsWith(suffix));
     if (fields.length) {
@@ -826,7 +1167,7 @@ export class Tracer {
     if (!plain.length) { this.addBoundary(call, 'callee has no return event'); return; }
     for (const r of plain) {
       this.addTarget(r, 'return-value', 'return');
-      this.followReturn(r, depth + 1);
+      this.followReturnSite(r, depth + 1);
     }
   }
 
@@ -846,7 +1187,58 @@ export class Tracer {
     for (const r of f.returns) {
       this.edge(d, r, 'fold-recurrence', 'last iteration returned accumulator');
       this.addTarget(r, 'fold-return', 'fold-return');
-      this.followValue(r, r.value, depth + 1, 'fold-return');
+      this.followReturnSite(r, depth + 1);
+    }
+  }
+
+  private previousReturn(backedge: Event): Event | undefined {
+    for (const f of this.p.folds.values()) {
+      if (f.returns.some((r) => r.fn === backedge.fn)) {
+        const acc = this.p.lambdaParam(f.lambdaUsr);
+        if (acc && defSupplies(backedge.storage, acc)) return f.returns[0];
+      }
+    }
+    return this.p.byFn.get(backedge.fn)?.find((x) => x.kind === 'return');
+  }
+
+  /** The value currently in a storage may be consumed by a later move/read. */
+  /**
+   * `&obj` exposes obj for mutation through the pointer value.  The mutations
+   * live in the fold that seeds its pointer fields with that address, so the
+   * pointee writes are the history of the queried object.
+   */
+  private pointerMutation(e: Event, pointee: string): void {
+    const folds = [...this.p.folds.values()].filter((f) =>
+      f.seedEvents.some((s) => s.value === this.site.storage ||
+        this.p.resolve(s.fn, s.storage) === this.site.storage));
+    if (!folds.length) return;
+    for (const f of folds) {
+      for (const seed of f.seedEvents) {
+        if (seed.value !== this.site.storage && this.p.resolve(seed.fn, seed.storage) !== this.site.storage) continue;
+        const field = this.p.findPointerFieldDecl(seed.storage);
+        if (field) this.addTarget(field, 'pointer-field', 'declaration', true, ['pointee field']);
+      }
+      for (const x of this.p.byFn.get(f.lambdaUsr) ?? []) {
+        if (x.kind !== 'write' && x.kind !== 'method-mutation' && x.kind !== 'call-effect') continue;
+        const target = this.p.resolve(x.fn, x.storage);
+        if (!isDescendant(target, pointee) && !isDescendant(pointee, target)) continue;
+        this.edge(x, this.site, 'pointee-write', target);
+        this.addTarget(x, 'pointee-write', 'mutation');
+      }
+    }
+  }
+
+  private priorConsumption(e: Event, storage: string): void {
+    const block = this.p.cfg.get(e.fn)?.get(e.block);
+    for (const id of block?.events ?? []) {
+      const x = this.p.byId.get(id);
+      if (!x || x.order >= e.order) continue;
+      if (x.kind !== 'move' && x.kind !== 'read') continue;
+      const xStorage = this.p.resolve(x.fn, x.storage);
+      if (!isDescendant(xStorage, storage) && !isDescendant(storage, xStorage)) continue;
+      if (x.kind === 'read' && x.subkind !== 'deref' && x.subkind !== 'member') continue;
+      this.addTarget(x, 'value-consumption', 'transfer');
+      if (x.value) this.followValue(x, x.value, 0, 'consumption');
     }
   }
 
@@ -855,6 +1247,12 @@ export class Tracer {
     if (!storage) { this.addBoundary(e, 'selection has no storage identity'); return; }
     if (storage.startsWith('call:')) { this.followCall(e, storage, 0); return; }
     if (storage.startsWith('fold:')) { this.expandFoldResult(e, storage, 0); return; }
+    if (this.site.kind === 'address-of') {
+      this.pointerMutation(e, storage);
+      return;
+    }
+    if (e.kind === 'write' || e.kind === 'method-mutation' || e.kind === 'call-effect')
+      this.priorConsumption(e, storage);
     if (storage.includes('[*:') || storage.includes('[at:'))
       this.addBoundary(e, 'dynamic container index may alias other elements', storage);
     const defs = this.p.flow(e.fn).defsBefore(e, storage);
@@ -881,9 +1279,10 @@ export class Tracer {
         if (guard.first) continue;
         this.loop = true; this.conditional = true;
         this.addTarget(d, 'fold-backedge', 'loop-recurrence', true, ['fold iteration > 0']); real++;
-        if (history) {
-          const ret = this.p.byId.get(d.raw.id as number);
-          if (ret) this.historyFrom(ret, storage, 0);
+        const ret = this.previousReturn(d);
+        if (ret) {
+          this.followReturnSite(ret, 0);
+          if (history) this.historyFrom(ret, storage, 0);
         }
         continue;
       }
@@ -898,7 +1297,7 @@ export class Tracer {
   }
 
   private historyFrom(d: Event, storage: string, depth: number): void {
-    if (depth > 12) return;
+    if (depth > 12 || this.overBudget()) return;
     const prior = this.p.flow(d.fn).defsBefore(d, storage);
     for (const x of prior) {
       if (x.id === d.id) continue;
@@ -915,7 +1314,7 @@ export class Tracer {
   }
 
   result(): QueryResult {
-    const real = this.targets.filter((t) => t.kind !== 'selected' && t.kind !== 'parameter' && t.kind !== 'NoPriorMutation');
+    const real = this.targets.filter((t) => SOURCE_KINDS.has(t.kind));
     let kind: ResultKind = 'Exact';
     if (this.boundaries.length) kind = 'Boundary';
     if (real.length > 1) kind = 'Multiple';
@@ -939,9 +1338,3 @@ export class Tracer {
     };
   }
 }
-
-// Local helper to keep the fold-backedge target tied to the actual return event.
-const r0 = (d: Event): Event => {
-  const raw = d.raw as any;
-  return { ...d, ...(raw.returnEvent ? { id: raw.returnEvent } : {}) };
-};

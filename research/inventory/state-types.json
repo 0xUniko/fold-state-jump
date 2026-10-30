@@ -56,6 +56,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@layer_banks",
             "type": "std::vector<ExpertBank>",
             "index": 0,
+            "line": 751,
+            "col": 29,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -64,6 +66,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@slots",
             "type": "SlotState",
             "index": 1,
+            "line": 752,
+            "col": 15,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -72,6 +76,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@prewarm_loaded",
             "type": "uint64_t",
             "index": 2,
+            "line": 753,
+            "col": 14,
             "offsetBits": 768,
             "bitWidth": 0
           },
@@ -80,6 +86,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@S@Prewarming@FI@prewarm_io",
             "type": "PhaseCounters",
             "index": 3,
+            "line": 754,
+            "col": 19,
             "offsetBits": 832,
             "bitWidth": 0
           }
@@ -112,6 +120,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 774,
+            "col": 21,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -120,6 +130,8 @@
             "usr": "c:@N@minicpm@F@apply_prewarm#&1$@N@minicpm@S@BankContext#$@N@minicpm@S@BankState#&1$@N@std@S@vector>#$@N@std@S@vector>#I#$@N@std@S@allocator>#I#$@N@std@S@allocator>#S5_#@Sa@F@operator()#$@N@minicpm@F@apply_prewarm#S0_#S2_#S3_#@S@Prewarming#l#1@S@Warming@FI@missing",
             "type": "std::map<int32_t, size_t>",
             "index": 1,
+            "line": 777,
+            "col": 37,
             "offsetBits": 576,
             "bitWidth": 0
           }
@@ -152,6 +164,8 @@
             "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 458,
+            "col": 15,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -160,6 +174,8 @@
             "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@slot_ids",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 461,
+            "col": 26,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -168,6 +184,8 @@
             "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@missing",
             "type": "std::map<int32_t, size_t>",
             "index": 2,
+            "line": 464,
+            "col": 31,
             "offsetBits": 768,
             "bitWidth": 0
           },
@@ -176,6 +194,8 @@
             "usr": "c:@N@minicpm@F@plan_cache_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#&1$@N@std@S@vector>#$@N@minicpm@S@ExpertKey#$@N@std@S@allocator>#S11_#&1$@N@std@S@vector>#l#$@N@std@S@allocator>#l#@S@Planning@FI@prefetched_count",
             "type": "size_t",
             "index": 3,
+            "line": 466,
+            "col": 12,
             "offsetBits": 1152,
             "bitWidth": 0
           }
@@ -208,6 +228,8 @@
             "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 68,
+            "col": 15,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -216,6 +238,8 @@
             "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@missing",
             "type": "std::map<size_t, int32_t>",
             "index": 1,
+            "line": 71,
+            "col": 31,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -224,6 +248,8 @@
             "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@copies",
             "type": "std::vector<RecordCopy>",
             "index": 2,
+            "line": 72,
+            "col": 29,
             "offsetBits": 960,
             "bitWidth": 0
           },
@@ -232,6 +258,8 @@
             "usr": "c:@N@minicpm@F@plan_prefill#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@expert_slots",
             "type": "std::vector<size_t>",
             "index": 3,
+            "line": 74,
+            "col": 25,
             "offsetBits": 1152,
             "bitWidth": 0
           }
@@ -264,6 +292,8 @@
             "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 401,
+            "col": 15,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -272,6 +302,8 @@
             "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@slot_ids",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 403,
+            "col": 26,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -280,6 +312,8 @@
             "usr": "c:@N@minicpm@F@plan_shared_decode#&1$@N@minicpm@S@ExpertIndex#&1$@N@minicpm@S@BankContext#&1$@N@minicpm@S@BankState#i#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#@S@Planning@FI@missing",
             "type": "std::map<size_t, int32_t>",
             "index": 2,
+            "line": 405,
+            "col": 31,
             "offsetBits": 768,
             "bitWidth": 0
           }
@@ -312,6 +346,8 @@
             "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@batch_state",
             "type": "BatchState",
             "index": 0,
+            "line": 486,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -320,6 +356,8 @@
             "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@text",
             "type": "std::string",
             "index": 1,
+            "line": 489,
+            "col": 17,
             "offsetBits": 5248,
             "bitWidth": 0
           },
@@ -328,6 +366,8 @@
             "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@done",
             "type": "bool",
             "index": 2,
+            "line": 492,
+            "col": 10,
             "offsetBits": 5504,
             "bitWidth": 0
           },
@@ -336,6 +376,8 @@
             "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@decode_tokens",
             "type": "int32_t",
             "index": 3,
+            "line": 494,
+            "col": 13,
             "offsetBits": 5536,
             "bitWidth": 0
           },
@@ -344,6 +386,8 @@
             "usr": "c:@N@minicpm@F@turn#&1$@N@minicpm@S@Options#&1$@N@minicpm@S@Pipeline#$@N@minicpm@S@ChatState#*1$@S@common_chat_templates#*$@S@mtmd_context#*1$@S@llama_vocab#*$@S@llama_sampler#&1$@N@std@N@__cxx11@S@basic_string>#C#$@N@std@S@char_traits>#C#$@N@std@S@allocator>#C#&1$@N@std@S@vector>#S14_#$@N@std@S@allocator>#S14_#@S@Generation@FI@decode_ns",
             "type": "uint64_t",
             "index": 4,
+            "line": 496,
+            "col": 14,
             "offsetBits": 5568,
             "bitWidth": 0
           }
@@ -376,6 +420,8 @@
             "usr": "c:@N@minicpm@S@BankContext@FI@store",
             "type": "const std::shared_ptr<const ExpertStore>",
             "index": 0,
+            "line": 251,
+            "col": 44,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -384,6 +430,8 @@
             "usr": "c:@N@minicpm@S@BankContext@FI@pool",
             "type": "const std::shared_ptr<IoPool>",
             "index": 1,
+            "line": 252,
+            "col": 33,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -392,6 +440,8 @@
             "usr": "c:@N@minicpm@S@BankContext@FI@layout",
             "type": "const LesLayout",
             "index": 2,
+            "line": 253,
+            "col": 19,
             "offsetBits": 256,
             "bitWidth": 0
           }
@@ -424,6 +474,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@shared_bank",
             "type": "ExpertBank",
             "index": 0,
+            "line": 272,
+            "col": 14,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -432,6 +484,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@layer_banks",
             "type": "std::vector<ExpertBank>",
             "index": 1,
+            "line": 275,
+            "col": 27,
             "offsetBits": 512,
             "bitWidth": 0
           },
@@ -440,6 +494,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@slots",
             "type": "SlotState",
             "index": 2,
+            "line": 278,
+            "col": 13,
             "offsetBits": 704,
             "bitWidth": 0
           },
@@ -448,6 +504,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@frequencies",
             "type": "std::vector<std::vector<uint64_t>>",
             "index": 3,
+            "line": 281,
+            "col": 38,
             "offsetBits": 1280,
             "bitWidth": 0
           },
@@ -456,6 +514,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@counters",
             "type": "LesCounters",
             "index": 4,
+            "line": 283,
+            "col": 15,
             "offsetBits": 1472,
             "bitWidth": 0
           },
@@ -464,6 +524,8 @@
             "usr": "c:@N@minicpm@S@BankState@FI@pending",
             "type": "std::optional<PendingPrefetch>",
             "index": 5,
+            "line": 286,
+            "col": 34,
             "offsetBits": 3648,
             "bitWidth": 0
           }
@@ -496,6 +558,8 @@
             "usr": "c:@N@minicpm@S@BatchState@FI@session_state",
             "type": "SessionState",
             "index": 0,
+            "line": 413,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -504,6 +568,8 @@
             "usr": "c:@N@minicpm@S@BatchState@FI@logits",
             "type": "std::vector<float>",
             "index": 1,
+            "line": 414,
+            "col": 22,
             "offsetBits": 5056,
             "bitWidth": 0
           }
@@ -536,6 +602,8 @@
             "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 432,
+            "col": 13,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -544,6 +612,8 @@
             "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@slot_ids",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 433,
+            "col": 24,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -552,6 +622,8 @@
             "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@read",
             "type": "CacheRead",
             "index": 2,
+            "line": 434,
+            "col": 13,
             "offsetBits": 768,
             "bitWidth": 0
           },
@@ -560,6 +632,8 @@
             "usr": "c:@N@minicpm@S@CacheDecodePlan@FI@prefetched_count",
             "type": "size_t",
             "index": 3,
+            "line": 435,
+            "col": 10,
             "offsetBits": 1344,
             "bitWidth": 0
           }
@@ -592,6 +666,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@records",
             "type": "ggml_tensor *",
             "index": 0,
+            "line": 436,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -600,6 +676,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@record_bytes",
             "type": "size_t",
             "index": 1,
+            "line": 438,
+            "col": 10,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -608,6 +686,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@missing",
             "type": "std::map<int32_t, size_t>",
             "index": 2,
+            "line": 441,
+            "col": 29,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -616,6 +696,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@staging",
             "type": "std::vector<char>",
             "index": 3,
+            "line": 444,
+            "col": 21,
             "offsetBits": 512,
             "bitWidth": 0
           },
@@ -624,6 +706,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@io",
             "type": "IoCounters",
             "index": 4,
+            "line": 445,
+            "col": 14,
             "offsetBits": 704,
             "bitWidth": 0
           },
@@ -632,6 +716,8 @@
             "usr": "c:@N@minicpm@S@CacheStagedCompletion@FI@interval",
             "type": "ComputeInterval",
             "index": 5,
+            "line": 446,
+            "col": 19,
             "offsetBits": 960,
             "bitWidth": 0
           }
@@ -664,6 +750,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@context",
             "type": "nano::Context",
             "index": 0,
+            "line": 101,
+            "col": 17,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -672,6 +760,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@buffer",
             "type": "nano::Buffer",
             "index": 1,
+            "line": 103,
+            "col": 16,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -680,6 +770,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@up",
             "type": "ggml_tensor *",
             "index": 2,
+            "line": 106,
+            "col": 16,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -688,6 +780,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@gate",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 108,
+            "col": 16,
             "offsetBits": 320,
             "bitWidth": 0
           },
@@ -696,6 +790,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@down",
             "type": "ggml_tensor *",
             "index": 4,
+            "line": 110,
+            "col": 16,
             "offsetBits": 384,
             "bitWidth": 0
           },
@@ -704,6 +800,8 @@
             "usr": "c:@N@minicpm@S@ExpertBank@FI@records",
             "type": "ggml_tensor *",
             "index": 5,
+            "line": 113,
+            "col": 16,
             "offsetBits": 448,
             "bitWidth": 0
           }
@@ -736,6 +834,8 @@
             "usr": "c:@N@minicpm@S@GraphCache@FI@graphs",
             "type": "std::map<GraphKey, std::unique_ptr<LanguageGraphs>>",
             "index": 0,
+            "line": 388,
+            "col": 55,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -744,6 +844,8 @@
             "usr": "c:@N@minicpm@S@GraphCache@FI@tick",
             "type": "uint64_t",
             "index": 1,
+            "line": 389,
+            "col": 12,
             "offsetBits": 384,
             "bitWidth": 0
           }
@@ -776,6 +878,8 @@
             "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@CacheStagedCompletion@FI@completion_future",
             "type": "std::future<std::variant<minicpm::LoadedExperts, minicpm::CacheStagedCompletion>>",
             "index": 0,
+            "line": 472,
+            "col": 27,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -808,6 +912,8 @@
             "usr": "c:@N@minicpm@S@IoTicket>#$@N@std@S@variant>#p2$@N@minicpm@S@LoadedExperts$@N@minicpm@S@SharedStagedCompletion@FI@completion_future",
             "type": "std::future<std::variant<minicpm::LoadedExperts, minicpm::SharedStagedCompletion>>",
             "index": 0,
+            "line": 472,
+            "col": 27,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -840,6 +946,8 @@
             "usr": "c:@N@minicpm@S@IoTicket>#v@FI@completion_future",
             "type": "std::future<void>",
             "index": 0,
+            "line": 472,
+            "col": 27,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -872,6 +980,8 @@
             "usr": "c:@N@minicpm@S@LanguageGraphs@FI@cpu_arenas",
             "type": "std::unique_ptr<CpuStageArenas>",
             "index": 0,
+            "line": 382,
+            "col": 35,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -880,6 +990,8 @@
             "usr": "c:@N@minicpm@S@LanguageGraphs@FI@layers",
             "type": "std::vector<LayerGraphs>",
             "index": 1,
+            "line": 383,
+            "col": 28,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -888,6 +1000,8 @@
             "usr": "c:@N@minicpm@S@LanguageGraphs@FI@head_graph",
             "type": "HeadGraph",
             "index": 2,
+            "line": 384,
+            "col": 13,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -896,6 +1010,8 @@
             "usr": "c:@N@minicpm@S@LanguageGraphs@FI@age",
             "type": "uint64_t",
             "index": 3,
+            "line": 385,
+            "col": 12,
             "offsetBits": 768,
             "bitWidth": 0
           }
@@ -928,6 +1044,8 @@
             "usr": "c:@N@minicpm@S@LayerGraphs@FI@routing_graph",
             "type": "RoutingGraph",
             "index": 0,
+            "line": 371,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -936,6 +1054,8 @@
             "usr": "c:@N@minicpm@S@LayerGraphs@FI@shared_expert_graph",
             "type": "SharedExpertGraph",
             "index": 1,
+            "line": 372,
+            "col": 21,
             "offsetBits": 1024,
             "bitWidth": 0
           },
@@ -944,6 +1064,8 @@
             "usr": "c:@N@minicpm@S@LayerGraphs@FI@routed_expert_graph",
             "type": "RoutedExpertGraph",
             "index": 2,
+            "line": 373,
+            "col": 21,
             "offsetBits": 1472,
             "bitWidth": 0
           }
@@ -976,6 +1098,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prefill",
             "type": "PhaseCounters",
             "index": 0,
+            "line": 212,
+            "col": 17,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -984,6 +1108,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@decode",
             "type": "PhaseCounters",
             "index": 1,
+            "line": 214,
+            "col": 17,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -992,6 +1118,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_io",
             "type": "PhaseCounters",
             "index": 2,
+            "line": 216,
+            "col": 17,
             "offsetBits": 1152,
             "bitWidth": 0
           },
@@ -1000,6 +1128,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_issued",
             "type": "uint64_t",
             "index": 3,
+            "line": 218,
+            "col": 12,
             "offsetBits": 1728,
             "bitWidth": 0
           },
@@ -1008,6 +1138,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_used",
             "type": "uint64_t",
             "index": 4,
+            "line": 220,
+            "col": 12,
             "offsetBits": 1792,
             "bitWidth": 0
           },
@@ -1016,6 +1148,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prefetch_wasted",
             "type": "uint64_t",
             "index": 5,
+            "line": 222,
+            "col": 12,
             "offsetBits": 1856,
             "bitWidth": 0
           },
@@ -1024,6 +1158,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_loaded",
             "type": "uint64_t",
             "index": 6,
+            "line": 224,
+            "col": 12,
             "offsetBits": 1920,
             "bitWidth": 0
           },
@@ -1032,6 +1168,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@prewarm_from_prefill",
             "type": "uint64_t",
             "index": 7,
+            "line": 226,
+            "col": 12,
             "offsetBits": 1984,
             "bitWidth": 0
           },
@@ -1040,6 +1178,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@graph_builds",
             "type": "uint64_t",
             "index": 8,
+            "line": 228,
+            "col": 12,
             "offsetBits": 2048,
             "bitWidth": 0
           },
@@ -1048,6 +1188,8 @@
             "usr": "c:@N@minicpm@S@LesCounters@FI@graph_reuses",
             "type": "uint64_t",
             "index": 9,
+            "line": 230,
+            "col": 12,
             "offsetBits": 2112,
             "bitWidth": 0
           }
@@ -1080,6 +1222,8 @@
             "usr": "c:@N@minicpm@S@LoadedExperts@FI@record_count",
             "type": "size_t",
             "index": 0,
+            "line": 411,
+            "col": 10,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1088,6 +1232,8 @@
             "usr": "c:@N@minicpm@S@LoadedExperts@FI@io",
             "type": "IoCounters",
             "index": 1,
+            "line": 413,
+            "col": 14,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -1096,6 +1242,8 @@
             "usr": "c:@N@minicpm@S@LoadedExperts@FI@interval",
             "type": "ComputeInterval",
             "index": 2,
+            "line": 415,
+            "col": 19,
             "offsetBits": 320,
             "bitWidth": 0
           }
@@ -1128,6 +1276,8 @@
             "usr": "c:@N@minicpm@S@PendingPrefetch@FI@layer",
             "type": "uint32_t",
             "index": 0,
+            "line": 236,
+            "col": 12,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1136,6 +1286,8 @@
             "usr": "c:@N@minicpm@S@PendingPrefetch@FI@keys",
             "type": "std::vector<ExpertKey>",
             "index": 1,
+            "line": 239,
+            "col": 26,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -1144,6 +1296,8 @@
             "usr": "c:@N@minicpm@S@PendingPrefetch@FI@slots",
             "type": "std::vector<size_t>",
             "index": 2,
+            "line": 241,
+            "col": 23,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -1152,6 +1306,8 @@
             "usr": "c:@N@minicpm@S@PendingPrefetch@FI@issued",
             "type": "LesClock::time_point",
             "index": 3,
+            "line": 244,
+            "col": 24,
             "offsetBits": 448,
             "bitWidth": 0
           },
@@ -1160,6 +1316,8 @@
             "usr": "c:@N@minicpm@S@PendingPrefetch@FI@read_ticket",
             "type": "CacheReadTicket",
             "index": 4,
+            "line": 246,
+            "col": 19,
             "offsetBits": 512,
             "bitWidth": 0
           }
@@ -1192,6 +1350,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@layer_count",
             "type": "uint64_t",
             "index": 0,
+            "line": 192,
+            "col": 12,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1200,6 +1360,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@hits",
             "type": "uint64_t",
             "index": 1,
+            "line": 194,
+            "col": 12,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -1208,6 +1370,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@misses",
             "type": "uint64_t",
             "index": 2,
+            "line": 196,
+            "col": 12,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -1216,6 +1380,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@read_bytes",
             "type": "uint64_t",
             "index": 3,
+            "line": 198,
+            "col": 12,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -1224,6 +1390,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@read_calls",
             "type": "uint64_t",
             "index": 4,
+            "line": 200,
+            "col": 12,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -1232,6 +1400,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@mapped_bytes",
             "type": "uint64_t",
             "index": 5,
+            "line": 202,
+            "col": 12,
             "offsetBits": 320,
             "bitWidth": 0
           },
@@ -1240,6 +1410,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@mapped_records",
             "type": "uint64_t",
             "index": 6,
+            "line": 204,
+            "col": 12,
             "offsetBits": 384,
             "bitWidth": 0
           },
@@ -1248,6 +1420,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@overlap_ns",
             "type": "uint64_t",
             "index": 7,
+            "line": 206,
+            "col": 12,
             "offsetBits": 448,
             "bitWidth": 0
           },
@@ -1256,6 +1430,8 @@
             "usr": "c:@N@minicpm@S@PhaseCounters@FI@wait_ns",
             "type": "uint64_t",
             "index": 8,
+            "line": 208,
+            "col": 12,
             "offsetBits": 512,
             "bitWidth": 0
           }
@@ -1288,6 +1464,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@caches",
             "type": "std::vector<LayerCache>",
             "index": 0,
+            "line": 857,
+            "col": 31,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1296,6 +1474,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@bank_state",
             "type": "BankState",
             "index": 1,
+            "line": 859,
+            "col": 17,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -1304,6 +1484,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@graph_cache",
             "type": "GraphCache",
             "index": 2,
+            "line": 861,
+            "col": 18,
             "offsetBits": 4544,
             "bitWidth": 0
           },
@@ -1312,6 +1494,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@EmbeddingInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@hidden",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 863,
+            "col": 20,
             "offsetBits": 4992,
             "bitWidth": 0
           }
@@ -1344,6 +1528,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@caches",
             "type": "std::vector<LayerCache>",
             "index": 0,
+            "line": 857,
+            "col": 31,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1352,6 +1538,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@bank_state",
             "type": "BankState",
             "index": 1,
+            "line": 859,
+            "col": 17,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -1360,6 +1548,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@graph_cache",
             "type": "GraphCache",
             "index": 2,
+            "line": 861,
+            "col": 18,
             "offsetBits": 4544,
             "bitWidth": 0
           },
@@ -1368,6 +1558,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@F@execute<#$@N@minicpm@S@TokenInput#VI0>#$@N@minicpm@S@SessionState#S0_#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#1@S@LayerExecution@FI@hidden",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 863,
+            "col": 20,
             "offsetBits": 4992,
             "bitWidth": 0
           }
@@ -1400,6 +1592,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@caches",
             "type": "std::vector<LayerCache>",
             "index": 0,
+            "line": 857,
+            "col": 31,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1408,6 +1602,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@bank_state",
             "type": "BankState",
             "index": 1,
+            "line": 859,
+            "col": 17,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1416,6 +1612,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@graph_cache",
             "type": "GraphCache",
             "index": 2,
+            "line": 861,
+            "col": 18,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1424,6 +1622,8 @@
             "usr": "c:@N@minicpm@S@Pipeline@FT@>2#T#N^std::enable_if<is_batch_input_v<type-parameter-0-0>, int>:::typeexecute#$@N@minicpm@S@SessionState#t0.0#&1$@N@std@S@vector>#I#$@N@std@S@allocator>#I#I#$@N@minicpm@E@ExecutionPhase#$@N@minicpm@S@BatchState#1@S@LayerExecution@FI@hidden",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 863,
+            "col": 20,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -1456,6 +1656,8 @@
             "usr": "c:@N@minicpm@S@PrefillPlan@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 42,
+            "col": 13,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1464,6 +1666,8 @@
             "usr": "c:@N@minicpm@S@PrefillPlan@FI@slot_ids",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 45,
+            "col": 24,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -1472,6 +1676,8 @@
             "usr": "c:@N@minicpm@S@PrefillPlan@FI@read",
             "type": "SharedRead",
             "index": 2,
+            "line": 48,
+            "col": 14,
             "offsetBits": 768,
             "bitWidth": 0
           },
@@ -1480,6 +1686,8 @@
             "usr": "c:@N@minicpm@S@PrefillPlan@FI@copies",
             "type": "std::vector<RecordCopy>",
             "index": 3,
+            "line": 49,
+            "col": 27,
             "offsetBits": 1344,
             "bitWidth": 0
           }
@@ -1604,6 +1812,8 @@
             "usr": "c:@N@minicpm@S@SessionState@FI@position",
             "type": "int",
             "index": 0,
+            "line": 397,
+            "col": 7,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1612,6 +1822,8 @@
             "usr": "c:@N@minicpm@S@SessionState@FI@rope_position",
             "type": "int",
             "index": 1,
+            "line": 400,
+            "col": 7,
             "offsetBits": 32,
             "bitWidth": 0
           },
@@ -1620,6 +1832,8 @@
             "usr": "c:@N@minicpm@S@SessionState@FI@caches",
             "type": "std::vector<LayerCache>",
             "index": 2,
+            "line": 403,
+            "col": 27,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -1628,6 +1842,8 @@
             "usr": "c:@N@minicpm@S@SessionState@FI@bank_state",
             "type": "BankState",
             "index": 3,
+            "line": 405,
+            "col": 13,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -1636,6 +1852,8 @@
             "usr": "c:@N@minicpm@S@SessionState@FI@graph_cache",
             "type": "GraphCache",
             "index": 4,
+            "line": 408,
+            "col": 14,
             "offsetBits": 4608,
             "bitWidth": 0
           }
@@ -1668,6 +1886,8 @@
             "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@slots",
             "type": "SlotState",
             "index": 0,
+            "line": 375,
+            "col": 13,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1676,6 +1896,8 @@
             "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@slot_ids",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 376,
+            "col": 24,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -1684,6 +1906,8 @@
             "usr": "c:@N@minicpm@S@SharedDecodePlan@FI@read",
             "type": "SharedRead",
             "index": 2,
+            "line": 377,
+            "col": 14,
             "offsetBits": 768,
             "bitWidth": 0
           }
@@ -1716,6 +1940,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@records",
             "type": "ggml_tensor *",
             "index": 0,
+            "line": 420,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1724,6 +1950,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@record_bytes",
             "type": "size_t",
             "index": 1,
+            "line": 422,
+            "col": 10,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -1732,6 +1960,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@missing",
             "type": "std::map<size_t, int32_t>",
             "index": 2,
+            "line": 425,
+            "col": 29,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -1740,6 +1970,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@staging",
             "type": "std::vector<char>",
             "index": 3,
+            "line": 428,
+            "col": 21,
             "offsetBits": 512,
             "bitWidth": 0
           },
@@ -1748,6 +1980,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@io",
             "type": "IoCounters",
             "index": 4,
+            "line": 429,
+            "col": 14,
             "offsetBits": 704,
             "bitWidth": 0
           },
@@ -1756,6 +1990,8 @@
             "usr": "c:@N@minicpm@S@SharedStagedCompletion@FI@interval",
             "type": "ComputeInterval",
             "index": 5,
+            "line": 430,
+            "col": 19,
             "offsetBits": 960,
             "bitWidth": 0
           }
@@ -1788,6 +2024,8 @@
             "usr": "c:@N@minicpm@S@SlotState@FI@keys",
             "type": "std::vector<std::optional<ExpertKey>>",
             "index": 0,
+            "line": 176,
+            "col": 41,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1796,6 +2034,8 @@
             "usr": "c:@N@minicpm@S@SlotState@FI@ages",
             "type": "std::vector<uint64_t>",
             "index": 1,
+            "line": 179,
+            "col": 25,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -1804,6 +2044,8 @@
             "usr": "c:@N@minicpm@S@SlotState@FI@tick",
             "type": "uint64_t",
             "index": 2,
+            "line": 182,
+            "col": 12,
             "offsetBits": 384,
             "bitWidth": 0
           },
@@ -1812,6 +2054,8 @@
             "usr": "c:@N@minicpm@S@SlotState@FI@hits",
             "type": "uint64_t",
             "index": 3,
+            "line": 185,
+            "col": 12,
             "offsetBits": 448,
             "bitWidth": 0
           },
@@ -1820,6 +2064,8 @@
             "usr": "c:@N@minicpm@S@SlotState@FI@misses",
             "type": "uint64_t",
             "index": 4,
+            "line": 187,
+            "col": 12,
             "offsetBits": 512,
             "bitWidth": 0
           }
@@ -1852,6 +2098,8 @@
             "usr": "c:@N@minicpm@ST>1#T@IoTicket@FI@completion_future",
             "type": "std::future<Completion>",
             "index": 0,
+            "line": 472,
+            "col": 27,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -1884,6 +2132,8 @@
             "usr": "c:@N@nano@S@Compute@FI@best",
             "type": "const Backend",
             "index": 0,
+            "line": 115,
+            "col": 17,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1892,6 +2142,8 @@
             "usr": "c:@N@nano@S@Compute@FI@cpu",
             "type": "const Backend",
             "index": 1,
+            "line": 116,
+            "col": 17,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -1900,6 +2152,8 @@
             "usr": "c:@N@nano@S@Compute@FI@sched",
             "type": "const Scheduler",
             "index": 2,
+            "line": 117,
+            "col": 19,
             "offsetBits": 256,
             "bitWidth": 0
           }
@@ -1932,6 +2186,8 @@
             "usr": "c:@N@nano@S@RpcClient@FI@channel",
             "type": "const std::shared_ptr<grpc::Channel>",
             "index": 0,
+            "line": 343,
+            "col": 40,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -1940,6 +2196,8 @@
             "usr": "c:@N@nano@S@RpcClient@FI@stub",
             "type": "grpc::GenericStub",
             "index": 1,
+            "line": 344,
+            "col": 21,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -1948,6 +2206,8 @@
             "usr": "c:@N@nano@S@RpcClient@FI@timeout",
             "type": "const std::chrono::seconds",
             "index": 2,
+            "line": 345,
+            "col": 30,
             "offsetBits": 256,
             "bitWidth": 0
           }
@@ -1980,6 +2240,8 @@
             "usr": "c:@S@AttentionCaches@FI@layers",
             "type": "const std::vector<LayerCaches>",
             "index": 0,
+            "line": 1411,
+            "col": 34,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -2012,6 +2274,8 @@
             "usr": "c:@S@AttentionGraph@FI@graph",
             "type": "ggml_cgraph *",
             "index": 0,
+            "line": 800,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2020,6 +2284,8 @@
             "usr": "c:@S@AttentionGraph@FI@hidden",
             "type": "ggml_tensor *",
             "index": 1,
+            "line": 801,
+            "col": 16,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -2028,6 +2294,8 @@
             "usr": "c:@S@AttentionGraph@FI@positions",
             "type": "ggml_tensor *",
             "index": 2,
+            "line": 802,
+            "col": 16,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -2036,6 +2304,8 @@
             "usr": "c:@S@AttentionGraph@FI@raw_indices",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 803,
+            "col": 16,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -2044,6 +2314,8 @@
             "usr": "c:@S@AttentionGraph@FI@raw_read_indices",
             "type": "ggml_tensor *",
             "index": 4,
+            "line": 804,
+            "col": 16,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -2052,6 +2324,8 @@
             "usr": "c:@S@AttentionGraph@FI@raw_mask",
             "type": "ggml_tensor *",
             "index": 5,
+            "line": 805,
+            "col": 16,
             "offsetBits": 320,
             "bitWidth": 0
           },
@@ -2060,6 +2334,8 @@
             "usr": "c:@S@AttentionGraph@FI@compression",
             "type": "CompressionGraph",
             "index": 6,
+            "line": 806,
+            "col": 20,
             "offsetBits": 384,
             "bitWidth": 0
           },
@@ -2068,6 +2344,8 @@
             "usr": "c:@S@AttentionGraph@FI@output",
             "type": "ggml_tensor *",
             "index": 7,
+            "line": 807,
+            "col": 16,
             "offsetBits": 1024,
             "bitWidth": 0
           }
@@ -2100,6 +2378,8 @@
             "usr": "c:@S@AttentionPipeline@FI@model",
             "type": "const llama_model &",
             "index": 0,
+            "line": 1566,
+            "col": 22,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2108,6 +2388,8 @@
             "usr": "c:@S@AttentionPipeline@FI@compute",
             "type": "const nano::Compute &",
             "index": 1,
+            "line": 1567,
+            "col": 24,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -2116,6 +2398,8 @@
             "usr": "c:@S@AttentionPipeline@FI@ffn",
             "type": "nano::RpcClient &",
             "index": 2,
+            "line": 1568,
+            "col": 20,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -2124,6 +2408,8 @@
             "usr": "c:@S@AttentionPipeline@FI@info",
             "type": "const nano::ModelInfo",
             "index": 3,
+            "line": 1569,
+            "col": 25,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -2132,6 +2418,8 @@
             "usr": "c:@S@AttentionPipeline@FI@context_limit",
             "type": "const int",
             "index": 4,
+            "line": 1570,
+            "col": 13,
             "offsetBits": 640,
             "bitWidth": 0
           }
@@ -2164,6 +2452,8 @@
             "usr": "c:@S@AttentionState@FI@position",
             "type": "InferenceProgress",
             "index": 0,
+            "line": 1538,
+            "col": 21,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2172,6 +2462,8 @@
             "usr": "c:@S@AttentionState@FI@cache",
             "type": "std::unique_ptr<AttentionCaches>",
             "index": 1,
+            "line": 1540,
+            "col": 36,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -2180,6 +2472,8 @@
             "usr": "c:@S@AttentionState@FI@owner",
             "type": "const AttentionPipeline *",
             "index": 2,
+            "line": 1542,
+            "col": 28,
             "offsetBits": 128,
             "bitWidth": 0
           }
@@ -2212,6 +2506,8 @@
             "usr": "c:@S@BatchResult@FI@state",
             "type": "AttentionState",
             "index": 0,
+            "line": 1558,
+            "col": 18,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2220,6 +2516,8 @@
             "usr": "c:@S@BatchResult@FI@logits",
             "type": "VocabularyLogits",
             "index": 1,
+            "line": 1559,
+            "col": 20,
             "offsetBits": 192,
             "bitWidth": 0
           }
@@ -2252,6 +2550,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@pos",
             "type": "std::vector<int32_t>",
             "index": 0,
+            "line": 55,
+            "col": 24,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2260,6 +2560,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@persist_src_idxs",
             "type": "std::vector<int32_t>",
             "index": 1,
+            "line": 56,
+            "col": 24,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -2268,6 +2570,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@persist_dst_idxs",
             "type": "std::vector<int32_t>",
             "index": 2,
+            "line": 57,
+            "col": 24,
             "offsetBits": 384,
             "bitWidth": 0
           },
@@ -2276,6 +2580,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@read_idxs",
             "type": "std::vector<int32_t>",
             "index": 3,
+            "line": 58,
+            "col": 24,
             "offsetBits": 576,
             "bitWidth": 0
           },
@@ -2284,6 +2590,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@write_pos",
             "type": "std::vector<int32_t>",
             "index": 4,
+            "line": 59,
+            "col": 24,
             "offsetBits": 768,
             "bitWidth": 0
           },
@@ -2292,6 +2600,8 @@
             "usr": "c:@S@CompressionStatePlan@FI@write_idxs",
             "type": "std::vector<int32_t>",
             "index": 5,
+            "line": 60,
+            "col": 24,
             "offsetBits": 960,
             "bitWidth": 0
           }
@@ -2324,6 +2634,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@pos",
             "type": "ggml_tensor *",
             "index": 0,
+            "line": 66,
+            "col": 16,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2332,6 +2644,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@persist_src_idxs",
             "type": "ggml_tensor *",
             "index": 1,
+            "line": 67,
+            "col": 16,
             "offsetBits": 64,
             "bitWidth": 0
           },
@@ -2340,6 +2654,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@persist_dst_idxs",
             "type": "ggml_tensor *",
             "index": 2,
+            "line": 68,
+            "col": 16,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -2348,6 +2664,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@read_idxs",
             "type": "ggml_tensor *",
             "index": 3,
+            "line": 69,
+            "col": 16,
             "offsetBits": 192,
             "bitWidth": 0
           },
@@ -2356,6 +2674,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@write_pos",
             "type": "ggml_tensor *",
             "index": 4,
+            "line": 70,
+            "col": 16,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -2364,6 +2684,8 @@
             "usr": "c:@S@CompressionStateTensors@FI@write_idxs",
             "type": "ggml_tensor *",
             "index": 5,
+            "line": 71,
+            "col": 16,
             "offsetBits": 320,
             "bitWidth": 0
           }
@@ -2396,6 +2718,8 @@
             "usr": "c:@S@InferenceProgress@FI@position",
             "type": "int",
             "index": 0,
+            "line": 1501,
+            "col": 7,
             "offsetBits": 0,
             "bitWidth": 0
           }
@@ -2428,6 +2752,8 @@
             "usr": "c:@S@LayerCaches@FI@context",
             "type": "nano::Context",
             "index": 0,
+            "line": 780,
+            "col": 17,
             "offsetBits": 0,
             "bitWidth": 0
           },
@@ -2436,6 +2762,8 @@
             "usr": "c:@S@LayerCaches@FI@buffer",
             "type": "nano::Buffer",
             "index": 1,
+            "line": 781,
+            "col": 16,
             "offsetBits": 128,
             "bitWidth": 0
           },
@@ -2444,6 +2772,8 @@
             "usr": "c:@S@LayerCaches@FI@raw",
             "type": "ggml_tensor *",
             "index": 2,
+            "line": 782,
+            "col": 16,
             "offsetBits": 256,
             "bitWidth": 0
           },
@@ -2452,6 +2782,8 @@
             "usr": "c:@S@LayerCaches@FI@compression",
             "type": "CompressionCache",
             "index": 3,
+            "line": 783,
+            "col": 20,
             "offsetBits": 320,
             "bitWidth": 0
           }
@@ -2484,6 +2816,8 @@
             "usr": "c:@S@VocabularyLogits@FI@storage",
             "type": "std::vector<float>",
             "index": 0,
+            "line": 1516,
+            "col": 7,
             "offsetBits": 0,
             "bitWidth": 0
           }

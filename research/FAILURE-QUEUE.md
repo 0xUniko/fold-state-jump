@@ -69,3 +69,34 @@ fold 的 backedge 只在 `iteration > 0` 可达。若 range 是 `iota(start, end
 - 用文本“最近赋值”代替 CFG；
 - 把 unknown 写成 NoPriorMutation；
 - 把 fold 上一轮无条件当成本轮历史。
+
+## 已完成复核：调用值、聚合赋值、构造器返回
+
+### Problem
+
+非模板函数里的普通调用事件原先没有源码位置；`valueOf` 对被调用结果只写 `expr:<text>`，导致跨函数值来源丢失。聚合赋值经重载 `operator=` 时被当成普通调用，字段写完全缺失。构造器（非聚合）返回只发一个整体 return-field。
+
+### Semantic rule
+
+- 调用结果有稳定 call id；`new T(factory())` / `T(factory())` 的单初始化器传播 factory 的 call id。
+- `a = T{...}` 与重载 `operator=` 都是整体写 + 字段写；整体写不杀死字段写。
+- 非聚合构造器按成员初始化列表把构造参数映射到字段。
+
+### Independent tests
+
+`assign_aggregate.cpp`、`construct_return.cpp`；并验证覆盖写、同名对象、动态下标等原有反例不回归。
+
+### nano-infer validation
+
+`pending` 创建、FFN server fold return、`start_session` 的 cache 构造因此可追踪。
+
+## 已完成复核：address-of 与 pointee
+
+`&bank_state.slots` 存入 `Retaining.slots` 后，`retaining.slots->keys[...]` 写入必须归到 `bank_state.slots` 的 pointee，而不是指针字段本身。实现为通用 pointer alias + fold pointee 扫描；独立 fixture `pointer_pointee.cpp`。
+
+## 当前剩余
+
+- `clear_session` 返回值经交互行循环/指针安装回 `interactive.chat_state`；
+- 图片路径对 `SessionState.rope_position` 的读取（跨调用路径 state-read）；
+- 两条 Multiple/Conditional 与 Oracle Exact 的精度差异；
+- 8,161 个 fold-context、1,763 个 mechanical 尚未逐条 Oracle。

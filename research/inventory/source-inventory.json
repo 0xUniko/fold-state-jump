@@ -9,7 +9,7 @@
         "record": 44,
         "function": 152,
         "cfg-block": 872,
-        "event": 13753,
+        "event": 14399,
         "branch": 47,
         "fold": 24
       }
@@ -19,7 +19,7 @@
       "records": {
         "function": 147,
         "cfg-block": 712,
-        "event": 10624,
+        "event": 11057,
         "record": 38,
         "branch": 36,
         "fold": 24
@@ -30,7 +30,7 @@
       "records": {
         "function": 3,
         "cfg-block": 12,
-        "event": 90,
+        "event": 92,
         "branch": 2
       }
     },
@@ -39,7 +39,7 @@
       "records": {
         "function": 340,
         "cfg-block": 2028,
-        "event": 30802,
+        "event": 32198,
         "branch": 273,
         "record": 115,
         "fold": 87
@@ -50,7 +50,7 @@
       "records": {
         "function": 426,
         "cfg-block": 2343,
-        "event": 34560,
+        "event": 36130,
         "record": 114,
         "branch": 224,
         "fold": 94
@@ -61,7 +61,7 @@
       "records": {
         "function": 41,
         "cfg-block": 207,
-        "event": 1732,
+        "event": 1824,
         "record": 9,
         "branch": 21,
         "fold": 18
@@ -110,9 +110,9 @@
     "records": 181,
     "foldInstances": 86,
     "foldSourceSites": 84,
-    "events": 87372,
-    "writes": 7976,
-    "transfers": 9114,
+    "events": 91165,
+    "writes": 10299,
+    "transfers": 9142,
     "stateRecords": 47
   },
   "sourceHashes": {

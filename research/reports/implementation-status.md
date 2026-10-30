@@ -7,8 +7,8 @@
 | 里程碑 | 状态 | 实现 |
 |---|---|---|
 | M1 单函数对象/版本 | 部分完成 | `LocalFlow` worklist，CFG join，覆盖写、复合赋值、自增、字段路径 |
-| M2 复制/移动/别名/存储 | 部分完成 | 引用别名 canonicalization、copy/move 事件、聚合字段顺序、动态下标 boundary |
-| M3 跨函数 | 部分完成 | 参数按位置、成员 receiver、返回值/return-field、模板 pattern/instance、call boundary |
+| M2 复制/移动/别名/存储 | 部分完成 | 引用/指针别名 canonicalization、address-of pointee、copy/move、聚合字段顺序、动态下标 boundary |
+| M3 跨函数 | 部分完成 | 参数按位置/值、成员 receiver、返回值/return-field、构造器成员映射、模板 pattern/instance、call boundary |
 | M4 循环/fold | 部分完成 | seed/backedge/零迭代、首轮 guard、嵌套 fold 的模型接口 |
 | M5 复杂对象 | 部分完成 | variant `std::get` 路径、optional/reset、外部资源/异步 boundary |
 | M6 查询/解释 | 完成基础 | Origin/Mutation/History/Provenance、多目标、条件、证据边、boundary |
@@ -20,7 +20,7 @@ src/state-trace/engine.ts        ProgramGraph + worklist + query
 src/state-trace/native.ts        state-inventory 子进程与缓存
 src/state-trace/vscode.ts        查询结果到 VS Code 导航/QuickPick
 src/state-trace/cli.ts           独立 CLI
-src/state-trace/engine.test.ts   11 个通用语义测试
+src/state-trace/engine.test.ts   14 个通用语义测试
 src/state-trace/native.test.ts   native 提取 + 查询集成测试
 test/state-trace-command.ts      真实 activate/命令/native/mock VS Code 集成测试
 ```
@@ -31,7 +31,7 @@ test/state-trace-command.ts      真实 activate/命令/native/mock VS Code 集�
 bun check                                  No type errors in 87 files
 bun run build                              extension.js built
 bun test                                   540 pass / 0 fail
-bun test ./src/state-trace/engine.test.ts  11 pass
+bun test ./src/state-trace/engine.test.ts  14 pass
 bun test ./src/state-trace/native.test.ts   1 pass
 bun test ./test/state-trace-command.ts      1 pass
 ```
@@ -45,29 +45,32 @@ bun test ./test/state-trace-command.ts      1 pass
 - `fold_first_guard.cpp`：`layer == 0` 首轮 guard；history 不返回同 fold backedge；
 - `renamed_state.cpp`：相同语义、不同名称/成员顺序；
 - `negative_control.cpp` 增加“复制后未来覆盖写不得成为 origin”反例；
-- `pointer_callback.cpp`、`dynamic_index.cpp`：未知指针/虚调用/间接调用/动态元素 boundary。
+- `pointer_callback.cpp`、`dynamic_index.cpp`：未知指针/虚调用/间接调用/动态元素 boundary；
+- `assign_aggregate.cpp`：重载聚合赋值 = 字段写 + 整体写；
+- `pointer_pointee.cpp`：address-of 指针字段 -> pointee 写与字段声明；
+- `construct_return.cpp`：非聚合构造器的成员初始化映射 + 工厂调用。
 
 ## Oracle 结果（TypeScript 引擎）
 
-`research/measurements/oracle-run-ts.json` / `research/reports/correctness-results-ts.md`：
+`research/measurements/oracle-run-ts.json` / `research/reports/correctness-results-ts.md`（Oracle 运行使用 research budget 6000；编辑器默认 1200）：
 
 ```text
-mismatch                   11
-correct-conditional        18
+mismatch                    2
+correct-conditional        20
 correct-boundary            8
-correct-multiple            9
+correct-multiple           14
+targets-found-kind-mismatch 2
 correct-no-prior            1
 unsupported-observed        1
-required-target recall     57/119
+required-target recall     90/119
 ```
 
-这不是完成声明。失败集中在：
+这不是完成声明。剩余缺口：
 
-- 聚合返回/多层返回字段；
-- `start_session/clear_session` 的 constructor/resource 生命周期；
-- ranges pipeline 构造；
-- 资源 ticket/内容完成；
-- 部分 DeepSeek FFN/RPC 路径。
+- `clear_session` 的返回值经交互行循环/指针安装回 `interactive.chat_state`；
+- 图片路径对同一 `SessionState.rope_position` 字段的读取（跨调用路径的 state-read 汇总）；
+- 两条 Multiple/Conditional 与 Oracle Exact 的精度差异；
+- 资源 ticket/内容、跨 TU summary、variant 类型级状态机。
 
 ## 逐类失败处理规则
 

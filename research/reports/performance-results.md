@@ -58,8 +58,10 @@ bun test/project-state-sources.ts /home/huawei/nano-infer
 
 | 指标 | 值 |
 |---|---:|
-| TS Oracle 48 条（加载 6 TU Program） | 1.54s wall / 1.50s user / 496MB |
-| 单条 `pipeline.h:872` origin（加载 cli inventory） | 0.21s / 206MB |
+| TS Oracle 48 条（research budget=6000） | 125s wall / 1.12GB |
+| TS Oracle 48 条（default budget=1200，精度较低） | 26s / 742MB |
+| 单条 `pipeline.h:872` origin（default budget=1200） | 1.24s / 448MB |
+| 单条 `pipeline.h:872` origin（budget=6000） | ~4s / 596MB |
 | native fixture inventory + 查询测试 | 约 0.2s |
 | `bun check` | 87 files no type errors |
 | `bun test` | 540 pass / 0 fail / 36s |

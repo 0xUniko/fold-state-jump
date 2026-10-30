@@ -192,3 +192,11 @@ src/state-trace/cli.ts          independent CLI
 - 不允许判断业务字段/函数/文件/行号；
 - 允许标准库 API 摘要，必须记录契约；
 - Oracle 失败按 `Frontend/Object identity/Field mapping/Value transfer/Alias/CFG/Interprocedural/Fold/Stdlib/Unknown/Source mapping/Query` 分类修复。
+
+## 11. 第二轮后的求解细节
+
+- `Program.resolve` 先应用引用别名，再应用 address-of pointee；LocalFlow 的 key 和查询 storage 都走同一 canonicalization。
+- 聚合赋值拆成整体写 + 字段写；整体写 subkind=`aggregate` 不杀死字段写。
+- `call:<id>` 是跨函数值的稳定句柄；构造器/`new` 单初始化器传播工厂 call id。
+- 标准算法/范围管道通过嵌套 lambda 的 return 建立元素来源；这是 stdlib contract，不是业务名规则。
+- 查询 kind 只由 SOURCE_KINDS 计数，call/return/transfer/condition 作为证据展示。

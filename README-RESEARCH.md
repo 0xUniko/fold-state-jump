@@ -13,7 +13,7 @@
 5. `research/reports/correctness-results.md` — 诚实的通过/失败分类。
 6. `research/reports/selected-architecture.md` — 形式化模型。
 7. `research/SEMANTIC-SPEC.md` / `ARCHITECTURE.md` / `FAILURE-QUEUE.md` — 语义规范、架构和失败分类。
-8. `research/inventory/state-query-matrix.json` / `fold-audit.json` — 8,786 个状态 site 与 84/86 fold 审计记录。
+8. `research/inventory/state-query-matrix.json` / `fold-audit.json` — 10,031 个状态 site 与 84/86 fold 审计记录。
 9. `research/reports/implementation-status.md` / `correctness-results-ts.md` — 新 TS 引擎与 Oracle 结果。
 10. `research/STATUS.md` / `DECISIONS.md` / `EXPERIMENTS.md` — 中断恢复点。
 
@@ -86,9 +86,9 @@ bun test
 
 ## 结果摘要
 
-- 6 TU / 680 functions / 79 template instances / 84 fold 源 / 86 实例 / 87,372 events。
+- 6 TU / 680 functions / 79 template instances / 84 fold 源 / 86 实例 / 91,165 events。
 - fixture 13/13 通过。
-- TypeScript 新引擎 Oracle 48 条：18 correct-conditional、8 correct-boundary、9 correct-multiple、1 correct-no-prior、0 targets-found-kind-mismatch、1 unsupported、11 mismatch（未完成，不美化）。
+- TypeScript 新引擎 Oracle 48 条：20 correct-conditional、8 correct-boundary、14 correct-multiple、1 correct-no-prior、2 targets-found-kind-mismatch、1 unsupported、2 mismatch（未完成，不美化）；required-target recall 90/119。
 - 提取 15.3s/1.06GB（MiniCPM cli）；TypeScript 48 查询 1.54s/496MB（单查询 0.21s/206MB）；旧插件基线 32.7s/1.05GB。
 
 ## 明确未做

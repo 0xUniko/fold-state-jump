@@ -8,12 +8,12 @@
 - [x] 独立 worktree；原 `fold-state-jump` 工作区未修改；研究分支单独提交/push。
 - [x] nano-infer 只读审计；Git 版本/脏文件/hash 固定。
 - [x] Clang 23 AST/CFG 提取器（`prototype/native/ast-inventory.cpp`）编译运行。
-- [x] 6 个 TU 的机械 inventory：680 functions、79 template instances、84 fold sites、86 instances、86k events、7,976 writes、9,114 transfers、47 state records。
+- [x] 6 个 TU 的机械 inventory：680 functions、79 template instances、84 fold sites、86 instances、91,165 events、10,299 writes、9,142 transfers、47 state records。
 - [x] 状态地图：SessionState/BatchState/LayerExecution/BankState/SlotState/PendingPrefetch/Generation/DeepSeek Attention/FfnRuntime。
 - [x] 独立 Oracle schema + 48 条 JSONL；覆盖 4 种 query mode、6 种结果类别。
 - [x] Oracle 覆盖率分母：84 个 fold 源全部列出，`oracle-coverage.md` 标记 covered/grouped/pure/test-only。
 - [x] 通用 fixtures：fold recurrence、aggregate negative、optional/variant、template、async、pointer/callback、dynamic index、overload/same-name、negative control。
-- [x] 旧 Python fixture 13/13；新 TypeScript 通用测试 11/11。
+- [x] 旧 Python fixture 13/13；新 TypeScript 通用测试 14/14。
 - [x] CLI 原型 `prototype/src/state_trace.py`，支持 origin/mutation/history/provenance、JSON、boundary、证据链。
 - [x] Oracle 自动对照：`tools/run_oracle.py`；结果 `correctness-results.md` / `oracle-run.json`。
 - [x] Clang/LLVM/Static Analyzer 实际实验；PhASAR/SVF clone/configure/build 失败记录。
@@ -23,14 +23,14 @@
 ## 当前阶段（第二轮继续）
 
 - [x] Oracle 独立复核并修正 `layer == 0` 首轮错误（graph_builds/graph_reuses）。
-- [x] 状态查询矩阵：8,786 sites（含 fold-context/mechanical/oracle 分层）。
+- [x] 状态查询矩阵：10,031 sites（含 fold-context/mechanical/oracle 分层）。
 - [x] 真实 Clang FlowSensitive 实验：`prototype/native/flow-sensitive-probe.cpp`。
 - [x] 新 TS 引擎：`src/state-trace/engine.ts`；worklist/CFG/alias/fold guard/查询。
 - [x] native `state-inventory` 目标与 `native/build/state-inventory`。
 - [x] 现有 VS Code 命令接入新引擎；`test/state-trace-command.ts` 通过。
 - [x] 新 fixtures：首轮 guard、重命名/改序、未来写、动态下标/指针。
 - [x] `bun check`、`bun run build`、`bun test`（540 pass / 28 files）通过。
-- [x] TypeScript 引擎 Oracle：`correctness-results-ts.md`（11 mismatch，未完成）。
+- [x] TypeScript 引擎 Oracle：`correctness-results-ts.md`（2 mismatch + 2 kind mismatch，未完成）。
 
 ## 当前结果（不得美化）
 
@@ -47,7 +47,7 @@ strict target overlap     45/518（目标集非穷尽，不能当 precision）
 ```
 
 Python 基线主要未通过类别：BatchState 聚合返回、start_session/clear_session 最终来源、部分跨函数/variant/optional、ranges pipeline 构造、资源内容 boundary。
-TypeScript 新引擎：`correctness-results-ts.md` 当前 11 mismatch、18 correct-conditional、8 correct-boundary、9 correct-multiple、0 kind mismatch、1 correct-no-prior、1 unsupported。
+TypeScript 新引擎：`correctness-results-ts.md` 当前 2 mismatch、20 correct-conditional、8 correct-boundary、14 correct-multiple、2 kind mismatch、1 correct-no-prior、1 unsupported，required-target recall 90/119。
 
 ## 未完成/下一步
 
@@ -80,12 +80,13 @@ python3 tools/coverage.py
 
 ## INCOMPLETE（本轮执行结束时的明确状态）
 
-新引擎已接入默认命令并通过 540 项回归，但**未达到最终完成标准**：
+新引擎已接入默认命令并通过 540 项插件回归 + 16 项 state-trace 单元/集成测试，但**未达到最终完成标准**：
 
-- TypeScript Oracle 仍有 11 条 mismatch（48 条中），主要是 `start_session` ranges 构造/缓存资源、
-  DeepSeek FFN server 状态、pending reset、跨批 `run_batch`/`Generation` seed、retaining 指针折叠；
-- state-query-matrix 仍有 6,961 个 fold-context、1,722 个 mechanical site 未逐条建立 Oracle；
-- 跨 TU caller/summary、资源 ticket/内容、variant 状态机、磁盘图缓存尚未完成；
+- TypeScript Oracle 仍有 2 条缺失目标 mismatch（48 条中）：
+  `clear_session` 经交互行循环安装的状态、图片路径对 `SessionState.rope_position` 的读取；
+  另有 2 条 Multiple/Conditional 与 Oracle 的 Exact 不一致（目标齐全，保留多个激活/来源上下文）；
+- state-query-matrix 仍有 8,161 个 fold-context、1,763 个 mechanical site 未逐条建立 Oracle；
+- 跨 TU caller/summary、资源 ticket/内容、variant 类型级状态机、磁盘图缓存尚未完成；
 - 未运行真实 Extension Host/VSIX（本轮不要求）。
 
 恢复入口：

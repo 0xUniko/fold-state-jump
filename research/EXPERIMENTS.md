@@ -174,9 +174,9 @@ Oracle TS: 14 correct-conditional / 8 correct-boundary / 2 correct-multiple /
 ## E14 状态查询矩阵 / fold audit
 
 ```bash
-python3 tools/build_state_matrix.py   # 8,786 state-related sites
+python3 tools/build_state_matrix.py   # 10,031 state-related sites
 python3 tools/build_fold_audit.py     # 84 sites / 86 instances
 python3 tools/coverage.py
 ```
 
-矩阵状态分层：`oracle` 103、`fold-context` 6,961、`mechanical` 1,722。fold audit 的 reviewed/mechanical 分层记录在 `fold-audit.json`，不等于全部通过。
+矩阵状态分层：`oracle` 107、`fold-context` 8,161、`mechanical` 1,763。fold audit 的 reviewed/mechanical 分层记录在 `fold-audit.json`，不等于全部通过。

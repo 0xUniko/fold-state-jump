@@ -250,23 +250,24 @@ bun run build                          extension.js built
 bun test                               540 pass / 0 fail
 ```
 
-独立语义测试 11 个通过（fold seed/backedge、首轮 guard、覆盖写、分支合流、同名对象、别名、动态下标 boundary、未来写、重命名/成员重排）。
+独立语义测试 14 个通过（fold seed/backedge、首轮 guard、覆盖写、分支合流、同名对象、别名、动态下标 boundary、未来写、重命名/成员重排、重载聚合赋值、address-of pointee、带构造器的聚合返回）。
 
 TypeScript 引擎 Oracle：
 
 ```text
 48 entries
-correct-conditional        18
+correct-conditional        20
 correct-boundary            8
-correct-multiple            9
+correct-multiple           14
 correct-no-prior            1
+targets-found-kind-mismatch 2
 unsupported-observed        1
-mismatch                   11
-required-target recall     57/119
+mismatch                    2
+required-target recall     90/119
 ```
 
-这不是完成。剩余失败按 `FAILURE-QUEUE.md` 归入聚合返回、资源/异步、ranges pipeline、跨函数摘要等通用类别；没有新增业务字段/行号特例。
+这不是完成。剩余缺口只有两类：`clear_session` 返回值经交互行循环安装回会话，以及图片路径对 `SessionState.rope_position` 的读取；另有两条结果保留 Multiple/Conditional 而不是 Oracle 的 Exact。没有新增业务字段/行号特例。
 
 ## 11.5 当前结论
 
-已完成“审计 → Oracle 复核 → 框架实验 → 新语义模型 → 新引擎 → 插件命令接线 → 独立测试”的纵向闭环，但**尚未达到最终完成标准**：新引擎仍有 11 条 Oracle mismatch，且未实现完整跨 TU/资源/variant 摘要。应继续按通用语义类别修复，不应以本报告作为停机理由。
+已完成“审计 → Oracle 复核 → 框架实验 → 新语义模型 → 新引擎 → 插件命令接线 → 独立测试”的纵向闭环，但**尚未达到最终完成标准**：新引擎仍有 2 条缺失目标 mismatch + 2 条精度 kind mismatch，且未实现完整跨 TU/资源/variant 摘要。应继续按通用语义类别修复，不应以本报告作为停机理由。

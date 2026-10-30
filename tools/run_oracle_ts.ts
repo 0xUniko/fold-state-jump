@@ -31,7 +31,7 @@ for (const entry of entries) {
   const rec: any = { id: entry.id, expectedKind: entry.expectation.kind, query: q };
   let out: QueryResult;
   try {
-    out = getEngine(tuFor(q.file)).query({ file, line: q.line, column: q.column, mode: q.mode as Mode });
+    out = getEngine(tuFor(q.file)).query({ file, line: q.line, column: q.column, mode: q.mode as Mode, maxSteps: 6000 });
   } catch (e) {
     results.push({ ...rec, status: 'no-site', actualKind: 'None', targets: [], boundaries: [], error: String(e) });
     continue;

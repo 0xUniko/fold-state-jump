@@ -220,3 +220,28 @@ NoPriorMutation  已证明没有 prior mutation
 ```
 
 结果去重按 `(file,line,column,role,storage,conditions)`；不同 invocation/instance 不得因源码 token 相同而丢失 identity。
+
+## 9. 写入锚点与聚合赋值
+
+- 声明初始化事件锚定变量声明（类型/名字起始），表达式仍记录初始化器。
+- 赋值锚定 LHS 语句；聚合赋值产生一个整体写和逐字段写。
+- 整体写 subkind=`aggregate` 不杀死字段写；字段写是后续读取的 reaching definition。
+- 对整体写的 provenance 查询包含字段写（aggregate-field 边），不把字段写当成 sibling 对象的写。
+
+## 10. Call value 与构造器
+
+- 每个直接调用有稳定 id；值 `call:<id>` 可在无命名存储时继续追踪 callee 的 return/return-field。
+- `T(factory())`、`new T(factory())` 传播 factory 的 call id。
+- 非聚合构造器的成员初始化列表把构造参数映射到字段 return-field；默认/委托构造保持 boundary。
+
+## 11. Pointer / pointee
+
+- `&obj` 与存入指针字段/seed 的事件共同建立 `pointer -> pointee`。
+- `p->x` 规范化为 `pointee.x`；动态下标仍为 may-alias。
+- 对 `&obj` 的 mutation 查询返回 pointee 写和指针字段声明；不把指针字段本身当成被写对象。
+
+## 12. 路径证据与 variant
+
+- 高阶标准算法（ranges/std algorithm）的结果元素来源包含嵌套 lambda 的 return。
+- 构造某个 variant alternative 时，前面的 `holds_alternative<T>`/`get_if<T>` 条件作为 path evidence 加入（kind=condition，不参与 Exact/Multiple 来源计数）。
+- call/return/transfer/condition/function 是证据节点，不是竞争来源。

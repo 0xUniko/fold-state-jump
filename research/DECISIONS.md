@@ -74,4 +74,24 @@
 
 ## D12：矩阵/审计的 reviewed/mechanical 分层
 
-`state-query-matrix.json` 的 8,786 sites 中只有 103 个 oracle 锚点，其余 fold-context/mechanical 不得计入“已审查覆盖”。`fold-audit.json` 的 reviewed 只表示人工读过该生命周期，不等于自动化通过。
+`state-query-matrix.json` 的 10,031 sites 中只有 107 个 oracle 锚点，其余 fold-context/mechanical 不得计入“已审查覆盖”。`fold-audit.json` 的 reviewed 只表示人工读过该生命周期，不等于自动化通过。
+
+## D13：写入事件必须锚定声明/赋值语句
+
+声明初始化的事件位置锚定变量声明（`Owner->getBeginLoc()`），赋值锚定 LHS；若聚合赋值，先发整体写事件，再发字段写事件。整体写使用 `aggregate` subkind，不杀死字段写；这样声明/语句级查询可解析到事件，同时字段值仍是后续程序点的 reaching definition。
+
+## D14：调用值使用稳定 call id，构造器传递工厂调用
+
+无存储路径的直接调用结果编码为 `call:<eventId>`；`CXXNewExpr`/`CXXConstructExpr` 的单初始化器继续向下取 call id。查找 callee 时使用 USR，不按业务名。构造器的成员初始化列表把构造参数映射到字段 return-field。
+
+## D15：address-of 建立 pointee 身份
+
+`&obj` 与把该值存入指针字段/折叠 seed 的事件共同建立 `pointerField -> pointee` 关系。`p->field` 规范化为 `pointee.field`；对 `&obj` 的 mutation 查询返回通过该指针发生的 pointee 写，以及指针字段声明。它不把指针字段本身当成被写对象。
+
+## D16：标准算法/范围管道的元素来源是嵌套 lambda 的 return
+
+对 `ranges::` / `std::ranges::` 高阶调用，若源表达式内嵌套 lambda，其结果元素的 provenance 包含这些 lambda 的 return（以及嵌套的转换调用）。这是标准库 API 摘要，不依赖业务类型名。
+
+## D17：SOURCE_KINDS 与展示节点分离
+
+只有 write/fold-seed/fold-backedge/mutation/pointee-write/aggregate-field 等构成“来源候选”；call、return、function、transfer、condition 是证据链节点，不把线性 provenance 误判成 Multiple。目标集合仍保留这些证据节点。

@@ -561,7 +561,7 @@ public:
     E.OS << "\n";
   }
 
-  void emitWriteAt(SourceLocation L, SourceRange R, SPath Dest,
+  void emitWriteAt(SourceLocation L, SourceRange LR, SourceRange ER, SPath Dest,
                    std::string Value, llvm::StringRef Sub) {
     unsigned Id = nextEvent();
     Ids.push_back(Id);
@@ -581,8 +581,8 @@ public:
       if (!Dest.rootType.empty()) J.attribute("rootType", Dest.rootType);
     }
     if (!Value.empty()) J.attribute("value", Value);
-    J.attribute("expr", E.text(R));
-    Emitter::locJson(J, E.loc(L, R));
+    J.attribute("expr", E.text(ER));
+    Emitter::locJson(J, E.loc(L, LR));
     J.objectEnd();
     E.OS << "\n";
   }
@@ -598,12 +598,59 @@ public:
     return "field" + std::to_string(Index);
   }
 
+  // Direct-call identities are stable handles for value provenance even when
+  // the call has no named storage path (e.g. a factory returning a value).
+  std::map<const CallExpr *, unsigned> CallIds;
+
+  std::string valueOfSingle(const Expr *Raw) {
+    if (!Raw)
+      return {};
+    const Expr *X = strip(Raw);
+    if (auto *C = dyn_cast<CXXConstructExpr>(X)) {
+      if (C->getNumArgs() == 1)
+        return valueOf(C->getArg(0));
+      return {};
+    }
+    if (auto *CE = dyn_cast<CallExpr>(X)) {
+      auto It = CallIds.find(CE);
+      if (It != CallIds.end())
+        return "call:" + std::to_string(It->second);
+    }
+    return {};
+  }
+
   std::string valueOf(const Expr *Raw) {
     if (!Raw)
       return {};
     SPath P = path(Raw);
     if (P.known())
       return P.full();
+    if (auto *CE = dyn_cast<CallExpr>(strip(Raw))) {
+      auto It = CallIds.find(CE);
+      if (It != CallIds.end())
+        return "call:" + std::to_string(It->second);
+    }
+    // Constructors and `new` expressions propagate the identity of a factory
+    // call used as their single initializer.
+    if (auto *N = dyn_cast<CXXNewExpr>(strip(Raw))) {
+      if (const CXXConstructExpr *C = N->getConstructExpr())
+        return valueOfSingle(C);
+      if (const Expr *Init = N->getInitializer()) {
+        const Expr *S = strip(Init);
+        if (auto *IL = dyn_cast<InitListExpr>(S)) {
+          if (IL->getNumInits() == 1)
+            return valueOf(IL->getInit(0));
+        } else {
+          std::string V = valueOf(S);
+          if (!V.empty())
+            return V;
+        }
+      }
+    }
+    if (auto *C = dyn_cast<CXXConstructExpr>(strip(Raw)))
+      return valueOfSingle(C);
+    if (auto *F = dyn_cast<CXXFunctionalCastExpr>(strip(Raw)))
+      return valueOf(F->getSubExpr());
     return "expr:" + E.text(Raw->getSourceRange());
   }
 
@@ -684,7 +731,7 @@ public:
   }
 
   void writeDest(SPath Dest, const Expr *Rhs, const char *Kind,
-                 const Expr *Lhs = nullptr) {
+                 const Expr *Lhs = nullptr, const Decl *Owner = nullptr) {
     if (!Dest.known() || !Rhs)
       return;
     const Expr *R = strip(Rhs);
@@ -695,13 +742,33 @@ public:
         return;
       }
     }
-    if (!aggregateWrite(Dest, Rhs, Kind)) {
+    // Keep a whole-object assignment event anchored at the statement so a
+    // source query on it resolves; emit it before the field writes so the
+    // field values remain the reaching definitions at later program points.
+    const bool Anchored = Owner != nullptr || Lhs != nullptr;
+    // The declaration name range is the stable, searchable anchor for an
+    // initialization (`BatchState batch_state`), while the location still
+    // covers the whole declaration.
+    const SourceRange OwnerAnchor =
+        Owner ? SourceRange(Owner->getBeginLoc(), Owner->getLocation())
+              : SourceRange{};
+    const auto emitWhole = [&](const std::string &Value) {
+      const llvm::StringRef Sub = Value.empty() ? llvm::StringRef("aggregate")
+                                                : llvm::StringRef(Kind);
+      if (Owner)
+        emitWriteAt(Owner->getBeginLoc(), Owner->getSourceRange(),
+                    OwnerAnchor, Dest, Value, Sub);
+      else if (Lhs)
+        emitWriteAt(Lhs->getBeginLoc(), Lhs->getSourceRange(),
+                    Lhs->getSourceRange(), Dest, Value, Sub);
+    };
+    if (Anchored) emitWhole("");
+    if (aggregateWrite(Dest, Rhs, Kind)) return;
+    {
       SPath V = processExpr(Rhs);
-      if (Lhs)
-        emitWriteAt(Lhs->getBeginLoc(), Lhs->getSourceRange(), Dest,
-                    V.known() ? V.full() : valueOf(Rhs), Kind);
-      else
-        emitValue("write", Rhs, Dest, V.known() ? V.full() : valueOf(Rhs), Kind);
+      const std::string Value = V.known() ? V.full() : valueOf(Rhs);
+      if (Anchored) emitWhole(Value);
+      else emitValue("write", Rhs, Dest, Value, Kind);
     }
   }
 
@@ -947,6 +1014,9 @@ public:
         emitValue(Name == "move" || Name == "__move" ? "move" : "forward",
                   CE->getArg(0), P, P.full(),
                   Name == "move" || Name == "__move" ? "move" : "forward");
+        // A moved-from expression still denotes the value that is transferred;
+        // the move event above records the distinct transfer semantics.
+        return P;
       }
       return {};
     }
@@ -1034,13 +1104,17 @@ public:
           J.attribute("paramType", E.typeStr(Params[I]->getType()));
         }
         J.attribute("text", E.text(CE->getArg(I)->getSourceRange()));
+        std::string ArgValue = valueOf(CE->getArg(I));
+        J.attribute("value", ArgValue);
         J.objectEnd();
       }
     });
     if (Dest)
       J.attribute("dest", Dest->full());
+    Emitter::locJson(J, L);
     J.objectEnd();
     E.OS << "\n";
+    CallIds[CE] = CallId;
 
     for (size_t I = 0; I < Params.size() && I < CE->getNumArgs(); ++I) {
       QualType PT = Params[I]->getType();
@@ -1118,6 +1192,34 @@ public:
         processExpr(BO->getLHS());
         processExpr(BO->getRHS());
         return path(X);
+      }
+    }
+    if (auto *OC = dyn_cast<CXXOperatorCallExpr>(X)) {
+      // Overloaded assignment (`a = b`, `a += b`) is semantically a write even
+      // though Clang represents it as an operator call.
+      const OverloadedOperatorKind K = OC->getOperator();
+      const bool Assign = K == OO_Equal && OC->getNumArgs() == 2;
+      const bool Compound = (K == OO_PlusEqual || K == OO_MinusEqual ||
+                             K == OO_StarEqual || K == OO_SlashEqual ||
+                             K == OO_PercentEqual || K == OO_LessLessEqual ||
+                             K == OO_GreaterGreaterEqual || K == OO_AmpEqual ||
+                             K == OO_PipeEqual || K == OO_CaretEqual) &&
+                            OC->getNumArgs() >= 2;
+      if (Assign || Compound) {
+        const Expr *Lhs = OC->getArg(0);
+        const Expr *Rhs = OC->getArg(1);
+        SPath L = path(Lhs);
+        if (Compound) {
+          processExpr(Lhs);
+          processExpr(Rhs);
+          if (L.known()) {
+            emit("read", Lhs, L, "compound-read");
+            emitValue("write", OC, L, path(Rhs).full(), "compound");
+          }
+          return L;
+        }
+        writeDest(L, Rhs, "assign", Lhs);
+        return L;
       }
     }
     if (auto *U = dyn_cast<UnaryOperator>(X)) {
@@ -1248,6 +1350,18 @@ public:
     return {};
   }
 
+  const ParmVarDecl *firstParamRef(const Stmt *S) const {
+    if (!S)
+      return nullptr;
+    if (auto *D = dyn_cast<DeclRefExpr>(S))
+      if (auto *P = dyn_cast<ParmVarDecl>(D->getDecl()))
+        return P;
+    for (const Stmt *Child : S->children())
+      if (const ParmVarDecl *P = firstParamRef(Child))
+        return P;
+    return nullptr;
+  }
+
   void emitReturnFields(SPath Dest, const Expr *Raw) {
     const Expr *X = strip(Raw);
     if (auto *IL = dyn_cast<InitListExpr>(X)) {
@@ -1291,6 +1405,27 @@ public:
           }
           return;
         }
+        // Non-aggregate construction: member initializers map constructor
+        // parameters to the constructed fields.
+        bool mapped = false;
+        for (const CXXCtorInitializer *CI : CD->inits()) {
+          if (!CI->isMemberInitializer())
+            continue;
+          const FieldDecl *F = CI->getMember();
+          const ParmVarDecl *P = firstParamRef(CI->getInit());
+          if (!F || !P)
+            continue;
+          const unsigned Index = P->getFunctionScopeIndex();
+          if (Index >= CC->getNumArgs())
+            continue;
+          SPath D = append(Dest, "." + F->getNameAsString());
+          const Expr *Arg = CC->getArg(Index);
+          processExpr(Arg);
+          emitValue("return-field", Arg, D, valueOf(Arg), "return-field");
+          mapped = true;
+        }
+        if (mapped)
+          return;
       }
     }
     emitValue("return-field", Raw, Dest, valueOf(Raw), "return-field");
@@ -1317,7 +1452,7 @@ public:
           continue;
         }
         if (const Expr *Init = VD->getInit())
-          writeDest(Dest, Init, "init");
+          writeDest(Dest, Init, "init", nullptr, VD);
         else
           emitAt("write", VD->getLocation(), VD->getSourceRange(), Dest, {},
                  "default-init");
@@ -1476,6 +1611,11 @@ public:
     J.attribute("col", L.col);
     J.attribute("endLine", L.endLine);
     J.attribute("endCol", L.endCol);
+    Loc Decl = E.loc(FD->getSourceRange().getBegin(), FD->getSourceRange());
+    J.attribute("declText", E.text(FD->getNameInfo().getSourceRange()));
+    J.attribute("declLine", Decl.line);
+    J.attribute("declCol", Decl.col);
+    J.attribute("declFile", Decl.file);
     J.attribute("bodyStart", E.loc(FD->getBody()->getBeginLoc()).offset);
     J.attribute("bodyEnd", E.loc(FD->getBody()->getSourceRange().getEnd()).offset);
     J.attribute("isLambda", dyn_cast_or_null<CXXRecordDecl>(FD->getParent()) && dyn_cast<CXXRecordDecl>(FD->getParent())->isLambda());
@@ -1588,6 +1728,9 @@ public:
         J.attribute("usr", usrFor(F));
         J.attribute("type", E.typeStr(F->getType()));
         J.attribute("index", F->getFieldIndex());
+        Loc FL = E.loc(F->getLocation(), F->getSourceRange());
+        J.attribute("line", FL.line);
+        J.attribute("col", FL.col);
         J.attribute("offsetBits",
                     HasLayout ? E.Ctx.getASTRecordLayout(RD).getFieldOffset(
                                     F->getFieldIndex())

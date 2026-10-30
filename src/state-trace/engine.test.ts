@@ -74,6 +74,28 @@ describe('generic state provenance', () => {
     assert.ok(!constant.boundaries.some((b) => b.reason.includes('dynamic container index')));
   });
 
+  it('models overloaded aggregate assignment as field writes plus a whole write', () => {
+    const out = q('assign_aggregate', 17, 17, 'origin');
+    const lines = out.targets.map((t) => t.line);
+    assert.ok(lines.includes(16));
+    assert.ok(out.targets.some((t) => t.kind === 'field'));
+    assert.ok(!lines.includes(11));
+  });
+
+  it('resolves address-of pointer fields to pointee writes in the fold', () => {
+    const out = q('pointer_pointee', 17, 38, 'mutation');
+    const lines = out.targets.map((t) => t.line);
+    assert.ok(lines.includes(11));
+    assert.ok(lines.includes(19));
+    assert.ok(lines.includes(21));
+  });
+
+  it('propagates a factory call through a non-aggregate constructor return', () => {
+    const out = q('construct_return', 17, 19, 'origin');
+    assert.ok(out.targets.some((t) => t.line === 12 && t.kind === 'function'));
+    assert.ok(out.targets.some((t) => t.line === 17 && t.kind === 'call'));
+  });
+
   it('does not turn an unknown pointer/callback effect into a proof', () => {
     for (const [line, column] of [[12, 10], [26, 10], [30, 10]] as const) {
       const out = q('pointer_callback', line, column, 'origin');

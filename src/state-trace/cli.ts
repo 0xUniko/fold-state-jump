@@ -19,5 +19,6 @@ const result = engine.query({
   line: Number(arg('--line')),
   column: Number(arg('--column')),
   mode: arg('--mode', 'origin') as Mode,
+  maxSteps: Number(arg('--budget', '1200')),
 });
 process.stdout.write(JSON.stringify(result, null, 2) + '\n');
