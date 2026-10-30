@@ -262,7 +262,7 @@ correct-multiple            9
 correct-no-prior            1
 unsupported-observed        1
 mismatch                   11
-required-target recall     56/119
+required-target recall     57/119
 ```
 
 这不是完成。剩余失败按 `FAILURE-QUEUE.md` 归入聚合返回、资源/异步、ranges pipeline、跨函数摘要等通用类别；没有新增业务字段/行号特例。

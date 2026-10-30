@@ -52,7 +52,7 @@ fold 的 backedge 只在 `iteration > 0` 可达。若 range 是 `iota(start, end
 
 ## 尚未审查
 
-`research/inventory/state-query-matrix.json` 中 8,788 个状态相关 site：
+`research/inventory/state-query-matrix.json` 中 8,786 个状态相关 site：
 
 - `oracle` 75（仅这些有独立复核查询）；
 - `fold-context` 6,923（fold lambda 内事件，机械分类）；

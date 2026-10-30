@@ -23,7 +23,7 @@
 ## 当前阶段（第二轮继续）
 
 - [x] Oracle 独立复核并修正 `layer == 0` 首轮错误（graph_builds/graph_reuses）。
-- [x] 状态查询矩阵：8,788 sites（含 fold-context/mechanical/oracle 分层）。
+- [x] 状态查询矩阵：8,786 sites（含 fold-context/mechanical/oracle 分层）。
 - [x] 真实 Clang FlowSensitive 实验：`prototype/native/flow-sensitive-probe.cpp`。
 - [x] 新 TS 引擎：`src/state-trace/engine.ts`；worklist/CFG/alias/fold guard/查询。
 - [x] native `state-inventory` 目标与 `native/build/state-inventory`。

@@ -13,7 +13,7 @@ Oracle entries: **48**
 | correct-no-prior | 1 |
 | unsupported-observed | 1 |
 
-Required-target recall: **56/119**
+Required-target recall: **57/119**
 
 ## Per-entry results
 
@@ -31,7 +31,7 @@ Required-target recall: **56/119**
 | `minicpm.execute.fold-result.bank_state` | Conditional | Multiple | correct-conditional | 1/3 | 869,1081 |
 | `minicpm.execute.return.batchstate-field-mapping` | Multiple | Multiple | correct-multiple | 1/1 |  |
 | `minicpm.execute.position.read` | Conditional | Multiple | correct-conditional | 1/2 | 1209 |
-| `minicpm.run_batch.rope_position.origin` | Multiple | Boundary | mismatch | 0/4 | 1332,1280,1209,294 |
+| `minicpm.run_batch.rope_position.origin` | Multiple | Multiple | mismatch | 1/4 | 1280,1209,294 |
 | `minicpm.clear_session.pending.guard` | Conditional | Multiple | correct-conditional | 1/2 | 601 |
 | `minicpm.clear_session.bankstate.reconstruction` | Multiple | Multiple | correct-multiple | 1/1 |  |
 | `minicpm.clear_session.buffer-content` | Boundary | Boundary | correct-boundary | 1/2 | 1289 |
@@ -41,7 +41,7 @@ Required-target recall: **56/119**
 | `minicpm.plan_cache_decode.misses.history` | Conditional | Multiple | correct-conditional | 3/4 | 492 |
 | `minicpm.begin_prefetch.pending.aggregate` | Multiple | Multiple | correct-multiple | 0/0 |  |
 | `minicpm.apply_prewarm.bankstate.return` | Multiple | Multiple | correct-multiple | 1/1 |  |
-| `minicpm.victim_slot.fold` | Conditional | Boundary | correct-conditional | 1/4 | 355,356,363 |
+| `minicpm.victim_slot.fold` | Conditional | Conditional | correct-conditional | 1/4 | 355,356,363 |
 | `minicpm.record_frequency.element-write` | Boundary | Multiple | correct-boundary | 1/3 | 223,227 |
 | `minicpm.expert_io.read_state.seed` | Multiple | Multiple | correct-multiple | 1/1 |  |
 | `minicpm.expert_io.async_completion` | Boundary | Boundary | correct-boundary | 1/2 | 770 |
@@ -70,4 +70,4 @@ Required-target recall: **56/119**
 
 ## Honest interpretation
 
-The TypeScript engine is the production-path engine; its native frontend is `state-inventory`. Fold-first-iteration guards, call/return field edges and parameter locations are improved, but aggregate returns, resource/async effects, ranges pipelines and some cross-function summaries remain incomplete. A nonzero mismatch is a real limitation; Boundary results are not counted as successful navigation.
+The TypeScript engine is the production-path engine; its native frontend is `state-inventory`. Fold-first-iteration guards, call/return field edges, capture bindings and parameter locations are improved, but aggregate returns, resource/async effects, ranges pipelines and some cross-function summaries remain incomplete. A nonzero mismatch is a real limitation; Boundary results are not counted as successful navigation.

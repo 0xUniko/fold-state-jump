@@ -13,7 +13,7 @@
 5. `research/reports/correctness-results.md` — 诚实的通过/失败分类。
 6. `research/reports/selected-architecture.md` — 形式化模型。
 7. `research/SEMANTIC-SPEC.md` / `ARCHITECTURE.md` / `FAILURE-QUEUE.md` — 语义规范、架构和失败分类。
-8. `research/inventory/state-query-matrix.json` / `fold-audit.json` — 8,788 个状态 site 与 84/86 fold 审计记录。
+8. `research/inventory/state-query-matrix.json` / `fold-audit.json` — 8,786 个状态 site 与 84/86 fold 审计记录。
 9. `research/reports/implementation-status.md` / `correctness-results-ts.md` — 新 TS 引擎与 Oracle 结果。
 10. `research/STATUS.md` / `DECISIONS.md` / `EXPERIMENTS.md` — 中断恢复点。
 

@@ -538,6 +538,29 @@ public:
     E.OS << "\n";
   }
 
+  void emitCapture(SourceLocation L, SourceRange R, SPath Src,
+                   llvm::StringRef Lambda, llvm::StringRef Kind,
+                   llvm::StringRef Name) {
+    unsigned Id = nextEvent();
+    Ids.push_back(Id);
+    llvm::json::OStream J(E.OS);
+    J.objectBegin();
+    J.attribute("kind", "event");
+    J.attribute("id", Id);
+    J.attribute("fn", Fn);
+    J.attribute("block", Block);
+    J.attribute("order", Order++);
+    J.attribute("event", "capture");
+    J.attribute("captureKind", Kind);
+    J.attribute("storage", Src.full());
+    J.attribute("value", Src.full());
+    J.attribute("lambda", Lambda);
+    J.attribute("expr", Name);
+    Emitter::locJson(J, E.loc(L, R));
+    J.objectEnd();
+    E.OS << "\n";
+  }
+
   void emitWriteAt(SourceLocation L, SourceRange R, SPath Dest,
                    std::string Value, llvm::StringRef Sub) {
     unsigned Id = nextEvent();
@@ -954,8 +977,10 @@ public:
             continue;
           const ValueDecl *VD = Cap.getCapturedVar();
           SPath Src{"decl:" + usrFor(VD), {}};
-          emitAt("capture", Cap.getLocation(), L->getSourceRange(), Src, Src.full(),
-                 Cap.getCaptureKind() == LCK_ByRef ? "reference" : "value");
+          emitCapture(Cap.getLocation(), L->getSourceRange(), Src,
+                      usrFor(L->getCallOperator()),
+                      Cap.getCaptureKind() == LCK_ByRef ? "reference" : "value",
+                      VD->getNameAsString());
         }
         continue;
       }
@@ -1157,8 +1182,10 @@ public:
           continue;
         const ValueDecl *VD = Cap.getCapturedVar();
         SPath Src{"decl:" + usrFor(VD), {}};
-        emitAt("capture", Cap.getLocation(), L->getSourceRange(), Src, Src.full(),
-               Cap.getCaptureKind() == LCK_ByRef ? "reference" : "value");
+        emitCapture(Cap.getLocation(), L->getSourceRange(), Src,
+                    usrFor(L->getCallOperator()),
+                    Cap.getCaptureKind() == LCK_ByRef ? "reference" : "value",
+                    VD->getNameAsString());
       }
       return {};
     }

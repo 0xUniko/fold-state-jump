@@ -118,6 +118,8 @@ export interface FunctionInfo {
   line: number;
   column: number;
   params: Array<{ name: string; usr: string; type: string; index: number; line?: number; col?: number }>;
+  bodyStart?: number;
+  bodyEnd?: number;
   patternUsr?: string;
   templateArgs?: string;
   isLambda?: boolean;
@@ -283,6 +285,7 @@ export class Program {
         const f: FunctionInfo = {
           usr: r.usr, qualified: r.qualified, name: r.name, file: r.file,
           line: r.line, column: r.col, params: r.params ?? [],
+          bodyStart: r.bodyStart, bodyEnd: r.bodyEnd,
           patternUsr: r.patternUsr, templateArgs: r.templateArgs, isLambda: r.isLambda,
         };
         this.functions.set(f.usr, f);
@@ -470,7 +473,14 @@ export class LocalFlow {
     // Captured outer variables are values/aliases at the lambda entry.  A
     // by-reference capture is followed in the enclosing function; a by-value
     // capture is a snapshot boundary.
-    for (const e of this.prog.capturesByLambda.get(this.fn) ?? []) {
+    let captures = this.prog.capturesByLambda.get(this.fn) ?? [];
+    if (!captures.length) {
+      const fnInfo = this.prog.functions.get(this.fn);
+      captures = this.prog.events.filter((c) => c.kind === 'capture' && c.storage &&
+        fnInfo?.file === c.file && (fnInfo.bodyStart ?? 0) <= c.offset &&
+        c.offset <= (fnInfo.bodyEnd ?? 0));
+    }
+    for (const e of captures) {
       if (!e.storage) continue;
       const cap = this.prog.pseudo('capture', this.fn, e.storage, e.storage, e,
         e.subkind === 'value' ? 'capture-value' : 'capture-reference');

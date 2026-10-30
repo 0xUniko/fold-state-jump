@@ -1,12 +1,12 @@
 # State query matrix
 
-Source sites: **8788**. This matrix is generated from the Clang event inventory, not from analyzer query results.
+Source sites: **8786**. This matrix is generated from the Clang event inventory, not from analyzer query results.
 
 ## Counts
 
 | dimension | count |
 |---|---|
-| status:fold-context | 6963 |
+| status:fold-context | 6961 |
 | status:mechanical | 1722 |
 | status:oracle | 103 |
 | role:read/call-result | 3853 |
@@ -23,8 +23,8 @@ Source sites: **8788**. This matrix is generated from the Clang event inventory,
 | role:read/dependent-member | 97 |
 | role:aggregate-value | 81 |
 | role:mutation/assign | 64 |
+| role:capture/ | 63 |
 | role:fold-seed | 59 |
-| role:capture/reference | 49 |
 | role:read/operator-arrow | 46 |
 | role:read/operator-deref | 42 |
 | role:alias-binding | 41 |
@@ -37,7 +37,6 @@ Source sites: **8788**. This matrix is generated from the Clang event inventory,
 | role:read/cast | 21 |
 | role:read/deref | 20 |
 | role:select | 17 |
-| role:capture/ | 16 |
 | role:mutation/ctor-init | 12 |
 | role:fold-result | 11 |
 | role:lambda | 9 |
@@ -57,7 +56,7 @@ Source sites: **8788**. This matrix is generated from the Clang event inventory,
 
 ## Top root types
 
-- ``: 4646
+- ``: 4644
 - `BankState &`: 177
 - `const time_point`: 143
 - `minicpm::BankState`: 127
